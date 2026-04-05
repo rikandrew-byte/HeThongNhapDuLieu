@@ -62,8 +62,8 @@
                     <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Mã số</label><input type="text" name="Maso" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
                     <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Họ tên (Tiếng Việt)</label><input type="text" name="Hoten" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
                     <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tên tiếng Trung</label><input type="text" name="TentiengTrung" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
-                    <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Ngày sinh</label><input type="text" name="Ngaysinh" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
-                    <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tuổi</label><input type="text" name="Tuoi" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
+                    <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Ngày sinh</label><input type="date" name="Ngaysinh" id="birthDate" onchange="calcAge()" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
+                    <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tuổi</label><input type="text" name="Tuoi" id="displayAge" readonly class="w-full border-b-2 border-gray-200 bg-gray-50 py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
                     
                     <div>
                         <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Hôn nhân</label>
@@ -90,16 +90,79 @@
                     <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Chiều cao (cm)</label><input type="text" name="Chieucao" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
                     <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Cân nặng (kg)</label><input type="text" name="Cannang" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
                     
-                    <div class="col-span-1 md:col-span-2">
-                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nơi ở (63 Tỉnh Thành)</label>
-                        <select name="Noio" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors cursor-pointer">
-                            <option value=""></option>
-                            <option value="An Giang">An Giang</option><option value="Bà Rịa - Vũng Tàu">Bà Rịa - Vũng Tàu</option><option value="Bắc Giang">Bắc Giang</option><option value="Bắc Kạn">Bắc Kạn</option><option value="Bạc Liêu">Bạc Liêu</option><option value="Bắc Ninh">Bắc Ninh</option><option value="Bến Tre">Bến Tre</option><option value="Bình Định">Bình Định</option><option value="Bình Dương">Bình Dương</option><option value="Bình Phước">Bình Phước</option><option value="Bình Thuận">Bình Thuận</option><option value="Cà Mau">Cà Mau</option><option value="Cần Thơ">Cần Thơ</option><option value="Cao Bằng">Cao Bằng</option><option value="Đà Nẵng">Đà Nẵng</option><option value="Đắk Lắk">Đắk Lắk</option><option value="Đắk Nông">Đắk Nông</option><option value="Điện Biên">Điện Biên</option><option value="Đồng Nai">Đồng Nai</option><option value="Đồng Tháp">Đồng Tháp</option><option value="Gia Lai">Gia Lai</option><option value="Hà Giang">Hà Giang</option><option value="Hà Nam">Hà Nam</option><option value="Hà Nội">Hà Nội</option><option value="Hà Tĩnh">Hà Tĩnh</option><option value="Hải Dương">Hải Dương</option><option value="Hải Phòng">Hải Phòng</option><option value="Hậu Giang">Hậu Giang</option><option value="Hòa Bình">Hòa Bình</option><option value="Hưng Yên">Hưng Yên</option><option value="Khánh Hòa">Khánh Hòa</option><option value="Kiên Giang">Kiên Giang</option><option value="Kon Tum">Kon Tum</option><option value="Lai Châu">Lai Châu</option><option value="Lâm Đồng">Lâm Đồng</option><option value="Lạng Sơn">Lạng Sơn</option><option value="Lào Cai">Lào Cai</option><option value="Long An">Long An</option><option value="Nam Định">Nam Định</option><option value="Nghệ An">Nghệ An</option><option value="Ninh Bình">Ninh Bình</option><option value="Ninh Thuận">Ninh Thuận</option><option value="Phú Thọ">Phú Thọ</option><option value="Phú Yên">Phú Yên</option><option value="Quảng Bình">Quảng Bình</option><option value="Quảng Nam">Quảng Nam</option><option value="Quảng Ngãi">Quảng Ngãi</option><option value="Quảng Ninh">Quảng Ninh</option><option value="Quảng Trị">Quảng Trị</option><option value="Sóc Trăng">Sóc Trăng</option><option value="Sơn La">Sơn La</option><option value="Tây Ninh">Tây Ninh</option><option value="Thái Bình">Thái Bình</option><option value="Thái Nguyên">Thái Nguyên</option><option value="Thanh Hóa">Thanh Hóa</option><option value="Thừa Thiên Huế">Thừa Thiên Huế</option><option value="Tiền Giang">Tiền Giang</option><option value="TP Hồ Chí Minh">TP Hồ Chí Minh</option><option value="Trà Vinh">Trà Vinh</option><option value="Tuyên Quang">Tuyên Quang</option><option value="Vĩnh Long">Vĩnh Long</option><option value="Vĩnh Phúc">Vĩnh Phúc</option><option value="Yên Bái">Yên Bái</option>
-                        </select>
-                    </div>
-
-                    <div class="col-span-1 md:col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Ảnh chân dung</label><input type="file" id="photoInput" accept="image/*" class="w-full text-sm mt-2"></div>
-                </div>
+            <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nơi ở (63 Tỉnh Thành)</label>
+            <select name="Noio" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors cursor-pointer">
+                <option value=""></option>
+                <option value="安江">An Giang</option>
+                <option value="巴地頭頓">Bà Rịa - Vũng Tàu</option>
+                <option value="北江">Bắc Giang</option>
+                <option value="北𣴓">Bắc Kạn</option>
+                <option value="薄遼">Bạc Liêu</option>
+                <option value="北寧">Bắc Ninh</option>
+                <option value="檳椥">Bến Tre</option>
+                <option value="平定">Bình Định</option>
+                <option value="平陽">Bình Dương</option>
+                <option value="平福">Bình Phước</option>
+                <option value="平順">Bình Thuận</option>
+                <option value="金甌">Cà Mau</option>
+                <option value="芹苴">Cần Thơ</option>
+                <option value="高平">Cao Bằng</option>
+                <option value="峴港">Đà Nẵng</option>
+                <option value="多樂">Đắk Lắk</option>
+                <option value="得農">Đắk Nông</option>
+                <option value="奠邊">Điện Biên</option>
+                <option value="同奈">Đồng Nai</option>
+                <option value="同塔">Đồng Tháp</option>
+                <option value="嘉萊">Gia Lai</option>
+                <option value="河江">Hà Giang</option>
+                <option value="河南">Hà Nam</option>
+                <option value="河內">Hà Nội</option>
+                <option value="河靜">Hà Tĩnh</option>
+                <option value="海陽">Hải Dương</option>
+                <option value="海防">Hải Phòng</option>
+                <option value="後江">Hậu Giang</option>
+                <option value="和平">Hòa Bình</option>
+                <option value="興安">Hưng Yên</option>
+                <option value="慶和">Khánh Hòa</option>
+                <option value="堅江">Kiên Giang</option>
+                <option value="崑嵩">Kon Tum</option>
+                <option value="萊州">Lai Châu</option>
+                <option value="林同">Lâm Đồng</option>
+                <option value="諒山">Lạng Sơn</option>
+                <option value="老街">Lào Cai</option>
+                <option value="隆安">Long An</option>
+                <option value="南定">Nam Định</option>
+                <option value="乂安">Nghệ An</option>
+                <option value="寧平">Ninh Bình</option>
+                <option value="寧順">Ninh Thuận</option>
+                <option value="富壽">Phú Thọ</option>
+                <option value="富安">Phú Yên</option>
+                <option value="廣平">Quảng Bình</option>
+                <option value="廣南">Quảng Nam</option>
+                <option value="廣義">Quảng Ngãi</option>
+                <option value="廣寧">Quảng Ninh</option>
+                <option value="廣治">Quảng Trị</option>
+                <option value="朔莊">Sóc Trăng</option>
+                <option value="山羅">Sơn La</option>
+                <option value="西寧">Tây Ninh</option>
+                <option value="太平">Thái Bình</option>
+                <option value="太原">Thái Nguyên</option>
+                <option value="清化">Thanh Hóa</option>
+                <option value="承天順化">Thừa Thiên Huế</option>
+                <option value="前江">Tiền Giang</option>
+                <option value="胡志明市">TP Hồ Chí Minh</option>
+                <option value="茶榮">Trà Vinh</option>
+                <option value="宣光">Tuyên Quang</option>
+                <option value="永隆">Vĩnh Long</option>
+                <option value="永福">Vĩnh Phúc</option>
+                <option value="安沛">Yên Bái</option>
+            </select>
+        </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Ảnh chân dung</label>
+                <input type="file" id="photoInput" accept="image/*" class="w-full text-sm">
+            </div>
             </section>
 
             <section>
@@ -199,6 +262,12 @@
                                 <option value="Nhật Bản">Nhật Bản</option>
                                 <option value="Hàn Quốc">Hàn Quốc</option>
                                 <option value="Việt Nam">Việt Nam</option>
+                                <option value="Thái Lan">Thái Lan</option>
+                                <option value="Malaysia">Malaysia</option>
+                                <option value="Trung Quốc">Trung Quốc</option>
+                                <option value="Macau">Macau</option>
+                                <option value="Trung Đông">Trung Đông</option>
+                                <option value="Nga">Nga</option>
                             </select>
                         </div>
                         <div class="col-span-1"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Năm</label><input type="text" name="N1" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none"></div>
@@ -214,6 +283,12 @@
                                 <option value="Nhật Bản">Nhật Bản</option>
                                 <option value="Hàn Quốc">Hàn Quốc</option>
                                 <option value="Việt Nam">Việt Nam</option>
+                                <option value="Thái Lan">Thái Lan</option>
+                                <option value="Malaysia">Malaysia</option>
+                                <option value="Trung Quốc">Trung Quốc</option>
+                                <option value="Macau">Macau</option>
+                                <option value="Trung Đông">Trung Đông</option>
+                                <option value="Nga">Nga</option>
                             </select>
                         </div>
                         <div class="col-span-1"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Năm</label><input type="text" name="N2" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none"></div>
@@ -229,6 +304,12 @@
                                 <option value="Nhật Bản">Nhật Bản</option>
                                 <option value="Hàn Quốc">Hàn Quốc</option>
                                 <option value="Việt Nam">Việt Nam</option>
+                                <option value="Thái Lan">Thái Lan</option>
+                                <option value="Malaysia">Malaysia</option>
+                                <option value="Trung Quốc">Trung Quốc</option>
+                                <option value="Macau">Macau</option>
+                                <option value="Trung Đông">Trung Đông</option>
+                                <option value="Nga">Nga</option>
                             </select>
                         </div>
                         <div class="col-span-1"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Năm</label><input type="text" name="N3" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none"></div>
@@ -256,6 +337,19 @@
     </div>
 
     <script>
+        function calcAge() {
+            const birthValue = document.getElementById('birthDate').value;
+            if (!birthValue) return;
+            const birthDate = new Date(birthValue);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            document.getElementById('displayAge').value = age;
+        }
+
         async function handleSubmit() {
             const form = document.getElementById('resumeForm');
             const btnText = document.getElementById('btnText');
