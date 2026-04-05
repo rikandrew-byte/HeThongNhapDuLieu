@@ -1,0 +1,235 @@
+# -*- coding: utf-8 -*-
+"""
+Document Automation System (DAS) - Flask Backend V3.0
+Nhập liệu Tiếng Việt → Xuất file Word với nội dung Tiếng Trung Phồn Thể
+"""
+import os, uuid, re, unicodedata, json
+from datetime import date
+from flask import Flask, request, jsonify, send_file, render_template
+from flask_cors import CORS
+from docxtpl import DocxTemplate, InlineImage, RichText
+from docx.shared import Mm, Pt
+from deep_translator import GoogleTranslator
+from dotenv import load_dotenv
+
+load_dotenv()
+
+app = Flask(__name__, static_folder='static', static_url_path='')
+app.debug = True  # Lệnh cưỡng chế bật Debug
+CORS(app)
+from flask_basicauth import BasicAuth
+
+app.config['BASIC_AUTH_USERNAME'] = 'fctvt'  # Tên đăng nhập bạn chọn
+app.config['BASIC_AUTH_PASSWORD'] = '1503'   # Mật khẩu bạn chọn
+app.config['BASIC_AUTH_FORCE_PROMPT'] = True
+
+basic_auth = BasicAuth(app)
+
+BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
+TMPL_DIR   = os.path.join(BASE_DIR, 'templates')
+OUT_DIR    = os.path.join(BASE_DIR, 'output')
+UPL_DIR    = os.path.join(BASE_DIR, 'uploads')
+for d in (TMPL_DIR, OUT_DIR, UPL_DIR):
+    os.makedirs(d, exist_ok=True)
+
+# ─── Bảng dịch cố định Việt → Trung Phồn Thể ────────────────────────────────
+FIXED_TRANS = {
+    # Hôn nhân
+    'độc thân': '未婚', 'doc than': '未婚',
+    'đã kết hôn': '已婚', 'da ket hon': '已婚', 'có gia đình': '已婚',
+    'ly hôn': '離婚', 'ly hon': '離婚',
+    'góa': '喪偶', 'goa': '喪偶',
+    # Học vấn
+    'tiểu học': '國小', 'tieu hoc': '國小',
+    'thcs': '國中', 'trung học cơ sở': '國中',
+    'thpt': '高中', 'trung học phổ thông': '高中',
+    'trung cấp': '高職', 'trung cap': '高職',
+    'cao đẳng': '專科', 'cao dang': '專科',
+    'đại học': '大學', 'dai hoc': '大學',
+    'thạc sĩ': '碩士', 'thac si': '碩士',
+    'tiến sĩ': '博士', 'tien si': '博士',
+    # Quốc gia
+    'việt nam': '越南', 'viet nam': '越南',
+    'đài loan': '台灣',
+    'nhật bản': '日本',
+    'hàn quốc': '韓國',
+    'malaysia': '馬來西亞',
+    'macau': '澳門',
+    'thái lan': '泰國',
+    'châu âu': '歐洲',
+    'nga': '俄羅斯',
+}
+
+def translate_fixed(text: str) -> str:
+    """Dịch các từ cố định theo bảng tra cứu"""
+    if not text:
+        return text
+    key = text.strip().lower()
+    return FIXED_TRANS.get(key, text)
+
+def translate_free(text: str) -> str:
+    """Dịch văn bản tự do sang Tiếng Trung Phồn Thể"""
+    if not text or not text.strip():
+        return text
+    try:
+        result = GoogleTranslator(source='vi', target='zh-TW').translate(text)
+        return result if result else text
+    except Exception:
+        return text
+
+def calc_age(dob_str: str) -> str:
+    """Tính tuổi từ chuỗi ngày sinh YYYY-MM-DD"""
+    if not dob_str:
+        return ''
+    try:
+        p = dob_str.split('-')
+        dob = date(int(p[0]), int(p[1]), int(p[2]))
+        today = date.today()
+        age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+        return str(age)
+    except Exception:
+        return ''
+
+def to_ascii(title: str) -> str:
+    """Chuyển tiếng Việt có dấu sang không dấu, viết hoa mỗi chữ cái đầu"""
+    if not title:
+        return ''
+    # Handle 'đ' and 'Đ' specifically as they are not handled by NFD normalization
+    title = title.replace('đ', 'd').replace('Đ', 'D')
+    nfd = unicodedata.normalize('NFD', title)
+    ascii_str = ''.join(c for c in nfd if unicodedata.category(c) != 'Mn')
+    return ' '.join(word.capitalize() for word in ascii_str.split())
+
+def fmt_date(d: str) -> str:
+    """Chuyển YYYY-MM-DD → DD/MM/YYYY"""
+    if d and '-' in d:
+        p = d.split('-')
+        if len(p) == 3:
+            return f'{p[2]}/{p[1]}/{p[0]}'
+    return d or ''
+
+def chk(val):
+    """Checkbox: True → ☑, False → □ (Định dạng MS Gothic size 11pt)"""
+    if val in (True, 'true', '1', 1, 'yes', 'on', 'checked'):
+        return RichText("☑", font='MS Gothic', size=22)
+    return RichText("□", font='MS Gothic', size=22)
+
+# ─── Chuẩn bị dữ liệu cho template ──────────────────────────────────────────
+def prepare_data(raw: dict) -> dict:
+    context = {}
+
+    # 1. Trường văn bản và gia đình (Khớp 1:1 với name trong HTML)
+    fields = [
+        'Maso', 'Hoten', 'TentiengTrung', 'Ngaysinh', 'Tuoi', 'Chieucao', 'Cannang', 
+        'Lienhe', 'Noio', 'HotenBo', 'TB', 'HotenMe', 'TM', 'VoChong', 'VC', 
+        'Socon', 'Anhchiem', 'Xepthu', 'f48', 'N1', 'N2', 'N3', 'ndcv1', 'ndcv2', 'ndcv3', 'loi_binh_1'
+    ]
+    for f in fields:
+        val = raw.get(f, '')
+        context[f] = str(val).replace('\n', ' ').strip()
+
+    # 2. Ngày sinh và tuổi
+    context['Ngaysinh'] = fmt_date(context['Ngaysinh'])
+    if raw.get('Ngaysinh') and not context['Tuoi']:
+        context['Tuoi'] = calc_age(raw.get('Ngaysinh'))
+
+    # 3. Dịch thuật
+    for f in ['Honnhan', 'Hocvan', 'QG1', 'QG2', 'QG3']:
+        context[f] = translate_fixed(raw.get(f, ''))
+    
+    for f in ['Noio', 'HotenBo', 'HotenMe', 'VoChong', 'ndcv1', 'ndcv2', 'ndcv3', 'loi_binh_1']:
+        context[f] = translate_free(context.get(f, ''))
+
+    # 4. Checkbox f01 -> f46
+    for i in range(1, 47):
+        key = f'f{i:02d}'
+        context[key] = chk(raw.get(key, False))
+
+    context['photo'] = raw.get('photo', '')
+    return context
+
+def generate_word(form_data: dict, template_name='resume_template_chuan.docx') -> str:
+    # 1. MỞ ĐÚNG FILE MẪU (Nằm cùng thư mục với app.py)
+    TEMPLATE_PATH = os.path.join(BASE_DIR, template_name)
+    
+    print(f"=====================================")
+    print(f"DEBUG: Đang tìm file tại: {TEMPLATE_PATH}")
+    print(f"DEBUG: File có tồn tại không? {os.path.exists(TEMPLATE_PATH)}")
+    print(f"=====================================")
+
+    if not os.path.exists(TEMPLATE_PATH):
+        raise FileNotFoundError(f'Template không tồn tại: {TEMPLATE_PATH}')
+    
+    doc = DocxTemplate(TEMPLATE_PATH)
+    
+    # 2. XỬ LÝ ẢNH CHUYÊN SÂU
+    photo_path = form_data.get('photo', '')
+    if photo_path and os.path.exists(photo_path):
+        # Ảnh cố định kích thước 64mm x 85mm
+        form_data['photo'] = InlineImage(doc, photo_path, width=Mm(64), height=Mm(85))
+    
+    # 3. ĐỔ DỮ LIỆU VÀO TEMPLATE
+    doc.render(form_data)
+    
+    # 4. LƯU FILE THEO QUY TẮC MASTER YÊU CẦU
+    ma_so = form_data.get('Maso', '').strip()
+    ho_ten = form_data.get('Hoten', '').strip()
+    ten_khong_dau = to_ascii(ho_ten)
+    if ma_so and ten_khong_dau:
+        fname = f'{ma_so} {ten_khong_dau}.docx'
+    elif ma_so:
+        fname = f'{ma_so}.docx'
+    elif ten_khong_dau:
+        fname = f'{ten_khong_dau}.docx'
+    else:
+        fname = f'resume_{uuid.uuid4().hex[:8]}.docx'
+    
+    out = os.path.join(OUT_DIR, fname)
+    doc.save(out)
+    return out
+
+# ─── API Routes ──────────────────────────────────────────────────────────────
+@app.route('/')
+@basic_auth.required
+def index():
+    return render_template('index.html')
+
+@app.route('/api/health')
+def health():
+    return jsonify({'ok': True, 'msg': 'DAS V3.0 running'})
+
+@app.route('/api/generate', methods=['POST'])
+def api_generate():
+    try:
+        # Handle both FormData and JSON
+        if request.content_type and 'multipart/form-data' in request.content_type:
+            data = json.loads(request.form.get('data', '{}'))
+            photo_file = request.files.get('photo')
+            if photo_file:
+                img_id = uuid.uuid4().hex[:8]
+                photo_path = os.path.join(UPL_DIR, f'photo_{img_id}.png')
+                photo_file.save(photo_path)
+                data['photo'] = photo_path
+        else:
+            data = request.get_json() or {}
+        
+        form_data = prepare_data(data)
+        out = generate_word(form_data)
+        fn = os.path.basename(out)
+        return jsonify({'success': True, 'fileName': fn, 'downloadUrl': f'/api/download/{fn}'})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e), 'trace': traceback.format_exc()}), 500
+
+@app.route('/api/download/<filename>')
+def api_download(filename):
+    return send_file(os.path.join(OUT_DIR, filename), as_attachment=True)
+
+if __name__ == '__main__':
+    import os
+    # Lấy cổng do Render cấp, nếu không có thì mặc định 5000
+    port = int(os.environ.get("PORT", 5000))
+    # Chạy trên host 0.0.0.0 để có thể truy cập từ Internet
+    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port, debug=True, use_reloader=False)
