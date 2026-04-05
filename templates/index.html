@@ -4,27 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ Thống Nhập Liệu DAS V3.0</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Custom scrollbar mượt mà */
+        body { font-family: 'Inter', sans-serif; } /* Ép toàn bộ web dùng font Inter */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
-<body class="flex flex-col lg:flex-row h-screen overflow-hidden bg-white font-sans text-slate-800">
+<body class="flex flex-col lg:flex-row h-screen overflow-hidden bg-white text-slate-800">
 
-    <div class="lg:w-1/3 bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 p-8 lg:p-12 flex flex-col justify-between border-r border-gray-200 shadow-[10px_0_20px_-10px_rgba(0,0,0,0.05)] z-10 relative">
-        <div class="absolute top-0 left-0 w-full h-1.5 bg-blue-600"></div>
+    <div class="w-full lg:w-1/3 bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 p-4 lg:p-8 lg:p-12 flex flex-row lg:flex-col justify-between items-center lg:items-start border-b lg:border-r border-gray-200 shadow-md z-10 relative flex-shrink-0">
+        <div class="absolute top-0 left-0 w-full h-1 lg:h-1.5 bg-blue-600"></div>
         
-        <div>
-            <img src="LogoFCT.png" alt="FCT Logo" class="w-28 mb-8 drop-shadow-md" onerror="this.src='https://via.placeholder.com/150?text=Logo+FCT'">
-            <h1 class="text-4xl lg:text-5xl font-extrabold text-slate-800 tracking-tight leading-tight mb-4">HỆ THỐNG<br><span class="text-blue-600">NHẬP LIỆU</span></h1>
-            <p class="text-slate-500 text-sm lg:text-base font-medium leading-relaxed">Tự động hóa quy trình xuất hồ sơ ứng viên nhanh chóng, chuẩn xác và chuyên nghiệp.</p>
+        <div class="flex flex-row items-center gap-3 lg:flex-col lg:items-start lg:gap-0">
+            <img src="LogoFCT.png" alt="FCT Logo" class="w-10 lg:w-28 lg:mb-8 drop-shadow-md" onerror="this.src='https://via.placeholder.com/150?text=Logo+FCT'">
+            
+            <div>
+                <h1 class="block lg:hidden text-lg font-extrabold text-slate-800 tracking-tight leading-none">
+                    HỆ THỐNG <span class="text-blue-600">NHẬP LIỆU</span>
+                </h1>
+                
+                <h1 class="hidden lg:block text-4xl lg:text-5xl font-extrabold text-slate-800 tracking-tighter leading-tight mb-4">
+                    HỆ THỐNG<br><span class="text-blue-600">NHẬP LIỆU</span>
+                </h1>
+                
+                <p class="hidden lg:block text-slate-500 text-sm lg:text-base font-medium leading-relaxed">Tự động hóa quy trình xuất hồ sơ ứng viên nhanh chóng, chuẩn xác và chuyên nghiệp.</p>
+            </div>
         </div>
 
-        <div class="mt-10 border-t border-gray-200 pt-6">
+        <div class="block lg:hidden flex-shrink-0 pl-2">
+            <img src="{{ url_for('static', filename='eagle_logo.png') }}" alt="Eagle Logo" class="w-16 h-12 object-contain drop-shadow-sm">
+        </div>
+
+        <div class="hidden lg:block mt-10 border-t border-gray-200 pt-6 w-full">
             <div class="flex items-center gap-2 mb-1">
                 <p class="text-[10px] text-slate-400 tracking-widest font-bold uppercase">Crafted by</p>
                 <div class="w-18 h-12 flex items-center justify-center flex-shrink-0">
@@ -34,8 +49,10 @@
             <p class="text-xl font-bold text-slate-800 tracking-wide">Andrew Tseng</p>
         </div>
     </div>
-    <div class="lg:w-2/3 h-full overflow-y-auto relative bg-[#FAFAFA] px-6 py-10 lg:px-16 lg:py-12">
-        <form id="resumeForm" class="max-w-4xl mx-auto space-y-12 pb-32">
+
+    <div class="w-full lg:w-2/3 h-full overflow-y-auto relative bg-[#FAFAFA] px-4 py-6 lg:px-16 lg:py-12">
+        
+        <form id="resumeForm" autocomplete="off" class="max-w-4xl mx-auto space-y-12 pb-32">
             
             <section>
                 <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
@@ -47,10 +64,40 @@
                     <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tên tiếng Trung</label><input type="text" name="TentiengTrung" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
                     <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Ngày sinh</label><input type="text" name="Ngaysinh" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
                     <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tuổi</label><input type="text" name="Tuoi" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
-                    <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Hôn nhân</label><input type="text" name="Honnhan" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Hôn nhân</label>
+                        <select name="Honnhan" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors cursor-pointer">
+                            <option value=""></option>
+                            <option value="Độc thân">Độc thân</option>
+                            <option value="Đã kết hôn">Đã kết hôn</option>
+                            <option value="Ly hôn">Ly hôn</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Trình độ văn hóa (Học vấn)</label>
+                        <select name="Hocvan" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors cursor-pointer">
+                            <option value=""></option>
+                            <option value="國中">Cấp 2</option>
+                            <option value="高中">Cấp 3</option>
+                            <option value="中專">Trung cấp</option>
+                            <option value="大專">Cao đẳng</option>
+                            <option value="大學">Đại học</option>
+                        </select>
+                    </div>
+
                     <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Chiều cao (cm)</label><input type="text" name="Chieucao" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
                     <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Cân nặng (kg)</label><input type="text" name="Cannang" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
-                    <div class="col-span-1 md:col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nơi ở</label><input type="text" name="Noio" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
+                    
+                    <div class="col-span-1 md:col-span-2">
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nơi ở (63 Tỉnh Thành)</label>
+                        <select name="Noio" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors cursor-pointer">
+                            <option value=""></option>
+                            <option value="An Giang">An Giang</option><option value="Bà Rịa - Vũng Tàu">Bà Rịa - Vũng Tàu</option><option value="Bắc Giang">Bắc Giang</option><option value="Bắc Kạn">Bắc Kạn</option><option value="Bạc Liêu">Bạc Liêu</option><option value="Bắc Ninh">Bắc Ninh</option><option value="Bến Tre">Bến Tre</option><option value="Bình Định">Bình Định</option><option value="Bình Dương">Bình Dương</option><option value="Bình Phước">Bình Phước</option><option value="Bình Thuận">Bình Thuận</option><option value="Cà Mau">Cà Mau</option><option value="Cần Thơ">Cần Thơ</option><option value="Cao Bằng">Cao Bằng</option><option value="Đà Nẵng">Đà Nẵng</option><option value="Đắk Lắk">Đắk Lắk</option><option value="Đắk Nông">Đắk Nông</option><option value="Điện Biên">Điện Biên</option><option value="Đồng Nai">Đồng Nai</option><option value="Đồng Tháp">Đồng Tháp</option><option value="Gia Lai">Gia Lai</option><option value="Hà Giang">Hà Giang</option><option value="Hà Nam">Hà Nam</option><option value="Hà Nội">Hà Nội</option><option value="Hà Tĩnh">Hà Tĩnh</option><option value="Hải Dương">Hải Dương</option><option value="Hải Phòng">Hải Phòng</option><option value="Hậu Giang">Hậu Giang</option><option value="Hòa Bình">Hòa Bình</option><option value="Hưng Yên">Hưng Yên</option><option value="Khánh Hòa">Khánh Hòa</option><option value="Kiên Giang">Kiên Giang</option><option value="Kon Tum">Kon Tum</option><option value="Lai Châu">Lai Châu</option><option value="Lâm Đồng">Lâm Đồng</option><option value="Lạng Sơn">Lạng Sơn</option><option value="Lào Cai">Lào Cai</option><option value="Long An">Long An</option><option value="Nam Định">Nam Định</option><option value="Nghệ An">Nghệ An</option><option value="Ninh Bình">Ninh Bình</option><option value="Ninh Thuận">Ninh Thuận</option><option value="Phú Thọ">Phú Thọ</option><option value="Phú Yên">Phú Yên</option><option value="Quảng Bình">Quảng Bình</option><option value="Quảng Nam">Quảng Nam</option><option value="Quảng Ngãi">Quảng Ngãi</option><option value="Quảng Ninh">Quảng Ninh</option><option value="Quảng Trị">Quảng Trị</option><option value="Sóc Trăng">Sóc Trăng</option><option value="Sơn La">Sơn La</option><option value="Tây Ninh">Tây Ninh</option><option value="Thái Bình">Thái Bình</option><option value="Thái Nguyên">Thái Nguyên</option><option value="Thanh Hóa">Thanh Hóa</option><option value="Thừa Thiên Huế">Thừa Thiên Huế</option><option value="Tiền Giang">Tiền Giang</option><option value="TP Hồ Chí Minh">TP Hồ Chí Minh</option><option value="Trà Vinh">Trà Vinh</option><option value="Tuyên Quang">Tuyên Quang</option><option value="Vĩnh Long">Vĩnh Long</option><option value="Vĩnh Phúc">Vĩnh Phúc</option><option value="Yên Bái">Yên Bái</option>
+                        </select>
+                    </div>
+
                     <div class="col-span-1 md:col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Ảnh chân dung</label><input type="file" id="photoInput" accept="image/*" class="w-full text-sm mt-2"></div>
                 </div>
             </section>
@@ -61,10 +108,17 @@
                 </h2>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     <div class="col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tên Bố</label><input type="text" name="HotenBo" class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none"></div>
-                    <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tuổi</label><input type="text" name="TB" class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none"></div>
-                    <div class="hidden md:block"></div>
+                    <div class="col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tuổi Bố</label><input type="text" name="TB" class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none"></div>
+                    
                     <div class="col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tên Mẹ</label><input type="text" name="HotenMe" class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none"></div>
-                    <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tuổi</label><input type="text" name="TM" class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none"></div>
+                    <div class="col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tuổi Mẹ</label><input type="text" name="TM" class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none"></div>
+                    
+                    <div class="col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tên Vợ/Chồng</label><input type="text" name="VoChong" class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none"></div>
+                    <div class="col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tuổi Vợ/Chồng</label><input type="text" name="VC" class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none"></div>
+                    
+                    <div class="col-span-1 md:col-span-1"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Số con</label><input type="text" name="Socon" class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none"></div>
+                    <div class="col-span-1 md:col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Số Anh/Chị/Em</label><input type="text" name="Anhchiem" class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none"></div>
+                    <div class="col-span-1 md:col-span-1"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Xếp thứ</label><input type="text" name="Xepthu" class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none"></div>
                 </div>
             </section>
 
@@ -75,28 +129,114 @@
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 grid grid-cols-2 md:grid-cols-4 gap-y-4 gap-x-2 text-sm">
                     <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f01" class="w-4 h-4 text-blue-600"> Thuận tay phải</label>
                     <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f07" class="w-4 h-4 text-blue-600"> Thuận tay trái</label>
-                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f03" class="w-4 h-4 text-blue-600"> Hút thuốc</label>
-                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f09" class="w-4 h-4 text-blue-600"> Không hút</label>
-                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f04" class="w-4 h-4 text-blue-600"> Uống rượu</label>
-                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f10" class="w-4 h-4 text-blue-600"> Không uống</label>
-                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f12" class="w-4 h-4 text-blue-600"> Hình xăm</label>
                     <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f15" class="w-4 h-4 text-blue-600"> Cận thị</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f02" class="w-4 h-4 text-blue-600"> Hỏng mắt phải</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f08" class="w-4 h-4 text-blue-600"> Hỏng mắt trái</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f16" class="w-4 h-4 text-blue-600"> Loạn thị</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f03" class="w-4 h-4 text-blue-600"> Hút thuốc</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f09" class="w-4 h-4 text-blue-600"> Không hút thuốc</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f17" class="w-4 h-4 text-blue-600"> Mù màu</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f04" class="w-4 h-4 text-blue-600"> Uống rượu</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f10" class="w-4 h-4 text-blue-600"> Không uống rượu</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f18" class="w-4 h-4 text-blue-600"> Viêm gan</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f05" class="w-4 h-4 text-blue-600"> Gãy xương</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f11" class="w-4 h-4 text-blue-600"> Chấn thương cột sống</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f19" class="w-4 h-4 text-blue-600"> Cụt đốt ngón tay</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f06" class="w-4 h-4 text-blue-600"> Mồ hôi tay</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f12" class="w-4 h-4 text-blue-600"> Hình xăm</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f20" class="w-4 h-4 text-blue-600"> Hen suyễn</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f13" class="w-4 h-4 text-blue-600"> Chống đẩy 10~30 cái</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f21" class="w-4 h-4 text-blue-600"> Chống đẩy >50 cái</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f14" class="w-4 h-4 text-blue-600"> Bê vác 20~40 kg</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f22" class="w-4 h-4 text-blue-600"> Bê vác >50kg</label>
                 </div>
             </section>
 
             <section>
                 <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
-                    <span class="w-2 h-6 bg-blue-600 rounded-full"></span> 4. Kinh nghiệm & Đánh giá
+                    <span class="w-2 h-6 bg-blue-600 rounded-full"></span> 4. Kỹ năng
+                </h2>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 grid grid-cols-2 md:grid-cols-4 gap-y-4 gap-x-2 text-sm">
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f23" class="w-4 h-4 text-blue-600"> Hàn điện</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f31" class="w-4 h-4 text-blue-600"> Tiện</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f39" class="w-4 h-4 text-blue-600"> Nhựa</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f24" class="w-4 h-4 text-blue-600"> Hàn argon</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f32" class="w-4 h-4 text-blue-600"> Phay</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f40" class="w-4 h-4 text-blue-600"> Xây dựng</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f25" class="w-4 h-4 text-blue-600"> Hàn CO2</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f33" class="w-4 h-4 text-blue-600"> Bào</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f41" class="w-4 h-4 text-blue-600"> Sữa chữa máy</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f26" class="w-4 h-4 text-blue-600"> Tig Mig</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f34" class="w-4 h-4 text-blue-600"> CNC</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f42" class="w-4 h-4 text-blue-600"> Điều dưỡng</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f27" class="w-4 h-4 text-blue-600"> Đúc</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f35" class="w-4 h-4 text-blue-600"> Đột dập</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f43" class="w-4 h-4 text-blue-600"> Giúp việc</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f28" class="w-4 h-4 text-blue-600"> Dệt</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f36" class="w-4 h-4 text-blue-600"> In ấn</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f44" class="w-4 h-4 text-blue-600"> Xe cẩu</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f29" class="w-4 h-4 text-blue-600"> May</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f37" class="w-4 h-4 text-blue-600"> Thợ mộc</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f45" class="w-4 h-4 text-blue-600"> Cẩu trục</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f30" class="w-4 h-4 text-blue-600"> Xe nâng</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f38" class="w-4 h-4 text-blue-600"> Lái xe tải/khách</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f46" class="w-4 h-4 text-blue-600"> Máy xúc</label>
+                </div>
+            </section>
+
+            <section>
+                <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
+                    <span class="w-2 h-6 bg-blue-600 rounded-full"></span> 5. Kinh nghiệm làm việc & Đánh giá
                 </h2>
                 <div class="space-y-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <div class="grid grid-cols-4 gap-4">
-                        <div class="col-span-1"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Quốc gia 1</label><input type="text" name="QG1" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none"></div>
+                    
+                    <div class="grid grid-cols-4 gap-4 pb-4 border-b border-gray-100">
+                        <div class="col-span-1">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Quốc gia 1</label>
+                            <select name="QG1" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none cursor-pointer">
+                                <option value=""></option>
+                                <option value="Đài Loan">Đài Loan</option>
+                                <option value="Nhật Bản">Nhật Bản</option>
+                                <option value="Hàn Quốc">Hàn Quốc</option>
+                                <option value="Việt Nam">Việt Nam</option>
+                            </select>
+                        </div>
                         <div class="col-span-1"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Năm</label><input type="text" name="N1" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none"></div>
                         <div class="col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Công việc</label><input type="text" name="ndcv1" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none"></div>
                     </div>
+
+                    <div class="grid grid-cols-4 gap-4 pb-4 border-b border-gray-100">
+                        <div class="col-span-1">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Quốc gia 2</label>
+                            <select name="QG2" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none cursor-pointer">
+                                <option value=""></option>
+                                <option value="Đài Loan">Đài Loan</option>
+                                <option value="Nhật Bản">Nhật Bản</option>
+                                <option value="Hàn Quốc">Hàn Quốc</option>
+                                <option value="Việt Nam">Việt Nam</option>
+                            </select>
+                        </div>
+                        <div class="col-span-1"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Năm</label><input type="text" name="N2" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none"></div>
+                        <div class="col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Công việc 2</label><input type="text" name="ndcv2" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none"></div>
+                    </div>
+
+                    <div class="grid grid-cols-4 gap-4 pb-4 border-b border-gray-100">
+                        <div class="col-span-1">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Quốc gia 3</label>
+                            <select name="QG3" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none cursor-pointer">
+                                <option value=""></option>
+                                <option value="Đài Loan">Đài Loan</option>
+                                <option value="Nhật Bản">Nhật Bản</option>
+                                <option value="Hàn Quốc">Hàn Quốc</option>
+                                <option value="Việt Nam">Việt Nam</option>
+                            </select>
+                        </div>
+                        <div class="col-span-1"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Năm</label><input type="text" name="N3" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none"></div>
+                        <div class="col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Công việc 3</label><input type="text" name="ndcv3" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none"></div>
+                    </div>
                     
-                    <div class="pt-4 mt-4 border-t border-gray-100">
-                        <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Đánh giá chung</label>
+                    <div class="pt-4 mt-4">
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Ghi chú, Lời bình</label>
                         <textarea name="loi_binh_1" class="w-full border-2 border-gray-200 rounded-xl p-3 text-sm focus:border-blue-600 focus:outline-none h-24 bg-gray-50"></textarea>
                     </div>
                     <div class="mt-4">
@@ -152,8 +292,6 @@
                 loading.classList.add('hidden');
             }
         }
-
-        window.addEventListener('load', fillDummyData);
     </script>
 </body>
 </html>
