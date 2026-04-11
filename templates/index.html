@@ -52,6 +52,13 @@
 
     <div class="w-full lg:w-2/3 h-full overflow-y-auto relative bg-[#FAFAFA] px-4 py-6 lg:px-16 lg:py-12">
         
+        <!-- Nút Mở bảng Lịch Sử -->
+        <div class="flex justify-end mb-6 max-w-4xl mx-auto">
+            <button type="button" onclick="loadHistory()" class="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-2.5 px-5 rounded-lg shadow-md transition-all flex items-center gap-2 text-sm">
+                🕒 Xem Lịch Sử Các Form Đã Tạo
+            </button>
+        </div>
+
         <form id="resumeForm" autocomplete="off" class="max-w-4xl mx-auto space-y-12 pb-32">
             
             <section>
@@ -337,6 +344,74 @@
     </div>
 
     <script>
+        // Hàm gọi API lấy lịch sử và hiển thị lên bảng
+async function loadHistory() {
+    try {
+        // 1. Mở popup và hiện chữ đang tải
+        document.getElementById('historyModal').style.display = 'block';
+        const tbody = document.getElementById('historyTableBody');
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 15px;">Đang tải dữ liệu lịch sử... ⏳</td></tr>';
+
+        // 2. Gọi API đến backend
+        const response = await fetch('/api/history');
+        const result = await response.json();
+
+        if (result.success) {
+            tbody.innerHTML = ''; // Xóa dòng "Đang tải"
+            
+            // Nếu chưa có lịch sử nào
+            if (result.data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 15px; color: #666;">Chưa có dữ liệu lịch sử nào.</td></tr>';
+                return;
+            }
+            
+            // 3. Quét từng dòng dữ liệu và tạo bảng
+            result.data.forEach(item => {
+                const row = document.createElement('tr');
+                // Highlight khi trỏ chuột (tùy chọn)
+                row.onmouseover = () => row.style.backgroundColor = '#f9f9f9';
+                row.onmouseout = () => row.style.backgroundColor = 'transparent';
+                
+                row.innerHTML = `
+                    <td style="padding: 10px; border: 1px solid #ddd;">${item.ma_so}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold;">${item.ho_ten}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">${item.ten_file}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">${item.ngay_tao}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">
+                        <a href="/api/download/${encodeURIComponent(item.ten_file)}" target="_blank" style="padding: 6px 12px; background-color: #28a745; color: white; text-decoration: none; border-radius: 4px; font-size: 14px; display: inline-block;">📥 Tải lại</a>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        } else {
+            tbody.innerHTML = `<tr><td colspan="5" style="color:red; text-align:center; padding: 15px;">Lỗi: ${result.error}</td></tr>`;
+        }
+    } catch (error) {
+        console.error("Lỗi khi tải lịch sử:", error);
+        document.getElementById('historyTableBody').innerHTML = '<tr><td colspan="5" style="color:red; text-align:center; padding: 15px;">Lỗi kết nối đến máy chủ! Vui lòng thử lại sau.</td></tr>';
+    }
+}
+
+        // Hàm lọc lịch sử theo tên ứng viên
+        function filterHistory() {
+            const input = document.getElementById("searchInput");
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById("historyTableBody");
+            const tr = table.getElementsByTagName("tr");
+
+            for (let i = 0; i < tr.length; i++) {
+                const td = tr[i].getElementsByTagName("td")[1]; // Cột Họ Tên nằm ở vị trí thứ 2 (index 1)
+                if (td) {
+                    const txtValue = td.textContent || td.innerText;
+                    if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+
         function calcAge() {
             const birthValue = document.getElementById('birthDate').value;
             if (!birthValue) return;
@@ -387,5 +462,29 @@
             }
         }
     </script>
+
+<!-- Bảng Popup (Modal) hiển thị lịch sử (Mặc định ẩn) -->
+<div id="historyModal" style="display:none; position:fixed; top:5%; left:10%; width:80%; max-height:90%; background:#fff; border:1px solid #ccc; z-index:9999; overflow-y:auto; padding:20px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); border-radius: 8px;">
+    <h2 style="margin-top: 0; color: #333;">Lịch sử các form đã tạo</h2>
+    <button type="button" onclick="document.getElementById('historyModal').style.display='none'" style="float:right; margin-top:-40px; padding: 5px 10px; background: #dc3545; color: #fff; border: none; border-radius: 4px; cursor: pointer;">Đóng ✖</button>
+    
+    <input type="text" id="searchInput" onkeyup="filterHistory()" placeholder="🔍 Nhập tên ứng viên để tìm kiếm..." style="width: 100%; padding: 10px; margin-top: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: 'Inter', sans-serif;">
+    
+    <table border="1" style="width:100%; border-collapse: collapse; text-align: left; margin-top: 15px;">
+        <thead style="background-color: #f2f2f2;">
+            <tr>
+                <th style="padding: 10px; border: 1px solid #ddd;">Mã Số</th>
+                <th style="padding: 10px; border: 1px solid #ddd;">Họ Tên</th>
+                <th style="padding: 10px; border: 1px solid #ddd;">Tên File</th>
+                <th style="padding: 10px; border: 1px solid #ddd;">Thời Gian Tạo</th>
+                <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Thao Tác</th>
+            </tr>
+        </thead>
+        <tbody id="historyTableBody">
+            <!-- Dữ liệu sẽ được điền tự động bằng JavaScript -->
+        </tbody>
+    </table>
+</div>
+
 </body>
 </html>
