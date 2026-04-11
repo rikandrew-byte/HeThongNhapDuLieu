@@ -4,7 +4,7 @@ Document Automation System (DAS) - Flask Backend V3.0
 Nhập liệu Tiếng Việt → Xuất file Word với nội dung Tiếng Trung Phồn Thể
 """
 import os, uuid, re, unicodedata, json
-from datetime import date
+from datetime import date, datetime
 from flask import Flask, request, jsonify, send_file, render_template
 from flask_cors import CORS
 from docxtpl import DocxTemplate, InlineImage, RichText
@@ -25,12 +25,39 @@ app.config['BASIC_AUTH_FORCE_PROMPT'] = True
 
 basic_auth = BasicAuth(app)
 
+from flask_sqlalchemy import SQLAlchemy
+
+# --- CẤU HÌNH DATABASE (Linh hoạt Local & Cloud) ---
+db_url = os.environ.get('DATABASE_URL')
+if db_url:
+    # Xử lý chuẩn hóa URL cho SQLAlchemy nếu dùng PostgreSQL
+    if db_url.startswith("postgres://"):
+        db_url = db_url.replace("postgres://", "postgresql://", 1)
+else:
+    # Nếu chạy local (không có DATABASE_URL), tự động dùng SQLite
+    db_url = 'sqlite:///' + os.path.join(os.path.dirname(os.path.abspath(__file__)), 'history.db')
+
+app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
+class FormHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    ma_so = db.Column(db.String(50))
+    ho_ten = db.Column(db.String(100))
+    ten_file = db.Column(db.String(255))
+    ngay_tao = db.Column(db.DateTime, default=datetime.utcnow)
+
 BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
 TMPL_DIR   = os.path.join(BASE_DIR, 'templates')
 OUT_DIR    = os.path.join(BASE_DIR, 'output')
 UPL_DIR    = os.path.join(BASE_DIR, 'uploads')
 for d in (TMPL_DIR, OUT_DIR, UPL_DIR):
     os.makedirs(d, exist_ok=True)
+
+# Khởi tạo bảng trong Database nếu chưa có
+with app.app_context():
+    db.create_all()
 
 # ─── Bảng dịch cố định Việt → Trung Phồn Thể ────────────────────────────────
 FIXED_TRANS = {
@@ -216,6 +243,19 @@ def api_generate():
         form_data = prepare_data(data)
         out = generate_word(form_data)
         fn = os.path.basename(out)
+        
+        # --- LƯU LỊCH SỬ VÀO DATABASE ---
+        try:
+            new_record = FormHistory(
+                ma_so=form_data.get('Maso', ''),
+                ho_ten=form_data.get('Hoten', ''),
+                ten_file=fn
+            )
+            db.session.add(new_record)
+            db.session.commit()
+        except Exception as db_e:
+            print(f"Lỗi lưu Database: {db_e}")
+            
         return jsonify({'success': True, 'fileName': fn, 'downloadUrl': f'/api/download/{fn}'})
     except Exception as e:
         import traceback
@@ -226,10 +266,26 @@ def api_generate():
 def api_download(filename):
     return send_file(os.path.join(OUT_DIR, filename), as_attachment=True)
 
+# --- API LẤY DANH SÁCH LỊCH SỬ ---
+@app.route('/api/history', methods=['GET'])
+@basic_auth.required
+def api_history():
+    try:
+        records = FormHistory.query.order_by(FormHistory.ngay_tao.desc()).all()
+        data = [{
+            'id': r.id,
+            'ma_so': r.ma_so,
+            'ho_ten': r.ho_ten,
+            'ten_file': r.ten_file,
+            'ngay_tao': r.ngay_tao.strftime("%d/%m/%Y %H:%M:%S")
+        } for r in records]
+        return jsonify({'success': True, 'data': data})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 if __name__ == '__main__':
     import os
     # Lấy cổng do Render cấp, nếu không có thì mặc định 5000
     port = int(os.environ.get("PORT", 5000))
     # Chạy trên host 0.0.0.0 để có thể truy cập từ Internet
-    app.run(host='0.0.0.0', port=port)
     app.run(host='0.0.0.0', port=port, debug=True, use_reloader=False)
