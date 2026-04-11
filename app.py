@@ -268,7 +268,6 @@ def api_download(filename):
 
 # --- API LẤY DANH SÁCH LỊCH SỬ ---
 @app.route('/api/history', methods=['GET'])
-@basic_auth.required
 def api_history():
     try:
         records = FormHistory.query.order_by(FormHistory.ngay_tao.desc()).all()
