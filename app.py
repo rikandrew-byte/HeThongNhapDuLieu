@@ -164,7 +164,7 @@ def prepare_data(raw: dict) -> dict:
     for f in ['Honnhan', 'Hocvan', 'QG1', 'QG2', 'QG3']:
         context[f] = translate_fixed(raw.get(f, ''))
     
-    for f in ['Noio', 'HotenBo', 'HotenMe', 'VoChong', 'ndcv1', 'ndcv2', 'ndcv3', 'loi_binh_1']:
+    for f in ['Noio', 'ndcv1', 'ndcv2', 'ndcv3', 'loi_binh_1']:
         context[f] = translate_free(context.get(f, ''))
 
     # 4. Checkbox f01 -> f46
@@ -262,6 +262,16 @@ def api_generate():
         traceback.print_exc()
         return jsonify({'success': False, 'error': str(e), 'trace': traceback.format_exc()}), 500
 
+# --- API DỊCH TỰ ĐỘNG CHO GIAO DIỆN ---
+@app.route('/api/translate', methods=['POST'])
+def api_translate():
+    try:
+        data = request.get_json() or {}
+        text = data.get('text', '')
+        return jsonify({'success': True, 'translated': translate_free(text)})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @app.route('/api/download/<filename>')
 def api_download(filename):
     return send_file(os.path.join(OUT_DIR, filename), as_attachment=True)
@@ -279,6 +289,25 @@ def api_history():
             'ngay_tao': r.ngay_tao.strftime("%d/%m/%Y %H:%M:%S")
         } for r in records]
         return jsonify({'success': True, 'data': data})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# --- API XÓA LỊCH SỬ ---
+@app.route('/api/history/<int:record_id>', methods=['DELETE'])
+def api_delete_history(record_id):
+    try:
+        record = FormHistory.query.get(record_id)
+        if not record:
+            return jsonify({'success': False, 'error': 'Không tìm thấy bản ghi'}), 404
+        
+        # Xóa file Word vật lý trong thư mục output (nếu còn tồn tại)
+        file_path = os.path.join(OUT_DIR, record.ten_file)
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            
+        db.session.delete(record)
+        db.session.commit()
+        return jsonify({'success': True, 'msg': 'Xóa thành công'})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 

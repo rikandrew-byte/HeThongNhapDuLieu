@@ -67,7 +67,7 @@
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Mã số</label><input type="text" name="Maso" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
-                    <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Họ tên (Tiếng Việt)</label><input type="text" name="Hoten" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
+                    <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Họ tên (Tiếng Việt)</label><input type="text" name="Hoten" onblur="translateName(this.value)" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
                     <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tên tiếng Trung</label><input type="text" name="TentiengTrung" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
                     <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Ngày sinh</label><input type="date" name="Ngaysinh" id="birthDate" onchange="calcAge()" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
                     <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tuổi</label><input type="text" name="Tuoi" id="displayAge" readonly class="w-full border-b-2 border-gray-200 bg-gray-50 py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
@@ -101,74 +101,86 @@
             <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nơi ở (63 Tỉnh Thành)</label>
             <select name="Noio" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors cursor-pointer">
                 <option value=""></option>
-                <option value="安江">An Giang</option>
-                <option value="巴地頭頓">Bà Rịa - Vũng Tàu</option>
-                <option value="北江">Bắc Giang</option>
-                <option value="北𣴓">Bắc Kạn</option>
-                <option value="薄遼">Bạc Liêu</option>
-                <option value="北寧">Bắc Ninh</option>
-                <option value="檳椥">Bến Tre</option>
-                <option value="平定">Bình Định</option>
-                <option value="平陽">Bình Dương</option>
-                <option value="平福">Bình Phước</option>
-                <option value="平順">Bình Thuận</option>
-                <option value="金甌">Cà Mau</option>
-                <option value="芹苴">Cần Thơ</option>
-                <option value="高平">Cao Bằng</option>
-                <option value="峴港">Đà Nẵng</option>
-                <option value="多樂">Đắk Lắk</option>
-                <option value="得農">Đắk Nông</option>
-                <option value="奠邊">Điện Biên</option>
-                <option value="同奈">Đồng Nai</option>
-                <option value="同塔">Đồng Tháp</option>
-                <option value="嘉萊">Gia Lai</option>
-                <option value="河江">Hà Giang</option>
-                <option value="河南">Hà Nam</option>
-                <option value="河內">Hà Nội</option>
-                <option value="河靜">Hà Tĩnh</option>
-                <option value="海陽">Hải Dương</option>
-                <option value="海防">Hải Phòng</option>
-                <option value="後江">Hậu Giang</option>
-                <option value="和平">Hòa Bình</option>
-                <option value="興安">Hưng Yên</option>
-                <option value="慶和">Khánh Hòa</option>
-                <option value="堅江">Kiên Giang</option>
-                <option value="崑嵩">Kon Tum</option>
-                <option value="萊州">Lai Châu</option>
-                <option value="林同">Lâm Đồng</option>
-                <option value="諒山">Lạng Sơn</option>
-                <option value="老街">Lào Cai</option>
-                <option value="隆安">Long An</option>
-                <option value="南定">Nam Định</option>
-                <option value="乂安">Nghệ An</option>
-                <option value="寧平">Ninh Bình</option>
-                <option value="寧順">Ninh Thuận</option>
-                <option value="富壽">Phú Thọ</option>
-                <option value="富安">Phú Yên</option>
-                <option value="廣平">Quảng Bình</option>
-                <option value="廣南">Quảng Nam</option>
-                <option value="廣義">Quảng Ngãi</option>
-                <option value="廣寧">Quảng Ninh</option>
-                <option value="廣治">Quảng Trị</option>
-                <option value="朔莊">Sóc Trăng</option>
-                <option value="山羅">Sơn La</option>
-                <option value="西寧">Tây Ninh</option>
-                <option value="太平">Thái Bình</option>
-                <option value="太原">Thái Nguyên</option>
-                <option value="清化">Thanh Hóa</option>
-                <option value="承天順化">Thừa Thiên Huế</option>
-                <option value="前江">Tiền Giang</option>
-                <option value="胡志明市">TP Hồ Chí Minh</option>
-                <option value="茶榮">Trà Vinh</option>
-                <option value="宣光">Tuyên Quang</option>
-                <option value="永隆">Vĩnh Long</option>
-                <option value="永福">Vĩnh Phúc</option>
-                <option value="安沛">Yên Bái</option>
+                <optgroup label="--- Miền Bắc ---">
+                    <option value="萊州">Lai Châu</option>
+                    <option value="奠邊">Điện Biên</option>
+                    <option value="山羅">Sơn La</option>
+                    <option value="和平">Hòa Bình</option>
+                    <option value="安沛">Yên Bái</option>
+                    <option value="老街">Lào Cai</option>
+                    <option value="河江">Hà Giang</option>
+                    <option value="高平">Cao Bằng</option>
+                    <option value="北𣴓">Bắc Kạn</option>
+                    <option value="諒山">Lạng Sơn</option>
+                    <option value="宣光">Tuyên Quang</option>
+                    <option value="太原">Thái Nguyên</option>
+                    <option value="富壽">Phú Thọ</option>
+                    <option value="北江">Bắc Giang</option>
+                    <option value="廣寧">Quảng Ninh</option>
+                    <option value="北寧">Bắc Ninh</option>
+                    <option value="河南">Hà Nam</option>
+                    <option value="河內">Hà Nội</option>
+                    <option value="海陽">Hải Dương</option>
+                    <option value="海防">Hải Phòng</option>
+                    <option value="興安">Hưng Yên</option>
+                    <option value="南定">Nam Định</option>
+                    <option value="寧平">Ninh Bình</option>
+                    <option value="太平">Thái Bình</option>
+                    <option value="永福">Vĩnh Phúc</option>
+                </optgroup>
+                <optgroup label="--- Miền Trung ---">
+                    <option value="清化">Thanh Hóa</option>
+                    <option value="乂安">Nghệ An</option>
+                    <option value="河靜">Hà Tĩnh</option>
+                    <option value="廣平">Quảng Bình</option>
+                    <option value="廣治">Quảng Trị</option>
+                    <option value="承天順化">Thừa Thiên Huế</option>
+                    <option value="峴港">Đà Nẵng</option>
+                    <option value="廣南">Quảng Nam</option>
+                    <option value="廣義">Quảng Ngãi</option>
+                    <option value="平定">Bình Định</option>
+                    <option value="富安">Phú Yên</option>
+                    <option value="慶和">Khánh Hòa</option>
+                    <option value="寧順">Ninh Thuận</option>
+                    <option value="平順">Bình Thuận</option>
+                    <option value="崑嵩">Kon Tum</option>
+                    <option value="嘉萊">Gia Lai</option>
+                    <option value="多樂">Đắk Lắk</option>
+                    <option value="得農">Đắk Nông</option>
+                    <option value="林同">Lâm Đồng</option>
+                </optgroup>
+                <optgroup label="--- Miền Nam ---">
+                    <option value="平福">Bình Phước</option>
+                    <option value="平陽">Bình Dương</option>
+                    <option value="同奈">Đồng Nai</option>
+                    <option value="西寧">Tây Ninh</option>
+                    <option value="巴地頭頓">Bà Rịa - Vũng Tàu</option>
+                    <option value="胡志明市">TP Hồ Chí Minh</option>
+                    <option value="隆安">Long An</option>
+                    <option value="同塔">Đồng Tháp</option>
+                    <option value="前江">Tiền Giang</option>
+                    <option value="安江">An Giang</option>
+                    <option value="檳椥">Bến Tre</option>
+                    <option value="永隆">Vĩnh Long</option>
+                    <option value="茶榮">Trà Vinh</option>
+                    <option value="後江">Hậu Giang</option>
+                    <option value="堅江">Kiên Giang</option>
+                    <option value="朔莊">Sóc Trăng</option>
+                    <option value="薄遼">Bạc Liêu</option>
+                    <option value="金甌">Cà Mau</option>
+                    <option value="芹苴">Cần Thơ</option>
+                </optgroup>
             </select>
         </div>
             <div>
                 <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Ảnh chân dung</label>
-                <input type="file" id="photoInput" accept="image/*" class="w-full text-sm">
+                <div id="dropzone" class="w-full border-2 border-dashed border-gray-300 rounded-xl p-4 text-center cursor-pointer hover:border-blue-500 transition-colors relative h-32 flex flex-col items-center justify-center bg-gray-50 overflow-hidden">
+                    <input type="file" id="photoInput" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    <div id="dropzoneText" class="text-sm text-gray-400">
+                        <span class="text-blue-500 font-semibold">Chọn ảnh</span>, kéo thả hoặc nhấn <span class="text-blue-500 font-semibold">Ctrl+V</span> để dán
+                    </div>
+                    <img id="photoPreview" class="hidden absolute inset-0 w-full h-full object-contain bg-white z-0" src="" alt="Preview">
+                </div>
             </div>
             </section>
 
@@ -344,6 +356,76 @@
     </div>
 
     <script>
+        // --- Xử lý Kéo Thả và Dán Ảnh ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const dropzone = document.getElementById('dropzone');
+            const photoInput = document.getElementById('photoInput');
+            const photoPreview = document.getElementById('photoPreview');
+            const dropzoneText = document.getElementById('dropzoneText');
+
+            function handleImageFile(file) {
+                if (file && file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        photoPreview.src = e.target.result;
+                        photoPreview.classList.remove('hidden');
+                        dropzoneText.classList.add('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                    
+                    // Cập nhật giá trị cho input file
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    photoInput.files = dataTransfer.files;
+                }
+            }
+
+            photoInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) handleImageFile(e.target.files[0]);
+            });
+
+            dropzone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropzone.classList.add('border-blue-500', 'bg-blue-50');
+            });
+
+            dropzone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('border-blue-500', 'bg-blue-50');
+            });
+
+            dropzone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('border-blue-500', 'bg-blue-50');
+                if (e.dataTransfer.files.length > 0) handleImageFile(e.dataTransfer.files[0]);
+            });
+
+            // Lắng nghe sự kiện Paste (Dán) trên toàn bộ trang
+            document.addEventListener('paste', (e) => {
+                if (e.clipboardData && e.clipboardData.files.length > 0) {
+                    handleImageFile(e.clipboardData.files[0]);
+                }
+            });
+        });
+
+        // Hàm tự động dịch tên sang tiếng Trung
+        async function translateName(text) {
+            if (!text || !text.trim()) return;
+            try {
+                const response = await fetch('/api/translate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text })
+                });
+                const result = await response.json();
+                if (result.success && result.translated) {
+                    document.querySelector('input[name="TentiengTrung"]').value = result.translated;
+                }
+            } catch (error) {
+                console.error("Lỗi khi dịch tên:", error);
+            }
+        }
+
         // Hàm gọi API lấy lịch sử và hiển thị lên bảng
 async function loadHistory() {
     try {
@@ -385,7 +467,8 @@ async function loadHistory() {
                     <td style="padding: 10px; border: 1px solid #ddd;">${item.ten_file}</td>
                     <td style="padding: 10px; border: 1px solid #ddd;">${item.ngay_tao}</td>
                     <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">
-                        <a href="/api/download/${encodeURIComponent(item.ten_file)}" target="_blank" style="padding: 6px 12px; background-color: #28a745; color: white; text-decoration: none; border-radius: 4px; font-size: 14px; display: inline-block;">📥 Tải lại</a>
+                        <a href="/api/download/${encodeURIComponent(item.ten_file)}" target="_blank" style="padding: 6px 12px; background-color: #28a745; color: white; text-decoration: none; border-radius: 4px; font-size: 14px; display: inline-block; margin-right: 5px;">📥 Tải</a>
+                        <button onclick="deleteHistory(${item.id})" style="padding: 6px 12px; background-color: #dc3545; color: white; border: none; border-radius: 4px; font-size: 14px; cursor: pointer;">🗑️ Xóa</button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -398,6 +481,29 @@ async function loadHistory() {
         document.getElementById('historyTableBody').innerHTML = `<tr><td colspan="5" style="color:red; text-align:center; padding: 15px;">Lỗi kết nối: ${error.message} <br> (Nếu ngài chạy Local, hãy chắc chắn đã TẮT cửa sổ đen CMD đi và chạy lại file run_app.bat nhé)</td></tr>`;
     }
 }
+
+        // Hàm xử lý xóa lịch sử
+        async function deleteHistory(id) {
+            if (!confirm("Ngài có chắc chắn muốn xóa bản ghi này cùng file Word của nó không? Hành động này không thể hoàn tác!")) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/history/${id}`, { 
+                    method: 'DELETE',
+                    credentials: 'same-origin'
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    loadHistory(); // Tải lại bảng sau khi xóa thành công
+                } else {
+                    alert("Lỗi khi xóa: " + result.error);
+                }
+            } catch (error) {
+                alert("Lỗi kết nối khi xóa: " + error.message);
+            }
+        }
 
         // Hàm lọc lịch sử theo tên ứng viên
         function filterHistory() {
