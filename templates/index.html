@@ -60,7 +60,7 @@
         </div>
 
         <form id="resumeForm" autocomplete="off" class="max-w-4xl mx-auto space-y-12 pb-32">
-            
+            <input type="hidden" name="photo" id="existingPhotoPath" value="">
             <section>
                 <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
                     <span class="w-2 h-6 bg-blue-600 rounded-full"></span> 1. Thông tin cá nhân
@@ -426,6 +426,9 @@
             }
         }
 
+        // Data lịch sử lưu tạm để load vào form khi xử lý
+        let currentHistoryData = [];
+
         // Hàm gọi API lấy lịch sử và hiển thị lên bảng
 async function loadHistory() {
     try {
@@ -446,6 +449,7 @@ async function loadHistory() {
         const result = await response.json();
 
         if (result.success) {
+            currentHistoryData = result.data;
             tbody.innerHTML = ''; // Xóa dòng "Đang tải"
             
             // Nếu chưa có lịch sử nào
@@ -455,7 +459,7 @@ async function loadHistory() {
             }
             
             // 3. Quét từng dòng dữ liệu và tạo bảng
-            result.data.forEach(item => {
+            result.data.forEach((item, index) => {
                 const row = document.createElement('tr');
                 // Highlight khi trỏ chuột (tùy chọn)
                 row.onmouseover = () => row.style.backgroundColor = '#f9f9f9';
@@ -464,10 +468,11 @@ async function loadHistory() {
                 row.innerHTML = `
                     <td style="padding: 10px; border: 1px solid #ddd;">${item.ma_so}</td>
                     <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold;">${item.ho_ten}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${item.ten_file}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">${item.ten_file || '(Form chờ duyệt)'}</td>
                     <td style="padding: 10px; border: 1px solid #ddd;">${item.ngay_tao}</td>
                     <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">
-                        <a href="/api/download/${encodeURIComponent(item.ten_file)}" target="_blank" style="padding: 6px 12px; background-color: #28a745; color: white; text-decoration: none; border-radius: 4px; font-size: 14px; display: inline-block; margin-right: 5px;">📥 Tải</a>
+                        <button onclick="restoreData(${index})" style="padding: 6px 12px; background-color: #ffc107; color: #000; border: none; border-radius: 4px; font-size: 14px; cursor: pointer; margin-right: 5px; font-weight: bold;">✍️ PHỤC HỒI</button>
+                        ${item.ten_file ? `<a href="/api/download/${encodeURIComponent(item.ten_file)}" target="_blank" style="padding: 6px 12px; background-color: #28a745; color: white; text-decoration: none; border-radius: 4px; font-size: 14px; display: inline-block; margin-right: 5px;">📥 Tải</a>` : ''}
                         <button onclick="deleteHistory(${item.id})" style="padding: 6px 12px; background-color: #dc3545; color: white; border: none; border-radius: 4px; font-size: 14px; cursor: pointer;">🗑️ Xóa</button>
                     </td>
                 `;
@@ -481,6 +486,55 @@ async function loadHistory() {
         document.getElementById('historyTableBody').innerHTML = `<tr><td colspan="5" style="color:red; text-align:center; padding: 15px;">Lỗi kết nối: ${error.message} <br> (Nếu ngài chạy Local, hãy chắc chắn đã TẮT cửa sổ đen CMD đi và chạy lại file run_app.bat nhé)</td></tr>`;
     }
 }
+
+        function restoreData(index) {
+            const item = currentHistoryData[index];
+            if (!item || !item.data_json) {
+                alert("Dữ liệu không tồn tại hoặc bị lỗi, không thể tự động điền!");
+                return;
+            }
+            
+            const form = document.getElementById('resumeForm');
+            const data = item.data_json;
+            
+            // Đặt lại form về trạng thái trống trước khi lấp đầy dữ liệu
+            form.reset();
+            document.getElementById('existingPhotoPath').value = "";
+            document.getElementById('photoPreview').classList.add('hidden');
+            document.getElementById('dropzoneText').classList.remove('hidden');
+
+            for (const key in data) {
+                const elements = document.getElementsByName(key);
+                if (elements.length > 0) {
+                    const el = elements[0];
+                    if (el.type === 'checkbox') {
+                        el.checked = !!data[key];
+                    } else if (el.type !== 'file') {
+                        el.value = data[key];
+                    }
+                }
+            }
+            
+            // Xử lý riêng ảnh nếu có
+            if (data['photo']) {
+                document.getElementById('existingPhotoPath').value = data['photo'];
+                document.getElementById('dropzoneText').innerHTML = "<span class='text-green-600 font-bold'>Đã có ảnh từ form. Nhấn để tải ảnh khác nếu cần</span>";
+            }
+            
+            // Xóa mã số nếu là CHO_DUYET để Admin nhập mã mới
+            const maSoInput = document.getElementsByName("Maso")[0];
+            if (maSoInput && (maSoInput.value === 'CHO_DUYET' || maSoInput.value === '')) {
+                maSoInput.value = '';
+                // Focus vào ô mã số để Master điền 
+                maSoInput.focus();
+            }
+
+            // Gọi tính lại tuổi nếu đã điền ngày sinh
+            calcAge();
+
+            // Đóng cửa sổ modal
+            document.getElementById('historyModal').style.display = 'none';
+        }
 
         // Hàm xử lý xóa lịch sử
         async function deleteHistory(id) {

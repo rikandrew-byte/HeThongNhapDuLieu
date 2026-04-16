@@ -46,6 +46,7 @@ class FormHistory(db.Model):
     ma_so = db.Column(db.String(50))
     ho_ten = db.Column(db.String(100))
     ten_file = db.Column(db.String(255))
+    data_json = db.Column(db.Text)
     ngay_tao = db.Column(db.DateTime, default=datetime.utcnow)
 
 BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
@@ -201,15 +202,15 @@ def generate_word(form_data: dict, template_name='resume_template_chuan.docx') -
     # 4. LƯU FILE THEO QUY TẮC MASTER YÊU CẦU
     ma_so = form_data.get('Maso', '').strip()
     ho_ten = form_data.get('Hoten', '').strip()
-    ten_khong_dau = to_ascii(ho_ten)
+    ten_khong_dau = to_ascii(ho_ten).upper()
     if ma_so and ten_khong_dau:
-        fname = f'{ma_so} {ten_khong_dau}.docx'
+        fname = f"{ma_so} {ten_khong_dau}.docx"
     elif ma_so:
-        fname = f'{ma_so}.docx'
+        fname = f"{ma_so}.docx"
     elif ten_khong_dau:
-        fname = f'{ten_khong_dau}.docx'
+        fname = f"{ten_khong_dau}.docx"
     else:
-        fname = f'resume_{uuid.uuid4().hex[:8]}.docx'
+        fname = f"resume_{uuid.uuid4().hex[:8]}.docx"
     
     out = os.path.join(OUT_DIR, fname)
     doc.save(out)
@@ -217,6 +218,10 @@ def generate_word(form_data: dict, template_name='resume_template_chuan.docx') -
 
 # ─── API Routes ──────────────────────────────────────────────────────────────
 @app.route('/')
+def user_form():
+    return render_template('user_form.html')
+
+@app.route('/fct-1503')
 @basic_auth.required
 def index():
     return render_template('index.html')
@@ -249,7 +254,8 @@ def api_generate():
             new_record = FormHistory(
                 ma_so=form_data.get('Maso', ''),
                 ho_ten=form_data.get('Hoten', ''),
-                ten_file=fn
+                ten_file=fn,
+                data_json=json.dumps(data, ensure_ascii=False)
             )
             db.session.add(new_record)
             db.session.commit()
@@ -257,6 +263,42 @@ def api_generate():
             print(f"Lỗi lưu Database: {db_e}")
             
         return jsonify({'success': True, 'fileName': fn, 'downloadUrl': f'/api/download/{fn}'})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e), 'trace': traceback.format_exc()}), 500
+
+@app.route('/api/submit-only', methods=['POST'])
+def api_submit_only():
+    try:
+        # Handle both FormData and JSON
+        if request.content_type and 'multipart/form-data' in request.content_type:
+            data = json.loads(request.form.get('data', '{}'))
+            photo_file = request.files.get('photo')
+            if photo_file:
+                img_id = uuid.uuid4().hex[:8]
+                photo_path = os.path.join(UPL_DIR, f'photo_{img_id}.png')
+                photo_file.save(photo_path)
+                data['photo'] = photo_path
+        else:
+            data = request.get_json() or {}
+        
+        form_data = prepare_data(data)
+        
+        # --- LƯU LỊCH SỬ VÀO DATABASE (KHÔNG XUẤT WORD) ---
+        try:
+            new_record = FormHistory(
+                ma_so=form_data.get('Maso', '') or 'CHO_DUYET',
+                ho_ten=form_data.get('Hoten', ''),
+                ten_file='',
+                data_json=json.dumps(data, ensure_ascii=False)
+            )
+            db.session.add(new_record)
+            db.session.commit()
+        except Exception as db_e:
+            print(f"Lỗi lưu Database: {db_e}")
+            
+        return jsonify({'success': True, 'msg': 'Đã nộp form thành công (chờ duyệt).'})
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -286,6 +328,7 @@ def api_history():
             'ma_so': r.ma_so,
             'ho_ten': r.ho_ten,
             'ten_file': r.ten_file,
+            'data_json': json.loads(r.data_json) if r.data_json else None,
             'ngay_tao': r.ngay_tao.strftime("%d/%m/%Y %H:%M:%S")
         } for r in records]
         return jsonify({'success': True, 'data': data})
