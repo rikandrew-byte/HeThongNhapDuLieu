@@ -344,9 +344,10 @@ def api_delete_history(record_id):
             return jsonify({'success': False, 'error': 'Không tìm thấy bản ghi'}), 404
         
         # Xóa file Word vật lý trong thư mục output (nếu còn tồn tại)
-        file_path = os.path.join(OUT_DIR, record.ten_file)
-        if os.path.exists(file_path):
-            os.remove(file_path)
+        if record.ten_file:
+            file_path = os.path.join(OUT_DIR, record.ten_file)
+            if os.path.exists(file_path) and os.path.isfile(file_path):
+                os.remove(file_path)
             
         db.session.delete(record)
         db.session.commit()
