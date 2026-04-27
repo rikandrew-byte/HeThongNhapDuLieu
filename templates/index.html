@@ -352,7 +352,7 @@
                 <span>TẢI FILE (.HTML)</span>
             </button>
             <button type="button" onclick="handleSubmit('html')" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold py-4 px-8 rounded-full shadow-[0_10px_25px_rgba(5,150,105,0.4)] transition-all transform hover:-translate-y-1 flex items-center gap-3">
-                <span id="btnText">XUẤT HỒ SƠ (Ver 6.24)</span>
+                <span id="btnText">XUẤT HỒ SƠ (Ver 6.25)</span>
                 <div id="loading" class="hidden w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             </button>
         </div>
@@ -475,7 +475,7 @@ async function loadHistory() {
                     <td style="padding: 10px; border: 1px solid #ddd;">${item.ngay_tao}</td>
                     <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">
                         <button onclick="restoreData(${index})" style="padding: 6px 12px; background-color: #ffc107; color: #000; border: none; border-radius: 4px; font-size: 14px; cursor: pointer; margin-right: 5px; font-weight: bold;">✍️ SỬA</button>
-                        <a href="/resume-${item.id}.html" target="_blank" style="padding: 6px 12px; background-color: #059669; color: white; text-decoration: none; border-radius: 4px; font-size: 14px; display: inline-block; margin-right: 5px; font-weight: bold;">👁️ IN HỒ SƠ (6.24)</a>
+                        <a href="/resume-${item.id}.html" target="_blank" style="padding: 6px 12px; background-color: #059669; color: white; text-decoration: none; border-radius: 4px; font-size: 14px; display: inline-block; margin-right: 5px; font-weight: bold;">👁️ IN HỒ SƠ (6.25)</a>
                         ${item.ten_file ? `<a href="/api/download/${encodeURIComponent(item.ten_file)}" target="_blank" style="padding: 6px 12px; background-color: #28a745; color: white; text-decoration: none; border-radius: 4px; font-size: 14px; display: inline-block; margin-right: 5px;">📥 Tải HTML</a>` : ''}
                         <button onclick="deleteHistory(${item.id})" style="padding: 6px 12px; background-color: #dc3545; color: white; border: none; border-radius: 4px; font-size: 14px; cursor: pointer;">🗑️ Xóa</button>
                     </td>
