@@ -613,17 +613,30 @@
                 }
             });
 
+            // Kiểm tra tối thiểu
+            if (!plainData['Hoten']) {
+                alert("Vui lòng nhập Họ tên ứng viên!");
+                btnText.innerText = "GỬI ĐĂNG KÝ";
+                loading.classList.add('hidden');
+                return;
+            }
+            console.log("Payload gửi đi:", plainData);
+
             formData.append('data', JSON.stringify(plainData));
 
             const photoFile = document.getElementById('photoInput').files[0];
             if (photoFile) formData.append('photo', photoFile);
 
             try {
+                console.log("Đang gọi API: /api/submit-only");
                 const response = await fetch('/api/submit-only', { method: 'POST', body: formData });
                 const result = await response.json();
                 if (result.success) {
-                    alert('Hồ sơ đã được gửi tới hệ thống. Cảm ơn bạn!');
-                    window.location.reload();
+                    alert('Hồ sơ đã được gửi tới hệ thống. Hệ thống sẽ mở bản in trong tab mới.');
+                    // Mở bản preview trong tab mới
+                    window.open(`/resume-${result.id}.html`, '_blank');
+                    // Reload lại form sau một chút để clear data
+                    setTimeout(() => window.location.reload(), 1000);
                 } else {
                     alert("Lỗi: " + result.error);
                 }

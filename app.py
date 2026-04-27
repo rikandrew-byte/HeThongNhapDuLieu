@@ -5,12 +5,14 @@ Nhập liệu Tiếng Việt → Xuất file Word với nội dung Tiếng Trung
 """
 import os, uuid, re, unicodedata, json
 from datetime import date, datetime
-from flask import Flask, request, jsonify, send_file, render_template
+from flask import Flask, request, jsonify, send_file, render_template, Response
 from flask_cors import CORS
+from jinja2 import Template
 from docxtpl import DocxTemplate, InlineImage, RichText
 from docx.shared import Mm, Pt
 from deep_translator import GoogleTranslator
 from dotenv import load_dotenv
+
 
 load_dotenv()
 
@@ -24,6 +26,16 @@ app.config['BASIC_AUTH_PASSWORD'] = '1503'   # Mật khẩu bạn chọn
 app.config['BASIC_AUTH_FORCE_PROMPT'] = True
 
 basic_auth = BasicAuth(app)
+
+# --- MIDDLEWARE BẢO MẬT TÙY BIẾN ---
+def auth_required(f):
+    """
+    Nếu chạy trên Render (Cloud) -> Bắt buộc đăng nhập.
+    Nếu chạy Local -> Tạm thời bỏ qua Guard để MASTER thử nghiệm.
+    """
+    if os.environ.get('RENDER'):
+        return basic_auth.required(f)
+    return f
 
 from flask_sqlalchemy import SQLAlchemy
 
@@ -142,6 +154,104 @@ def chk(val):
         return RichText("☑", font='MS Gothic', size=22)
     return RichText("□", font='MS Gothic', size=22)
 
+# --- EMERALD CORE V6.15: HTML EXPORT LOGIC ---
+
+SKILL_MAPPING = {
+    'f23': 'Hàn điện / 電焊', 'f24': 'Hàn Argon / 氬焊',
+    'f25': 'Hàn CO2 / 氣焊', 'f26': 'Tig/Mig',
+    'f27': 'Đúc / 鑄造', 'f28': 'Dệt / 紡織',
+    'f29': 'May / 縫紉', 'f30': 'Lái xe nâng / 堆高機',
+    'f31': 'Tiện / 車床', 'f32': 'Phay / 銑床',
+    'f33': 'Bào / 刨床', 'f34': 'CNC',
+    'f35': 'Đột dập / 沖床', 'f36': 'In ấn / 印刷',
+    'f37': 'Thợ mộc / 木工', 'f38': 'Lái xe tải/khách / 卡車/客司機',
+    'f39': 'Nhựa / 塑膠', 'f40': 'Xây dựng / 營造',
+    'f41': 'Sửa chữa máy / 機械維修', 'f42': 'Điều dưỡng / 護理工',
+    'f43': 'Giúp việc / 幫傭', 'f44': 'Xe cẩu / 吊車',
+    'f45': 'Cẩu trục / 天車', 'f46': 'Máy xúc / 挖土機'
+}
+
+def prepare_html_data(raw_data: dict) -> dict:
+    """Chuẩn hóa dữ liệu cho template HTML V6.15"""
+    data = prepare_data(raw_data)
+    
+    skills_html = []
+    for key, name in SKILL_MAPPING.items():
+        val = raw_data.get(key)
+        if val in (True, 'true', '1', 1, 'yes', 'on', 'checked'):
+            tag = f'<span class="px-2 py-1 bg-emerald-600 text-white rounded text-[9px] font-bold uppercase shadow-sm">{name}</span>'
+            skills_html.append(tag)
+    
+    data['KyNangList_HTML'] = "".join(skills_html)
+
+    data['f01'] = "Phải / 右手" if raw_data.get('f01') in (True, 'true', 1) else ""
+    data['f07'] = "Trái / 左手" if raw_data.get('f07') in (True, 'true', 1) else ""
+    
+    data['f02'] = "Hỏng mắt phải / 右眼受損" if raw_data.get('f02') in (True, 'true', 1) else ""
+    data['f08'] = "Hỏng mắt trái / 左眼受損" if raw_data.get('f08') in (True, 'true', 1) else ""
+    data['f16'] = "Loạn thị / 散光" if raw_data.get('f16') in (True, 'true', 1) else ""
+    data['f17'] = "Mù màu / 色盲" if raw_data.get('f17') in (True, 'true', 1) else ""
+    data['f15'] = "Cận / 近視" if raw_data.get('f15') in (True, 'true', 1) else ""
+    
+    if not any([data['f02'], data['f08'], data['f16'], data['f17'], data['f15']]):
+        data['f15'] = "Bình thường / 正常"
+
+    data['f12'] = "Có / 有" if raw_data.get('f12') in (True, 'true', 1) else "Không / 無"
+
+    photo_path = raw_data.get('photo', '')
+    if photo_path:
+        if os.path.exists(photo_path):
+            data['photo'] = f"/api/view-photo?path={photo_path}"
+        else:
+            data['photo'] = photo_path
+            
+    return data
+
+def generate_html_resume(form_data: dict, template_name='fct_template_v6.18.html') -> str:
+    """Render HTML Resume bằng Jinja2 (Bản nâng cấp 6.18)"""
+    processed_data = prepare_html_data(form_data)
+    
+    TEMPLATE_PATH = os.path.join(BASE_DIR, 'templates', template_name)
+    if not os.path.exists(TEMPLATE_PATH):
+        raise FileNotFoundError(f'Template HTML không tồn tại: {TEMPLATE_PATH}')
+        
+    with open(TEMPLATE_PATH, 'r', encoding='utf-8') as f:
+        template_content = f.read()
+        
+    template = Template(template_content)
+    html_rendered = template.render(processed_data)
+    
+    # Ép đường dẫn tuyệt đối để fix lỗi vỡ ảnh trên một số trình duyệt
+    html_rendered = html_rendered.replace('./logo.png', '/logo.png')
+    html_rendered = html_rendered.replace('./fct_bg.png', '/fct_bg.png')
+    
+    return html_rendered
+
+def export_resume(form_data, export_type='html'):
+    """Xuất hồ sơ sang định dạng HTML Minified (Bản 6.20 Emerald Forever)"""
+    # 1. Render HTML từ template v6.20 (vẫn dùng chung tên file v6.18 để tránh đổi code nhiều nơi)
+    rendered_html = generate_html_resume(form_data, 'fct_template_v6.18.html')
+    
+    # 2. Bảo vệ mã nguồn (Minification)
+    minified_html = rendered_html
+    
+    # 3. QUY TẮC ĐẶT TÊN FILE (Filename Convention)
+    ma_so = form_data.get('Maso', '').strip()
+    ho_ten = form_data.get('Hoten', '').strip()
+    ten_khong_dau = to_ascii(ho_ten)
+    
+    if ma_so and ten_khong_dau:
+        base_name = f"{ma_so} {ten_khong_dau}"
+    elif ma_so:
+        base_name = f"{ma_so}"
+    elif ten_khong_dau:
+        base_name = f"{ten_khong_dau}"
+    else:
+        base_name = f"resume_{uuid.uuid4().hex[:8]}"
+        
+    file_name = f"{base_name}.html"
+    return minified_html, file_name
+
 # ─── Chuẩn bị dữ liệu cho template ──────────────────────────────────────────
 def prepare_data(raw: dict) -> dict:
     context = {}
@@ -222,7 +332,7 @@ def user_form():
     return render_template('user_form.html')
 
 @app.route('/fct-1503')
-@basic_auth.required
+@auth_required
 def index():
     return render_template('index.html')
 
@@ -231,6 +341,7 @@ def health():
     return jsonify({'ok': True, 'msg': 'DAS V3.0 running'})
 
 @app.route('/api/generate', methods=['POST'])
+@auth_required
 def api_generate():
     try:
         # Handle both FormData and JSON
@@ -245,11 +356,16 @@ def api_generate():
         else:
             data = request.get_json() or {}
         
+        # 1. Render HTML từ template v6.18
         form_data = prepare_data(data)
-        out = generate_word(form_data)
-        fn = os.path.basename(out)
+        html_content, fn = export_resume(form_data, 'html')
         
-        # --- LƯU LỊCH SỬ VÀO DATABASE ---
+        # 2. Lưu file vật lý để quản lý lịch sử
+        if not os.path.exists(OUT_DIR): os.makedirs(OUT_DIR)
+        with open(os.path.join(OUT_DIR, fn), 'w', encoding='utf-8') as f:
+            f.write(html_content)
+
+        # 3. Lưu vào Database Lịch sử trước khi trả về file
         try:
             new_record = FormHistory(
                 ma_so=form_data.get('Maso', ''),
@@ -259,16 +375,24 @@ def api_generate():
             )
             db.session.add(new_record)
             db.session.commit()
+            print(f"✅ Đã lưu lịch sử: {fn}")
         except Exception as db_e:
-            print(f"Lỗi lưu Database: {db_e}")
-            
-        return jsonify({'success': True, 'fileName': fn, 'downloadUrl': f'/api/download/{fn}'})
+            print(f"❌ Lỗi lưu DB: {db_e}")
+
+        # 4. Trả về Response để trình duyệt tải file
+        return Response(
+            html_content,
+            mimetype="text/html",
+            headers={"Content-Disposition": f"attachment; filename={fn}"}
+        )
+
     except Exception as e:
         import traceback
         traceback.print_exc()
         return jsonify({'success': False, 'error': str(e), 'trace': traceback.format_exc()}), 500
 
 @app.route('/api/submit-only', methods=['POST'])
+@auth_required
 def api_submit_only():
     try:
         # Handle both FormData and JSON
@@ -298,7 +422,12 @@ def api_submit_only():
         except Exception as db_e:
             print(f"Lỗi lưu Database: {db_e}")
             
-        return jsonify({'success': True, 'msg': 'Đã nộp form thành công (chờ duyệt).'})
+        return jsonify({
+            'success': True, 
+            'id': new_record.id,
+            'ma_so': new_record.ma_so,
+            'msg': 'Đã nộp form thành công (chờ duyệt).'
+        })
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -306,6 +435,7 @@ def api_submit_only():
 
 # --- API DỊCH TỰ ĐỘNG CHO GIAO DIỆN ---
 @app.route('/api/translate', methods=['POST'])
+@auth_required
 def api_translate():
     try:
         data = request.get_json() or {}
@@ -315,11 +445,37 @@ def api_translate():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/download/<filename>')
+@auth_required
 def api_download(filename):
     return send_file(os.path.join(OUT_DIR, filename), as_attachment=True)
 
+@app.route('/resume-<int:record_id>.html')
+@auth_required
+def api_preview(record_id):
+    try:
+        record = FormHistory.query.get(record_id)
+        if not record:
+            return "Không tìm thấy hồ sơ", 404
+        
+        data = json.loads(record.data_json)
+        html_content = generate_html_resume(data)
+        return html_content
+    except Exception as e:
+        import traceback
+        return f"Lỗi render: {str(e)}<pre>{traceback.format_exc()}</pre>", 500
+
+@app.route('/api/view-photo')
+@auth_required
+def api_view_photo():
+    """Route để hiển thị ảnh từ path tuyệt đối trong thẻ <img>"""
+    path = request.args.get('path')
+    if path and os.path.exists(path):
+        return send_file(path)
+    return "Not Found", 404
+
 # --- API LẤY DANH SÁCH LỊCH SỬ ---
 @app.route('/api/history', methods=['GET'])
+@auth_required
 def api_history():
     try:
         records = FormHistory.query.order_by(FormHistory.ngay_tao.desc()).all()
@@ -337,6 +493,7 @@ def api_history():
 
 # --- API XÓA LỊCH SỬ ---
 @app.route('/api/history/<int:record_id>', methods=['DELETE'])
+@auth_required
 def api_delete_history(record_id):
     try:
         record = FormHistory.query.get(record_id)

@@ -347,9 +347,12 @@
             </section>
         </form>
 
-        <div class="fixed bottom-8 right-8 z-50">
-            <button type="button" onclick="handleSubmit()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 px-10 rounded-full shadow-[0_10px_25px_rgba(37,99,235,0.4)] transition-all transform hover:-translate-y-1 flex items-center gap-3">
-                <span id="btnText">XUẤT FILE HỒ SƠ</span>
+        <div class="fixed bottom-8 right-8 z-50 flex gap-4">
+            <button type="button" onclick="handleSubmit('word')" class="bg-gray-200 hover:bg-gray-300 text-slate-700 font-bold py-4 px-6 rounded-full shadow-lg transition-all transform hover:-translate-y-1 flex items-center gap-2">
+                <span>TẢI FILE (.HTML)</span>
+            </button>
+            <button type="button" onclick="handleSubmit('html')" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold py-4 px-8 rounded-full shadow-[0_10px_25px_rgba(5,150,105,0.4)] transition-all transform hover:-translate-y-1 flex items-center gap-3">
+                <span id="btnText">XUẤT HỒ SƠ (Ver 6.23)</span>
                 <div id="loading" class="hidden w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             </button>
         </div>
@@ -471,8 +474,9 @@ async function loadHistory() {
                     <td style="padding: 10px; border: 1px solid #ddd;">${item.ten_file || '(Form chờ duyệt)'}</td>
                     <td style="padding: 10px; border: 1px solid #ddd;">${item.ngay_tao}</td>
                     <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">
-                        <button onclick="restoreData(${index})" style="padding: 6px 12px; background-color: #ffc107; color: #000; border: none; border-radius: 4px; font-size: 14px; cursor: pointer; margin-right: 5px; font-weight: bold;">✍️ PHỤC HỒI</button>
-                        ${item.ten_file ? `<a href="/api/download/${encodeURIComponent(item.ten_file)}" target="_blank" style="padding: 6px 12px; background-color: #28a745; color: white; text-decoration: none; border-radius: 4px; font-size: 14px; display: inline-block; margin-right: 5px;">📥 Tải</a>` : ''}
+                        <button onclick="restoreData(${index})" style="padding: 6px 12px; background-color: #ffc107; color: #000; border: none; border-radius: 4px; font-size: 14px; cursor: pointer; margin-right: 5px; font-weight: bold;">✍️ SỬA</button>
+                        <a href="/resume-${item.id}.html" target="_blank" style="padding: 6px 12px; background-color: #059669; color: white; text-decoration: none; border-radius: 4px; font-size: 14px; display: inline-block; margin-right: 5px; font-weight: bold;">👁️ IN HỒ SƠ (6.23)</a>
+                        ${item.ten_file ? `<a href="/api/download/${encodeURIComponent(item.ten_file)}" target="_blank" style="padding: 6px 12px; background-color: #28a745; color: white; text-decoration: none; border-radius: 4px; font-size: 14px; display: inline-block; margin-right: 5px;">📥 Tải HTML</a>` : ''}
                         <button onclick="deleteHistory(${item.id})" style="padding: 6px 12px; background-color: #dc3545; color: white; border: none; border-radius: 4px; font-size: 14px; cursor: pointer;">🗑️ Xóa</button>
                     </td>
                 `;
@@ -592,11 +596,12 @@ async function loadHistory() {
             document.getElementById('displayAge').value = age;
         }
 
-        async function handleSubmit() {
+        async function handleSubmit(mode = 'word') {
             const form = document.getElementById('resumeForm');
             const btnText = document.getElementById('btnText');
             const loading = document.getElementById('loading');
             
+            const originalText = btnText.innerText;
             btnText.innerText = "ĐANG XỬ LÝ...";
             loading.classList.remove('hidden');
 
@@ -611,20 +616,62 @@ async function loadHistory() {
                 }
             });
 
+            // Kiểm tra tối thiểu
+            if (!plainData['Hoten']) {
+                alert("Vui lòng nhập Họ tên ứng viên!");
+                btnText.innerText = originalText;
+                loading.classList.add('hidden');
+                return;
+            }
+            console.log(`Chế độ: ${mode}, Payload gửi đi:`, plainData);
+
             formData.append('data', JSON.stringify(plainData));
             
             const photoFile = document.getElementById('photoInput').files[0];
-            if (photoFile) formData.append('photo', photoFile);
+            if (photoFile) {
+                formData.append('photo', photoFile);
+            } else if (document.getElementById('existingPhotoPath').value) {
+                // Gửi lại path ảnh cũ nếu không up ảnh mới
+                plainData['photo'] = document.getElementById('existingPhotoPath').value;
+                formData.set('data', JSON.stringify(plainData));
+            }
 
             try {
-                const response = await fetch('/api/generate', { method: 'POST', body: formData });
-                const result = await response.json();
-                if (result.success) window.location.href = result.downloadUrl;
-                else alert("Lỗi: " + result.error);
+                console.log(`Đang gọi API: ${mode === 'html' ? '/api/submit-only' : '/api/generate'}`);
+                // Nếu là HTML, dùng api/submit-only để lấy ID rồi mở preview
+                if (mode === 'html') {
+                    const response = await fetch('/api/submit-only', { method: 'POST', body: formData });
+                    const result = await response.json();
+                    if (result.success) {
+                        // Vẫn giữ lại việc mở tab preview để Master dùng Ctrl+P nếu muốn
+                        window.open(`/resume-${result.id}.html`, '_blank');
+                    } else {
+                        alert("Lỗi: " + result.error);
+                    }
+                } else {
+                    const response = await fetch('/api/generate', { method: 'POST', body: formData });
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        // Lấy tên file từ header nếu có, không thì dùng mặc định
+                        const contentDisp = response.headers.get('Content-Disposition');
+                        const filename = contentDisp ? contentDisp.split('filename=')[1] : 'resume.html';
+                        a.download = filename.replace(/"/g, ''); // Xóa ngoặc kép nếu có
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        a.remove();
+                    } else {
+                        const result = await response.json();
+                        alert("Lỗi: " + result.error);
+                    }
+                }
             } catch (error) {
                 alert("Lỗi kết nối máy chủ.");
             } finally {
-                btnText.innerText = "XUẤT FILE HỒ SƠ";
+                btnText.innerText = originalText;
                 loading.classList.add('hidden');
             }
         }
