@@ -224,9 +224,9 @@ def prepare_html_data(raw_data: dict) -> dict:
     # Chuyển ảnh đại diện sang Base64
     photo_path = raw_data.get('photo', '')
     if photo_path and os.path.exists(photo_path):
-        data['photo'] = get_base64_image(photo_path)
+        data['photo_base64'] = get_base64_image(photo_path)
     else:
-        data['photo'] = ""
+        data['photo_base64'] = ""
             
     return data
 
