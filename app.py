@@ -3,7 +3,7 @@
 Document Automation System (DAS) - Flask Backend V3.0
 Nhập liệu Tiếng Việt → Xuất file Word với nội dung Tiếng Trung Phồn Thể
 """
-import os, uuid, re, unicodedata, json
+import os, uuid, re, unicodedata, json, base64
 from datetime import date, datetime
 from flask import Flask, request, jsonify, send_file, render_template, Response
 from flask_cors import CORS
@@ -154,6 +154,20 @@ def chk(val):
         return RichText("☑", font='MS Gothic', size=22)
     return RichText("□", font='MS Gothic', size=22)
 
+def get_base64_image(file_path):
+    """Chuyển đổi file ảnh sang chuỗi Base64 để nhúng trực tiếp vào HTML"""
+    if not file_path or not os.path.exists(file_path):
+        return ""
+    try:
+        with open(file_path, "rb") as image_file:
+            encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+            ext = os.path.splitext(file_path)[1][1:].lower()
+            if ext == 'jpg': ext = 'jpeg'
+            return f"data:image/{ext};base64,{encoded_string}"
+    except Exception as e:
+        print(f"Lỗi Base64: {e}")
+        return ""
+
 # --- EMERALD CORE V6.15: HTML EXPORT LOGIC ---
 
 SKILL_MAPPING = {
@@ -172,18 +186,27 @@ SKILL_MAPPING = {
 }
 
 def prepare_html_data(raw_data: dict) -> dict:
-    """Chuẩn hóa dữ liệu cho template HTML V6.15"""
-    data = prepare_data(raw_data)
-    
+    """Chuẩn hóa dữ liệu cho template HTML V6.24 (Cloud Optimized) - Không dịch tự động để tránh lỗi UTF-8"""
+    # Tạo bản sao dữ liệu để xử lý
+    data = {}
+    fields = [
+        'Maso', 'Hoten', 'TentiengTrung', 'Ngaysinh', 'Tuoi', 'Chieucao', 'Cannang', 
+        'Lienhe', 'Noio', 'HotenBo', 'TB', 'HotenMe', 'TM', 'VoChong', 'VC', 
+        'Socon', 'Anhchiem', 'Xepthu', 'f48', 'N1', 'N2', 'N3', 'ndcv1', 'ndcv2', 'ndcv3', 
+        'loi_binh_1', 'Honnhan', 'Hocvan', 'QG1', 'QG2', 'QG3'
+    ]
+    for f in fields:
+        data[f] = str(raw_data.get(f, '')).strip()
+
+    # Kỹ năng
     skills_html = []
     for key, name in SKILL_MAPPING.items():
-        val = raw_data.get(key)
-        if val in (True, 'true', '1', 1, 'yes', 'on', 'checked'):
+        if raw_data.get(key) in (True, 'true', '1', 1, 'yes', 'on', 'checked'):
             tag = f'<span class="px-2 py-1 bg-emerald-600 text-white rounded text-[9px] font-bold uppercase shadow-sm">{name}</span>'
             skills_html.append(tag)
-    
     data['KyNangList_HTML'] = "".join(skills_html)
 
+    # Các thông số đặc biệt
     data['f01'] = "Phải / 右手" if raw_data.get('f01') in (True, 'true', 1) else ""
     data['f07'] = "Trái / 左手" if raw_data.get('f07') in (True, 'true', 1) else ""
     
@@ -198,34 +221,28 @@ def prepare_html_data(raw_data: dict) -> dict:
 
     data['f12'] = "Có / 有" if raw_data.get('f12') in (True, 'true', 1) else "Không / 無"
 
+    # Chuyển ảnh đại diện sang Base64
     photo_path = raw_data.get('photo', '')
-    if photo_path:
-        if os.path.exists(photo_path):
-            data['photo'] = f"/api/view-photo?path={photo_path}"
-        else:
-            data['photo'] = photo_path
+    if photo_path and os.path.exists(photo_path):
+        data['photo'] = get_base64_image(photo_path)
+    else:
+        data['photo'] = ""
             
     return data
 
 def generate_html_resume(form_data: dict, template_name='fct_template_v6.18.html') -> str:
-    """Render HTML Resume bằng Jinja2 (Bản nâng cấp 6.18)"""
+    """Render HTML Resume (Bản 6.24: Nhúng Base64 toàn bộ ảnh)"""
     processed_data = prepare_html_data(form_data)
     
+    # Nhúng Logo và Background vào context
+    processed_data['logo_base64'] = get_base64_image(os.path.join(BASE_DIR, 'static', 'logo.png'))
+    processed_data['bg_base64'] = get_base64_image(os.path.join(BASE_DIR, 'static', 'fct_bg.png'))
+    
     TEMPLATE_PATH = os.path.join(BASE_DIR, 'templates', template_name)
-    if not os.path.exists(TEMPLATE_PATH):
-        raise FileNotFoundError(f'Template HTML không tồn tại: {TEMPLATE_PATH}')
-        
     with open(TEMPLATE_PATH, 'r', encoding='utf-8') as f:
-        template_content = f.read()
+        template = Template(f.read())
         
-    template = Template(template_content)
-    html_rendered = template.render(processed_data)
-    
-    # Ép đường dẫn tuyệt đối để fix lỗi vỡ ảnh trên một số trình duyệt
-    html_rendered = html_rendered.replace('./logo.png', '/logo.png')
-    html_rendered = html_rendered.replace('./fct_bg.png', '/fct_bg.png')
-    
-    return html_rendered
+    return template.render(processed_data)
 
 def export_resume(form_data, export_type='html'):
     """Xuất hồ sơ sang định dạng HTML Minified (Bản 6.20 Emerald Forever)"""
@@ -383,7 +400,10 @@ def api_generate():
         return Response(
             html_content,
             mimetype="text/html",
-            headers={"Content-Disposition": f"attachment; filename={fn}"}
+            headers={
+                "Content-Disposition": f"attachment; filename={fn}",
+                "Content-Type": "text/html; charset=utf-8"
+            }
         )
 
     except Exception as e:
@@ -459,7 +479,7 @@ def api_preview(record_id):
         
         data = json.loads(record.data_json)
         html_content = generate_html_resume(data)
-        return html_content
+        return Response(html_content, mimetype="text/html", headers={"Content-Type": "text/html; charset=utf-8"})
     except Exception as e:
         import traceback
         return f"Lỗi render: {str(e)}<pre>{traceback.format_exc()}</pre>", 500
