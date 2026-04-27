@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: he-thong-lam-form-andrew  # Tên này sẽ hiện trên link web của bạn
+    runtime: python
+    plan: free                      # Chọn gói miễn phí
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0               # Hoặc phiên bản Python bạn đang dùng

@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Nhập Liệu DAS V3.0</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; } /* Ép toàn bộ web dùng font Inter */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="flex flex-col lg:flex-row h-screen overflow-hidden bg-white text-slate-800">
+
+    <div class="w-full lg:w-1/3 bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 p-4 lg:p-8 lg:p-12 flex flex-row lg:flex-col justify-between items-center lg:items-start border-b lg:border-r border-gray-200 shadow-md z-10 relative flex-shrink-0">
+        <div class="absolute top-0 left-0 w-full h-1 lg:h-1.5 bg-blue-600"></div>
+        
+        <div class="flex flex-row items-center gap-3 lg:flex-col lg:items-start lg:gap-0">
+            <img src="LogoFCT.png" alt="FCT Logo" class="w-10 lg:w-28 lg:mb-8 drop-shadow-md" onerror="this.src='https://via.placeholder.com/150?text=Logo+FCT'">
+            
+            <div>
+                <h1 class="block lg:hidden text-lg font-extrabold text-slate-800 tracking-tight leading-none">
+                    HỆ THỐNG <span class="text-blue-600">NHẬP LIỆU</span>
+                </h1>
+                
+                <h1 class="hidden lg:block text-4xl lg:text-5xl font-extrabold text-slate-800 tracking-tighter leading-tight mb-4">
+                    HỆ THỐNG<br><span class="text-blue-600">NHẬP LIỆU</span>
+                </h1>
+                
+                <p class="hidden lg:block text-slate-500 text-sm lg:text-base font-medium leading-relaxed">Tự động hóa quy trình xuất hồ sơ ứng viên nhanh chóng, chuẩn xác và chuyên nghiệp.</p>
+            </div>
+        </div>
+
+        <div class="block lg:hidden flex-shrink-0 pl-2">
+            <img src="{{ url_for('static', filename='eagle_logo.png') }}" alt="Eagle Logo" class="w-16 h-12 object-contain drop-shadow-sm">
+        </div>
+
+        <div class="hidden lg:block mt-10 border-t border-gray-200 pt-6 w-full">
+            <div class="flex items-center gap-2 mb-1">
+                <p class="text-[10px] text-slate-400 tracking-widest font-bold uppercase">Crafted by</p>
+                <div class="w-18 h-12 flex items-center justify-center flex-shrink-0">
+                    <img src="{{ url_for('static', filename='eagle_logo.png') }}" alt="Andrew Tseng Logo" class="w-full h-full object-contain drop-shadow-sm">
+                </div>
+            </div>
+            <p class="text-xl font-bold text-slate-800 tracking-wide">Andrew Tseng</p>
+        </div>
+    </div>
+
+    <div class="w-full lg:w-2/3 h-full overflow-y-auto relative bg-[#FAFAFA] px-4 py-6 lg:px-16 lg:py-12">
+        
+        <!-- Nút Mở bảng Lịch Sử -->
+        <div class="flex justify-end mb-6 max-w-4xl mx-auto">
+            <button type="button" onclick="loadHistory()" class="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-2.5 px-5 rounded-lg shadow-md transition-all flex items-center gap-2 text-sm">
+                🕒 Xem Lịch Sử Các Form Đã Tạo
+            </button>
+        </div>
+
+        <form id="resumeForm" autocomplete="off" class="max-w-4xl mx-auto space-y-12 pb-32">
+            <input type="hidden" name="photo" id="existingPhotoPath" value="">
+            <section>
+                <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
+                    <span class="w-2 h-6 bg-blue-600 rounded-full"></span> 1. Thông tin cá nhân
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Mã số</label><input type="text" name="Maso" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
+                    <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Họ tên (Tiếng Việt)</label><input type="text" name="Hoten" onblur="translateName(this.value)" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
+                    <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tên tiếng Trung</label><input type="text" name="TentiengTrung" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
+                    <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Ngày sinh</label><input type="date" name="Ngaysinh" id="birthDate" onchange="calcAge()" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
+                    <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tuổi</label><input type="text" name="Tuoi" id="displayAge" readonly class="w-full border-b-2 border-gray-200 bg-gray-50 py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Hôn nhân</label>
+                        <select name="Honnhan" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors cursor-pointer">
+                            <option value=""></option>
+                            <option value="Độc thân">Độc thân</option>
+                            <option value="Đã kết hôn">Đã kết hôn</option>
+                            <option value="Ly hôn">Ly hôn</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Trình độ văn hóa (Học vấn)</label>
+                        <select name="Hocvan" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors cursor-pointer">
+                            <option value=""></option>
+                            <option value="國中">Cấp 2</option>
+                            <option value="高中">Cấp 3</option>
+                            <option value="中專">Trung cấp</option>
+                            <option value="大專">Cao đẳng</option>
+                            <option value="大學">Đại học</option>
+                        </select>
+                    </div>
+
+                    <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Chiều cao (cm)</label><input type="text" name="Chieucao" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
+                    <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Cân nặng (kg)</label><input type="text" name="Cannang" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
+                    
+            <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nơi ở (63 Tỉnh Thành)</label>
+            <select name="Noio" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors cursor-pointer">
+                <option value=""></option>
+                <optgroup label="--- Miền Bắc ---">
+                    <option value="萊州">Lai Châu</option>
+                    <option value="奠邊">Điện Biên</option>
+                    <option value="山羅">Sơn La</option>
+                    <option value="和平">Hòa Bình</option>
+                    <option value="安沛">Yên Bái</option>
+                    <option value="老街">Lào Cai</option>
+                    <option value="河江">Hà Giang</option>
+                    <option value="高平">Cao Bằng</option>
+                    <option value="北𣴓">Bắc Kạn</option>
+                    <option value="諒山">Lạng Sơn</option>
+                    <option value="宣光">Tuyên Quang</option>
+                    <option value="太原">Thái Nguyên</option>
+                    <option value="富壽">Phú Thọ</option>
+                    <option value="北江">Bắc Giang</option>
+                    <option value="廣寧">Quảng Ninh</option>
+                    <option value="北寧">Bắc Ninh</option>
+                    <option value="河南">Hà Nam</option>
+                    <option value="河內">Hà Nội</option>
+                    <option value="海陽">Hải Dương</option>
+                    <option value="海防">Hải Phòng</option>
+                    <option value="興安">Hưng Yên</option>
+                    <option value="南定">Nam Định</option>
+                    <option value="寧平">Ninh Bình</option>
+                    <option value="太平">Thái Bình</option>
+                    <option value="永福">Vĩnh Phúc</option>
+                </optgroup>
+                <optgroup label="--- Miền Trung ---">
+                    <option value="清化">Thanh Hóa</option>
+                    <option value="乂安">Nghệ An</option>
+                    <option value="河靜">Hà Tĩnh</option>
+                    <option value="廣平">Quảng Bình</option>
+                    <option value="廣治">Quảng Trị</option>
+                    <option value="承天順化">Thừa Thiên Huế</option>
+                    <option value="峴港">Đà Nẵng</option>
+                    <option value="廣南">Quảng Nam</option>
+                    <option value="廣義">Quảng Ngãi</option>
+                    <option value="平定">Bình Định</option>
+                    <option value="富安">Phú Yên</option>
+                    <option value="慶和">Khánh Hòa</option>
+                    <option value="寧順">Ninh Thuận</option>
+                    <option value="平順">Bình Thuận</option>
+                    <option value="崑嵩">Kon Tum</option>
+                    <option value="嘉萊">Gia Lai</option>
+                    <option value="多樂">Đắk Lắk</option>
+                    <option value="得農">Đắk Nông</option>
+                    <option value="林同">Lâm Đồng</option>
+                </optgroup>
+                <optgroup label="--- Miền Nam ---">
+                    <option value="平福">Bình Phước</option>
+                    <option value="平陽">Bình Dương</option>
+                    <option value="同奈">Đồng Nai</option>
+                    <option value="西寧">Tây Ninh</option>
+                    <option value="巴地頭頓">Bà Rịa - Vũng Tàu</option>
+                    <option value="胡志明市">TP Hồ Chí Minh</option>
+                    <option value="隆安">Long An</option>
+                    <option value="同塔">Đồng Tháp</option>
+                    <option value="前江">Tiền Giang</option>
+                    <option value="安江">An Giang</option>
+                    <option value="檳椥">Bến Tre</option>
+                    <option value="永隆">Vĩnh Long</option>
+                    <option value="茶榮">Trà Vinh</option>
+                    <option value="後江">Hậu Giang</option>
+                    <option value="堅江">Kiên Giang</option>
+                    <option value="朔莊">Sóc Trăng</option>
+                    <option value="薄遼">Bạc Liêu</option>
+                    <option value="金甌">Cà Mau</option>
+                    <option value="芹苴">Cần Thơ</option>
+                </optgroup>
+            </select>
+        </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Ảnh chân dung</label>
+                <div id="dropzone" class="w-full border-2 border-dashed border-gray-300 rounded-xl p-4 text-center cursor-pointer hover:border-blue-500 transition-colors relative h-32 flex flex-col items-center justify-center bg-gray-50 overflow-hidden">
+                    <input type="file" id="photoInput" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    <div id="dropzoneText" class="text-sm text-gray-400">
+                        <span class="text-blue-500 font-semibold">Chọn ảnh</span>, kéo thả hoặc nhấn <span class="text-blue-500 font-semibold">Ctrl+V</span> để dán
+                    </div>
+                    <img id="photoPreview" class="hidden absolute inset-0 w-full h-full object-contain bg-white z-0" src="" alt="Preview">
+                </div>
+            </div>
+            </section>
+
+            <section>
+                <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
+                    <span class="w-2 h-6 bg-blue-600 rounded-full"></span> 2. Gia đình
+                </h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <div class="col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tên Bố</label><input type="text" name="HotenBo" class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none"></div>
+                    <div class="col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tuổi Bố</label><input type="text" name="TB" class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none"></div>
+                    
+                    <div class="col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tên Mẹ</label><input type="text" name="HotenMe" class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none"></div>
+                    <div class="col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tuổi Mẹ</label><input type="text" name="TM" class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none"></div>
+                    
+                    <div class="col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tên Vợ/Chồng</label><input type="text" name="VoChong" class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none"></div>
+                    <div class="col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tuổi Vợ/Chồng</label><input type="text" name="VC" class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none"></div>
+                    
+                    <div class="col-span-1 md:col-span-1"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Số con</label><input type="text" name="Socon" class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none"></div>
+                    <div class="col-span-1 md:col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Số Anh/Chị/Em</label><input type="text" name="Anhchiem" class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none"></div>
+                    <div class="col-span-1 md:col-span-1"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Xếp thứ</label><input type="text" name="Xepthu" class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none"></div>
+                </div>
+            </section>
+
+            <section>
+                <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
+                    <span class="w-2 h-6 bg-blue-600 rounded-full"></span> 3. Sức khỏe & Thói quen
+                </h2>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 grid grid-cols-2 md:grid-cols-4 gap-y-4 gap-x-2 text-sm">
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f01" class="w-4 h-4 text-blue-600"> Thuận tay phải</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f07" class="w-4 h-4 text-blue-600"> Thuận tay trái</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f15" class="w-4 h-4 text-blue-600"> Cận thị</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f02" class="w-4 h-4 text-blue-600"> Hỏng mắt phải</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f08" class="w-4 h-4 text-blue-600"> Hỏng mắt trái</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f16" class="w-4 h-4 text-blue-600"> Loạn thị</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f03" class="w-4 h-4 text-blue-600"> Hút thuốc</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f09" class="w-4 h-4 text-blue-600"> Không hút thuốc</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f17" class="w-4 h-4 text-blue-600"> Mù màu</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f04" class="w-4 h-4 text-blue-600"> Uống rượu</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f10" class="w-4 h-4 text-blue-600"> Không uống rượu</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f18" class="w-4 h-4 text-blue-600"> Viêm gan</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f05" class="w-4 h-4 text-blue-600"> Gãy xương</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f11" class="w-4 h-4 text-blue-600"> Chấn thương cột sống</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f19" class="w-4 h-4 text-blue-600"> Cụt đốt ngón tay</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f06" class="w-4 h-4 text-blue-600"> Mồ hôi tay</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f12" class="w-4 h-4 text-blue-600"> Hình xăm</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f20" class="w-4 h-4 text-blue-600"> Hen suyễn</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f13" class="w-4 h-4 text-blue-600"> Chống đẩy 10~30 cái</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f21" class="w-4 h-4 text-blue-600"> Chống đẩy >50 cái</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f14" class="w-4 h-4 text-blue-600"> Bê vác 20~40 kg</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f22" class="w-4 h-4 text-blue-600"> Bê vác >50kg</label>
+                </div>
+            </section>
+
+            <section>
+                <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
+                    <span class="w-2 h-6 bg-blue-600 rounded-full"></span> 4. Kỹ năng
+                </h2>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 grid grid-cols-2 md:grid-cols-4 gap-y-4 gap-x-2 text-sm">
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f23" class="w-4 h-4 text-blue-600"> Hàn điện</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f31" class="w-4 h-4 text-blue-600"> Tiện</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f39" class="w-4 h-4 text-blue-600"> Nhựa</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f24" class="w-4 h-4 text-blue-600"> Hàn argon</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f32" class="w-4 h-4 text-blue-600"> Phay</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f40" class="w-4 h-4 text-blue-600"> Xây dựng</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f25" class="w-4 h-4 text-blue-600"> Hàn CO2</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f33" class="w-4 h-4 text-blue-600"> Bào</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f41" class="w-4 h-4 text-blue-600"> Sữa chữa máy</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f26" class="w-4 h-4 text-blue-600"> Tig Mig</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f34" class="w-4 h-4 text-blue-600"> CNC</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f42" class="w-4 h-4 text-blue-600"> Điều dưỡng</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f27" class="w-4 h-4 text-blue-600"> Đúc</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f35" class="w-4 h-4 text-blue-600"> Đột dập</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f43" class="w-4 h-4 text-blue-600"> Giúp việc</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f28" class="w-4 h-4 text-blue-600"> Dệt</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f36" class="w-4 h-4 text-blue-600"> In ấn</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f44" class="w-4 h-4 text-blue-600"> Xe cẩu</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f29" class="w-4 h-4 text-blue-600"> May</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f37" class="w-4 h-4 text-blue-600"> Thợ mộc</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f45" class="w-4 h-4 text-blue-600"> Cẩu trục</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f30" class="w-4 h-4 text-blue-600"> Xe nâng</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f38" class="w-4 h-4 text-blue-600"> Lái xe tải/khách</label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f46" class="w-4 h-4 text-blue-600"> Máy xúc</label>
+                </div>
+            </section>
+
+            <section>
+                <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
+                    <span class="w-2 h-6 bg-blue-600 rounded-full"></span> 5. Kinh nghiệm làm việc & Đánh giá
+                </h2>
+                <div class="space-y-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    
+                    <div class="grid grid-cols-4 gap-4 pb-4 border-b border-gray-100">
+                        <div class="col-span-1">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Quốc gia 1</label>
+                            <select name="QG1" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none cursor-pointer">
+                                <option value=""></option>
+                                <option value="Đài Loan">Đài Loan</option>
+                                <option value="Nhật Bản">Nhật Bản</option>
+                                <option value="Hàn Quốc">Hàn Quốc</option>
+                                <option value="Việt Nam">Việt Nam</option>
+                                <option value="Thái Lan">Thái Lan</option>
+                                <option value="Malaysia">Malaysia</option>
+                                <option value="Trung Quốc">Trung Quốc</option>
+                                <option value="Macau">Macau</option>
+                                <option value="Trung Đông">Trung Đông</option>
+                                <option value="Nga">Nga</option>
+                            </select>
+                        </div>
+                        <div class="col-span-1"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Năm</label><input type="text" name="N1" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none"></div>
+                        <div class="col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Công việc</label><input type="text" name="ndcv1" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none"></div>
+                    </div>
+
+                    <div class="grid grid-cols-4 gap-4 pb-4 border-b border-gray-100">
+                        <div class="col-span-1">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Quốc gia 2</label>
+                            <select name="QG2" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none cursor-pointer">
+                                <option value=""></option>
+                                <option value="Đài Loan">Đài Loan</option>
+                                <option value="Nhật Bản">Nhật Bản</option>
+                                <option value="Hàn Quốc">Hàn Quốc</option>
+                                <option value="Việt Nam">Việt Nam</option>
+                                <option value="Thái Lan">Thái Lan</option>
+                                <option value="Malaysia">Malaysia</option>
+                                <option value="Trung Quốc">Trung Quốc</option>
+                                <option value="Macau">Macau</option>
+                                <option value="Trung Đông">Trung Đông</option>
+                                <option value="Nga">Nga</option>
+                            </select>
+                        </div>
+                        <div class="col-span-1"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Năm</label><input type="text" name="N2" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none"></div>
+                        <div class="col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Công việc 2</label><input type="text" name="ndcv2" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none"></div>
+                    </div>
+
+                    <div class="grid grid-cols-4 gap-4 pb-4 border-b border-gray-100">
+                        <div class="col-span-1">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Quốc gia 3</label>
+                            <select name="QG3" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none cursor-pointer">
+                                <option value=""></option>
+                                <option value="Đài Loan">Đài Loan</option>
+                                <option value="Nhật Bản">Nhật Bản</option>
+                                <option value="Hàn Quốc">Hàn Quốc</option>
+                                <option value="Việt Nam">Việt Nam</option>
+                                <option value="Thái Lan">Thái Lan</option>
+                                <option value="Malaysia">Malaysia</option>
+                                <option value="Trung Quốc">Trung Quốc</option>
+                                <option value="Macau">Macau</option>
+                                <option value="Trung Đông">Trung Đông</option>
+                                <option value="Nga">Nga</option>
+                            </select>
+                        </div>
+                        <div class="col-span-1"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Năm</label><input type="text" name="N3" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none"></div>
+                        <div class="col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Công việc 3</label><input type="text" name="ndcv3" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none"></div>
+                    </div>
+                    
+                    <div class="pt-4 mt-4">
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Ghi chú, Lời bình</label>
+                        <textarea name="loi_binh_1" class="w-full border-2 border-gray-200 rounded-xl p-3 text-sm focus:border-blue-600 focus:outline-none h-24 bg-gray-50"></textarea>
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Người phụ trách</label>
+                        <input type="text" name="f48" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none w-1/2">
+                    </div>
+                </div>
+            </section>
+        </form>
+
+        <div class="fixed bottom-8 right-8 z-50">
+            <button type="button" onclick="handleSubmit()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 px-10 rounded-full shadow-[0_10px_25px_rgba(37,99,235,0.4)] transition-all transform hover:-translate-y-1 flex items-center gap-3">
+                <span id="btnText">XUẤT FILE HỒ SƠ</span>
+                <div id="loading" class="hidden w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- Xử lý Kéo Thả và Dán Ảnh ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const dropzone = document.getElementById('dropzone');
+            const photoInput = document.getElementById('photoInput');
+            const photoPreview = document.getElementById('photoPreview');
+            const dropzoneText = document.getElementById('dropzoneText');
+
+            function handleImageFile(file) {
+                if (file && file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        photoPreview.src = e.target.result;
+                        photoPreview.classList.remove('hidden');
+                        dropzoneText.classList.add('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                    
+                    // Cập nhật giá trị cho input file
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    photoInput.files = dataTransfer.files;
+                }
+            }
+
+            photoInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) handleImageFile(e.target.files[0]);
+            });
+
+            dropzone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropzone.classList.add('border-blue-500', 'bg-blue-50');
+            });
+
+            dropzone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('border-blue-500', 'bg-blue-50');
+            });
+
+            dropzone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('border-blue-500', 'bg-blue-50');
+                if (e.dataTransfer.files.length > 0) handleImageFile(e.dataTransfer.files[0]);
+            });
+
+            // Lắng nghe sự kiện Paste (Dán) trên toàn bộ trang
+            document.addEventListener('paste', (e) => {
+                if (e.clipboardData && e.clipboardData.files.length > 0) {
+                    handleImageFile(e.clipboardData.files[0]);
+                }
+            });
+        });
+
+        // Hàm tự động dịch tên sang tiếng Trung
+        async function translateName(text) {
+            if (!text || !text.trim()) return;
+            try {
+                const response = await fetch('/api/translate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text })
+                });
+                const result = await response.json();
+                if (result.success && result.translated) {
+                    document.querySelector('input[name="TentiengTrung"]').value = result.translated;
+                }
+            } catch (error) {
+                console.error("Lỗi khi dịch tên:", error);
+            }
+        }
+
+        // Data lịch sử lưu tạm để load vào form khi xử lý
+        let currentHistoryData = [];
+
+        // Hàm gọi API lấy lịch sử và hiển thị lên bảng
+async function loadHistory() {
+    try {
+        // 1. Mở popup và hiện chữ đang tải
+        document.getElementById('historyModal').style.display = 'block';
+        const tbody = document.getElementById('historyTableBody');
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 15px;">Đang tải dữ liệu lịch sử... ⏳</td></tr>';
+
+        // 2. Gọi API đến backend
+        const response = await fetch('/api/history', { credentials: 'same-origin' });
+        
+        // Bắt lỗi nếu API chưa tồn tại (chưa restart server) hoặc bị chặn
+        if (!response.ok) {
+            console.error("Lỗi HTTP:", response.status);
+            throw new Error(`HTTP ${response.status}: Vui lòng thử khởi động lại máy chủ (run_app.bat)!`);
+        }
+
+        const result = await response.json();
+
+        if (result.success) {
+            currentHistoryData = result.data;
+            tbody.innerHTML = ''; // Xóa dòng "Đang tải"
+            
+            // Nếu chưa có lịch sử nào
+            if (result.data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 15px; color: #666;">Chưa có dữ liệu lịch sử nào.</td></tr>';
+                return;
+            }
+            
+            // 3. Quét từng dòng dữ liệu và tạo bảng
+            result.data.forEach((item, index) => {
+                const row = document.createElement('tr');
+                // Highlight khi trỏ chuột (tùy chọn)
+                row.onmouseover = () => row.style.backgroundColor = '#f9f9f9';
+                row.onmouseout = () => row.style.backgroundColor = 'transparent';
+                
+                row.innerHTML = `
+                    <td style="padding: 10px; border: 1px solid #ddd;">${item.ma_so}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold;">${item.ho_ten}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">${item.ten_file || '(Form chờ duyệt)'}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">${item.ngay_tao}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">
+                        <button onclick="restoreData(${index})" style="padding: 6px 12px; background-color: #ffc107; color: #000; border: none; border-radius: 4px; font-size: 14px; cursor: pointer; margin-right: 5px; font-weight: bold;">✍️ PHỤC HỒI</button>
+                        ${item.ten_file ? `<a href="/api/download/${encodeURIComponent(item.ten_file)}" target="_blank" style="padding: 6px 12px; background-color: #28a745; color: white; text-decoration: none; border-radius: 4px; font-size: 14px; display: inline-block; margin-right: 5px;">📥 Tải</a>` : ''}
+                        <button onclick="deleteHistory(${item.id})" style="padding: 6px 12px; background-color: #dc3545; color: white; border: none; border-radius: 4px; font-size: 14px; cursor: pointer;">🗑️ Xóa</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        } else {
+            tbody.innerHTML = `<tr><td colspan="5" style="color:red; text-align:center; padding: 15px;">Lỗi: ${result.error}</td></tr>`;
+        }
+    } catch (error) {
+        console.error("Lỗi khi tải lịch sử:", error);
+        document.getElementById('historyTableBody').innerHTML = `<tr><td colspan="5" style="color:red; text-align:center; padding: 15px;">Lỗi kết nối: ${error.message} <br> (Nếu ngài chạy Local, hãy chắc chắn đã TẮT cửa sổ đen CMD đi và chạy lại file run_app.bat nhé)</td></tr>`;
+    }
+}
+
+        function restoreData(index) {
+            const item = currentHistoryData[index];
+            if (!item || !item.data_json) {
+                alert("Dữ liệu không tồn tại hoặc bị lỗi, không thể tự động điền!");
+                return;
+            }
+            
+            const form = document.getElementById('resumeForm');
+            const data = item.data_json;
+            
+            // Đặt lại form về trạng thái trống trước khi lấp đầy dữ liệu
+            form.reset();
+            document.getElementById('existingPhotoPath').value = "";
+            document.getElementById('photoPreview').classList.add('hidden');
+            document.getElementById('dropzoneText').classList.remove('hidden');
+
+            for (const key in data) {
+                const elements = document.getElementsByName(key);
+                if (elements.length > 0) {
+                    const el = elements[0];
+                    if (el.type === 'checkbox') {
+                        el.checked = !!data[key];
+                    } else if (el.type !== 'file') {
+                        el.value = data[key];
+                    }
+                }
+            }
+            
+            // Xử lý riêng ảnh nếu có
+            if (data['photo']) {
+                document.getElementById('existingPhotoPath').value = data['photo'];
+                document.getElementById('dropzoneText').innerHTML = "<span class='text-green-600 font-bold'>Đã có ảnh từ form. Nhấn để tải ảnh khác nếu cần</span>";
+            }
+            
+            // Xóa mã số nếu là CHO_DUYET để Admin nhập mã mới
+            const maSoInput = document.getElementsByName("Maso")[0];
+            if (maSoInput && (maSoInput.value === 'CHO_DUYET' || maSoInput.value === '')) {
+                maSoInput.value = '';
+                // Focus vào ô mã số để Master điền 
+                maSoInput.focus();
+            }
+
+            // Gọi tính lại tuổi nếu đã điền ngày sinh
+            calcAge();
+
+            // Đóng cửa sổ modal
+            document.getElementById('historyModal').style.display = 'none';
+        }
+
+        // Hàm xử lý xóa lịch sử
+        async function deleteHistory(id) {
+            if (!confirm("Ngài có chắc chắn muốn xóa bản ghi này cùng file Word của nó không? Hành động này không thể hoàn tác!")) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/history/${id}`, { 
+                    method: 'DELETE',
+                    credentials: 'same-origin'
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    loadHistory(); // Tải lại bảng sau khi xóa thành công
+                } else {
+                    alert("Lỗi khi xóa: " + result.error);
+                }
+            } catch (error) {
+                alert("Lỗi kết nối khi xóa: " + error.message);
+            }
+        }
+
+        // Hàm lọc lịch sử theo tên ứng viên
+        function filterHistory() {
+            const input = document.getElementById("searchInput");
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById("historyTableBody");
+            const tr = table.getElementsByTagName("tr");
+
+            for (let i = 0; i < tr.length; i++) {
+                const td = tr[i].getElementsByTagName("td")[1]; // Cột Họ Tên nằm ở vị trí thứ 2 (index 1)
+                if (td) {
+                    const txtValue = td.textContent || td.innerText;
+                    if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+
+        function calcAge() {
+            const birthValue = document.getElementById('birthDate').value;
+            if (!birthValue) return;
+            const birthDate = new Date(birthValue);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            document.getElementById('displayAge').value = age;
+        }
+
+        async function handleSubmit() {
+            const form = document.getElementById('resumeForm');
+            const btnText = document.getElementById('btnText');
+            const loading = document.getElementById('loading');
+            
+            btnText.innerText = "ĐANG XỬ LÝ...";
+            loading.classList.remove('hidden');
+
+            const formData = new FormData();
+            const plainData = {};
+            
+            new FormData(form).forEach((value, key) => {
+                if (form.elements[key].type === 'checkbox') {
+                    plainData[key] = form.elements[key].checked;
+                } else {
+                    plainData[key] = value;
+                }
+            });
+
+            formData.append('data', JSON.stringify(plainData));
+            
+            const photoFile = document.getElementById('photoInput').files[0];
+            if (photoFile) formData.append('photo', photoFile);
+
+            try {
+                const response = await fetch('/api/generate', { method: 'POST', body: formData });
+                const result = await response.json();
+                if (result.success) window.location.href = result.downloadUrl;
+                else alert("Lỗi: " + result.error);
+            } catch (error) {
+                alert("Lỗi kết nối máy chủ.");
+            } finally {
+                btnText.innerText = "XUẤT FILE HỒ SƠ";
+                loading.classList.add('hidden');
+            }
+        }
+    </script>
+
+<!-- Bảng Popup (Modal) hiển thị lịch sử (Mặc định ẩn) -->
+<div id="historyModal" style="display:none; position:fixed; top:5%; left:10%; width:80%; max-height:90%; background:#fff; border:1px solid #ccc; z-index:9999; overflow-y:auto; padding:20px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); border-radius: 8px;">
+    <h2 style="margin-top: 0; color: #333;">Lịch sử các form đã tạo</h2>
+    <button type="button" onclick="document.getElementById('historyModal').style.display='none'" style="float:right; margin-top:-40px; padding: 5px 10px; background: #dc3545; color: #fff; border: none; border-radius: 4px; cursor: pointer;">Đóng ✖</button>
+    
+    <input type="text" id="searchInput" onkeyup="filterHistory()" placeholder="🔍 Nhập tên ứng viên để tìm kiếm..." style="width: 100%; padding: 10px; margin-top: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: 'Inter', sans-serif;">
+    
+    <table border="1" style="width:100%; border-collapse: collapse; text-align: left; margin-top: 15px;">
+        <thead style="background-color: #f2f2f2;">
+            <tr>
+                <th style="padding: 10px; border: 1px solid #ddd;">Mã Số</th>
+                <th style="padding: 10px; border: 1px solid #ddd;">Họ Tên</th>
+                <th style="padding: 10px; border: 1px solid #ddd;">Tên File</th>
+                <th style="padding: 10px; border: 1px solid #ddd;">Thời Gian Tạo</th>
+                <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Thao Tác</th>
+            </tr>
+        </thead>
+        <tbody id="historyTableBody">
+            <!-- Dữ liệu sẽ được điền tự động bằng JavaScript -->
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

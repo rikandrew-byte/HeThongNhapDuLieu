@@ -1,0 +1,16 @@
+ 💻 [Máy tính của Ngài] 
+      (Nơi viết code và chỉnh sửa)
+             │
+             │ (Lệnh: git push)
+             ▼
+ 🐙 [GitHub] ────────────────────────┐
+   (Kho Lưu Trữ Mã Nguồn)            │ (Tự động kéo code mới nhất)
+                                     │
+                                     ▼
+ 🤖 [UptimeRobot] ════(Gõ cửa)══▶ 🌐 [Render.com] ◀══(Nhân viên truy cập)══ 👨‍💼 [Người dùng]
+   (Lính gác chống ngủ gật)          (Máy chủ vận hành Web & API)           (Nhập liệu, tải Word)
+                                     │
+                                     │ (Đọc / Ghi lịch sử form)
+                                     ▼
+                                  🐘 [Neon.tech]
+                                (Cơ sở dữ liệu PostgreSQL)
