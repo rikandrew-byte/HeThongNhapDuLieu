@@ -241,11 +241,13 @@ def prepare_html_data(raw_data: dict) -> dict:
         val = str(raw_data.get(f, '')).strip()
         if f in ['Honnhan', 'Hocvan']:
             data[f] = TRANSLATION_MAP.get(val.lower(), val)
+        elif f in ['QG1', 'QG2', 'QG3']:
+            data[f] = translate_fixed(val)
         else:
             data[f] = val
 
     # Dịch tự do các trường cần thiết sang tiếng Trung Phồn Thể
-    for f in ['Noio', 'ndcv1', 'ndcv2', 'ndcv3', 'loi_binh_1']:
+    for f in ['Noio', 'ndcv1', 'ndcv2', 'ndcv3', 'loi_binh_1', 'N1', 'N2', 'N3']:
         data[f] = translate_free(data.get(f, ''))
 
     # Gom các trường tô vàng vào loi_binh_1 (HTML Ver 6.30)
@@ -358,7 +360,7 @@ def prepare_data(raw: dict) -> dict:
     for f in ['Honnhan', 'Hocvan', 'QG1', 'QG2', 'QG3']:
         context[f] = translate_fixed(raw.get(f, ''))
     
-    for f in ['Noio', 'ndcv1', 'ndcv2', 'ndcv3', 'loi_binh_1']:
+    for f in ['Noio', 'ndcv1', 'ndcv2', 'ndcv3', 'loi_binh_1', 'N1', 'N2', 'N3']:
         context[f] = translate_free(context.get(f, ''))
 
     # 4. Checkbox f01 -> f46
