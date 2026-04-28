@@ -4,7 +4,7 @@ Document Automation System (DAS) - Flask Backend V3.0
 Nhập liệu Tiếng Việt → Xuất file Word với nội dung Tiếng Trung Phồn Thể
 """
 import os, uuid, re, unicodedata, json, base64
-from datetime import date, datetime
+from datetime import date, datetime, timedelta, timezone
 from flask import Flask, request, jsonify, send_file, render_template, Response
 from flask_cors import CORS
 from jinja2 import Template
@@ -623,13 +623,14 @@ def api_view_photo():
 def api_history():
     try:
         records = FormHistory.query.order_by(FormHistory.ngay_tao.desc()).limit(100).all()
+        vietnam_tz = timezone(timedelta(hours=7))
         data = [{
             'id': r.id,
             'ma_so': r.ma_so,
             'ho_ten': r.ho_ten,
             'ten_file': r.ten_file,
             'data_json': json.loads(r.data_json) if r.data_json else None,
-            'ngay_tao': r.ngay_tao.strftime("%d/%m/%Y %H:%M:%S")
+            'ngay_tao': r.ngay_tao.replace(tzinfo=timezone.utc).astimezone(vietnam_tz).strftime("%d/%m/%Y %H:%M:%S") if r.ngay_tao else ''
         } for r in records]
         return jsonify({'success': True, 'data': data})
     except Exception as e:
