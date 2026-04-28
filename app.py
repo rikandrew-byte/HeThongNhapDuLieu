@@ -564,7 +564,7 @@ def api_translate():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
-@app.route('/api/download/<maso>', methods=['GET'])
+@app.route('/cv/<maso>', methods=['GET'])
 @auth_required
 def download_history(maso):
     try:
