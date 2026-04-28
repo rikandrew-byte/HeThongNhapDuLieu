@@ -244,6 +244,10 @@ def prepare_html_data(raw_data: dict) -> dict:
         else:
             data[f] = val
 
+    # Dịch tự do các trường cần thiết sang tiếng Trung Phồn Thể
+    for f in ['Noio', 'ndcv1', 'ndcv2', 'ndcv3', 'loi_binh_1']:
+        data[f] = translate_free(data.get(f, ''))
+
     # Gom các trường tô vàng vào loi_binh_1 (HTML Ver 6.30)
     yellow_alerts = []
     for i in range(1, 23):
@@ -283,7 +287,9 @@ def prepare_html_data(raw_data: dict) -> dict:
 
     # Chuyển ảnh đại diện sang Base64
     photo_path = raw_data.get('photo', '')
-    if photo_path and os.path.exists(photo_path):
+    if photo_path and isinstance(photo_path, str) and photo_path.startswith('data:image/'):
+        data['photo_base64'] = photo_path
+    elif photo_path and isinstance(photo_path, str) and os.path.exists(photo_path):
         data['photo_base64'] = get_base64_image(photo_path)
     else:
         data['photo_base64'] = ""
@@ -393,9 +399,23 @@ def generate_word(form_data: dict, template_name='resume_template_chuan.docx') -
     
     # 2. XỬ LÝ ẢNH CHUYÊN SÂU
     photo_path = form_data.get('photo', '')
-    if photo_path and os.path.exists(photo_path):
-        # Ảnh cố định kích thước 64mm x 85mm
+    if photo_path and isinstance(photo_path, str) and photo_path.startswith('data:image/'):
+        try:
+            import base64
+            header, encoded = photo_path.split(",", 1)
+            img_data = base64.b64decode(encoded)
+            if not os.path.exists(UPL_DIR): os.makedirs(UPL_DIR)
+            temp_path = os.path.join(UPL_DIR, f"temp_avatar_{uuid.uuid4().hex[:8]}.png")
+            with open(temp_path, "wb") as fh:
+                fh.write(img_data)
+            form_data['photo'] = InlineImage(doc, temp_path, width=Mm(64), height=Mm(85))
+        except Exception as e:
+            print(f"Lỗi giải mã ảnh Base64 cho Word: {e}")
+            form_data['photo'] = ""
+    elif photo_path and isinstance(photo_path, str) and os.path.exists(photo_path):
         form_data['photo'] = InlineImage(doc, photo_path, width=Mm(64), height=Mm(85))
+    else:
+        form_data['photo'] = ""
     
     # 3. ĐỔ DỮ LIỆU VÀO TEMPLATE
     doc.render(form_data)
@@ -443,7 +463,7 @@ def api_generate():
                 img_id = uuid.uuid4().hex[:8]
                 photo_path = os.path.join(UPL_DIR, f'photo_{img_id}.png')
                 photo_file.save(photo_path)
-                data['photo'] = photo_path
+                data['photo'] = get_base64_image(photo_path)
         else:
             data = request.get_json() or {}
         
@@ -497,7 +517,7 @@ def api_submit_only():
                 img_id = uuid.uuid4().hex[:8]
                 photo_path = os.path.join(UPL_DIR, f'photo_{img_id}.png')
                 photo_file.save(photo_path)
-                data['photo'] = photo_path
+                data['photo'] = get_base64_image(photo_path)
         else:
             data = request.get_json() or {}
         
