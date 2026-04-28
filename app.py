@@ -423,7 +423,7 @@ def api_generate():
             html_content,
             mimetype="text/html",
             headers={
-                "Content-Disposition": f'attachment; filename="{fn}"; filename*=UTF-8\'\'{quote(fn)}',
+                "Content-Disposition": f'attachment; filename="{fn}"',
                 "Content-Type": "text/html; charset=utf-8"
             }
         )
