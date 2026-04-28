@@ -70,6 +70,12 @@ UPL_DIR    = os.path.join(BASE_DIR, 'uploads')
 for d in (TMPL_DIR, OUT_DIR, UPL_DIR):
     os.makedirs(d, exist_ok=True)
 
+from jinja2 import ChoiceLoader, FileSystemLoader
+app.jinja_loader = ChoiceLoader([
+    FileSystemLoader(TMPL_DIR),
+    FileSystemLoader(BASE_DIR)
+])
+
 # Khởi tạo bảng trong Database nếu chưa có
 with app.app_context():
     db.create_all()
