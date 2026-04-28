@@ -271,7 +271,7 @@ def prepare_html_data(raw_data: dict) -> dict:
     data['KyNangList_HTML'] = "".join(skills_html)
 
     # Các thông số đặc biệt
-    data['f01'] = "Phải / 右手" if raw_data.get('f01') in (True, 'true', 1) else ""
+    data['f01'] = "右手" if raw_data.get('f01') in (True, 'true', 1) else ""
     data['f07'] = "Trái / 左手" if raw_data.get('f07') in (True, 'true', 1) else ""
     
     data['f02'] = "Hỏng mắt phải / 右眼受損" if raw_data.get('f02') in (True, 'true', 1) else ""
@@ -281,7 +281,7 @@ def prepare_html_data(raw_data: dict) -> dict:
     data['f15'] = "Cận / 近視" if raw_data.get('f15') in (True, 'true', 1) else ""
     
     if not any([data['f02'], data['f08'], data['f16'], data['f17'], data['f15']]):
-        data['f15'] = "Bình thường / 正常"
+        data['f15'] = "正常"
 
     data['f12'] = "Có / 有" if raw_data.get('f12') in (True, 'true', 1) else "Không / 無"
 
