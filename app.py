@@ -471,10 +471,8 @@ def api_generate():
         form_data = prepare_data(data)
         html_content, fn = export_resume(form_data, 'html')
         
-        # 2. Lưu file vật lý để quản lý lịch sử
-        if not os.path.exists(OUT_DIR): os.makedirs(OUT_DIR)
-        with open(os.path.join(OUT_DIR, fn), 'w', encoding='utf-8') as f:
-            f.write(html_content)
+        # 2. Bỏ qua việc lưu file vật lý để không chiếm ổ cứng Render
+        pass
 
         # 3. Lưu vào Database Lịch sử trước khi trả về file
         try:
@@ -558,10 +556,37 @@ def api_translate():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
-@app.route('/api/download/<filename>')
+@app.route('/api/download/<maso>', methods=['GET'])
 @auth_required
-def api_download(filename):
-    return send_file(os.path.join(OUT_DIR, filename), as_attachment=True)
+def download_history(maso):
+    try:
+        # 1. Gọi Database lấy data theo maso
+        record = FormHistory.query.filter_by(ma_so=maso).order_by(FormHistory.ngay_tao.desc()).first()
+        if not record:
+            return jsonify({"error": "Không tìm thấy hồ sơ với mã số này"}), 404
+            
+        data = json.loads(record.data_json)
+        
+        # 2. Render lại HTML từ data lấy được (Đảm bảo đã chạy qua bộ lọc dịch tiếng Trung)
+        html_content = generate_html_resume(data, 'fct_template_v6.18.html')
+        
+        # 3. Tạo tên file chuẩn (Không dấu, viết hoa chữ cái đầu)
+        clean_name = sanitize_filename_master(record.ho_ten)
+        filename = f"{maso}_{clean_name}.html"
+        
+        # 4. Trả file về trình duyệt
+        import io
+        return send_file(
+            io.BytesIO(html_content.encode('utf-8')),
+            mimetype='text/html',
+            as_attachment=True,
+            download_name=filename
+        )
+    except Exception as e:
+        print(f"Lỗi tải file: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": "Không thể tải file, vui lòng kiểm tra lại data"}), 400
 
 @app.route('/resume-<int:record_id>.html')
 @auth_required

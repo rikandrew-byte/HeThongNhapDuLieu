@@ -476,7 +476,7 @@ async function loadHistory() {
                     <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">
                         <button onclick="restoreData(${index})" style="padding: 6px 12px; background-color: #ffc107; color: #000; border: none; border-radius: 4px; font-size: 14px; cursor: pointer; margin-right: 5px; font-weight: bold;">✍️ SỬA</button>
                         <a href="/resume-${item.id}.html" target="_blank" style="padding: 6px 12px; background-color: #059669; color: white; text-decoration: none; border-radius: 4px; font-size: 14px; display: inline-block; margin-right: 5px; font-weight: bold;">👁️ IN HỒ SƠ (6.29)</a>
-                        ${item.ten_file ? `<a href="/api/download/${encodeURIComponent(item.ten_file)}" target="_blank" style="padding: 6px 12px; background-color: #28a745; color: white; text-decoration: none; border-radius: 4px; font-size: 14px; display: inline-block; margin-right: 5px;">📥 Tải HTML</a>` : ''}
+                        ${item.ma_so ? `<a href="/api/download/${encodeURIComponent(item.ma_so)}" target="_blank" style="padding: 6px 12px; background-color: #28a745; color: white; text-decoration: none; border-radius: 4px; font-size: 14px; display: inline-block; margin-right: 5px; font-weight: bold;">📥 Tải HTML</a>` : ''}
                         <button onclick="deleteHistory(${item.id})" style="padding: 6px 12px; background-color: #dc3545; color: white; border: none; border-radius: 4px; font-size: 14px; cursor: pointer;">🗑️ Xóa</button>
                     </td>
                 `;
