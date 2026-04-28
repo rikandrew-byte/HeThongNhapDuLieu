@@ -20,7 +20,7 @@ load_dotenv()
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 app.debug = True  # Lệnh cưỡng chế bật Debug
-CORS(app)
+CORS(app, resources={r"/*": {"origins": ["https://cv.fct.vn", "http://127.0.0.1:5000", "http://localhost:5000"]}})
 from flask_basicauth import BasicAuth
 
 app.config['BASIC_AUTH_USERNAME'] = 'fctvt'  # Tên đăng nhập bạn chọn
