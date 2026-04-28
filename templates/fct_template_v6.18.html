@@ -4,112 +4,66 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google" content="notranslate">
-    <title>FCT-Ver 6.28 (Adaptive Iron Seal)</title>
+    <title>FCT-Ver 6.29 (Optimized Emerald)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
+        @keyframes pulse-soft { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .animate-pulse-soft { animation: pulse-soft 3s infinite; }
         
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0f172a;
-            display: flex;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px 0; /* Cách lề trên dưới khi xem trên PC */
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; display: flex; justify-content: center; min-height: 100vh; padding: 20px 0; }
 
-        /* KHUNG CHUẨN A4 KHI XEM TRÊN MÀN HÌNH LỚN */
         .a4-page {
-            width: 210mm;
-            height: 296mm;
-            background-color: white;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            overflow: hidden;
+            width: 210mm; height: 296.5mm; background-color: white;
+            display: flex; flex-direction: column; position: relative; overflow: hidden;
             box-shadow: 0 0 30px rgba(0,0,0,0.6);
         }
 
         .fct-visual-header {
-            position: relative;
-            background-color: #041c14; 
-            height: 13.5%;
-            overflow: hidden;
-            color: white;
-            border-bottom: 3px solid #00e68a;
-            flex-shrink: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            position: relative; background-color: #041c14; height: 13.5%; 
+            overflow: hidden; color: white; border-bottom: 3px solid #00e68a; flex-shrink: 0;
         }
 
         .fct-visual-header::before {
-            content: '';
-            position: absolute;
-            inset: -10px;
-            background-image: url('{{bg_base64}}'); 
-            background-size: cover;
-            background-position: center; 
-            opacity: 0.8; 
-            filter: blur(1px) brightness(1.2);
-            z-index: 0;
+            content: ''; position: absolute; inset: -10px;
+            background-image: url('{{bg_base64}}'); background-size: cover;
+            background-position: center; opacity: 0.7; filter: blur(2px) brightness(1.2); z-index: 0;
         }
 
-        .fct-visual-header::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(180deg, rgba(4,28,20,0.1) 0%, rgba(4,28,20,0.9) 100%);
-            z-index: 1;
+        /* TÁI TẠO MÀU NGỌC LỤC BẢO CHO LOGO */
+        .emerald-eagle {
+            filter: invert(58%) sepia(82%) saturate(541%) hue-rotate(110deg) brightness(95%) contrast(101%) drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+            transform: scaleX(1.3);
         }
 
         .content-wrapper { display: flex; flex: 1; overflow: hidden; }
         .sidebar { background-color: #f3f7f5; width: 38.196%; display: flex; flex-direction: column; }
         .main { width: 61.804%; display: flex; flex-direction: column; }
 
-        /* =========================================
-           LỚP 1: GIAO DIỆN DI ĐỘNG / SMARTPHONE
-           ========================================= */
+        /* TỶ LỆ 50/25/25 CHO CỘT PHẢI */
+        .section-personal { flex-basis: 50%; display: flex; flex-direction: column; }
+        .section-skills { flex-basis: 24%; display: flex; flex-direction: column; }
+        .section-experience { flex-basis: 24%; display: flex; flex-direction: column; }
+
         @media screen and (max-width: 850px) {
             body { padding: 0; background-color: white; }
-            .a4-page { 
-                width: 100%; 
-                height: auto; 
-                min-height: 100vh; 
-                box-shadow: none; 
-                overflow: visible; /* Cho phép cuộn dọc */
-            }
-            .fct-visual-header { height: 140px; }
+            .a4-page { width: 100%; height: auto; min-height: 100vh; box-shadow: none; overflow: visible; }
+            .fct-visual-header { height: 130px; }
             .content-wrapper { flex-direction: column; overflow: visible; }
-            .sidebar { width: 100%; border-right: none; border-bottom: 3px solid #e5e7eb; }
-            .sidebar .mt-auto { margin-top: 20px; } /* Tạo khoảng trống trước phần Ghi chú */
-            .main { width: 100%; overflow: visible; }
-            .slogan-desktop { display: none; } /* Ẩn bớt text phụ trên Header cho gọn */
+            .sidebar, .main { width: 100%; }
+            .section-personal, .section-skills, .section-experience { flex-basis: auto; height: auto; margin-bottom: 20px; }
         }
 
-        /* =========================================
-           LỚP 2: LỆNH MÁY IN (ÉP CHẾT VÀO KHỔ A4)
-           ========================================= */
         @page { size: A4; margin: 0 !important; }
         @media print {
             body { background: none; padding: 0; margin: 0; }
-            .a4-page { 
-                width: 210mm !important; 
-                height: 297mm !important; 
-                margin: 0; 
-                padding: 0; 
-                border: none; 
-                box-shadow: none; 
-                overflow: hidden !important; 
-            }
-            .fct-visual-header { height: 13.5% !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            .content-wrapper { flex-direction: row !important; overflow: hidden !important; }
-            .sidebar { width: 38.196% !important; border-right: 1px solid #e5e7eb !important; border-bottom: none !important; }
-            .sidebar .mt-auto { margin-top: auto !important; }
-            .main { width: 61.804% !important; overflow: hidden !important; }
-            .slogan-desktop { display: block !important; }
+            .a4-page { width: 210mm !important; height: 297mm !important; overflow: hidden !important; }
+            .fct-visual-header { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .content-wrapper { flex-direction: row !important; }
+            .sidebar { width: 38.196% !important; }
+            .main { width: 61.804% !important; }
             .notranslate { translate: no !important; }
         }
     </style>
@@ -118,51 +72,47 @@
     <div class="a4-page notranslate">
         <div class="fct-visual-header">
             <div class="relative z-10 w-full h-full flex flex-col justify-center items-center">
-                <div class="absolute top-2 left-6 slogan-desktop">
-                    <p class="text-[10px] text-emerald-100 font-black uppercase tracking-widest notranslate" translate="no">
-                        世有伯樂，然後<span class="notranslate" translate="no">有</span>千里馬
-                    </p>
+                <div class="absolute top-2 left-6 animate-pulse-soft hidden sm:block">
+                    <p class="text-[10px] text-emerald-100 font-black uppercase tracking-widest notranslate" translate="no">世有伯樂，然後<span class="notranslate" translate="no">有</span>千里馬</p>
                 </div>
-                <div class="absolute top-2 right-6 slogan-desktop">
+                <div class="absolute top-2 right-6 animate-pulse-soft hidden sm:block">
                     <p class="text-[10px] text-emerald-400 font-black uppercase">FCT-2026</p>
                 </div>
-                
-                <div class="flex flex-col items-center mt-[-10px] sm:mt-[-15px]">
-                    <img src="{{logo_base64}}" alt="Logo" class="h-20 sm:h-24 w-auto object-contain z-10" style="filter: drop-shadow(0 4px 10px rgba(0,0,0,0.8));">
-                    <h2 class="text-xl sm:text-2xl font-bold uppercase text-emerald-50 tracking-[0.4em] mt-[-15px] sm:mt-[-20px] z-20" style="font-family: 'Playfair Display', serif;">Resumé</h2>
+                <div class="flex flex-col items-center mt-[-10px]">
+                    <img src="{{logo_base64}}" alt="Logo" class="h-24 w-auto object-contain emerald-eagle z-10">
+                    <h2 class="text-2xl font-bold uppercase text-emerald-50 tracking-[0.4em] mt-[-18px] z-20" style="font-family: 'Playfair Display', serif;">Resumé</h2>
                 </div>
             </div>
         </div>
 
         <div class="content-wrapper">
-            <div class="sidebar p-5 lg:border-r border-gray-200">
+            <div class="sidebar p-5 border-r border-gray-200">
                 <div class="mb-4 text-center border-b-2 border-emerald-200 pb-2">
-                    <p class="text-[10px] font-black text-emerald-600 mb-1 uppercase">ID: {{Maso}}</p>
+                    <p class="text-[10px] font-black text-emerald-600 mb-0.5 uppercase">ID: {{Maso}}</p>
                     <h1 class="text-[17px] font-black uppercase text-gray-900">{{Hoten}}</h1>
                     <p class="text-[16px] font-bold text-gray-500 tracking-[0.1em] notranslate" translate="no">{{TentiengTrung}}</p>
                 </div>
-                <div class="w-2/3 sm:w-full aspect-[3/4] mx-auto bg-gray-100 rounded-2xl shadow-xl p-1 mb-5 border border-gray-300 overflow-hidden relative">
-                    <img src="{{photo_base64}}" class="w-full h-full object-cover rounded-xl relative z-10" onerror="this.style.opacity='0'">
+                <div class="w-full aspect-[3/4] bg-gray-100 rounded-2xl shadow-lg p-1 mb-5 border border-gray-300 overflow-hidden relative">
+                    <img src="{{photo_base64}}" class="w-full h-full object-cover rounded-xl relative z-10">
                 </div>
-                
                 <div class="mt-auto bg-emerald-50 p-4 rounded-xl border border-emerald-100">
                     <h2 class="text-[10px] font-black text-emerald-900 border-b-2 border-emerald-500 pb-1 mb-2 uppercase flex justify-between items-center">
                         <span>Ghi chú / 備註</span><i class="fas fa-pen-nib text-emerald-600 text-[9px]"></i>
                     </h2>
-                    <div class="text-[10px] text-gray-700 leading-relaxed whitespace-pre-wrap min-h-[60px]">{{loi_binh_1}}</div>
-                    <div class="mt-3 pt-2 border-t border-emerald-200 flex justify-between items-center">
+                    <div class="text-[10px] text-gray-700 leading-relaxed whitespace-pre-wrap">{{loi_binh_1}}</div>
+                    <div class="mt-2 pt-1 border-t border-emerald-200 flex justify-between items-center">
                         <span class="text-[8px] font-bold text-emerald-800 italic uppercase">NPT:</span>
                         <span class="text-[9px] font-black text-emerald-900 uppercase">{{f48}}</span>
                     </div>
                 </div>
             </div>
 
-            <div class="main p-5 sm:p-7 flex flex-col gap-5">
-                <section>
-                    <div class="text-xs font-black text-emerald-900 border-l-4 border-emerald-600 pl-3 mb-4 uppercase flex justify-between items-center bg-emerald-50 py-1.5 pr-2">
+            <div class="main p-6 flex flex-col gap-5">
+                <section class="section-personal">
+                    <div class="text-xs font-black text-emerald-900 border-l-4 border-emerald-600 pl-3 mb-3 uppercase flex justify-between items-center bg-emerald-50 py-1 pr-2">
                         <span>Nhân thân cơ bản</span><span class="text-emerald-700 text-[9px] italic font-semibold">基本個人信息</span>
                     </div>
-                    <div class="space-y-2 text-[10.5px] px-2">
+                    <div class="flex-1 flex flex-col justify-between text-[10px] px-2">
                         <div class="flex justify-between border-b border-gray-100 pb-1"><span>Tuổi / 年齡</span><span class="font-bold">{{Tuoi}}</span></div>
                         <div class="flex justify-between border-b border-gray-100 pb-1"><span>Ngày sinh / 生日</span><span class="font-bold">{{Ngaysinh}}</span></div>
                         <div class="flex justify-between border-b border-gray-100 pb-1"><span>Chiều cao / 身高</span><span class="font-bold">{{Chieucao}} cm</span></div>
@@ -177,21 +127,21 @@
                     </div>
                 </section>
                 
-                <section>
+                <section class="section-skills">
                     <div class="text-xs font-black text-emerald-900 border-l-4 border-emerald-600 pl-3 mb-2 uppercase flex justify-between items-center bg-emerald-50 py-1 pr-2">
                         <span>Kỹ năng & Ngoại ngữ</span><span class="text-emerald-700 text-[9px]">技能與語言</span>
                     </div>
-                    <div class="flex flex-wrap gap-2 px-2">{{KyNangList_HTML}}</div>
+                    <div class="flex flex-wrap gap-1.5 px-2">{{KyNangList_HTML}}</div>
                 </section>
 
-                <section>
-                    <div class="text-xs font-black text-emerald-900 border-l-4 border-emerald-600 pl-3 mb-3 uppercase flex justify-between items-center bg-emerald-50 py-1.5 pr-2">
+                <section class="section-experience">
+                    <div class="text-xs font-black text-emerald-900 border-l-4 border-emerald-600 pl-3 mb-3 uppercase flex justify-between items-center bg-emerald-50 py-1 pr-2">
                         <span>Kinh nghiệm</span><span class="text-emerald-700 text-[9px]">工作經驗</span>
                     </div>
-                    <div class="space-y-4 relative border-l-2 border-emerald-100 ml-4 pb-4">
-                        {% if ndcv1 %}<div class="pl-6 relative"><div class="absolute w-2.5 h-2.5 bg-emerald-600 rounded-full -left-[6px] border-2 border-white top-1 shadow-md"></div><h3 class="text-[10px] font-bold text-gray-900 uppercase">{{ndcv1}}</h3><p class="text-[9px] text-emerald-600 font-bold italic">{{QG1}} ({{N1}})</p></div>{% endif %}
-                        {% if ndcv2 %}<div class="pl-6 relative"><div class="absolute w-2.5 h-2.5 bg-emerald-600 rounded-full -left-[6px] border-2 border-white top-1 shadow-md"></div><h3 class="text-[10px] font-bold text-gray-900 uppercase">{{ndcv2}}</h3><p class="text-[9px] text-emerald-600 font-bold italic">{{QG2}} ({{N2}})</p></div>{% endif %}
-                        {% if ndcv3 %}<div class="pl-6 relative"><div class="absolute w-2.5 h-2.5 bg-emerald-600 rounded-full -left-[7px] border-2 border-white top-1 shadow-md"></div><h3 class="text-[10px] font-bold text-gray-900 uppercase">{{ndcv3}}</h3><p class="text-[9px] text-emerald-600 font-bold italic">{{QG3}} ({{N3}})</p></div>{% endif %}
+                    <div class="space-y-3 relative border-l-2 border-emerald-100 ml-4 flex-1">
+                        {% if ndcv1 %}<div class="pl-6 relative"><div class="absolute w-2.5 h-2.5 bg-emerald-600 rounded-full -left-[6px] border-2 border-white top-0.5 shadow-md"></div><h3 class="text-[10px] font-bold text-gray-900 uppercase">{{ndcv1}}</h3><p class="text-[9px] text-emerald-600 font-bold italic">{{QG1}} ({{N1}})</p></div>{% endif %}
+                        {% if ndcv2 %}<div class="pl-6 relative"><div class="absolute w-2.5 h-2.5 bg-emerald-600 rounded-full -left-[6px] border-2 border-white top-0.5 shadow-md"></div><h3 class="text-[10px] font-bold text-gray-900 uppercase">{{ndcv2}}</h3><p class="text-[9px] text-emerald-600 font-bold italic">{{QG2}} ({{N2}})</p></div>{% endif %}
+                        {% if ndcv3 %}<div class="pl-6 relative"><div class="absolute w-2.5 h-2.5 bg-emerald-600 rounded-full -left-[6px] border-2 border-white top-0.5 shadow-md"></div><h3 class="text-[10px] font-bold text-gray-900 uppercase">{{ndcv3}}</h3><p class="text-[9px] text-emerald-600 font-bold italic">{{QG3}} ({{N3}})</p></div>{% endif %}
                     </div>
                 </section>
             </div>
