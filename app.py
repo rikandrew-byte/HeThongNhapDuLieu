@@ -291,7 +291,7 @@ def prepare_html_data(raw_data: dict) -> dict:
     if not any([data['f02'], data['f08'], data['f16'], data['f17'], data['f15']]):
         data['f15'] = "正常"
 
-    data['f12'] = "Có / 有" if raw_data.get('f12') in (True, 'true', 1) else "Không / 無"
+    data['f12'] = "Có / 有" if raw_data.get('f12') in (True, 'true', 1) else "無"
 
     # Chuyển ảnh đại diện sang Base64
     photo_path = raw_data.get('photo', '')
