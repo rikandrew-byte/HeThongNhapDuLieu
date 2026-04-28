@@ -637,36 +637,14 @@ async function loadHistory() {
             }
 
             try {
-                console.log(`Đang gọi API: ${mode === 'html' ? '/api/submit-only' : '/api/generate'}`);
-                // Nếu là HTML, dùng api/submit-only để lấy ID rồi mở preview
-                if (mode === 'html') {
-                    const response = await fetch('/api/submit-only', { method: 'POST', body: formData });
-                    const result = await response.json();
-                    if (result.success) {
-                        // Vẫn giữ lại việc mở tab preview để Master dùng Ctrl+P nếu muốn
-                        window.open(`/resume-${result.id}.html`, '_blank');
-                    } else {
-                        alert("Lỗi: " + result.error);
-                    }
+                const response = await fetch('/api/submit-only', { method: 'POST', body: formData });
+                const result = await response.json();
+                
+                if (result.success) {
+                    // ĐIỀU HƯỚNG THẲNG ĐẾN ROUTE TẢI FILE THEO MÃ SỐ (KHAI TỬ BLOB URL)
+                    window.location.href = `/api/download/${encodeURIComponent(result.ma_so)}`;
                 } else {
-                    const response = await fetch('/api/generate', { method: 'POST', body: formData });
-                    if (response.ok) {
-                        const blob = await response.blob();
-                        const url = window.URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        // Lấy tên file từ header nếu có, không thì dùng mặc định
-                        const contentDisp = response.headers.get('Content-Disposition');
-                        const filename = contentDisp ? contentDisp.split('filename=')[1] : 'resume.html';
-                        a.download = filename.replace(/"/g, ''); // Xóa ngoặc kép nếu có
-                        document.body.appendChild(a);
-                        a.click();
-                        window.URL.revokeObjectURL(url);
-                        a.remove();
-                    } else {
-                        const result = await response.json();
-                        alert("Lỗi: " + result.error);
-                    }
+                    alert("Lỗi: " + result.error);
                 }
             } catch (error) {
                 alert("Lỗi kết nối máy chủ.");
