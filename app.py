@@ -274,7 +274,7 @@ def prepare_html_data(raw_data: dict) -> dict:
     skills_html = []
     for key, name in SKILL_MAPPING.items():
         if raw_data.get(key) in (True, 'true', '1', 1, 'yes', 'on', 'checked'):
-            tag = f'<span class="px-2 py-1 bg-emerald-600 text-white rounded text-[9px] font-bold uppercase shadow-sm">{name}</span>'
+            tag = f'<span class="px-2 py-1 bg-emerald-600 text-white rounded text-[13px] font-bold uppercase shadow-sm">{name}</span>'
             skills_html.append(tag)
     data['KyNangList_HTML'] = "".join(skills_html)
 
