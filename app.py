@@ -617,6 +617,73 @@ def api_view_photo():
         return send_file(path)
     return "Not Found", 404
 
+from flask import make_response
+
+@app.route('/admin', methods=['GET', 'POST'])
+def admin_portal():
+    admin_pass = os.environ.get('ADMIN_PASSWORD', '123456')
+    
+    def get_admin_records():
+        vietnam_tz = timezone(timedelta(hours=7))
+        records = FormHistory.query.with_entities(
+            FormHistory.id, 
+            FormHistory.ma_so, 
+            FormHistory.ho_ten, 
+            FormHistory.ngay_tao
+        ).order_by(FormHistory.ngay_tao.desc()).all()
+        
+        data = []
+        for r in records:
+            data.append({
+                'id': r.id,
+                'ma_so': r.ma_so,
+                'ho_ten': r.ho_ten,
+                'ngay_tao': r.ngay_tao.replace(tzinfo=timezone.utc).astimezone(vietnam_tz).strftime("%d/%m/%Y %H:%M:%S") if r.ngay_tao else ''
+            })
+        return data
+
+    if request.method == 'POST':
+        pwd = request.form.get('password')
+        if pwd == admin_pass:
+            records = get_admin_records()
+            resp = make_response(render_template('admin.html', records=records, authenticated=True))
+            resp.set_cookie('admin_auth', pwd, max_age=60*60*24)
+            return resp
+        else:
+            return render_template('admin.html', authenticated=False, error="Mật khẩu không chính xác!")
+            
+    cookie_pwd = request.cookies.get('admin_auth')
+    if cookie_pwd == admin_pass:
+        records = get_admin_records()
+        return render_template('admin.html', records=records, authenticated=True)
+    else:
+        return render_template('admin.html', authenticated=False)
+
+@app.route('/cv/<id>/<maso>', methods=['GET'])
+def secure_web_view(id, maso):
+    try:
+        record_id = int(id)
+        record = FormHistory.query.get(record_id)
+        if not record or record.ma_so != maso:
+            return "Không tìm thấy hồ sơ", 404
+            
+        data = json.loads(record.data_json)
+        html_content = generate_html_resume(data, 'fct_template_v6.18.html')
+        
+        clean_name = sanitize_filename_master(record.ho_ten)
+        filename = f"{maso} {clean_name}.html"
+        encoded_filename = quote(filename)
+        
+        response = Response(html_content, mimetype="text/html")
+        response.headers["Content-Type"] = "text/html; charset=utf-8"
+        response.headers["Content-Disposition"] = f'inline; filename="{filename}"; filename*=UTF-8\'\'{encoded_filename}'
+        return response
+        
+    except ValueError:
+        return "ID không hợp lệ", 404
+    except Exception as e:
+        return f"Lỗi hệ thống: {str(e)}", 500
+
 # --- API LẤY DANH SÁCH LỊCH SỬ ---
 @app.route('/api/history', methods=['GET'])
 @auth_required

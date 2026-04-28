@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal - FCT-1503</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4">
+
+    {% if not authenticated %}
+    <!-- LOGIN FORM -->
+    <div class="glass-card w-full max-w-md p-8 rounded-3xl border-t border-emerald-500/30">
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-emerald-500/10 rounded-2xl text-emerald-400 text-2xl mb-4 shadow-inner shadow-emerald-500/20">
+                <i class="fas fa-shield-halved"></i>
+            </div>
+            <h1 class="text-2xl font-bold tracking-tight text-slate-100">Admin Access</h1>
+            <p class="text-sm text-slate-400 mt-1">Hệ thống quản trị FCT-1503</p>
+        </div>
+
+        <form method="POST" action="/admin" class="space-y-6">
+            <div>
+                <label for="password" class="block text-xs font-medium uppercase tracking-wider text-slate-400 mb-2">Mật khẩu bảo mật</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <input type="password" name="password" id="password" required 
+                        class="block w-full pl-10 pr-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all duration-200 text-sm"
+                        placeholder="Nhập mật khẩu để tiếp tục...">
+                </div>
+            </div>
+
+            {% if error %}
+            <div class="flex items-center gap-2 text-xs font-medium text-red-400 bg-red-500/10 p-3 rounded-xl border border-red-500/20 animate-pulse">
+                <i class="fas fa-circle-exclamation"></i>
+                <span>{{ error }}</span>
+            </div>
+            {% endif %}
+
+            <button type="submit" 
+                class="w-full py-3 px-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-semibold rounded-xl shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 active:scale-[0.98] transition-all duration-200 text-sm">
+                Xác thực truy cập
+            </button>
+        </form>
+    </div>
+
+    {% else %}
+    <!-- ADMIN DASHBOARD -->
+    <div class="glass-card w-full max-w-6xl p-8 rounded-3xl border-t border-emerald-500/30">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 pb-6 border-b border-slate-800">
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight text-slate-100 flex items-center gap-3">
+                    <i class="fas fa-folder-tree text-emerald-400"></i>
+                    Quản lý Hồ sơ Ứng viên
+                </h1>
+                <p class="text-sm text-slate-400 mt-1">Danh sách dữ liệu an toàn (Đã tối ưu RAM)</p>
+            </div>
+            <a href="/" class="text-xs font-medium text-slate-400 hover:text-emerald-400 flex items-center gap-2 px-3 py-2 bg-slate-900/50 border border-slate-800 rounded-xl hover:border-emerald-500/30 transition-all duration-200">
+                <i class="fas fa-arrow-left"></i> Về Trang chủ
+            </a>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b border-slate-800 text-xs font-semibold uppercase tracking-wider text-slate-400 bg-slate-900/30">
+                        <th class="py-4 px-4">ID</th>
+                        <th class="py-4 px-4">Mã Số</th>
+                        <th class="py-4 px-4">Họ Tên</th>
+                        <th class="py-4 px-4">Thời Gian Tạo</th>
+                        <th class="py-4 px-4 text-center">Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/50 text-sm">
+                    {% for r in records %}
+                    <tr class="hover:bg-slate-800/30 transition-colors duration-150">
+                        <td class="py-4 px-4 text-slate-500 font-mono text-xs">{{ r.id }}</td>
+                        <td class="py-4 px-4 font-semibold text-emerald-400">{{ r.ma_so }}</td>
+                        <td class="py-4 px-4 text-slate-200 font-medium">{{ r.ho_ten }}</td>
+                        <td class="py-4 px-4 text-slate-400 text-xs">{{ r.ngay_tao }}</td>
+                        <td class="py-4 px-4 text-center">
+                            <button onclick="copySmartUrl('{{ r.id }}', '{{ r.ma_so }}')" 
+                                class="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 hover:text-emerald-300 text-xs font-semibold rounded-lg border border-emerald-500/20 transition-all duration-200 active:scale-95">
+                                <i class="fas fa-copy"></i> Copy Link Gửi Khách
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            {% if not records %}
+            <div class="text-center py-12 text-slate-500 text-sm">
+                <i class="fas fa-inbox text-2xl mb-2 block text-slate-600"></i>
+                Chưa có hồ sơ nào được tạo.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-4 right-4 bg-slate-900 border border-emerald-500/30 text-emerald-400 text-xs font-medium px-4 py-3 rounded-xl shadow-lg shadow-black/50 flex items-center gap-2 translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <i class="fas fa-check-circle"></i>
+        <span>Đã copy Smart URL vào Clipboard!</span>
+    </div>
+
+    <script>
+        function copySmartUrl(id, maso) {
+            // Sử dụng domain hiện tại để tạo URL tuyệt đối
+            const baseUrl = window.location.origin;
+            const smartUrl = `${baseUrl}/cv/${id}/${maso}`;
+            
+            navigator.clipboard.writeText(smartUrl).then(() => {
+                const toast = document.getElementById('toast');
+                toast.classList.remove('translate-y-20', 'opacity-0');
+                toast.classList.add('translate-y-0', 'opacity-100');
+                
+                setTimeout(() => {
+                    toast.classList.remove('translate-y-0', 'opacity-100');
+                    toast.classList.add('translate-y-20', 'opacity-0');
+                }, 3000);
+            }).catch(err => {
+                alert('Không thể copy link: ' + err);
+            });
+        }
+    </script>
+    {% endif %}
+
+</body>
+</html>
