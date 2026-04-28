@@ -389,10 +389,7 @@ def generate_word(form_data: dict, template_name='resume_template_chuan.docx') -
     # 1. MỞ ĐÚNG FILE MẪU (Nằm cùng thư mục với app.py)
     TEMPLATE_PATH = os.path.join(BASE_DIR, template_name)
     
-    print(f"=====================================")
-    print(f"DEBUG: Đang tìm file tại: {TEMPLATE_PATH}")
-    print(f"DEBUG: File có tồn tại không? {os.path.exists(TEMPLATE_PATH)}")
-    print(f"=====================================")
+    pass
 
     if not os.path.exists(TEMPLATE_PATH):
         raise FileNotFoundError(f'Template không tồn tại: {TEMPLATE_PATH}')
@@ -462,10 +459,12 @@ def api_generate():
             data = json.loads(request.form.get('data', '{}'))
             photo_file = request.files.get('photo')
             if photo_file:
-                img_id = uuid.uuid4().hex[:8]
-                photo_path = os.path.join(UPL_DIR, f'photo_{img_id}.png')
-                photo_file.save(photo_path)
-                data['photo'] = get_base64_image(photo_path)
+                file_bytes = photo_file.read()
+                encoded_string = base64.b64encode(file_bytes).decode('utf-8')
+                ext = os.path.splitext(photo_file.filename)[1][1:].lower()
+                if not ext: ext = 'png'
+                if ext == 'jpg': ext = 'jpeg'
+                data['photo'] = f"data:image/{ext};base64,{encoded_string}"
         else:
             data = request.get_json() or {}
         
@@ -486,9 +485,8 @@ def api_generate():
             )
             db.session.add(new_record)
             db.session.commit()
-            print(f"✅ Đã lưu lịch sử: {fn}")
-        except Exception as db_e:
-            print(f"❌ Lỗi lưu DB: {db_e}")
+        except Exception:
+            db.session.rollback()
 
         # 4. Trả về Response để trình duyệt tải file
         return Response(
@@ -514,10 +512,12 @@ def api_submit_only():
             data = json.loads(request.form.get('data', '{}'))
             photo_file = request.files.get('photo')
             if photo_file:
-                img_id = uuid.uuid4().hex[:8]
-                photo_path = os.path.join(UPL_DIR, f'photo_{img_id}.png')
-                photo_file.save(photo_path)
-                data['photo'] = get_base64_image(photo_path)
+                file_bytes = photo_file.read()
+                encoded_string = base64.b64encode(file_bytes).decode('utf-8')
+                ext = os.path.splitext(photo_file.filename)[1][1:].lower()
+                if not ext: ext = 'png'
+                if ext == 'jpg': ext = 'jpeg'
+                data['photo'] = f"data:image/{ext};base64,{encoded_string}"
         else:
             data = request.get_json() or {}
         
@@ -533,8 +533,8 @@ def api_submit_only():
             )
             db.session.add(new_record)
             db.session.commit()
-        except Exception as db_e:
-            print(f"Lỗi lưu Database: {db_e}")
+        except Exception:
+            db.session.rollback()
             
         return jsonify({
             'success': True, 
@@ -584,10 +584,7 @@ def download_history(maso):
             as_attachment=True,
             download_name=filename
         )
-    except Exception as e:
-        print(f"Lỗi tải file: {e}")
-        import traceback
-        traceback.print_exc()
+    except Exception:
         return jsonify({"error": "Không thể tải file, vui lòng kiểm tra lại data"}), 400
 
 @app.route('/resume-<int:record_id>.html')

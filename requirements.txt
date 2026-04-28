@@ -1,23 +1,10 @@
-
 Flask
 flask-cors
 python-dotenv
 docxtpl
 python-docx
-beautifulsoup4
 deep-translator
-google-generativeai
-gspread
-oauthlib
-requests
-requests-oauthlib
-pandas
-numpy
-openpyxl
-pillow
-gunicorn
 Flask-BasicAuth
 Flask-SQLAlchemy==3.1.1
 psycopg2-binary==2.9.9; sys_platform == 'linux'
-
-
+gunicorn
