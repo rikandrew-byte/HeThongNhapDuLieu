@@ -1,13 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/",
-      "destination": "/templates/index.html"
-    },
-    {
       "source": "/api/:path*",
       "destination": "https://hethongnhapdulieu.onrender.com/api/:path*"
     }
   ]
 }
-
