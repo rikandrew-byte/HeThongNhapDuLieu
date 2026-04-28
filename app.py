@@ -13,6 +13,7 @@ from docx.shared import Mm, Pt
 from deep_translator import GoogleTranslator
 from dotenv import load_dotenv
 from urllib.parse import quote
+from unicodedata import normalize
 
 
 load_dotenv()
@@ -162,6 +163,15 @@ def calc_age(dob_str: str) -> str:
     except Exception:
         return ''
 
+def sanitize_filename_master(text):
+    # 1. Chuyển tiếng Việt có dấu thành không dấu
+    text = normalize('NFKD', text).encode('ascii', 'ignore').decode('ascii')
+    # 2. Viết hoa mỗi chữ cái đầu (Title Case)
+    text = text.title() 
+    # 3. Xóa ký tự đặc biệt, thay khoảng trắng bằng dấu gạch dưới
+    text = re.sub(r'[^\w\s-]', '', text).strip().replace(' ', '_')
+    return text
+
 def to_ascii(title: str) -> str:
     """Chuyển tiếng Việt có dấu sang không dấu, viết hoa mỗi chữ cái đầu"""
     if not title:
@@ -244,7 +254,7 @@ def prepare_html_data(raw_data: dict) -> dict:
     if yellow_alerts:
         alert_str = "、".join(yellow_alerts)
         if data.get('loi_binh_1'):
-            data['loi_binh_1'] = data['loi_binh_1'] + "\n" + alert_str
+            data['loi_binh_1'] = data['loi_binh_1'] + "、" + alert_str
         else:
             data['loi_binh_1'] = alert_str
 
@@ -305,14 +315,14 @@ def export_resume(form_data, export_type='html'):
     # 3. QUY TẮC ĐẶT TÊN FILE (Filename Convention)
     ma_so = form_data.get('Maso', '').strip()
     ho_ten = form_data.get('Hoten', '').strip()
-    ten_khong_dau = to_ascii(ho_ten)
+    clean_name = sanitize_filename_master(ho_ten)
     
-    if ma_so and ten_khong_dau:
-        base_name = f"{ma_so} {ten_khong_dau}"
+    if ma_so and clean_name:
+        base_name = f"{ma_so}_{clean_name}"
     elif ma_so:
         base_name = f"{ma_so}"
-    elif ten_khong_dau:
-        base_name = f"{ten_khong_dau}"
+    elif clean_name:
+        base_name = f"{clean_name}"
     else:
         base_name = f"resume_{uuid.uuid4().hex[:8]}"
         
@@ -360,7 +370,7 @@ def prepare_data(raw: dict) -> dict:
     if yellow_alerts:
         alert_str = "、".join(yellow_alerts)
         if context.get('loi_binh_1'):
-            context['loi_binh_1'] = context['loi_binh_1'] + "\n" + alert_str
+            context['loi_binh_1'] = context['loi_binh_1'] + "、" + alert_str
         else:
             context['loi_binh_1'] = alert_str
 
