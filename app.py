@@ -118,6 +118,20 @@ TRANSLATION_MAP = {
     'tiến sĩ': '博士', 'tien si': '博士',
 }
 
+# BỘ TỪ ĐIỂN CÁC MỤC LƯU Ý ĐẶC BIỆT (MỤC TÔ VÀNG)
+YELLOW_ALERTS_MAP = {
+    "f05": "骨折",                 # Gãy xương
+    "f06": "手汗",                 # Mồ hôi tay
+    "f11": "脊椎受傷",             # Chấn thương cột sống
+    "f13": "伏地挺身 10~30 下",    # Chống đẩy 10~30 cái
+    "f14": "搬重 20~40 kg",        # Bê vác 20~40 kg
+    "f18": "肝炎",                 # Viêm gan
+    "f19": "斷指",                 # Cụt đốt ngón tay
+    "f20": "哮喘",                 # Hen suyễn
+    "f21": "伏地挺身 50 下以上",   # Chống đẩy >50 cái
+    "f22": "搬重 50kg 以上",       # Bê vác >50kg
+}
+
 def translate_fixed(text: str) -> str:
     """Dịch các từ cố định theo bảng tra cứu"""
     if not text:
@@ -220,6 +234,20 @@ def prepare_html_data(raw_data: dict) -> dict:
         else:
             data[f] = val
 
+    # Gom các trường tô vàng vào loi_binh_1 (HTML Ver 6.30)
+    yellow_alerts = []
+    for i in range(1, 23):
+        key = f'f{i:02d}'
+        if raw_data.get(key) in (True, 'true', '1', 1, 'yes', 'on', 'checked') and key in YELLOW_ALERTS_MAP:
+            yellow_alerts.append(YELLOW_ALERTS_MAP[key])
+            
+    if yellow_alerts:
+        alert_str = "、".join(yellow_alerts)
+        if data.get('loi_binh_1'):
+            data['loi_binh_1'] = data['loi_binh_1'] + "\n" + alert_str
+        else:
+            data['loi_binh_1'] = alert_str
+
     # Kỹ năng
     skills_html = []
     for key, name in SKILL_MAPPING.items():
@@ -321,6 +349,20 @@ def prepare_data(raw: dict) -> dict:
     for i in range(1, 47):
         key = f'f{i:02d}'
         context[key] = chk(raw.get(key, False))
+
+    # Gom các trường tô vàng vào loi_binh_1 (Word & DB Sync)
+    yellow_alerts = []
+    for i in range(1, 23):
+        key = f'f{i:02d}'
+        if raw.get(key) in (True, 'true', '1', 1, 'yes', 'on', 'checked') and key in YELLOW_ALERTS_MAP:
+            yellow_alerts.append(YELLOW_ALERTS_MAP[key])
+            
+    if yellow_alerts:
+        alert_str = "、".join(yellow_alerts)
+        if context.get('loi_binh_1'):
+            context['loi_binh_1'] = context['loi_binh_1'] + "\n" + alert_str
+        else:
+            context['loi_binh_1'] = alert_str
 
     context['photo'] = raw.get('photo', '')
     return context
