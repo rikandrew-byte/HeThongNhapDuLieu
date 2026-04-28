@@ -12,6 +12,7 @@ from docxtpl import DocxTemplate, InlineImage, RichText
 from docx.shared import Mm, Pt
 from deep_translator import GoogleTranslator
 from dotenv import load_dotenv
+from urllib.parse import quote
 
 
 load_dotenv()
@@ -98,6 +99,23 @@ FIXED_TRANS = {
     'thái lan': '泰國',
     'châu âu': '歐洲',
     'nga': '俄羅斯',
+}
+
+TRANSLATION_MAP = {
+    # Hôn nhân
+    'độc thân': '未婚', 'doc than': '未婚',
+    'đã kết hôn': '已婚', 'da ket hon': '已婚', 'có gia đình': '已婚',
+    'ly hôn': '離婚', 'ly hon': '離婚',
+    'góa': '喪偶', 'goa': '喪偶',
+    # Học vấn
+    'tiểu học': '國小', 'tieu hoc': '國小',
+    'thcs': '國中', 'trung học cơ sở': '國中',
+    'thpt': '高中', 'trung học phổ thông': '高中',
+    'trung cấp': '高職', 'trung cap': '高職',
+    'cao đẳng': '專科', 'cao dang': '專科',
+    'đại học': '大學', 'dai hoc': '大學',
+    'thạc sĩ': '碩士', 'thac si': '碩士',
+    'tiến sĩ': '博士', 'tien si': '博士',
 }
 
 def translate_fixed(text: str) -> str:
@@ -196,7 +214,11 @@ def prepare_html_data(raw_data: dict) -> dict:
         'loi_binh_1', 'Honnhan', 'Hocvan', 'QG1', 'QG2', 'QG3'
     ]
     for f in fields:
-        data[f] = str(raw_data.get(f, '')).strip()
+        val = str(raw_data.get(f, '')).strip()
+        if f in ['Honnhan', 'Hocvan']:
+            data[f] = TRANSLATION_MAP.get(val.lower(), val)
+        else:
+            data[f] = val
 
     # Kỹ năng
     skills_html = []
@@ -401,7 +423,7 @@ def api_generate():
             html_content,
             mimetype="text/html",
             headers={
-                "Content-Disposition": f"attachment; filename={fn}",
+                "Content-Disposition": f'attachment; filename="{fn}"; filename*=UTF-8\'\'{quote(fn)}',
                 "Content-Type": "text/html; charset=utf-8"
             }
         )
@@ -498,7 +520,7 @@ def api_view_photo():
 @auth_required
 def api_history():
     try:
-        records = FormHistory.query.order_by(FormHistory.ngay_tao.desc()).all()
+        records = FormHistory.query.order_by(FormHistory.ngay_tao.desc()).limit(100).all()
         data = [{
             'id': r.id,
             'ma_so': r.ma_so,
