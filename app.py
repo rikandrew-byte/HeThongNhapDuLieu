@@ -175,7 +175,7 @@ def sanitize_filename_master(text):
     # 2. Viết hoa mỗi chữ cái đầu (Title Case)
     text = text.title() 
     # 3. Xóa ký tự đặc biệt, thay khoảng trắng bằng dấu gạch dưới
-    text = re.sub(r'[^\w\s-]', '', text).strip().replace(' ', '_')
+    text = re.sub(r'[^\w\s-]', '', text).strip()
     return text
 
 def to_ascii(title: str) -> str:
@@ -580,7 +580,7 @@ def download_history(maso):
         
         # 3. Tạo tên file chuẩn (Không dấu, viết hoa chữ cái đầu)
         clean_name = sanitize_filename_master(record.ho_ten)
-        filename = f"{maso}_{clean_name}.html"
+        filename = f"{maso} {clean_name}.html"
         
         # 4. Trả file về trình duyệt
         import io
