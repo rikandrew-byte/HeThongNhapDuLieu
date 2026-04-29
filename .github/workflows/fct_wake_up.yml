@@ -1,0 +1,20 @@
+name: FCT Strategic Wakeup (Core Services)
+on:
+  schedule:
+    # Chạy mỗi 5 phút từ 1:00 AM đến 11:00 AM UTC 
+    # (Tương đương 8:00 AM đến 6:00 PM giờ Việt Nam)
+    - cron: '*/5 1-11 * * *'
+jobs:
+  ping_core_services:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Đánh thức 2 pháo đài: fctsearch & hethongnhapdulieu
+        run: |
+          # 1. Gõ cửa hệ thống Tìm kiếm
+          curl -s https://fctsearch.onrender.com > /dev/null
+          
+          # 2. Gõ cửa hệ thống Nhập dữ liệu (cv.fct.vn)
+          # Lưu ý: Gõ trực tiếp vào link .onrender.com là cách an toàn nhất cho Render
+          curl -s https://hethongnhapdulieu.onrender.com > /dev/null
+          
+          echo "Báo cáo MASTER: Đã hoàn thành nhiệm vụ gõ cửa lúc $(date)"
