@@ -1,5 +1,6 @@
 name: FCT Strategic Wakeup (Core Services)
 on:
+  # Force re-parse trigger
   workflow_dispatch:
   schedule:
     # Chạy mỗi 5 phút từ 1:00 AM đến 11:00 AM UTC
