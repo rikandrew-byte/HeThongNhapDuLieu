@@ -247,6 +247,9 @@ def _init_cache():
         _TEMPLATE_CACHE = f.read()
     print('[CACHE] Logo, BG và Template đã được nạp vào RAM.')
 
+# Nạp cache ngay khi module được import — chạy cả trên gunicorn (Render), không chỉ __main__
+_init_cache()
+
 SKILL_MAPPING = {
     'f23': 'Hàn điện / 電焊', 'f24': 'Hàn Argon / 氬焊',
     'f25': 'Hàn CO2 / 氣焊', 'f26': 'Tig/Mig',
@@ -777,8 +780,6 @@ def api_delete_history(record_id):
 
 if __name__ == '__main__':
     import os
-    # Nạp cache logo, background, template vào RAM ngay khi server start
-    _init_cache()
     # Lấy cổng do Render cấp, nếu không có thì mặc định 5000
     port = int(os.environ.get("PORT", 5000))
     # Chạy trên host 0.0.0.0 để có thể truy cập từ Internet
