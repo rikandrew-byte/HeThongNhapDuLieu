@@ -202,21 +202,50 @@ def chk(val):
         return RichText("☑", font='MS Gothic', size=22)
     return RichText("□", font='MS Gothic', size=22)
 
-def get_base64_image(file_path):
-    """Chuyển đổi file ảnh sang chuỗi Base64 để nhúng trực tiếp vào HTML"""
+def get_base64_image(file_path, max_size=None, quality=82):
+    """Chuyển đổi file ảnh sang chuỗi Base64 để nhúng trực tiếp vào HTML.
+    Nếu max_size được chỉ định, resize ảnh trước khi encode (dùng Pillow).
+    """
     if not file_path or not os.path.exists(file_path):
         return ""
     try:
-        with open(file_path, "rb") as image_file:
-            encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
-            ext = os.path.splitext(file_path)[1][1:].lower()
-            if ext == 'jpg': ext = 'jpeg'
-            return f"data:image/{ext};base64,{encoded_string}"
+        if max_size:
+            from PIL import Image
+            import io as _io
+            img = Image.open(file_path)
+            img.thumbnail((max_size, max_size), Image.LANCZOS)
+            buf = _io.BytesIO()
+            fmt = 'PNG' if file_path.lower().endswith('.png') and img.mode == 'RGBA' else 'JPEG'
+            if fmt == 'JPEG' and img.mode in ('RGBA', 'P'):
+                img = img.convert('RGB')
+            img.save(buf, format=fmt, quality=quality, optimize=True)
+            data = base64.b64encode(buf.getvalue()).decode('utf-8')
+            mime = 'image/png' if fmt == 'PNG' else 'image/jpeg'
+            return f"data:{mime};base64,{data}"
+        else:
+            with open(file_path, "rb") as image_file:
+                encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+                ext = os.path.splitext(file_path)[1][1:].lower()
+                if ext == 'jpg': ext = 'jpeg'
+                return f"data:image/{ext};base64,{encoded_string}"
     except Exception as e:
         print(f"Lỗi Base64: {e}")
         return ""
 
-# --- EMERALD CORE V6.15: HTML EXPORT LOGIC ---
+# ─── CACHE TOÀN CỤC — Khởi tạo 1 lần khi server start ──────────────────────
+_LOGO_B64_CACHE = None
+_BG_B64_CACHE   = None
+_TEMPLATE_CACHE = None
+
+def _init_cache():
+    """Đọc logo, background và template vào RAM 1 lần duy nhất khi server khởi động."""
+    global _LOGO_B64_CACHE, _BG_B64_CACHE, _TEMPLATE_CACHE
+    _LOGO_B64_CACHE = get_base64_image(os.path.join(BASE_DIR, 'static', 'logo.png'))
+    _BG_B64_CACHE   = get_base64_image(os.path.join(BASE_DIR, 'static', 'fct_bg.png'), max_size=400, quality=75)
+    TEMPLATE_PATH   = os.path.join(BASE_DIR, 'templates', 'fct_template_v6.18.html')
+    with open(TEMPLATE_PATH, 'r', encoding='utf-8') as f:
+        _TEMPLATE_CACHE = f.read()
+    print('[CACHE] Logo, BG và Template đã được nạp vào RAM.')
 
 SKILL_MAPPING = {
     'f23': 'Hàn điện / 電焊', 'f24': 'Hàn Argon / 氬焊',
@@ -252,9 +281,21 @@ def prepare_html_data(raw_data: dict) -> dict:
         else:
             data[f] = val
 
-    # Dịch tự do các trường cần thiết sang tiếng Trung Phồn Thể
-    for f in ['Noio', 'ndcv1', 'ndcv2', 'ndcv3', 'loi_binh_1', 'N1', 'N2', 'N3']:
-        data[f] = translate_free(data.get(f, ''))
+    # Dịch tự do các trường cần thiết sang tiếng Trung Phồn Thể — SONG SONG
+    fields_to_translate = ['Noio', 'ndcv1', 'ndcv2', 'ndcv3', 'loi_binh_1', 'N1', 'N2', 'N3']
+    # Chỉ dịch những trường có giá trị thực sự
+    non_empty = {f: data[f] for f in fields_to_translate if data.get(f, '').strip()}
+    
+    if non_empty:
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        with ThreadPoolExecutor(max_workers=min(len(non_empty), 4)) as executor:
+            future_map = {executor.submit(translate_free, v): k for k, v in non_empty.items()}
+            for future in as_completed(future_map):
+                field = future_map[future]
+                try:
+                    data[field] = future.result()
+                except Exception:
+                    pass  # Giữ nguyên giá trị gốc nếu dịch lỗi
 
     # Gom các trường tô vàng vào loi_binh_1 (HTML Ver 6.30)
     yellow_alerts = []
@@ -274,22 +315,28 @@ def prepare_html_data(raw_data: dict) -> dict:
     skills_html = []
     for key, name in SKILL_MAPPING.items():
         if raw_data.get(key) in (True, 'true', '1', 1, 'yes', 'on', 'checked'):
-            tag = f'<span class="px-2 py-1 bg-emerald-600 text-white rounded text-[13px] font-bold uppercase shadow-sm">{name}</span>'
+            tag = f'<span class="px-2 py-1 bg-transparent border border-emerald-600 text-emerald-800 rounded text-[13px] font-bold uppercase">{name}</span>'
             skills_html.append(tag)
     data['KyNangList_HTML'] = "".join(skills_html)
 
     # Các thông số đặc biệt
-    data['f01'] = "右手" if raw_data.get('f01') in (True, 'true', 1) else ""
-    data['f07'] = "Trái / 左手" if raw_data.get('f07') in (True, 'true', 1) else ""
-    
-    data['f02'] = "Hỏng mắt phải / 右眼受損" if raw_data.get('f02') in (True, 'true', 1) else ""
-    data['f08'] = "Hỏng mắt trái / 左眼受損" if raw_data.get('f08') in (True, 'true', 1) else ""
-    data['f16'] = "Loạn thị / 散光" if raw_data.get('f16') in (True, 'true', 1) else ""
-    data['f17'] = "Mù màu / 色盲" if raw_data.get('f17') in (True, 'true', 1) else ""
-    data['f15'] = "Cận / 近視" if raw_data.get('f15') in (True, 'true', 1) else ""
-    
-    if not any([data['f02'], data['f08'], data['f16'], data['f17'], data['f15']]):
-        data['f15'] = "正常"
+    # Tay thuận — gom lại, tránh khoảng trắng thừa
+    tay_parts = []
+    if raw_data.get('f01') in (True, 'true', 1): tay_parts.append("右手")
+    if raw_data.get('f07') in (True, 'true', 1): tay_parts.append("左手")
+    data['TayThuan'] = " / ".join(tay_parts) if tay_parts else "右手"
+
+    # Thị lực — gom lại, tránh khoảng trắng thừa
+    vision_map = [
+        ('f02', "右眼受損"),
+        ('f08', "左眼受損"),
+        ('f16', "散光"),
+        ('f17', "色盲"),
+        ('f15', "近視"),
+    ]
+    vision_parts = [label for key, label in vision_map
+                    if raw_data.get(key) in (True, 'true', 1)]
+    data['ThiLuc'] = " / ".join(vision_parts) if vision_parts else "正常"
 
     data['f12'] = "Có / 有" if raw_data.get('f12') in (True, 'true', 1) else "無"
 
@@ -305,16 +352,20 @@ def prepare_html_data(raw_data: dict) -> dict:
     return data
 
 def generate_html_resume(form_data: dict, template_name='fct_template_v6.18.html') -> str:
-    """Render HTML Resume (Bản 6.24: Nhúng Base64 toàn bộ ảnh)"""
+    """Render HTML Resume — dùng cache logo/bg/template để tăng tốc."""
     processed_data = prepare_html_data(form_data)
     
-    # Nhúng Logo và Background vào context
-    processed_data['logo_base64'] = get_base64_image(os.path.join(BASE_DIR, 'static', 'logo.png'))
-    processed_data['bg_base64'] = get_base64_image(os.path.join(BASE_DIR, 'static', 'fct_bg.png'))
-    
-    TEMPLATE_PATH = os.path.join(BASE_DIR, 'templates', template_name)
-    with open(TEMPLATE_PATH, 'r', encoding='utf-8') as f:
-        template = Template(f.read())
+    # Dùng cache nếu có, fallback đọc file nếu cache chưa sẵn sàng
+    processed_data['logo_base64'] = _LOGO_B64_CACHE or get_base64_image(os.path.join(BASE_DIR, 'static', 'logo.png'))
+    processed_data['bg_base64']   = _BG_B64_CACHE   or get_base64_image(os.path.join(BASE_DIR, 'static', 'fct_bg.png'), max_size=400, quality=75)
+
+    # Dùng template cache nếu là template mặc định
+    if template_name == 'fct_template_v6.18.html' and _TEMPLATE_CACHE:
+        template = Template(_TEMPLATE_CACHE)
+    else:
+        TEMPLATE_PATH = os.path.join(BASE_DIR, 'templates', template_name)
+        with open(TEMPLATE_PATH, 'r', encoding='utf-8') as f:
+            template = Template(f.read())
         
     return template.render(processed_data)
 
@@ -726,6 +777,8 @@ def api_delete_history(record_id):
 
 if __name__ == '__main__':
     import os
+    # Nạp cache logo, background, template vào RAM ngay khi server start
+    _init_cache()
     # Lấy cổng do Render cấp, nếu không có thì mặc định 5000
     port = int(os.environ.get("PORT", 5000))
     # Chạy trên host 0.0.0.0 để có thể truy cập từ Internet
