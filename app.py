@@ -757,6 +757,31 @@ def api_history():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+# --- API XÓA HÀNG LOẠT ---
+@app.route('/api/history/bulk-delete', methods=['POST'])
+@auth_required
+def api_bulk_delete_history():
+    try:
+        data = request.get_json() or {}
+        ids = data.get('ids', [])
+        if not ids:
+            return jsonify({'success': False, 'error': 'Không có ID nào được chọn'}), 400
+        deleted = 0
+        for record_id in ids:
+            record = FormHistory.query.get(int(record_id))
+            if record:
+                if record.ten_file:
+                    file_path = os.path.join(OUT_DIR, record.ten_file)
+                    if os.path.exists(file_path) and os.path.isfile(file_path):
+                        os.remove(file_path)
+                db.session.delete(record)
+                deleted += 1
+        db.session.commit()
+        return jsonify({'success': True, 'deleted': deleted, 'msg': f'Đã xóa {deleted} hồ sơ'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 # --- API XÓA LỊCH SỬ ---
 @app.route('/api/history/<int:record_id>', methods=['DELETE'])
 @auth_required
