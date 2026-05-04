@@ -178,22 +178,28 @@
         </div>
             <div>
                 <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Ảnh chân dung</label>
-                <div id="dropzone" class="w-full border-2 border-dashed border-gray-300 rounded-xl p-4 text-center cursor-pointer hover:border-blue-500 transition-colors relative h-32 flex flex-col items-center justify-center bg-gray-50 overflow-hidden">
-                    <input type="file" id="photoInput" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                    <div id="dropzoneText" class="text-sm text-gray-400">
-                        <span class="text-blue-500 font-semibold">Chọn ảnh</span>, kéo thả hoặc nhấn <span class="text-blue-500 font-semibold">Ctrl+V</span> để dán
+                <div class="relative">
+                    <div id="dropzone" class="w-full border-2 border-dashed border-gray-300 rounded-xl p-4 text-center cursor-pointer hover:border-blue-500 transition-colors relative h-32 flex flex-col items-center justify-center bg-gray-50 overflow-hidden">
+                        <input type="file" id="photoInput" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                        <div id="dropzoneText" class="text-sm text-gray-400">
+                            <span class="text-blue-500 font-semibold">Chọn ảnh</span>, kéo thả hoặc nhấn <span class="text-blue-500 font-semibold">Ctrl+V</span> để dán
+                        </div>
+                        <img id="photoPreview" class="hidden absolute inset-0 w-full h-full object-contain bg-white z-0" src="" alt="Preview">
                     </div>
-                    <img id="photoPreview" class="hidden absolute inset-0 w-full h-full object-contain bg-white z-0" src="" alt="Preview">
+                    <button id="clearPhotoBtn" type="button" class="hidden absolute top-1.5 right-1.5 z-20 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow" title="Xóa ảnh">✕</button>
                 </div>
             </div>
             <div>
                 <label class="block text-xs font-bold text-slate-400 uppercase mb-1">QR Code LINE</label>
-                <div id="qrDropzone" class="w-full border-2 border-dashed border-gray-300 rounded-xl p-4 text-center cursor-pointer hover:border-green-500 transition-colors relative h-32 flex flex-col items-center justify-center bg-gray-50 overflow-hidden">
-                    <input type="file" id="qrInput" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                    <div id="qrDropzoneText" class="text-sm text-gray-400">
-                        <span class="text-green-500 font-semibold">Chọn ảnh QR</span> LINE
+                <div class="relative">
+                    <div id="qrDropzone" class="w-full border-2 border-dashed border-gray-300 rounded-xl p-4 text-center cursor-pointer hover:border-green-500 transition-colors relative h-32 flex flex-col items-center justify-center bg-gray-50 overflow-hidden">
+                        <input type="file" id="qrInput" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                        <div id="qrDropzoneText" class="text-sm text-gray-400">
+                            <span class="text-green-500 font-semibold">Chọn ảnh QR</span> LINE — kéo thả hoặc Ctrl+V
+                        </div>
+                        <img id="qrPreview" class="hidden absolute inset-0 w-full h-full object-contain bg-white z-0" src="" alt="QR Preview">
                     </div>
-                    <img id="qrPreview" class="hidden absolute inset-0 w-full h-full object-contain bg-white z-0" src="" alt="QR Preview">
+                    <button id="clearQrBtn" type="button" class="hidden absolute top-1.5 right-1.5 z-20 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow" title="Xóa QR">✕</button>
                 </div>
             </div>
             </section>
@@ -389,66 +395,97 @@
             const photoPreview = document.getElementById('photoPreview');
             const dropzoneText = document.getElementById('dropzoneText');
 
-            function handleImageFile(file) {
-                if (file && file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        photoPreview.src = e.target.result;
-                        photoPreview.classList.remove('hidden');
-                        dropzoneText.classList.add('hidden');
-                    };
-                    reader.readAsDataURL(file);
-                    
-                    // Cập nhật giá trị cho input file
-                    const dataTransfer = new DataTransfer();
-                    dataTransfer.items.add(file);
-                    photoInput.files = dataTransfer.files;
-                }
-            }
-
-            photoInput.addEventListener('change', (e) => {
-                if (e.target.files.length > 0) handleImageFile(e.target.files[0]);
-            });
-
-            dropzone.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                dropzone.classList.add('border-blue-500', 'bg-blue-50');
-            });
-
-            dropzone.addEventListener('dragleave', (e) => {
-                e.preventDefault();
-                dropzone.classList.remove('border-blue-500', 'bg-blue-50');
-            });
-
-            dropzone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                dropzone.classList.remove('border-blue-500', 'bg-blue-50');
-                if (e.dataTransfer.files.length > 0) handleImageFile(e.dataTransfer.files[0]);
-            });
-
-            // Lắng nghe sự kiện Paste (Dán) trên toàn bộ trang
-            document.addEventListener('paste', (e) => {
-                if (e.clipboardData && e.clipboardData.files.length > 0) {
-                    handleImageFile(e.clipboardData.files[0]);
-                }
-            });
-
-            // --- Xử lý QR Code LINE ---
+            const qrDropzone = document.getElementById('qrDropzone');
             const qrInput = document.getElementById('qrInput');
             const qrPreview = document.getElementById('qrPreview');
             const qrDropzoneText = document.getElementById('qrDropzoneText');
 
-            qrInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file && file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = (ev) => {
-                        qrPreview.src = ev.target.result;
-                        qrPreview.classList.remove('hidden');
-                        qrDropzoneText.classList.add('hidden');
-                    };
-                    reader.readAsDataURL(file);
+            // Track ô nào đang được focus để paste đúng chỗ
+            // Mặc định: ảnh chân dung
+            let pasteTarget = 'photo';
+            dropzone.addEventListener('mouseenter', () => pasteTarget = 'photo');
+            dropzone.addEventListener('click', () => pasteTarget = 'photo');
+            qrDropzone.addEventListener('mouseenter', () => pasteTarget = 'qr');
+            qrDropzone.addEventListener('click', () => pasteTarget = 'qr');
+
+            // ── Hàm set ảnh chân dung ──
+            function setPhoto(file) {
+                if (!file || !file.type.startsWith('image/')) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    photoPreview.src = e.target.result;
+                    photoPreview.classList.remove('hidden');
+                    dropzoneText.classList.add('hidden');
+                    document.getElementById('clearPhotoBtn').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                photoInput.files = dt.files;
+                document.getElementById('existingPhotoPath').value = '';
+            }
+
+            // ── Hàm set QR ──
+            function setQR(file) {
+                if (!file || !file.type.startsWith('image/')) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    qrPreview.src = ev.target.result;
+                    qrPreview.classList.remove('hidden');
+                    qrDropzoneText.classList.add('hidden');
+                    document.getElementById('clearQrBtn').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                qrInput.files = dt.files;
+                document.getElementById('existingQrPath').value = '';
+            }
+
+            // ── Events ảnh chân dung ──
+            photoInput.addEventListener('change', (e) => { if (e.target.files[0]) setPhoto(e.target.files[0]); });
+            dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('border-blue-500', 'bg-blue-50'); });
+            dropzone.addEventListener('dragleave', (e) => { e.preventDefault(); dropzone.classList.remove('border-blue-500', 'bg-blue-50'); });
+            dropzone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('border-blue-500', 'bg-blue-50');
+                if (e.dataTransfer.files[0]) setPhoto(e.dataTransfer.files[0]);
+            });
+
+            // ── Events QR ──
+            qrInput.addEventListener('change', (e) => { if (e.target.files[0]) setQR(e.target.files[0]); });
+            qrDropzone.addEventListener('dragover', (e) => { e.preventDefault(); qrDropzone.classList.add('border-green-500', 'bg-green-50'); });
+            qrDropzone.addEventListener('dragleave', (e) => { e.preventDefault(); qrDropzone.classList.remove('border-green-500', 'bg-green-50'); });
+            qrDropzone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                qrDropzone.classList.remove('border-green-500', 'bg-green-50');
+                if (e.dataTransfer.files[0]) setQR(e.dataTransfer.files[0]);
+            });
+
+            // ── Paste: vào đúng ô đang hover/focus ──
+            document.addEventListener('paste', (e) => {
+                if (e.clipboardData && e.clipboardData.files.length > 0) {
+                    if (pasteTarget === 'qr') setQR(e.clipboardData.files[0]);
+                    else setPhoto(e.clipboardData.files[0]);
                 }
+            });
+
+            // ── Nút xóa ──
+            document.getElementById('clearPhotoBtn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                photoPreview.src = ''; photoPreview.classList.add('hidden');
+                dropzoneText.classList.remove('hidden');
+                photoInput.value = '';
+                document.getElementById('existingPhotoPath').value = '';
+                document.getElementById('clearPhotoBtn').classList.add('hidden');
+            });
+            document.getElementById('clearQrBtn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                qrPreview.src = ''; qrPreview.classList.add('hidden');
+                qrDropzoneText.classList.remove('hidden');
+                qrInput.value = '';
+                document.getElementById('existingQrPath').value = '';
+                document.getElementById('clearQrBtn').classList.add('hidden');
             });
         });
 
@@ -564,6 +601,7 @@ async function loadHistory() {
             if (data['photo']) {
                 document.getElementById('existingPhotoPath').value = data['photo'];
                 document.getElementById('dropzoneText').innerHTML = "<span class='text-green-600 font-bold'>Đã có ảnh từ form. Nhấn để tải ảnh khác nếu cần</span>";
+                document.getElementById('clearPhotoBtn').classList.remove('hidden');
             }
 
             // Xử lý riêng QR Line nếu có
@@ -574,6 +612,7 @@ async function loadHistory() {
                 qrPreview.src = data['qr_line'];
                 qrPreview.classList.remove('hidden');
                 qrDropzoneText.classList.add('hidden');
+                document.getElementById('clearQrBtn').classList.remove('hidden');
             }
             
             // Xóa mã số nếu là CHO_DUYET để Admin nhập mã mới
