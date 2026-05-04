@@ -3,9 +3,9 @@
 Document Automation System (DAS) - Flask Backend V3.0
 Nhập liệu Tiếng Việt → Xuất file Word với nội dung Tiếng Trung Phồn Thể
 """
-import os, uuid, re, unicodedata, json, base64
+import os, uuid, re, unicodedata, json, base64, traceback, io
 from datetime import date, datetime, timedelta, timezone
-from flask import Flask, request, jsonify, send_file, render_template, Response
+from flask import Flask, request, jsonify, send_file, render_template, Response, make_response
 from flask_cors import CORS
 from jinja2 import Template
 from docxtpl import DocxTemplate, InlineImage, RichText
@@ -19,7 +19,7 @@ from unicodedata import normalize
 load_dotenv()
 
 app = Flask(__name__, static_folder='static', static_url_path='')
-app.debug = True  # Lệnh cưỡng chế bật Debug
+app.debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
 CORS(app, resources={r"/*": {"origins": ["https://cv.fct.vn", "http://127.0.0.1:5000", "http://localhost:5000"]}})
 from flask_basicauth import BasicAuth
 
@@ -81,6 +81,7 @@ with app.app_context():
     db.create_all()
 
 # ─── Bảng dịch cố định Việt → Trung Phồn Thể ────────────────────────────────
+# Dùng chung cho cả Hôn nhân, Học vấn và Quốc gia
 FIXED_TRANS = {
     # Hôn nhân
     'độc thân': '未婚', 'doc than': '未婚',
@@ -108,22 +109,8 @@ FIXED_TRANS = {
     'nga': '俄羅斯',
 }
 
-TRANSLATION_MAP = {
-    # Hôn nhân
-    'độc thân': '未婚', 'doc than': '未婚',
-    'đã kết hôn': '已婚', 'da ket hon': '已婚', 'có gia đình': '已婚',
-    'ly hôn': '離婚', 'ly hon': '離婚',
-    'góa': '喪偶', 'goa': '喪偶',
-    # Học vấn
-    'tiểu học': '國小', 'tieu hoc': '國小',
-    'thcs': '國中', 'trung học cơ sở': '國中',
-    'thpt': '高中', 'trung học phổ thông': '高中',
-    'trung cấp': '高職', 'trung cap': '高職',
-    'cao đẳng': '專科', 'cao dang': '專科',
-    'đại học': '大學', 'dai hoc': '大學',
-    'thạc sĩ': '碩士', 'thac si': '碩士',
-    'tiến sĩ': '博士', 'tien si': '博士',
-}
+# Alias — dùng cho Hôn nhân / Học vấn (subset của FIXED_TRANS)
+TRANSLATION_MAP = FIXED_TRANS
 
 # BỘ TỪ ĐIỂN CÁC MỤC LƯU Ý ĐẶC BIỆT (MỤC TÔ VÀNG)
 YELLOW_ALERTS_MAP = {
@@ -420,9 +407,20 @@ def prepare_data(raw: dict) -> dict:
     # 3. Dịch thuật
     for f in ['Honnhan', 'Hocvan', 'QG1', 'QG2', 'QG3']:
         context[f] = translate_fixed(raw.get(f, ''))
-    
-    for f in ['Noio', 'ndcv1', 'ndcv2', 'ndcv3', 'loi_binh_1', 'N1', 'N2', 'N3']:
-        context[f] = translate_free(context.get(f, ''))
+
+    # Dịch tự do song song (giống prepare_html_data)
+    fields_to_translate = ['Noio', 'ndcv1', 'ndcv2', 'ndcv3', 'loi_binh_1', 'N1', 'N2', 'N3']
+    non_empty = {f: context[f] for f in fields_to_translate if context.get(f, '').strip()}
+    if non_empty:
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        with ThreadPoolExecutor(max_workers=min(len(non_empty), 4)) as executor:
+            future_map = {executor.submit(translate_free, v): k for k, v in non_empty.items()}
+            for future in as_completed(future_map):
+                field = future_map[future]
+                try:
+                    context[field] = future.result()
+                except Exception:
+                    pass
 
     # 4. Checkbox f01 -> f46
     for i in range(1, 47):
@@ -449,8 +447,6 @@ def prepare_data(raw: dict) -> dict:
 def generate_word(form_data: dict, template_name='resume_template_chuan.docx') -> str:
     # 1. MỞ ĐÚNG FILE MẪU (Nằm cùng thư mục với app.py)
     TEMPLATE_PATH = os.path.join(BASE_DIR, template_name)
-    
-    pass
 
     if not os.path.exists(TEMPLATE_PATH):
         raise FileNotFoundError(f'Template không tồn tại: {TEMPLATE_PATH}')
@@ -461,7 +457,6 @@ def generate_word(form_data: dict, template_name='resume_template_chuan.docx') -
     photo_path = form_data.get('photo', '')
     if photo_path and isinstance(photo_path, str) and photo_path.startswith('data:image/'):
         try:
-            import base64
             header, encoded = photo_path.split(",", 1)
             img_data = base64.b64decode(encoded)
             if not os.path.exists(UPL_DIR): os.makedirs(UPL_DIR)
@@ -534,7 +529,6 @@ def api_generate():
         html_content, fn = export_resume(form_data, 'html')
         
         # 2. Bỏ qua việc lưu file vật lý để không chiếm ổ cứng Render
-        pass
 
         # 3. Lưu vào Database Lịch sử trước khi trả về file
         try:
@@ -560,7 +554,6 @@ def api_generate():
         )
 
     except Exception as e:
-        import traceback
         traceback.print_exc()
         return jsonify({'success': False, 'error': str(e), 'trace': traceback.format_exc()}), 500
 
@@ -585,26 +578,26 @@ def api_submit_only():
         form_data = prepare_data(data)
         
         # --- LƯU LỊCH SỬ VÀO DATABASE (KHÔNG XUẤT WORD) ---
+        new_record = FormHistory(
+            ma_so=form_data.get('Maso', '') or 'CHO_DUYET',
+            ho_ten=form_data.get('Hoten', ''),
+            ten_file='',
+            data_json=json.dumps(data, ensure_ascii=False)
+        )
         try:
-            new_record = FormHistory(
-                ma_so=form_data.get('Maso', '') or 'CHO_DUYET',
-                ho_ten=form_data.get('Hoten', ''),
-                ten_file='',
-                data_json=json.dumps(data, ensure_ascii=False)
-            )
             db.session.add(new_record)
             db.session.commit()
         except Exception:
             db.session.rollback()
-            
+            raise
+
         return jsonify({
-            'success': True, 
+            'success': True,
             'id': new_record.id,
             'ma_so': new_record.ma_so,
             'msg': 'Đã nộp form thành công (chờ duyệt).'
         })
     except Exception as e:
-        import traceback
         traceback.print_exc()
         return jsonify({'success': False, 'error': str(e), 'trace': traceback.format_exc()}), 500
 
@@ -638,7 +631,6 @@ def download_history(maso):
         filename = f"{maso} {clean_name}.html"
         
         # 4. Trả file về trình duyệt
-        import io
         return send_file(
             io.BytesIO(html_content.encode('utf-8')),
             mimetype='text/html',
@@ -660,7 +652,6 @@ def api_preview(record_id):
         html_content = generate_html_resume(data)
         return Response(html_content, mimetype="text/html", headers={"Content-Type": "text/html; charset=utf-8"})
     except Exception as e:
-        import traceback
         return f"Lỗi render: {str(e)}<pre>{traceback.format_exc()}</pre>", 500
 
 @app.route('/api/view-photo')
@@ -671,8 +662,6 @@ def api_view_photo():
     if path and os.path.exists(path):
         return send_file(path)
     return "Not Found", 404
-
-from flask import make_response
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin_portal():
@@ -767,17 +756,19 @@ def api_bulk_delete_history():
         ids = data.get('ids', [])
         if not ids:
             return jsonify({'success': False, 'error': 'Không có ID nào được chọn'}), 400
-        deleted = 0
-        for record_id in ids:
-            record = FormHistory.query.get(int(record_id))
-            if record:
-                if record.ten_file:
-                    file_path = os.path.join(OUT_DIR, record.ten_file)
-                    if os.path.exists(file_path) and os.path.isfile(file_path):
-                        os.remove(file_path)
-                db.session.delete(record)
-                deleted += 1
+
+        int_ids = [int(i) for i in ids]
+        records = FormHistory.query.filter(FormHistory.id.in_(int_ids)).all()
+
+        for record in records:
+            if record.ten_file:
+                file_path = os.path.join(OUT_DIR, record.ten_file)
+                if os.path.exists(file_path) and os.path.isfile(file_path):
+                    os.remove(file_path)
+            db.session.delete(record)
+
         db.session.commit()
+        deleted = len(records)
         return jsonify({'success': True, 'deleted': deleted, 'msg': f'Đã xóa {deleted} hồ sơ'})
     except Exception as e:
         db.session.rollback()
