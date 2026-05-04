@@ -616,8 +616,9 @@
             const plainData = {};
 
             new FormData(form).forEach((value, key) => {
-                if (form.elements[key].type === 'checkbox') {
-                    plainData[key] = form.elements[key].checked;
+                const el = form.elements[key];
+                if (el && (el instanceof HTMLInputElement) && el.type === 'checkbox') {
+                    plainData[key] = el.checked;
                 } else {
                     plainData[key] = value;
                 }

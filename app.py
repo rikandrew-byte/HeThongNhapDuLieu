@@ -796,8 +796,5 @@ def api_delete_history(record_id):
         return jsonify({'success': False, 'error': str(e)}), 500
 
 if __name__ == '__main__':
-    import os
-    # Lấy cổng do Render cấp, nếu không có thì mặc định 5000
     port = int(os.environ.get("PORT", 5000))
-    # Chạy trên host 0.0.0.0 để có thể truy cập từ Internet
-    app.run(host='0.0.0.0', port=port, debug=True, use_reloader=False)
+    app.run(host='0.0.0.0', port=port, debug=app.debug, use_reloader=False)
