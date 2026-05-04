@@ -605,7 +605,7 @@ async function loadHistory() {
             document.getElementById('displayAge').value = age;
         }
 
-        async function handleSubmit(mode = 'word') {
+        async function handleSubmit(mode = 'html') {
             const form = document.getElementById('resumeForm');
             const btnText = document.getElementById('btnText');
             const loading = document.getElementById('loading');
@@ -633,14 +633,12 @@ async function loadHistory() {
                 return;
             }
 
-
             formData.append('data', JSON.stringify(plainData));
             
             const photoFile = document.getElementById('photoInput').files[0];
             if (photoFile) {
                 formData.append('photo', photoFile);
             } else if (document.getElementById('existingPhotoPath').value) {
-                // Gửi lại path ảnh cũ nếu không up ảnh mới
                 plainData['photo'] = document.getElementById('existingPhotoPath').value;
                 formData.set('data', JSON.stringify(plainData));
             }
@@ -650,8 +648,13 @@ async function loadHistory() {
                 const result = await response.json();
                 
                 if (result.success) {
-                    // ĐIỀU HƯỚNG THẲNG ĐẾN ROUTE TẢI FILE THEO MÃ SỐ (KHAI TỬ BLOB URL)
-                    window.location.href = `/cv/${encodeURIComponent(result.ma_so)}`;
+                    if (mode === 'html') {
+                        // IN PDF: mở tab mới với giao diện CV inline → có nút SAVE AS PDF
+                        window.open(`/cv/${result.id}/${encodeURIComponent(result.ma_so)}`, '_blank');
+                    } else {
+                        // TẢI FILE: tải xuống file HTML
+                        window.location.href = `/cv/${encodeURIComponent(result.ma_so)}`;
+                    }
                 } else {
                     alert("Lỗi: " + result.error);
                 }
