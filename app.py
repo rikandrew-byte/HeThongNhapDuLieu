@@ -273,7 +273,7 @@ def prepare_html_data(raw_data: dict) -> dict:
         'Maso', 'Hoten', 'TentiengTrung', 'Ngaysinh', 'Tuoi', 'Chieucao', 'Cannang', 
         'Lienhe', 'Noio', 'HotenBo', 'TB', 'HotenMe', 'TM', 'VoChong', 'VC', 
         'Socon', 'Anhchiem', 'Xepthu', 'f48', 'N1', 'N2', 'N3', 'ndcv1', 'ndcv2', 'ndcv3', 
-        'loi_binh_1', 'Honnhan', 'Hocvan', 'QG1', 'QG2', 'QG3'
+        'loi_binh_1', 'Honnhan', 'Hocvan', 'QG1', 'QG2', 'QG3', 'video_link_1', 'video_link_2'
     ]
     for f in fields:
         val = str(raw_data.get(f, '')).strip()
@@ -405,7 +405,8 @@ def prepare_data(raw: dict) -> dict:
     fields = [
         'Maso', 'Hoten', 'TentiengTrung', 'Ngaysinh', 'Tuoi', 'Chieucao', 'Cannang', 
         'Lienhe', 'Noio', 'HotenBo', 'TB', 'HotenMe', 'TM', 'VoChong', 'VC', 
-        'Socon', 'Anhchiem', 'Xepthu', 'f48', 'N1', 'N2', 'N3', 'ndcv1', 'ndcv2', 'ndcv3', 'loi_binh_1'
+        'Socon', 'Anhchiem', 'Xepthu', 'f48', 'N1', 'N2', 'N3', 'ndcv1', 'ndcv2', 'ndcv3', 'loi_binh_1',
+        'video_link_1', 'video_link_2'
     ]
     for f in fields:
         val = raw.get(f, '')
