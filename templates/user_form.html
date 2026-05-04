@@ -227,6 +227,20 @@
                                 alt="Preview">
                         </div>
                     </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">QR Code LINE</label>
+                        <div id="qrDropzone"
+                            class="w-full border-2 border-dashed border-gray-300 rounded-xl p-4 text-center cursor-pointer hover:border-green-500 transition-colors relative h-32 flex flex-col items-center justify-center bg-gray-50 overflow-hidden">
+                            <input type="file" id="qrInput" accept="image/*"
+                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                            <div id="qrDropzoneText" class="text-sm text-gray-400">
+                                <span class="text-green-500 font-semibold">Chọn ảnh QR</span> LINE
+                            </div>
+                            <img id="qrPreview"
+                                class="hidden absolute inset-0 w-full h-full object-contain bg-white z-0" src=""
+                                alt="QR Preview">
+                        </div>
+                    </div>
             </section>
 
             <section>
@@ -571,6 +585,24 @@
                     handleImageFile(e.clipboardData.files[0]);
                 }
             });
+
+            // --- Xử lý QR Code LINE ---
+            const qrInput = document.getElementById('qrInput');
+            const qrPreview = document.getElementById('qrPreview');
+            const qrDropzoneText = document.getElementById('qrDropzoneText');
+
+            qrInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        qrPreview.src = ev.target.result;
+                        qrPreview.classList.remove('hidden');
+                        qrDropzoneText.classList.add('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
         });
 
         // Hàm tự động dịch tên sang tiếng Trung
@@ -637,6 +669,9 @@
 
             const photoFile = document.getElementById('photoInput').files[0];
             if (photoFile) formData.append('photo', photoFile);
+
+            const qrFile = document.getElementById('qrInput').files[0];
+            if (qrFile) formData.append('qr_line', qrFile);
 
             try {
                 console.log("Đang gọi API: /api/submit-only");

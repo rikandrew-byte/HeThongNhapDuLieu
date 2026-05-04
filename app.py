@@ -338,6 +338,15 @@ def prepare_html_data(raw_data: dict) -> dict:
         data['photo_base64'] = get_base64_image(photo_path)
     else:
         data['photo_base64'] = ""
+
+    # Chuyển ảnh QR Line sang Base64
+    qr_path = raw_data.get('qr_line', '')
+    if qr_path and isinstance(qr_path, str) and qr_path.startswith('data:image/'):
+        data['qr_line_base64'] = qr_path
+    elif qr_path and isinstance(qr_path, str) and os.path.exists(qr_path):
+        data['qr_line_base64'] = get_base64_image(qr_path)
+    else:
+        data['qr_line_base64'] = ""
             
     return data
 
@@ -572,6 +581,14 @@ def api_submit_only():
                 if not ext: ext = 'png'
                 if ext == 'jpg': ext = 'jpeg'
                 data['photo'] = f"data:image/{ext};base64,{encoded_string}"
+            qr_file = request.files.get('qr_line')
+            if qr_file:
+                qr_bytes = qr_file.read()
+                qr_encoded = base64.b64encode(qr_bytes).decode('utf-8')
+                qr_ext = os.path.splitext(qr_file.filename)[1][1:].lower()
+                if not qr_ext: qr_ext = 'png'
+                if qr_ext == 'jpg': qr_ext = 'jpeg'
+                data['qr_line'] = f"data:image/{qr_ext};base64,{qr_encoded}"
         else:
             data = request.get_json() or {}
         

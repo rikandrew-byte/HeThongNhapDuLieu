@@ -64,6 +64,7 @@
 
         <form id="resumeForm" autocomplete="off" class="max-w-4xl mx-auto space-y-12 pb-32">
             <input type="hidden" name="photo" id="existingPhotoPath" value="">
+            <input type="hidden" name="qr_line" id="existingQrPath" value="">
             <section>
                 <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
                     <span class="w-2 h-6 bg-blue-600 rounded-full"></span> 1. Thông tin cá nhân
@@ -183,6 +184,16 @@
                         <span class="text-blue-500 font-semibold">Chọn ảnh</span>, kéo thả hoặc nhấn <span class="text-blue-500 font-semibold">Ctrl+V</span> để dán
                     </div>
                     <img id="photoPreview" class="hidden absolute inset-0 w-full h-full object-contain bg-white z-0" src="" alt="Preview">
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">QR Code LINE</label>
+                <div id="qrDropzone" class="w-full border-2 border-dashed border-gray-300 rounded-xl p-4 text-center cursor-pointer hover:border-green-500 transition-colors relative h-32 flex flex-col items-center justify-center bg-gray-50 overflow-hidden">
+                    <input type="file" id="qrInput" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    <div id="qrDropzoneText" class="text-sm text-gray-400">
+                        <span class="text-green-500 font-semibold">Chọn ảnh QR</span> LINE
+                    </div>
+                    <img id="qrPreview" class="hidden absolute inset-0 w-full h-full object-contain bg-white z-0" src="" alt="QR Preview">
                 </div>
             </div>
             </section>
@@ -421,6 +432,24 @@
                     handleImageFile(e.clipboardData.files[0]);
                 }
             });
+
+            // --- Xử lý QR Code LINE ---
+            const qrInput = document.getElementById('qrInput');
+            const qrPreview = document.getElementById('qrPreview');
+            const qrDropzoneText = document.getElementById('qrDropzoneText');
+
+            qrInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        qrPreview.src = ev.target.result;
+                        qrPreview.classList.remove('hidden');
+                        qrDropzoneText.classList.add('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
         });
 
         // Hàm tự động dịch tên sang tiếng Trung
@@ -536,6 +565,16 @@ async function loadHistory() {
                 document.getElementById('existingPhotoPath').value = data['photo'];
                 document.getElementById('dropzoneText').innerHTML = "<span class='text-green-600 font-bold'>Đã có ảnh từ form. Nhấn để tải ảnh khác nếu cần</span>";
             }
+
+            // Xử lý riêng QR Line nếu có
+            if (data['qr_line']) {
+                document.getElementById('existingQrPath').value = data['qr_line'];
+                const qrPreview = document.getElementById('qrPreview');
+                const qrDropzoneText = document.getElementById('qrDropzoneText');
+                qrPreview.src = data['qr_line'];
+                qrPreview.classList.remove('hidden');
+                qrDropzoneText.classList.add('hidden');
+            }
             
             // Xóa mã số nếu là CHO_DUYET để Admin nhập mã mới
             const maSoInput = document.getElementsByName("Maso")[0];
@@ -644,6 +683,14 @@ async function loadHistory() {
                 formData.append('photo', photoFile);
             } else if (document.getElementById('existingPhotoPath').value) {
                 plainData['photo'] = document.getElementById('existingPhotoPath').value;
+                formData.set('data', JSON.stringify(plainData));
+            }
+
+            const qrFile = document.getElementById('qrInput').files[0];
+            if (qrFile) {
+                formData.append('qr_line', qrFile);
+            } else if (document.getElementById('existingQrPath').value) {
+                plainData['qr_line'] = document.getElementById('existingQrPath').value;
                 formData.set('data', JSON.stringify(plainData));
             }
 

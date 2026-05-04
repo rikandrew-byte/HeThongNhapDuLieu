@@ -145,6 +145,17 @@
                 </div>
                 {% endif %}
 
+                {% if qr_line_base64 %}
+                <div class="flex flex-col items-center mb-3 px-2">
+                    <div style="background:#fff; border:1.5px solid #d1d5db; border-radius:10px; padding:6px; display:inline-block; box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+                        <img src="{{qr_line_base64}}"
+                            style="width:88px; height:88px; display:block; object-fit:contain; border-radius:4px;"
+                            alt="LINE QR">
+                    </div>
+                    <p style="font-size:10px; font-weight:700; color:#06c755; letter-spacing:0.08em; margin-top:4px; text-transform:uppercase;">LINE QR</p>
+                </div>
+                {% endif %}
+
                 <div class="mt-auto bg-emerald-50 p-4 rounded-xl border border-emerald-100 flex flex-col mb-0 h-[25%] flex-shrink-0">
                     <h2 class="text-[14px] font-black text-emerald-900 border-b-2 border-emerald-500 pb-1.5 mb-2 uppercase flex justify-between items-center flex-shrink-0">
                         <span>Ghi chú / 備註</span><span class="text-emerald-600 text-[13px]">✒</span>
