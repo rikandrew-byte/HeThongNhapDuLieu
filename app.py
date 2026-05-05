@@ -608,7 +608,6 @@ def api_generate():
         return jsonify({'success': False, 'error': str(e), 'trace': traceback.format_exc()}), 500
 
 @app.route('/api/submit-only', methods=['POST'])
-@auth_required
 def api_submit_only():
     try:
         # Handle both FormData and JSON
@@ -661,7 +660,6 @@ def api_submit_only():
 
 # --- API DỊCH TỰ ĐỘNG CHO GIAO DIỆN ---
 @app.route('/api/translate', methods=['POST'])
-@auth_required
 def api_translate():
     try:
         data = request.get_json() or {}
@@ -786,20 +784,10 @@ def secure_web_view(id, maso):
     except Exception as e:
         return f"Lỗi hệ thống: {str(e)}", 500
 
-# --- HELPER: Kiểm tra quyền admin qua cookie (dùng cho các API được gọi bằng fetch JS) ---
-def _is_admin_authed():
-    """Kiểm tra cookie admin_auth — bỏ qua khi chạy local (không có DATABASE_URL)."""
-    # Local: không có DATABASE_URL → bỏ qua auth
-    if not os.environ.get('DATABASE_URL'):
-        return True
-    admin_pass = os.environ.get('ADMIN_PASSWORD', '123456')
-    return request.cookies.get('admin_auth') == admin_pass
-
 # --- API LẤY DANH SÁCH LỊCH SỬ ---
 @app.route('/api/history', methods=['GET'])
+@auth_required
 def api_history():
-    if not _is_admin_authed():
-        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
     try:
         records = FormHistory.query.order_by(FormHistory.ngay_tao.desc()).limit(100).all()
         vietnam_tz = timezone(timedelta(hours=7))
@@ -817,9 +805,8 @@ def api_history():
 
 # --- API XÓA HÀNG LOẠT ---
 @app.route('/api/history/bulk-delete', methods=['POST'])
+@auth_required
 def api_bulk_delete_history():
-    if not _is_admin_authed():
-        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
     try:
         data = request.get_json() or {}
         ids = data.get('ids', [])
@@ -845,9 +832,8 @@ def api_bulk_delete_history():
 
 # --- API XÓA LỊCH SỬ ---
 @app.route('/api/history/<int:record_id>', methods=['DELETE'])
+@auth_required
 def api_delete_history(record_id):
-    if not _is_admin_authed():
-        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
     try:
         record = FormHistory.query.get(record_id)
         if not record:
