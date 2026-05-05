@@ -766,8 +766,11 @@ def api_history():
 
 # --- API XÓA HÀNG LOẠT ---
 @app.route('/api/history/bulk-delete', methods=['POST'])
-@auth_required
 def api_bulk_delete_history():
+    # Kiểm tra cookie admin (nhất quán với /admin portal)
+    admin_pass = os.environ.get('ADMIN_PASSWORD', '123456')
+    if os.environ.get('RENDER') and request.cookies.get('admin_auth') != admin_pass:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
     try:
         data = request.get_json() or {}
         ids = data.get('ids', [])
@@ -793,19 +796,21 @@ def api_bulk_delete_history():
 
 # --- API XÓA LỊCH SỬ ---
 @app.route('/api/history/<int:record_id>', methods=['DELETE'])
-@auth_required
 def api_delete_history(record_id):
+    # Kiểm tra cookie admin (nhất quán với /admin portal)
+    admin_pass = os.environ.get('ADMIN_PASSWORD', '123456')
+    if os.environ.get('RENDER') and request.cookies.get('admin_auth') != admin_pass:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
     try:
         record = FormHistory.query.get(record_id)
         if not record:
             return jsonify({'success': False, 'error': 'Không tìm thấy bản ghi'}), 404
-        
-        # Xóa file Word vật lý trong thư mục output (nếu còn tồn tại)
+
         if record.ten_file:
             file_path = os.path.join(OUT_DIR, record.ten_file)
             if os.path.exists(file_path) and os.path.isfile(file_path):
                 os.remove(file_path)
-            
+
         db.session.delete(record)
         db.session.commit()
         return jsonify({'success': True, 'msg': 'Xóa thành công'})
