@@ -350,6 +350,45 @@ def prepare_html_data(raw_data: dict) -> dict:
             
     return data
 
+def _protect_html(html: str) -> str:
+    """
+    Bảo vệ mã nguồn HTML:
+    1. Xóa comment HTML
+    2. Minify — xóa whitespace thừa giữa các tag
+    3. Inject JS chống DevTools (cản người thường, làm khó developer)
+    """
+    # 1. Xóa comment HTML (<!-- ... -->) nhưng giữ lại IE conditionals
+    html = re.sub(r'<!--(?!\[if).*?-->', '', html, flags=re.DOTALL)
+
+    # 2. Minify: thu gọn khoảng trắng giữa các tag, xóa dòng trống
+    html = re.sub(r'>\s+<', '><', html)
+    html = re.sub(r'\s{2,}', ' ', html)
+    html = html.strip()
+
+    # 3. Inject anti-devtools JS ngay trước </body>
+    anti_devtools = (
+        '<script>'
+        '(function(){'
+        # Disable chuột phải
+        'document.addEventListener("contextmenu",function(e){e.preventDefault();},false);'
+        # Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+        'document.addEventListener("keydown",function(e){'
+        'if(e.keyCode===123||'
+        '(e.ctrlKey&&e.shiftKey&&(e.keyCode===73||e.keyCode===74||e.keyCode===67))||'
+        '(e.ctrlKey&&e.keyCode===85)){'
+        'e.preventDefault();e.stopPropagation();return false;}'
+        '});'
+        # Phát hiện DevTools mở qua window size delta
+        'var _t=function(){'
+        'var w=window.outerWidth-window.innerWidth>160||window.outerHeight-window.innerHeight>160;'
+        'if(w){document.body.innerHTML="";}};'
+        'setInterval(_t,1000);'
+        '})();'
+        '</script>'
+    )
+    html = html.replace('</body>', anti_devtools + '</body>')
+    return html
+
 def generate_html_resume(form_data: dict, template_name='fct_template_v6.18.html') -> str:
     """Render HTML Resume — dùng cache logo/bg/template để tăng tốc."""
     processed_data = prepare_html_data(form_data)
@@ -365,22 +404,20 @@ def generate_html_resume(form_data: dict, template_name='fct_template_v6.18.html
         TEMPLATE_PATH = os.path.join(BASE_DIR, 'templates', template_name)
         with open(TEMPLATE_PATH, 'r', encoding='utf-8') as f:
             template = Template(f.read())
-        
-    return template.render(processed_data)
+
+    rendered = template.render(processed_data)
+    return _protect_html(rendered)
+
 
 def export_resume(form_data, export_type='html'):
-    """Xuất hồ sơ sang định dạng HTML Minified (Bản 6.20 Emerald Forever)"""
-    # 1. Render HTML từ template v6.20 (vẫn dùng chung tên file v6.18 để tránh đổi code nhiều nơi)
+    """Xuất hồ sơ sang định dạng HTML đã bảo vệ mã nguồn"""
     rendered_html = generate_html_resume(form_data, 'fct_template_v6.18.html')
-    
-    # 2. Bảo vệ mã nguồn (Minification)
-    minified_html = rendered_html
-    
-    # 3. QUY TẮC ĐẶT TÊN FILE (Filename Convention)
+
+    # Đặt tên file
     ma_so = form_data.get('Maso', '').strip()
     ho_ten = form_data.get('Hoten', '').strip()
     clean_name = sanitize_filename_master(ho_ten)
-    
+
     if ma_so and clean_name:
         base_name = f"{ma_so}_{clean_name}"
     elif ma_so:
@@ -389,9 +426,9 @@ def export_resume(form_data, export_type='html'):
         base_name = f"{clean_name}"
     else:
         base_name = f"resume_{uuid.uuid4().hex[:8]}"
-        
+
     file_name = f"{base_name}.html"
-    return minified_html, file_name
+    return rendered_html, file_name
 
 # ─── Chuẩn bị dữ liệu cho template ──────────────────────────────────────────
 def prepare_data(raw: dict) -> dict:
