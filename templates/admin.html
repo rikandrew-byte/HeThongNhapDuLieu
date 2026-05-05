@@ -4,59 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Portal — FCT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
-        body { font-family: 'Outfit', sans-serif; background: linear-gradient(135deg, #0f172a 0%, #020617 100%); color: #f8fafc; min-height: 100vh; }
-        .glass { background: rgba(30,41,59,0.45); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,0.06); }
-        .btn { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:10px; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; border:1px solid transparent; }
-        .btn:active { transform:scale(.96); }
-        .btn-emerald { background:rgba(16,185,129,.12); color:#34d399; border-color:rgba(16,185,129,.25); }
-        .btn-emerald:hover { background:rgba(16,185,129,.22); }
-        .btn-blue   { background:rgba(59,130,246,.12); color:#60a5fa; border-color:rgba(59,130,246,.25); }
-        .btn-blue:hover { background:rgba(59,130,246,.22); }
-        .btn-amber  { background:rgba(245,158,11,.12); color:#fbbf24; border-color:rgba(245,158,11,.25); }
-        .btn-amber:hover { background:rgba(245,158,11,.22); }
-        .btn-red    { background:rgba(239,68,68,.12); color:#f87171; border-color:rgba(239,68,68,.25); }
-        .btn-red:hover { background:rgba(239,68,68,.22); }
-        .btn-slate  { background:rgba(100,116,139,.12); color:#94a3b8; border-color:rgba(100,116,139,.2); }
-        .btn-slate:hover { background:rgba(100,116,139,.22); }
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .card { background: white; border-radius: 1rem; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+        .btn { display:inline-flex; align-items:center; gap:5px; padding:6px 14px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; border:1px solid transparent; }
+        .btn:active { transform:scale(.97); }
+        .btn-blue   { background:#eff6ff; color:#2563eb; border-color:#bfdbfe; }
+        .btn-blue:hover { background:#dbeafe; }
+        .btn-green  { background:#f0fdf4; color:#16a34a; border-color:#bbf7d0; }
+        .btn-green:hover { background:#dcfce7; }
+        .btn-amber  { background:#fffbeb; color:#d97706; border-color:#fde68a; }
+        .btn-amber:hover { background:#fef3c7; }
+        .btn-red    { background:#fef2f2; color:#dc2626; border-color:#fecaca; }
+        .btn-red:hover { background:#fee2e2; }
+        .btn-slate  { background:#f8fafc; color:#475569; border-color:#e2e8f0; }
+        .btn-slate:hover { background:#f1f5f9; }
         .btn-solid-red { background:#dc2626; color:#fff; border-color:#dc2626; }
         .btn-solid-red:hover { background:#b91c1c; }
-        tr.selected-row { background: rgba(16,185,129,.07) !important; }
-        input[type=checkbox] { accent-color: #10b981; width:15px; height:15px; cursor:pointer; }
-        .toolbar-bulk { transition: all .2s; }
-        .badge { display:inline-flex; align-items:center; justify-content:center; min-width:20px; height:20px; padding:0 6px; border-radius:999px; font-size:11px; font-weight:700; background:#10b981; color:#022c22; }
+        tr.selected-row { background: #eff6ff !important; }
+        input[type=checkbox] { accent-color: #2563eb; width:15px; height:15px; cursor:pointer; }
+        .badge { display:inline-flex; align-items:center; justify-content:center; min-width:20px; height:20px; padding:0 6px; border-radius:999px; font-size:11px; font-weight:700; background:#2563eb; color:#fff; }
+        .section-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8; }
         @media print {
-            body { background: white !important; }
             .no-print { display: none !important; }
-            .print-page { page-break-after: always; }
-            .print-page:last-child { page-break-after: avoid; }
         }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="bg-[#FAFAFA] text-slate-800 min-h-screen">
 
 {% if not authenticated %}
 <!-- ═══════════════ LOGIN ═══════════════ -->
-<div class="flex items-center justify-center min-h-screen">
-    <div class="glass w-full max-w-md p-8 rounded-3xl border-t border-emerald-500/30 shadow-2xl">
+<div class="flex items-center justify-center min-h-screen px-4">
+    <div class="card w-full max-w-md p-8">
         <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-16 h-16 bg-emerald-500/10 rounded-2xl text-emerald-400 text-3xl mb-4">🛡️</div>
-            <h1 class="text-2xl font-bold text-slate-100">Admin Access</h1>
-            <p class="text-sm text-slate-400 mt-1">Hệ thống quản trị FCT</p>
+            <div class="inline-flex items-center justify-center w-14 h-14 bg-blue-50 rounded-2xl text-blue-600 text-2xl mb-4">🛡️</div>
+            <h1 class="text-2xl font-extrabold text-slate-800">Admin Access</h1>
+            <p class="text-sm text-slate-500 mt-1">Hệ thống quản trị FCT</p>
         </div>
         <form method="POST" action="/admin" class="space-y-5">
             <div>
-                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Mật khẩu bảo mật</label>
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Mật khẩu bảo mật</label>
                 <input type="password" name="password" required autofocus
-                    class="w-full px-4 py-3 bg-slate-900/60 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all text-sm"
+                    class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all text-sm"
                     placeholder="Nhập mật khẩu...">
             </div>
             {% if error %}
-            <div class="text-xs font-medium text-red-400 bg-red-500/10 p-3 rounded-xl border border-red-500/20">⚠ {{ error }}</div>
+            <div class="text-xs font-medium text-red-600 bg-red-50 p-3 rounded-xl border border-red-200">⚠ {{ error }}</div>
             {% endif %}
-            <button type="submit" class="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-bold rounded-xl shadow-lg transition-all text-sm">
+            <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-sm transition-all text-sm">
                 Xác thực truy cập
             </button>
         </form>
@@ -65,15 +66,15 @@
 
 {% else %}
 <!-- ═══════════════ DASHBOARD ═══════════════ -->
-<div class="max-w-7xl mx-auto space-y-5">
+<div class="max-w-7xl mx-auto px-4 py-8 space-y-5">
 
     <!-- HEADER -->
-    <div class="glass rounded-2xl px-6 py-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+    <div class="card px-6 py-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
         <div class="flex items-center gap-3">
-            <span class="text-2xl">📁</span>
+            <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 text-lg flex-shrink-0">📁</div>
             <div>
-                <h1 class="text-xl font-bold text-slate-100">Quản lý Hồ sơ Ứng viên</h1>
-                <p class="text-sm text-slate-300">FCT Admin Portal — <span class="text-emerald-400 font-semibold" id="totalCount">{{ records|length }} hồ sơ</span></p>
+                <h1 class="text-xl font-extrabold text-slate-800">Quản lý Hồ sơ Ứng viên</h1>
+                <p class="text-sm text-slate-500">FCT Admin Portal — <span class="text-blue-600 font-semibold" id="totalCount">{{ records|length }} hồ sơ</span></p>
             </div>
         </div>
         <div class="flex items-center gap-2 flex-wrap">
@@ -83,29 +84,30 @@
     </div>
 
     <!-- SEARCH + FILTER BAR -->
-    <div class="glass rounded-2xl px-5 py-4 flex flex-col md:flex-row gap-3 items-center">
+    <div class="card px-5 py-4 flex flex-col md:flex-row gap-3 items-center">
         <div class="relative flex-1 w-full">
             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
-            <input type="text" id="searchInput" placeholder="Tìm tên, mã số... (nhiều mã cách nhau bằng dấu phẩy: MD001, MD002)"
-                class="w-full pl-9 pr-4 py-2.5 bg-slate-900/60 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm transition-all"
+            <input type="text" id="searchInput"
+                placeholder="Tìm tên, mã số... (nhiều mã cách nhau bằng dấu phẩy: MD001, MD002)"
+                class="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 text-sm transition-all"
                 oninput="filterTable()">
         </div>
         <div class="flex gap-2 flex-wrap">
             <input type="date" id="filterDate"
-                class="px-3 py-2.5 bg-slate-900/60 border border-slate-700 rounded-xl text-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all"
+                class="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-600 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
                 onchange="filterTable()">
             <button onclick="clearFilters()" class="btn btn-slate">✕ Xóa lọc</button>
         </div>
     </div>
 
-    <!-- BULK ACTION TOOLBAR (hiện khi có chọn) -->
-    <div id="bulkToolbar" class="toolbar-bulk glass rounded-2xl px-5 py-3 hidden">
+    <!-- BULK ACTION TOOLBAR -->
+    <div id="bulkToolbar" class="card px-5 py-3 hidden border-blue-200 bg-blue-50">
         <div class="flex flex-wrap items-center gap-3">
-            <span class="text-sm font-semibold text-emerald-400">
+            <span class="text-sm font-semibold text-blue-700">
                 Đã chọn: <span id="selectedCount" class="badge">0</span>
             </span>
-            <div class="h-4 w-px bg-slate-700"></div>
-            <button onclick="bulkCopyLinks()" class="btn btn-emerald">📤 Copy tất cả link</button>
+            <div class="h-4 w-px bg-slate-300"></div>
+            <button onclick="bulkCopyLinks()" class="btn btn-green">📤 Copy tất cả link</button>
             <button onclick="bulkPrint()" class="btn btn-blue">🖨️ In PDF hàng loạt</button>
             <button onclick="bulkDelete()" class="btn btn-red">🗑️ Xóa đã chọn</button>
             <button onclick="clearSelection()" class="btn btn-slate ml-auto">✕ Bỏ chọn</button>
@@ -113,43 +115,41 @@
     </div>
 
     <!-- TABLE -->
-    <div class="glass rounded-2xl overflow-hidden">
+    <div class="card overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse" id="mainTable">
                 <thead>
-                    <tr class="border-b border-slate-800 text-xs font-semibold uppercase tracking-wider text-slate-300 bg-slate-900/40">
+                    <tr class="border-b border-slate-100 bg-slate-50">
                         <th class="py-3.5 px-4 w-10">
                             <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)" title="Chọn tất cả">
                         </th>
-                        <th class="py-3.5 px-3 w-12">ID</th>
-                        <th class="py-3.5 px-3">Mã Số</th>
-                        <th class="py-3.5 px-3">Họ Tên</th>
-                        <th class="py-3.5 px-3">Thời Gian Tạo</th>
-                        <th class="py-3.5 px-4 text-center">Hành Động</th>
+                        <th class="py-3.5 px-3 section-title w-12">ID</th>
+                        <th class="py-3.5 px-3 section-title">Mã Số</th>
+                        <th class="py-3.5 px-3 section-title">Họ Tên</th>
+                        <th class="py-3.5 px-3 section-title">Thời Gian Tạo</th>
+                        <th class="py-3.5 px-4 section-title text-center">Hành Động</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-800/50 text-sm" id="tableBody">
+                <tbody class="divide-y divide-slate-100 text-sm" id="tableBody">
                     {% for r in records %}
-                    <tr class="hover:bg-slate-800/30 transition-colors duration-100" data-id="{{ r.id }}" data-name="{{ r.ho_ten|lower }}" data-maso="{{ r.ma_so|lower }}" data-date="{{ r.ngay_tao }}">
+                    <tr class="hover:bg-slate-50 transition-colors duration-100"
+                        data-id="{{ r.id }}" data-name="{{ r.ho_ten|lower }}"
+                        data-maso="{{ r.ma_so|lower }}" data-date="{{ r.ngay_tao }}">
                         <td class="py-3 px-4">
                             <input type="checkbox" class="row-checkbox" value="{{ r.id }}" onchange="onRowCheck()">
                         </td>
                         <td class="py-3 px-3 text-slate-400 font-mono text-sm">{{ r.id }}</td>
-                        <td class="py-3 px-3 font-bold text-emerald-400 tracking-wide">{{ r.ma_so }}</td>
-                        <td class="py-3 px-3 text-slate-100 font-medium text-sm">{{ r.ho_ten }}</td>
-                        <td class="py-3 px-3 text-slate-300 text-sm">{{ r.ngay_tao }}</td>
+                        <td class="py-3 px-3 font-bold text-blue-600 tracking-wide">{{ r.ma_so }}</td>
+                        <td class="py-3 px-3 text-slate-800 font-medium text-sm">{{ r.ho_ten }}</td>
+                        <td class="py-3 px-3 text-slate-500 text-sm">{{ r.ngay_tao }}</td>
                         <td class="py-3 px-4">
                             <div class="flex items-center justify-center gap-1.5 flex-wrap">
-                                <!-- Xem -->
                                 <a href="/cv/{{ r.id }}/{{ r.ma_so }}" target="_blank"
                                     class="btn btn-slate" title="Xem hồ sơ">👁 Xem</a>
-                                <!-- In PDF -->
                                 <button onclick="printSingle('{{ r.id }}', '{{ r.ma_so }}')"
                                     class="btn btn-blue" title="In PDF">🖨️ In</button>
-                                <!-- Copy Link -->
                                 <button onclick="copyLink('{{ r.id }}', '{{ r.ma_so }}', this)"
-                                    class="btn btn-emerald" title="Copy link gửi khách">📤 Link</button>
-                                <!-- Xóa -->
+                                    class="btn btn-green" title="Copy link gửi khách">📤 Link</button>
                                 <button onclick="deleteSingle({{ r.id }}, '{{ r.ho_ten }}', this)"
                                     class="btn btn-red" title="Xóa hồ sơ">🗑️</button>
                             </div>
@@ -160,37 +160,35 @@
             </table>
         </div>
 
-        <!-- Empty state -->
         {% if not records %}
-        <div class="text-center py-16 text-slate-500 text-sm">
+        <div class="text-center py-16 text-slate-400 text-sm">
             <div class="text-4xl mb-3">📭</div>
             Chưa có hồ sơ nào được tạo.
         </div>
         {% endif %}
 
-        <!-- Footer count -->
-        <div class="px-5 py-3 border-t border-slate-800/60 flex justify-between items-center text-sm text-slate-300">
+        <div class="px-5 py-3 border-t border-slate-100 flex justify-between items-center text-sm text-slate-500">
             <span id="visibleCount">Hiển thị {{ records|length }} / {{ records|length }} hồ sơ</span>
             <span class="text-slate-400">FCT Admin v2.0</span>
         </div>
     </div>
 </div>
 
-<!-- TOAST NOTIFICATION -->
-<div id="toast" class="fixed bottom-5 right-5 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl text-sm font-semibold
+<!-- TOAST -->
+<div id="toast" class="fixed bottom-5 right-5 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-lg text-sm font-semibold
     translate-y-20 opacity-0 transition-all duration-300 pointer-events-none
-    bg-slate-900 border border-emerald-500/30 text-emerald-400" id="toast">
+    bg-white border border-slate-200 text-slate-700">
     <span id="toastIcon">✅</span>
     <span id="toastMsg">Thành công</span>
 </div>
 
 <!-- CONFIRM MODAL -->
-<div id="confirmModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-sm">
-    <div class="glass rounded-2xl p-7 max-w-sm w-full mx-4 border-t border-red-500/30 shadow-2xl">
+<div id="confirmModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/30 backdrop-blur-sm">
+    <div class="card p-7 max-w-sm w-full mx-4 border-red-200">
         <div class="text-center mb-5">
             <div class="text-4xl mb-3">⚠️</div>
-            <h3 class="text-lg font-bold text-slate-100" id="confirmTitle">Xác nhận xóa</h3>
-            <p class="text-sm text-slate-400 mt-2" id="confirmMsg">Bạn có chắc chắn muốn xóa?</p>
+            <h3 class="text-lg font-bold text-slate-800" id="confirmTitle">Xác nhận xóa</h3>
+            <p class="text-sm text-slate-500 mt-2" id="confirmMsg">Bạn có chắc chắn muốn xóa?</p>
         </div>
         <div class="flex gap-3">
             <button onclick="closeConfirm()" class="btn btn-slate flex-1 justify-center py-2.5">Hủy</button>
@@ -200,7 +198,6 @@
 </div>
 
 <script>
-// ─── STATE ───────────────────────────────────────────────────────────────────
 const BASE_URL = window.location.origin;
 let confirmCallback = null;
 
@@ -210,9 +207,8 @@ function showToast(msg, type = 'success') {
     const icon = document.getElementById('toastIcon');
     const msgEl = document.getElementById('toastMsg');
     icon.textContent = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
-    t.className = t.className.replace(/border-\S+\/30/g, '');
-    t.style.borderColor = type === 'error' ? 'rgba(239,68,68,.3)' : 'rgba(16,185,129,.3)';
-    t.style.color = type === 'error' ? '#f87171' : '#34d399';
+    t.style.borderColor = type === 'error' ? '#fecaca' : type === 'info' ? '#bfdbfe' : '#bbf7d0';
+    t.style.color = type === 'error' ? '#dc2626' : type === 'info' ? '#2563eb' : '#16a34a';
     msgEl.textContent = msg;
     t.classList.remove('translate-y-20', 'opacity-0');
     t.classList.add('translate-y-0', 'opacity-100');
@@ -237,15 +233,10 @@ function closeConfirm() {
     modal.classList.remove('flex');
     confirmCallback = null;
 }
-document.getElementById('confirmOkBtn').onclick = () => {
-    closeConfirm();
-    if (confirmCallback) confirmCallback();
-};
-document.getElementById('confirmModal').addEventListener('click', function(e) {
-    if (e.target === this) closeConfirm();
-});
+document.getElementById('confirmOkBtn').onclick = () => { closeConfirm(); if (confirmCallback) confirmCallback(); };
+document.getElementById('confirmModal').addEventListener('click', function(e) { if (e.target === this) closeConfirm(); });
 
-// ─── CHECKBOX LOGIC ───────────────────────────────────────────────────────────
+// ─── CHECKBOX ────────────────────────────────────────────────────────────────
 function getCheckedIds() {
     return [...document.querySelectorAll('.row-checkbox:checked')].map(cb => parseInt(cb.value));
 }
@@ -255,63 +246,44 @@ function onRowCheck() {
     document.getElementById('selectAll').indeterminate = checked.length > 0 && checked.length < total;
     document.getElementById('selectAll').checked = checked.length === total && total > 0;
     updateBulkToolbar(checked.length);
-    // highlight rows
     document.querySelectorAll('.row-checkbox').forEach(cb => {
         cb.closest('tr').classList.toggle('selected-row', cb.checked);
     });
 }
 function toggleSelectAll(el) {
-    const visibleCheckboxes = [...document.querySelectorAll('#tableBody tr:not([style*="display:none"]) .row-checkbox')];
-    visibleCheckboxes.forEach(cb => {
-        cb.checked = el.checked;
-        cb.closest('tr').classList.toggle('selected-row', el.checked);
-    });
-    updateBulkToolbar(el.checked ? visibleCheckboxes.length : 0);
+    const visible = [...document.querySelectorAll('#tableBody tr:not([style*="display:none"]) .row-checkbox')];
+    visible.forEach(cb => { cb.checked = el.checked; cb.closest('tr').classList.toggle('selected-row', el.checked); });
+    updateBulkToolbar(el.checked ? visible.length : 0);
 }
 function clearSelection() {
-    document.querySelectorAll('.row-checkbox').forEach(cb => {
-        cb.checked = false;
-        cb.closest('tr').classList.remove('selected-row');
-    });
+    document.querySelectorAll('.row-checkbox').forEach(cb => { cb.checked = false; cb.closest('tr').classList.remove('selected-row'); });
     document.getElementById('selectAll').checked = false;
     document.getElementById('selectAll').indeterminate = false;
     updateBulkToolbar(0);
 }
 function updateBulkToolbar(count) {
-    const toolbar = document.getElementById('bulkToolbar');
     document.getElementById('selectedCount').textContent = count;
-    if (count > 0) {
-        toolbar.classList.remove('hidden');
-    } else {
-        toolbar.classList.add('hidden');
-    }
+    document.getElementById('bulkToolbar').classList.toggle('hidden', count === 0);
 }
 
 // ─── SEARCH & FILTER ─────────────────────────────────────────────────────────
 function filterTable() {
     const raw = document.getElementById('searchInput').value.trim();
     const dateFilter = document.getElementById('filterDate').value;
-
-    // Tách nhiều từ khóa bằng dấu phẩy hoặc khoảng trắng liên tiếp, bỏ rỗng
     const terms = raw.toLowerCase().split(/[,\s]+/).filter(t => t.length > 0);
-
     const rows = document.querySelectorAll('#tableBody tr');
     let visible = 0;
     rows.forEach(row => {
         const name = row.dataset.name || '';
         const maso = row.dataset.maso || '';
         const date = row.dataset.date || '';
-
-        // Khớp nếu BẤT KỲ từ khóa nào match (OR logic)
         const matchQ = terms.length === 0 || terms.some(t => name.includes(t) || maso.includes(t));
         const matchDate = !dateFilter || date.includes(dateFilter.split('-').reverse().join('/'));
-
         const show = matchQ && matchDate;
         row.style.display = show ? '' : 'none';
         if (show) visible++;
     });
-    const total = rows.length;
-    document.getElementById('visibleCount').textContent = `Hiển thị ${visible} / ${total} hồ sơ`;
+    document.getElementById('visibleCount').textContent = `Hiển thị ${visible} / ${rows.length} hồ sơ`;
     document.getElementById('selectAll').checked = false;
     document.getElementById('selectAll').indeterminate = false;
 }
@@ -333,46 +305,28 @@ function copyLink(id, maso, btn) {
 }
 
 function printSingle(id, maso) {
-    const url = `${BASE_URL}/cv/${id}/${maso}`;
-    const win = window.open(url, '_blank');
-    if (win) {
-        win.addEventListener('load', () => {
-            setTimeout(() => win.print(), 800);
-        });
-    }
+    window.open(`${BASE_URL}/cv/${id}/${maso}`, '_blank');
 }
 
 function deleteSingle(id, name, btn) {
-    showConfirm(
-        'Xóa hồ sơ',
-        `Xóa hồ sơ "${name}" (ID: ${id})? Hành động này không thể hoàn tác.`,
-        async () => {
-            btn.disabled = true;
-            btn.innerHTML = '⏳';
-            try {
-                const res = await fetch(`/api/history/${id}`, { method: 'DELETE', credentials: 'same-origin' });
-                const data = await res.json();
-                if (data.success) {
-                    const row = btn.closest('tr');
-                    row.style.transition = 'opacity .3s';
-                    row.style.opacity = '0';
-                    setTimeout(() => {
-                        row.remove();
-                        updateRowCount();
-                        showToast(`Đã xóa hồ sơ "${name}"`);
-                    }, 300);
-                } else {
-                    showToast('Lỗi: ' + data.error, 'error');
-                    btn.disabled = false;
-                    btn.innerHTML = '🗑️';
-                }
-            } catch (e) {
-                showToast('Lỗi kết nối', 'error');
-                btn.disabled = false;
-                btn.innerHTML = '🗑️';
+    showConfirm('Xóa hồ sơ', `Xóa hồ sơ "${name}" (ID: ${id})? Hành động này không thể hoàn tác.`, async () => {
+        btn.disabled = true; btn.innerHTML = '⏳';
+        try {
+            const res = await fetch(`/api/history/${id}`, { method: 'DELETE', credentials: 'same-origin' });
+            const data = await res.json();
+            if (data.success) {
+                const row = btn.closest('tr');
+                row.style.transition = 'opacity .3s'; row.style.opacity = '0';
+                setTimeout(() => { row.remove(); updateRowCount(); showToast(`Đã xóa hồ sơ "${name}"`); }, 300);
+            } else {
+                showToast('Lỗi: ' + data.error, 'error');
+                btn.disabled = false; btn.innerHTML = '🗑️';
             }
+        } catch (e) {
+            showToast('Lỗi kết nối', 'error');
+            btn.disabled = false; btn.innerHTML = '🗑️';
         }
-    );
+    });
 }
 
 // ─── BULK ACTIONS ─────────────────────────────────────────────────────────────
@@ -386,8 +340,7 @@ function bulkCopyLinks() {
         const id = row.dataset.id;
         return `${maso} — ${name}\n${BASE_URL}/cv/${id}/${maso}`;
     });
-    const text = lines.join('\n\n');
-    navigator.clipboard.writeText(text).then(() => {
+    navigator.clipboard.writeText(lines.join('\n\n')).then(() => {
         showToast(`Đã copy ${ids.length} link vào clipboard!`);
         clearSelection();
     }).catch(() => showToast('Không thể copy', 'error'));
@@ -400,99 +353,55 @@ function bulkPrint() {
         const row = cb.closest('tr');
         return { id: row.dataset.id, maso: row.querySelector('td:nth-child(3)').textContent.trim() };
     });
-
     showToast(`Đang tải ${items.length} hồ sơ để in...`, 'info');
-
-    // Mở cửa sổ in gộp
     const printWin = window.open('', '_blank', 'width=900,height=700');
-    printWin.document.write(`<!DOCTYPE html><html><head>
-        <meta charset="UTF-8">
-        <title>In hàng loạt — ${items.length} hồ sơ</title>
-        <style>
-            body { margin:0; padding:0; background:#fff; }
-            .loading { font-family:sans-serif; text-align:center; padding:40px; color:#555; font-size:16px; }
-            iframe { border:none; width:210mm; height:297mm; display:block; page-break-after:always; }
-            iframe:last-child { page-break-after:avoid; }
-            @media print { .no-print { display:none; } }
-        </style>
-    </head><body>
-        <div class="loading no-print" id="loadingMsg">⏳ Đang tải ${items.length} hồ sơ, vui lòng chờ...</div>
-        <div id="frames"></div>
-        <script>
-            const items = ${JSON.stringify(items)};
-            const base = '${BASE_URL}';
-            let loaded = 0;
-            const container = document.getElementById('frames');
-            items.forEach(item => {
-                const iframe = document.createElement('iframe');
-                iframe.src = base + '/cv/' + item.id + '/' + item.maso;
-                iframe.onload = () => {
-                    loaded++;
-                    document.getElementById('loadingMsg').textContent = '⏳ Đã tải ' + loaded + '/' + items.length + ' hồ sơ...';
-                    if (loaded === items.length) {
-                        document.getElementById('loadingMsg').textContent = '✅ Sẵn sàng in! Nhấn Ctrl+P hoặc nút bên dưới.';
-                        document.getElementById('printBtn').style.display = 'inline-block';
-                    }
-                };
-                container.appendChild(iframe);
-            });
-        <\/script>
-        <div class="no-print" style="position:fixed;bottom:20px;right:20px;">
-            <button id="printBtn" onclick="window.print()" style="display:none;padding:12px 24px;background:#10b981;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;">
-                🖨️ In PDF (${items.length} trang)
-            </button>
-        </div>
-    </body></html>`);
+    printWin.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>In hàng loạt</title>
+    <style>body{margin:0;padding:0;background:#fff;}.loading{font-family:sans-serif;text-align:center;padding:40px;color:#555;font-size:16px;}
+    iframe{border:none;width:210mm;height:297mm;display:block;page-break-after:always;}iframe:last-child{page-break-after:avoid;}
+    @media print{.no-print{display:none;}}</style></head><body>
+    <div class="loading no-print" id="loadingMsg">⏳ Đang tải ${items.length} hồ sơ...</div>
+    <div id="frames"></div>
+    <script>const items=${JSON.stringify(items)};const base='${BASE_URL}';let loaded=0;
+    const c=document.getElementById('frames');
+    items.forEach(item=>{const f=document.createElement('iframe');f.src=base+'/cv/'+item.id+'/'+item.maso;
+    f.onload=()=>{loaded++;document.getElementById('loadingMsg').textContent='⏳ Đã tải '+loaded+'/'+items.length+' hồ sơ...';
+    if(loaded===items.length){document.getElementById('loadingMsg').textContent='✅ Sẵn sàng in!';document.getElementById('printBtn').style.display='inline-block';}};c.appendChild(f);});<\/script>
+    <div class="no-print" style="position:fixed;bottom:20px;right:20px;">
+    <button id="printBtn" onclick="window.print()" style="display:none;padding:12px 24px;background:#2563eb;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;">
+    🖨️ In PDF (${items.length} trang)</button></div></body></html>`);
     printWin.document.close();
 }
 
 async function bulkDelete() {
     const ids = getCheckedIds();
     if (!ids.length) return;
-    showConfirm(
-        'Xóa hàng loạt',
-        `Xóa ${ids.length} hồ sơ đã chọn? Hành động này không thể hoàn tác.`,
-        async () => {
-            showToast(`Đang xóa ${ids.length} hồ sơ...`, 'info');
-            try {
-                const res = await fetch('/api/history/bulk-delete', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'same-origin',
-                    body: JSON.stringify({ ids })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    // Xóa các hàng khỏi DOM
-                    document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
-                        cb.closest('tr').remove();
-                    });
-                    clearSelection();
-                    updateRowCount();
-                    showToast(`Đã xóa ${data.deleted} hồ sơ thành công!`);
-                } else {
-                    showToast('Lỗi: ' + data.error, 'error');
-                }
-            } catch (e) {
-                showToast('Lỗi kết nối', 'error');
+    showConfirm('Xóa hàng loạt', `Xóa ${ids.length} hồ sơ đã chọn? Hành động này không thể hoàn tác.`, async () => {
+        showToast(`Đang xóa ${ids.length} hồ sơ...`, 'info');
+        try {
+            const res = await fetch('/api/history/bulk-delete', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin', body: JSON.stringify({ ids })
+            });
+            const data = await res.json();
+            if (data.success) {
+                document.querySelectorAll('.row-checkbox:checked').forEach(cb => cb.closest('tr').remove());
+                clearSelection(); updateRowCount();
+                showToast(`Đã xóa ${data.deleted} hồ sơ thành công!`);
+            } else {
+                showToast('Lỗi: ' + data.error, 'error');
             }
-        }
-    );
+        } catch (e) { showToast('Lỗi kết nối', 'error'); }
+    });
 }
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 function updateRowCount() {
     const total = document.querySelectorAll('#tableBody tr').length;
     document.getElementById('totalCount').textContent = total + ' hồ sơ';
-    const visibleEl = document.getElementById('visibleCount');
     const visible = [...document.querySelectorAll('#tableBody tr')].filter(r => r.style.display !== 'none').length;
-    visibleEl.textContent = `Hiển thị ${visible} / ${total} hồ sơ`;
+    document.getElementById('visibleCount').textContent = `Hiển thị ${visible} / ${total} hồ sơ`;
 }
-
-// Keyboard shortcut: Escape đóng modal
-document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeConfirm();
-});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeConfirm(); });
 </script>
 {% endif %}
 
