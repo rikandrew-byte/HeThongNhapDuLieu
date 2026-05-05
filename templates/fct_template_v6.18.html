@@ -82,6 +82,8 @@
             .main { width: 61.804% !important; }
             .notranslate { translate: no !important; }
             .no-print { display: none !important; }
+            .ghi-chu-text { overflow: visible !important; font-size: 11px !important; line-height: 1.4 !important; }
+            .ghi-chu-box { height: auto !important; min-height: 18% !important; max-height: 30% !important; }
         }
     </style>
 </head>
@@ -156,12 +158,12 @@
                 </div>
                 {% endif %}
 
-                <div class="mt-auto bg-emerald-50 p-4 rounded-xl border border-emerald-100 flex flex-col mb-0 h-[25%] flex-shrink-0">
+                <div class="ghi-chu-box mt-auto bg-emerald-50 p-4 rounded-xl border border-emerald-100 flex flex-col mb-0 h-[25%] flex-shrink-0">
                     <h2 class="text-[14px] font-black text-emerald-900 border-b-2 border-emerald-500 pb-1.5 mb-2 uppercase flex justify-between items-center flex-shrink-0">
                         <span>Ghi chú / 備註</span><span class="text-emerald-600 text-[13px]">✒</span>
                     </h2>
                     
-                    <div class="text-[13px] text-gray-700 leading-relaxed whitespace-pre-wrap flex-1 overflow-hidden">{{loi_binh_1}}</div>
+                    <div class="ghi-chu-text text-[12.5px] text-gray-700 leading-snug whitespace-pre-wrap flex-1 overflow-y-auto">{{loi_binh_1}}</div>
                     
                     <div class="mt-2 pt-1.5 border-t border-emerald-200 flex justify-between items-center flex-shrink-0">
                         <span class="text-[11px] font-bold text-[#B8960C] italic uppercase">NPT:</span>
