@@ -496,6 +496,7 @@
                 const response = await fetch('/api/translate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
                     body: JSON.stringify({ text: text })
                 });
                 const result = await response.json();
@@ -734,7 +735,7 @@ async function loadHistory() {
             }
 
             try {
-                const response = await fetch('/api/submit-only', { method: 'POST', body: formData });
+                const response = await fetch('/api/submit-only', { method: 'POST', body: formData, credentials: 'same-origin' });
                 const result = await response.json();
                 
                 if (result.success) {
