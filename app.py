@@ -542,6 +542,40 @@ def generate_word(form_data: dict, template_name='resume_template_chuan.docx') -
     doc.save(out)
     return out
 
+def _resize_image_for_db(data_uri: str, max_px: int = 800, quality: int = 75) -> str:
+    """
+    Resize ảnh base64 xuống max_px trước khi lưu DB.
+    Giảm kích thước đáng kể mà vẫn đủ chất lượng để restore vào form.
+    """
+    if not data_uri or not data_uri.startswith('data:image/'):
+        return data_uri
+    try:
+        from PIL import Image
+        import io as _io
+        header, encoded = data_uri.split(',', 1)
+        img_bytes = base64.b64decode(encoded)
+        img = Image.open(_io.BytesIO(img_bytes))
+        # Chỉ resize nếu ảnh lớn hơn max_px
+        if max(img.width, img.height) > max_px:
+            img.thumbnail((max_px, max_px), Image.LANCZOS)
+        # Chuyển sang JPEG để nén tốt hơn (trừ PNG có transparency)
+        buf = _io.BytesIO()
+        if img.mode in ('RGBA', 'P'):
+            img = img.convert('RGB')
+        img.save(buf, format='JPEG', quality=quality, optimize=True)
+        resized_b64 = base64.b64encode(buf.getvalue()).decode('utf-8')
+        return f"data:image/jpeg;base64,{resized_b64}"
+    except Exception:
+        return data_uri  # Nếu lỗi thì giữ nguyên
+
+def _prepare_data_for_db(data: dict) -> dict:
+    """Resize ảnh trong data trước khi lưu DB để tránh vượt giới hạn kích thước."""
+    clean = dict(data)
+    for key in ('photo', 'qr_line'):
+        if clean.get(key):
+            clean[key] = _resize_image_for_db(clean[key], max_px=800, quality=75)
+    return clean
+
 # ─── API Routes ──────────────────────────────────────────────────────────────
 @app.route('/')
 def user_form():
@@ -586,7 +620,7 @@ def api_generate():
                 ma_so=form_data.get('Maso', ''),
                 ho_ten=form_data.get('Hoten', ''),
                 ten_file=fn,
-                data_json=json.dumps(data, ensure_ascii=False)
+                data_json=json.dumps(_prepare_data_for_db(data), ensure_ascii=False)
             )
             db.session.add(new_record)
             db.session.commit()
@@ -639,7 +673,7 @@ def api_submit_only():
             ma_so=form_data.get('Maso', '') or 'CHO_DUYET',
             ho_ten=form_data.get('Hoten', ''),
             ten_file='',
-            data_json=json.dumps(data, ensure_ascii=False)
+            data_json=json.dumps(_prepare_data_for_db(data), ensure_ascii=False)
         )
         try:
             db.session.add(new_record)

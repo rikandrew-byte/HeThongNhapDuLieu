@@ -212,11 +212,15 @@
                             </optgroup>
                         </select>
                     </div>
+                </div>
+
+                <!-- Hàng riêng cho 2 ô ảnh — cân đối 50/50 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white px-6 pb-6 rounded-b-2xl border-x border-b border-gray-100 -mt-2">
                     <div>
                         <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Ảnh chân dung</label>
                         <div class="relative">
                             <div id="dropzone"
-                                class="w-full border-2 border-dashed border-gray-300 rounded-xl p-4 text-center cursor-pointer hover:border-blue-500 transition-colors relative h-32 flex flex-col items-center justify-center bg-gray-50 overflow-hidden">
+                                class="w-full border-2 border-dashed border-gray-300 rounded-xl p-4 text-center cursor-pointer hover:border-blue-500 transition-colors relative h-36 flex flex-col items-center justify-center bg-gray-50 overflow-hidden">
                                 <input type="file" id="photoInput" accept="image/*"
                                     class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                                 <div id="dropzoneText" class="text-sm text-gray-400">
@@ -234,7 +238,7 @@
                         <label class="block text-xs font-bold text-slate-400 uppercase mb-1">QR Code LINE</label>
                         <div class="relative">
                             <div id="qrDropzone"
-                                class="w-full border-2 border-dashed border-gray-300 rounded-xl p-4 text-center cursor-pointer hover:border-green-500 transition-colors relative h-32 flex flex-col items-center justify-center bg-gray-50 overflow-hidden">
+                                class="w-full border-2 border-dashed border-gray-300 rounded-xl p-4 text-center cursor-pointer hover:border-green-500 transition-colors relative h-36 flex flex-col items-center justify-center bg-gray-50 overflow-hidden">
                                 <input type="file" id="qrInput" accept="image/*"
                                     class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                                 <div id="qrDropzoneText" class="text-sm text-gray-400">
@@ -247,62 +251,12 @@
                             <button id="clearQrBtn" type="button" class="hidden absolute top-1.5 right-1.5 z-20 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow" title="Xóa QR">✕</button>
                         </div>
                     </div>
-            </section>
-
-            <section>
-                <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
-                    <span class="w-2 h-6 bg-blue-600 rounded-full"></span> 2. Gia đình
-                </h2>
-                <div
-                    class="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <div class="col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tên
-                            Bố</label><input type="text" name="HotenBo"
-                            class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none">
-                    </div>
-                    <div class="col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tuổi
-                            Bố</label><input type="text" name="TB"
-                            class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none">
-                    </div>
-
-                    <div class="col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tên
-                            Mẹ</label><input type="text" name="HotenMe"
-                            class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none">
-                    </div>
-                    <div class="col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tuổi
-                            Mẹ</label><input type="text" name="TM"
-                            class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none">
-                    </div>
-
-                    <div class="col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tên
-                            Vợ/Chồng</label><input type="text" name="VoChong"
-                            class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none">
-                    </div>
-                    <div class="col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tuổi
-                            Vợ/Chồng</label><input type="text" name="VC"
-                            class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none">
-                    </div>
-
-                    <div class="col-span-1 md:col-span-1"><label
-                            class="block text-xs font-bold text-slate-400 uppercase mb-1">Số con</label><input
-                            type="text" name="Socon"
-                            class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none">
-                    </div>
-                    <div class="col-span-1 md:col-span-2"><label
-                            class="block text-xs font-bold text-slate-400 uppercase mb-1">Số Anh/Chị/Em</label><input
-                            type="text" name="Anhchiem"
-                            class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none">
-                    </div>
-                    <div class="col-span-1 md:col-span-1"><label
-                            class="block text-xs font-bold text-slate-400 uppercase mb-1">Xếp thứ</label><input
-                            type="text" name="Xepthu"
-                            class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none">
-                    </div>
                 </div>
             </section>
 
             <section>
                 <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
-                    <span class="w-2 h-6 bg-blue-600 rounded-full"></span> 3. Sức khỏe & Thói quen
+                    <span class="w-2 h-6 bg-blue-600 rounded-full"></span> 2. Sức khỏe & Thói quen
                 </h2>
                 <div
                     class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 grid grid-cols-2 md:grid-cols-4 gap-y-4 gap-x-2 text-sm">
@@ -355,7 +309,7 @@
 
             <section>
                 <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
-                    <span class="w-2 h-6 bg-blue-600 rounded-full"></span> 4. Kỹ năng
+                    <span class="w-2 h-6 bg-blue-600 rounded-full"></span> 3. Kỹ năng
                 </h2>
                 <div
                     class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 grid grid-cols-2 md:grid-cols-4 gap-y-4 gap-x-2 text-sm">
@@ -412,7 +366,7 @@
 
             <section>
                 <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
-                    <span class="w-2 h-6 bg-blue-600 rounded-full"></span> 5. Kinh nghiệm làm việc & Đánh giá
+                    <span class="w-2 h-6 bg-blue-600 rounded-full"></span> 4. Kinh nghiệm làm việc & Đánh giá
                 </h2>
                 <div class="space-y-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
 
