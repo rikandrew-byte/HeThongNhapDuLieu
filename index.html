@@ -54,11 +54,8 @@
         
         <!-- Nút Mở bảng Lịch Sử -->
         <div class="flex justify-end mb-6 max-w-4xl mx-auto gap-3">
-            <a href="/admin" target="_blank" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2.5 px-5 rounded-lg shadow-md transition-all flex items-center gap-2 text-sm">
-                🛡️ Trang Admin
-            </a>
             <button type="button" onclick="loadHistory()" class="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-2.5 px-5 rounded-lg shadow-md transition-all flex items-center gap-2 text-sm">
-                🕒 Xem Lịch Sử Các Form Đã Tạo
+                🕒 Xem Lịch Sử / Quản lý Hồ Sơ
             </button>
         </div>
 
@@ -543,24 +540,34 @@ async function loadHistory() {
             // 3. Quét từng dòng dữ liệu và tạo bảng
             result.data.forEach((item, index) => {
                 const row = document.createElement('tr');
-                // Highlight khi trỏ chuột (tùy chọn)
-                row.onmouseover = () => row.style.backgroundColor = '#f9f9f9';
-                row.onmouseout = () => row.style.backgroundColor = 'transparent';
-                
+                row.dataset.name = item.ho_ten.toLowerCase();
+                row.dataset.maso = item.ma_so.toLowerCase();
+                row.dataset.id = item.id;
+                row.style.borderBottom = '1px solid #f1f5f9';
+                row.onmouseover = () => { if (!row.dataset.checked) row.style.background = '#f8fafc'; };
+                row.onmouseout  = () => { if (!row.dataset.checked) row.style.background = ''; };
+
                 row.innerHTML = `
-                    <td style="padding: 10px; border: 1px solid #ddd;">${item.ma_so}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold;">${item.ho_ten}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${item.ten_file || '(Form chờ duyệt)'}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${item.ngay_tao}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">
-                        <button onclick="restoreData(${index})" style="padding: 6px 12px; background-color: #ffc107; color: #000; border: none; border-radius: 4px; font-size: 14px; cursor: pointer; margin-right: 5px; font-weight: bold;">✍️ SỬA</button>
-                        <a href="/cv/${item.id}/${encodeURIComponent(item.ma_so)}" target="_blank" style="padding: 6px 12px; background-color: #059669; color: white; text-decoration: none; border-radius: 4px; font-size: 14px; display: inline-block; margin-right: 5px; font-weight: bold;">🖨️ IN PDF</a>
-                        ${item.ma_so ? `<a href="/cv/${encodeURIComponent(item.ma_so)}" target="_blank" style="padding: 6px 12px; background-color: #28a745; color: white; text-decoration: none; border-radius: 4px; font-size: 14px; display: inline-block; margin-right: 5px; font-weight: bold;">📥 Tải HTML</a>` : ''}
-                        <button onclick="deleteHistory(${item.id})" style="padding: 6px 12px; background-color: #dc3545; color: white; border: none; border-radius: 4px; font-size: 14px; cursor: pointer;">🗑️ Xóa</button>
+                    <td style="padding:10px 12px;">
+                        <input type="checkbox" class="history-row-checkbox" value="${item.id}" data-index="${index}"
+                            onchange="onHistoryRowCheck()"
+                            style="accent-color:#2563eb; width:15px; height:15px; cursor:pointer;">
+                    </td>
+                    <td style="padding:10px 8px; font-weight:700; color:#2563eb;">${item.ma_so}</td>
+                    <td style="padding:10px 8px; font-weight:600; color:#1e293b;">${item.ho_ten}</td>
+                    <td style="padding:10px 8px; color:#64748b; font-size:13px;">${item.ngay_tao}</td>
+                    <td style="padding:10px 8px; text-align:center;">
+                        <div style="display:flex; gap:5px; justify-content:center; flex-wrap:wrap;">
+                            <button onclick="restoreData(${index})" style="padding:5px 10px; background:#fffbeb; color:#d97706; border:1px solid #fde68a; border-radius:6px; font-size:12px; cursor:pointer; font-weight:600;">✍️ Sửa</button>
+                            <a href="/cv/${item.id}/${encodeURIComponent(item.ma_so)}" target="_blank" style="padding:5px 10px; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; border-radius:6px; font-size:12px; text-decoration:none; font-weight:600;">🖨️ In PDF</a>
+                            <button onclick="copyHistoryLink(${item.id}, '${item.ma_so}', this)" style="padding:5px 10px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:6px; font-size:12px; cursor:pointer; font-weight:600;">📤 Link</button>
+                            <button onclick="deleteHistory(${item.id}, this)" style="padding:5px 10px; background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:6px; font-size:12px; cursor:pointer; font-weight:600;">🗑️ Xóa</button>
+                        </div>
                     </td>
                 `;
                 tbody.appendChild(row);
             });
+            updateHistoryCount();
         } else {
             tbody.innerHTML = `<tr><td colspan="5" style="color:red; text-align:center; padding: 15px;">Lỗi: ${result.error}</td></tr>`;
         }
@@ -632,46 +639,143 @@ async function loadHistory() {
         }
 
         // Hàm xử lý xóa lịch sử
-        async function deleteHistory(id) {
-            if (!confirm("Ngài có chắc chắn muốn xóa bản ghi này cùng file Word của nó không? Hành động này không thể hoàn tác!")) {
-                return;
-            }
-            
+        async function deleteHistory(id, btn) {
+            if (!confirm("Xóa hồ sơ này? Hành động không thể hoàn tác!")) return;
+            if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
             try {
-                const response = await fetch(`/api/history/${id}`, { 
+                const response = await fetch(`/api/history/${id}`, {
                     method: 'DELETE',
                     credentials: 'same-origin'
                 });
                 const result = await response.json();
-                
                 if (result.success) {
-                    loadHistory(); // Tải lại bảng sau khi xóa thành công
+                    // Xóa hàng khỏi bảng
+                    const row = document.querySelector(`#historyTableBody tr[data-id="${id}"]`);
+                    if (row) row.remove();
+                    // Cập nhật data cache
+                    currentHistoryData = currentHistoryData.filter(i => i.id !== id);
+                    updateHistoryCount();
                 } else {
                     alert("Lỗi khi xóa: " + result.error);
+                    if (btn) { btn.disabled = false; btn.textContent = '🗑️ Xóa'; }
                 }
             } catch (error) {
                 alert("Lỗi kết nối khi xóa: " + error.message);
+                if (btn) { btn.disabled = false; btn.textContent = '🗑️ Xóa'; }
             }
         }
 
-        // Hàm lọc lịch sử theo tên ứng viên
-        function filterHistory() {
-            const input = document.getElementById("searchInput");
-            const filter = input.value.toLowerCase();
-            const table = document.getElementById("historyTableBody");
-            const tr = table.getElementsByTagName("tr");
+        function copyHistoryLink(id, maso, btn) {
+            const url = `${window.location.origin}/cv/${id}/${encodeURIComponent(maso)}`;
+            navigator.clipboard.writeText(url).then(() => {
+                const orig = btn.innerHTML;
+                btn.innerHTML = '✅ Đã copy';
+                setTimeout(() => btn.innerHTML = orig, 2000);
+            }).catch(() => alert('Không thể copy link'));
+        }
 
-            for (let i = 0; i < tr.length; i++) {
-                const td = tr[i].getElementsByTagName("td")[1]; // Cột Họ Tên nằm ở vị trí thứ 2 (index 1)
-                if (td) {
-                    const txtValue = td.textContent || td.innerText;
-                    if (txtValue.toLowerCase().indexOf(filter) > -1) {
-                        tr[i].style.display = "";
-                    } else {
-                        tr[i].style.display = "none";
-                    }
+        // ── Checkbox bulk ──
+        function onHistoryRowCheck() {
+            const checked = document.querySelectorAll('.history-row-checkbox:checked');
+            const total = document.querySelectorAll('.history-row-checkbox').length;
+            document.getElementById('historySelectAll').indeterminate = checked.length > 0 && checked.length < total;
+            document.getElementById('historySelectAll').checked = checked.length === total && total > 0;
+            document.getElementById('historySelectedCount').textContent = checked.length;
+            document.getElementById('historyBulkBar').style.display = checked.length > 0 ? 'flex' : 'none';
+            checked.forEach(cb => { cb.closest('tr').style.background = '#eff6ff'; cb.closest('tr').dataset.checked = '1'; });
+            document.querySelectorAll('.history-row-checkbox:not(:checked)').forEach(cb => {
+                cb.closest('tr').style.background = ''; delete cb.closest('tr').dataset.checked;
+            });
+        }
+        function toggleHistorySelectAll(el) {
+            document.querySelectorAll('.history-row-checkbox').forEach(cb => {
+                cb.checked = el.checked;
+                cb.closest('tr').style.background = el.checked ? '#eff6ff' : '';
+                if (el.checked) cb.closest('tr').dataset.checked = '1';
+                else delete cb.closest('tr').dataset.checked;
+            });
+            const count = el.checked ? document.querySelectorAll('.history-row-checkbox').length : 0;
+            document.getElementById('historySelectedCount').textContent = count;
+            document.getElementById('historyBulkBar').style.display = count > 0 ? 'flex' : 'none';
+        }
+        function clearHistorySelection() {
+            document.querySelectorAll('.history-row-checkbox').forEach(cb => {
+                cb.checked = false;
+                cb.closest('tr').style.background = '';
+                delete cb.closest('tr').dataset.checked;
+            });
+            document.getElementById('historySelectAll').checked = false;
+            document.getElementById('historySelectAll').indeterminate = false;
+            document.getElementById('historySelectedCount').textContent = '0';
+            document.getElementById('historyBulkBar').style.display = 'none';
+        }
+
+        async function bulkDeleteHistory() {
+            const checked = [...document.querySelectorAll('.history-row-checkbox:checked')];
+            if (!checked.length) return;
+            if (!confirm(`Xóa ${checked.length} hồ sơ đã chọn? Hành động không thể hoàn tác!`)) return;
+            const ids = checked.map(cb => parseInt(cb.value));
+            try {
+                const res = await fetch('/api/history/bulk-delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ ids })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    ids.forEach(id => {
+                        const row = document.querySelector(`#historyTableBody tr[data-id="${id}"]`);
+                        if (row) row.remove();
+                        currentHistoryData = currentHistoryData.filter(i => i.id !== id);
+                    });
+                    clearHistorySelection();
+                    updateHistoryCount();
+                } else {
+                    alert('Lỗi: ' + result.error);
                 }
-            }
+            } catch (e) { alert('Lỗi kết nối'); }
+        }
+
+        function bulkCopyHistoryLinks() {
+            const checked = [...document.querySelectorAll('.history-row-checkbox:checked')];
+            if (!checked.length) return;
+            const lines = checked.map(cb => {
+                const row = cb.closest('tr');
+                const id = row.dataset.id;
+                const maso = row.querySelector('td:nth-child(2)').textContent.trim();
+                const name = row.querySelector('td:nth-child(3)').textContent.trim();
+                return `${maso} — ${name}\n${window.location.origin}/cv/${id}/${encodeURIComponent(maso)}`;
+            });
+            navigator.clipboard.writeText(lines.join('\n\n')).then(() => {
+                alert(`Đã copy ${checked.length} link!`);
+                clearHistorySelection();
+            }).catch(() => alert('Không thể copy'));
+        }
+
+        function updateHistoryCount() {
+            const total = document.querySelectorAll('#historyTableBody tr').length;
+            document.getElementById('historyTotalCount').textContent = total + ' hồ sơ';
+            const visible = [...document.querySelectorAll('#historyTableBody tr')].filter(r => r.style.display !== 'none').length;
+            document.getElementById('historyVisibleCount').textContent = `Hiển thị ${visible} / ${total} hồ sơ`;
+        }
+
+        // Hàm lọc lịch sử theo tên/mã số (hỗ trợ nhiều mã cách nhau bằng dấu phẩy)
+        function filterHistory() {
+            const raw = document.getElementById('searchInput').value.trim();
+            const terms = raw.toLowerCase().split(/[,\s]+/).filter(t => t.length > 0);
+            const rows = document.querySelectorAll('#historyTableBody tr');
+            rows.forEach(row => {
+                const name = (row.dataset.name || '');
+                const maso = (row.dataset.maso || '');
+                const match = terms.length === 0 || terms.some(t => name.includes(t) || maso.includes(t));
+                row.style.display = match ? '' : 'none';
+            });
+            updateHistoryCount();
+        }
+        function clearHistoryFilters() {
+            document.getElementById('searchInput').value = '';
+            filterHistory();
         }
 
         function calcAge() {
@@ -759,26 +863,58 @@ async function loadHistory() {
     </script>
 
 <!-- Bảng Popup (Modal) hiển thị lịch sử (Mặc định ẩn) -->
-<div id="historyModal" style="display:none; position:fixed; top:5%; left:10%; width:80%; max-height:90%; background:#fff; border:1px solid #ccc; z-index:9999; overflow-y:auto; padding:20px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); border-radius: 8px;">
-    <h2 style="margin-top: 0; color: #333;">Lịch sử các form đã tạo</h2>
-    <button type="button" onclick="document.getElementById('historyModal').style.display='none'" style="float:right; margin-top:-40px; padding: 5px 10px; background: #dc3545; color: #fff; border: none; border-radius: 4px; cursor: pointer;">Đóng ✖</button>
-    
-    <input type="text" id="searchInput" onkeyup="filterHistory()" placeholder="🔍 Nhập tên ứng viên để tìm kiếm..." style="width: 100%; padding: 10px; margin-top: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: 'Inter', sans-serif;">
-    
-    <table border="1" style="width:100%; border-collapse: collapse; text-align: left; margin-top: 15px;">
-        <thead style="background-color: #f2f2f2;">
-            <tr>
-                <th style="padding: 10px; border: 1px solid #ddd;">Mã Số</th>
-                <th style="padding: 10px; border: 1px solid #ddd;">Họ Tên</th>
-                <th style="padding: 10px; border: 1px solid #ddd;">Tên File</th>
-                <th style="padding: 10px; border: 1px solid #ddd;">Thời Gian Tạo</th>
-                <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Thao Tác</th>
-            </tr>
-        </thead>
-        <tbody id="historyTableBody">
-            <!-- Dữ liệu sẽ được điền tự động bằng JavaScript -->
-        </tbody>
-    </table>
+<div id="historyModal" style="display:none; position:fixed; top:3%; left:5%; width:90%; max-height:94%; background:#FAFAFA; border:1px solid #e2e8f0; z-index:9999; overflow-y:auto; box-shadow: 0 8px 32px rgba(0,0,0,0.18); border-radius: 16px; font-family:'Inter',sans-serif;">
+
+    <!-- Header -->
+    <div style="background:#fff; border-bottom:1px solid #e2e8f0; padding:16px 20px; border-radius:16px 16px 0 0; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:10;">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:20px;">📁</span>
+            <div>
+                <div style="font-size:16px; font-weight:800; color:#1e293b;">Quản lý Hồ sơ Ứng viên</div>
+                <div style="font-size:12px; color:#64748b;">FCT — <span id="historyTotalCount" style="color:#2563eb; font-weight:600;">0 hồ sơ</span></div>
+            </div>
+        </div>
+        <button type="button" onclick="document.getElementById('historyModal').style.display='none'" style="padding:6px 14px; background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">✕ Đóng</button>
+    </div>
+
+    <!-- Search + Filter -->
+    <div style="padding:14px 20px; background:#fff; border-bottom:1px solid #e2e8f0; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <div style="position:relative; flex:1; min-width:200px;">
+            <span style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#94a3b8;">🔍</span>
+            <input type="text" id="searchInput" onkeyup="filterHistory()"
+                placeholder="Tìm tên, mã số... (nhiều mã cách nhau bằng dấu phẩy: MD001, MD002)"
+                style="width:100%; padding:9px 12px 9px 32px; border:1px solid #e2e8f0; border-radius:10px; font-size:13px; font-family:'Inter',sans-serif; box-sizing:border-box; background:#f8fafc; outline:none;">
+        </div>
+        <button onclick="clearHistoryFilters()" style="padding:8px 14px; background:#f8fafc; color:#475569; border:1px solid #e2e8f0; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">✕ Xóa lọc</button>
+    </div>
+
+    <!-- Bulk toolbar (ẩn khi chưa chọn) -->
+    <div id="historyBulkBar" style="display:none; padding:10px 20px; background:#eff6ff; border-bottom:1px solid #bfdbfe; align-items:center; gap:12px; flex-wrap:wrap;">
+        <span style="font-size:13px; font-weight:600; color:#2563eb;">Đã chọn: <span id="historySelectedCount" style="background:#2563eb; color:#fff; border-radius:999px; padding:1px 8px; font-size:11px;">0</span></span>
+        <div style="width:1px; height:16px; background:#cbd5e1;"></div>
+        <button onclick="bulkCopyHistoryLinks()" style="padding:6px 12px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600;">📤 Copy link</button>
+        <button onclick="bulkDeleteHistory()" style="padding:6px 12px; background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600;">🗑️ Xóa đã chọn</button>
+        <button onclick="clearHistorySelection()" style="padding:6px 12px; background:#f8fafc; color:#475569; border:1px solid #e2e8f0; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600; margin-left:auto;">✕ Bỏ chọn</button>
+    </div>
+
+    <!-- Table -->
+    <div style="padding:16px 20px;">
+        <table style="width:100%; border-collapse:collapse; background:#fff; border-radius:12px; overflow:hidden; border:1px solid #e2e8f0;">
+            <thead>
+                <tr style="background:#f8fafc; border-bottom:1px solid #e2e8f0;">
+                    <th style="padding:10px 12px; width:36px;">
+                        <input type="checkbox" id="historySelectAll" onchange="toggleHistorySelectAll(this)" style="accent-color:#2563eb; width:15px; height:15px; cursor:pointer;">
+                    </th>
+                    <th style="padding:10px 8px; text-align:left; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#94a3b8;">Mã Số</th>
+                    <th style="padding:10px 8px; text-align:left; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#94a3b8;">Họ Tên</th>
+                    <th style="padding:10px 8px; text-align:left; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#94a3b8;">Thời Gian Tạo</th>
+                    <th style="padding:10px 8px; text-align:center; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#94a3b8;">Thao Tác</th>
+                </tr>
+            </thead>
+            <tbody id="historyTableBody"></tbody>
+        </table>
+        <div id="historyVisibleCount" style="margin-top:10px; font-size:12px; color:#94a3b8; text-align:right;"></div>
+    </div>
 </div>
 
 </body>
