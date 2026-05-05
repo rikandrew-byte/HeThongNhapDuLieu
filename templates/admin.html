@@ -197,7 +197,10 @@
     </div>
 </div>
 
+{% endif %}
+
 <script>
+{% if authenticated %}
 const BASE_URL = window.location.origin;
 let confirmCallback = null;
 
@@ -404,8 +407,8 @@ function updateRowCount() {
     document.getElementById('visibleCount').textContent = `Hiển thị ${visible} / ${total} hồ sơ`;
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeConfirm(); });
-</script>
 {% endif %}
+</script>
 
 </body>
 </html>
