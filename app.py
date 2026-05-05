@@ -443,7 +443,11 @@ def prepare_data(raw: dict) -> dict:
     ]
     for f in fields:
         val = raw.get(f, '')
-        context[f] = str(val).replace('\n', ' ').strip()
+        # Giữ nguyên newline cho loi_binh_1 để xuống dòng hiển thị đúng trên CV
+        if f == 'loi_binh_1':
+            context[f] = str(val).strip()
+        else:
+            context[f] = str(val).replace('\n', ' ').strip()
 
     # 2. Ngày sinh và tuổi
     context['Ngaysinh'] = fmt_date(context['Ngaysinh'])
