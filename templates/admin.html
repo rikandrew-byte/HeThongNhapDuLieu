@@ -313,7 +313,9 @@ function deleteSingle(id, name, btn) {
         btn.disabled = true; btn.innerHTML = '⏳';
         try {
             const res = await fetch(`/api/history/${id}`, { method: 'DELETE', credentials: 'same-origin' });
+            console.log('[DELETE] status:', res.status);
             const data = await res.json();
+            console.log('[DELETE] response:', data);
             if (data.success) {
                 const row = btn.closest('tr');
                 row.style.transition = 'opacity .3s'; row.style.opacity = '0';

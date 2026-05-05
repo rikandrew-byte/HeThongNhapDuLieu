@@ -788,8 +788,9 @@ def secure_web_view(id, maso):
 
 # --- HELPER: Kiểm tra quyền admin qua cookie (dùng cho các API được gọi bằng fetch JS) ---
 def _is_admin_authed():
-    """Trả về True nếu đang chạy local HOẶC cookie admin_auth hợp lệ trên Render."""
-    if not os.environ.get('RENDER'):
+    """Kiểm tra cookie admin_auth — bỏ qua khi chạy local (không có DATABASE_URL)."""
+    # Local: không có DATABASE_URL → bỏ qua auth
+    if not os.environ.get('DATABASE_URL'):
         return True
     admin_pass = os.environ.get('ADMIN_PASSWORD', '123456')
     return request.cookies.get('admin_auth') == admin_pass
