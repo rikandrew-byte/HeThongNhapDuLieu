@@ -259,13 +259,18 @@ def generate_html_resume(form_data: dict, template_name='fct_template_v6.18.html
     # Đánh dấu nếu có ảnh
     if form_data.get('photo'): raw_for_embed['__has_photo'] = True
     if form_data.get('qr_line'): raw_for_embed['__has_qr'] = True
-    processed_data['raw_data_json'] = json.dumps(raw_for_embed, ensure_ascii=False)
+    raw_json_str = json.dumps(raw_for_embed, ensure_ascii=False)
+    
+    # Dùng placeholder để _protect_html không phá hủy JSON
+    processed_data['raw_data_json'] = '___FCT_RAW_PLACEHOLDER___'
     
     if _TEMPLATE_CACHE: template = Template(_TEMPLATE_CACHE)
     else:
         with open(os.path.join(BASE_DIR, 'templates', template_name), 'r', encoding='utf-8') as f:
             template = Template(f.read())
-    return _protect_html(template.render(processed_data))
+    html = _protect_html(template.render(processed_data))
+    # Thay placeholder bằng JSON thật SAU KHI minify xong
+    return html.replace('___FCT_RAW_PLACEHOLDER___', raw_json_str)
 
 def _resize_image_for_db(data_uri: str, max_px: int = 800, quality: int = 75) -> str:
     if not data_uri or not data_uri.startswith('data:image/'): return data_uri
@@ -448,6 +453,55 @@ def api_bulk_download():
                 except: pass
         zip_buffer.seek(0)
         return send_file(zip_buffer, mimetype='application/zip', as_attachment=True, download_name='FCT_HoSo_Export.zip')
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/history/bulk-print', methods=['POST'])
+@auth_required
+def api_bulk_print():
+    try:
+        data = request.get_json() or {}
+        ids = data.get('ids', [])
+        if not ids: return jsonify({'success': False, 'error': 'No IDs'}), 400
+        records = FormHistory.query.filter(FormHistory.id.in_([int(i) for i in ids])).all()
+        if not records: return jsonify({'success': False, 'error': 'No records found'}), 404
+        
+        # Render all individual HTMLs
+        htmls = []
+        for r in records:
+            try:
+                form_data = json.loads(r.data_json)
+                htmls.append(generate_html_resume(form_data))
+            except: pass
+            
+        if not htmls: return jsonify({'success': False, 'error': 'Failed to render records'}), 500
+        
+        base_html = htmls[0]
+        # Modify CSS for bulk print
+        base_html = base_html.replace('height: 297mm !important; overflow: hidden !important;', 'height: auto !important; overflow: visible !important;', 1)
+        base_html = base_html.replace('page-break-after: avoid !important;', 'page-break-after: always !important;')
+        
+        pages_to_append = []
+        for html in htmls[1:]:
+            start_idx = html.find('<div class="a4-page notranslate">')
+            if start_idx != -1:
+                end_idx = html.find('<script id="fct-raw-data"', start_idx)
+                if end_idx == -1:
+                    end_idx = html.find('<script>(function(){document.addEventListener', start_idx)
+                if end_idx != -1:
+                    pages_to_append.append(html[start_idx:end_idx])
+        
+        # Insert into base_html
+        insert_idx = base_html.find('<script id="fct-raw-data"')
+        if insert_idx == -1:
+            insert_idx = base_html.find('<script>(function(){document.addEventListener')
+            
+        if insert_idx != -1:
+            final_html = base_html[:insert_idx] + ''.join(pages_to_append) + base_html[insert_idx:]
+        else:
+            final_html = base_html
+            
+        return Response(final_html, mimetype="text/html", headers={"Content-Type": "text/html; charset=utf-8"})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
