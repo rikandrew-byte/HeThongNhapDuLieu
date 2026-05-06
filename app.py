@@ -3,7 +3,7 @@
 Document Automation System (DAS) - Flask Backend V3.0
 Nhập liệu Tiếng Việt → Hệ thống quản lý và xuất hồ sơ thông minh.
 """
-import os, uuid, re, unicodedata, json, base64, traceback, io
+import os, uuid, re, unicodedata, json, base64, traceback, io, zipfile
 from datetime import date, datetime, timedelta, timezone
 from flask import Flask, request, jsonify, send_file, render_template, Response, make_response
 from flask_cors import CORS
@@ -426,6 +426,30 @@ def api_delete_history(record_id):
             db.session.commit()
         return jsonify({'success': True})
     except: return jsonify({'success': False}), 500
+
+@app.route('/api/history/bulk-download', methods=['POST'])
+@auth_required
+def api_bulk_download():
+    try:
+        data = request.get_json() or {}
+        ids = data.get('ids', [])
+        if not ids: return jsonify({'success': False, 'error': 'No IDs'}), 400
+        records = FormHistory.query.filter(FormHistory.id.in_([int(i) for i in ids])).all()
+        if not records: return jsonify({'success': False, 'error': 'No records found'}), 404
+        
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+            for r in records:
+                try:
+                    form_data = json.loads(r.data_json)
+                    html_content = generate_html_resume(form_data)
+                    filename = f"{r.ma_so}_{sanitize_filename_master(r.ho_ten)}.html"
+                    zf.writestr(filename, html_content)
+                except: pass
+        zip_buffer.seek(0)
+        return send_file(zip_buffer, mimetype='application/zip', as_attachment=True, download_name='FCT_HoSo_Export.zip')
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))

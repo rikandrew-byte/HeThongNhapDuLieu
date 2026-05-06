@@ -801,6 +801,31 @@ async function loadHistory() {
             }).catch(() => alert('Không thể copy'));
         }
 
+        async function bulkDownloadHistory() {
+            const checked = [...document.querySelectorAll('.history-row-checkbox:checked')];
+            if (!checked.length) return;
+            const ids = checked.map(cb => parseInt(cb.value));
+            try {
+                const res = await fetch('/api/history/bulk-download', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ ids })
+                });
+                if (!res.ok) { alert('Lỗi khi tải xuống'); return; }
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'FCT_HoSo_Export.zip';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                clearHistorySelection();
+            } catch (e) { alert('Lỗi kết nối: ' + e.message); }
+        }
+
         function updateHistoryCount() {
             const total = document.querySelectorAll('#historyTableBody tr').length;
             document.getElementById('historyTotalCount').textContent = total + ' hồ sơ';
@@ -1047,6 +1072,7 @@ async function loadHistory() {
         <span style="font-size:13px; font-weight:600; color:#2563eb;">Đã chọn: <span id="historySelectedCount" style="background:#2563eb; color:#fff; border-radius:999px; padding:1px 8px; font-size:11px;">0</span></span>
         <div style="width:1px; height:16px; background:#cbd5e1;"></div>
         <button onclick="bulkCopyHistoryLinks()" style="padding:6px 12px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600;">📤 Copy link</button>
+        <button onclick="bulkDownloadHistory()" style="padding:6px 12px; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600;">📥 Tải hàng loạt (.ZIP)</button>
         <button onclick="bulkDeleteHistory()" style="padding:6px 12px; background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600;">🗑️ Xóa đã chọn</button>
         <button onclick="clearHistorySelection()" style="padding:6px 12px; background:#f8fafc; color:#475569; border:1px solid #e2e8f0; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600; margin-left:auto;">✕ Bỏ chọn</button>
     </div>
