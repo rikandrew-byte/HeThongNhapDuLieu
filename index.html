@@ -377,6 +377,16 @@
         </form>
 
         <div class="fixed bottom-8 right-8 z-50 flex gap-4">
+            <!-- Nút Hủy (Chỉ hiện khi đang sửa) -->
+            <button type="button" id="btnCancelEdit" onclick="cancelEdit()" class="hidden bg-white hover:bg-gray-100 text-slate-600 font-bold py-4 px-6 rounded-full shadow-lg border border-gray-300 transition-all transform hover:-translate-y-1 flex items-center gap-2">
+                <span>✕ HỦY</span>
+            </button>
+            
+            <!-- Nút Cập nhật (Chỉ hiện khi đang sửa) -->
+            <button type="button" id="btnUpdateOnly" onclick="handleSubmit('save')" class="hidden bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-full shadow-[0_10px_25px_rgba(37,99,235,0.4)] transition-all transform hover:-translate-y-1 flex items-center gap-3">
+                <span id="btnUpdateText">💾 CẬP NHẬT DỮ LIỆU</span>
+            </button>
+
             <button type="button" onclick="handleSubmit('word')" class="bg-gray-200 hover:bg-gray-300 text-slate-700 font-bold py-4 px-6 rounded-full shadow-lg transition-all transform hover:-translate-y-1 flex items-center gap-2">
                 <span>TẢI FILE (.HTML)</span>
             </button>
@@ -618,6 +628,14 @@ async function loadHistory() {
 
             // Ghi nhớ ID để UPDATE thay vì INSERT mới
             document.getElementById('editingRecordId').value = item.id;
+            
+            // Hiển thị nút Cập nhật và Hủy
+            document.getElementById('btnUpdateOnly').classList.remove('hidden');
+            document.getElementById('btnCancelEdit').classList.remove('hidden');
+            
+            // Cuộn lên đầu và đóng popup
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.getElementById('historyModal').style.display = 'none';
 
             for (const key in data) {
                 const elements = document.getElementsByName(key);
@@ -871,12 +889,21 @@ async function loadHistory() {
                     if (mode === 'html') {
                         // IN PDF: mở tab mới với giao diện CV inline → có nút SAVE AS PDF
                         window.open(`/cv/${result.id}/${encodeURIComponent(result.ma_so)}`, '_blank');
-                    } else {
+                    } else if (mode === 'word') {
                         // TẢI FILE: tải xuống file HTML
                         window.location.href = `/cv/${encodeURIComponent(result.ma_so)}`;
+                    } else if (mode === 'save') {
+                        // CHỈ CẬP NHẬT: không mở file, chỉ báo thành công
+                        alert("Đã lưu cập nhật dữ liệu thành công!");
                     }
-                    // Reset editing state
-                    document.getElementById('editingRecordId').value = '';
+
+                    // Reset editing state và ẩn nút
+                    cancelEdit();
+                    
+                    // Nếu đang mở lịch sử thì tải lại (thực tế mode save thường dùng khi đóng history)
+                    if (document.getElementById('historyModal').style.display !== 'none') {
+                        loadHistory();
+                    }
                 } else {
                     alert("Lỗi: " + result.error);
                 }
@@ -884,8 +911,31 @@ async function loadHistory() {
                 alert("Lỗi kết nối máy chủ.");
             } finally {
                 btnText.innerText = originalText;
+                document.getElementById('btnUpdateText').innerText = "💾 CẬP NHẬT DỮ LIỆU";
                 loading.classList.add('hidden');
             }
+        }
+
+        function cancelEdit() {
+            document.getElementById('editingRecordId').value = '';
+            document.getElementById('btnUpdateOnly').classList.add('hidden');
+            document.getElementById('btnCancelEdit').classList.add('hidden');
+            document.getElementById('resumeForm').reset();
+            
+            // Xóa ảnh preview
+            document.getElementById('photoPreview').classList.add('hidden');
+            document.getElementById('dropzoneText').classList.remove('hidden');
+            document.getElementById('photoBase64').value = '';
+            document.getElementById('existingPhotoPath').value = '';
+            
+            // Xóa QR preview
+            qrPreview.classList.add('hidden');
+            qrDropzoneText.classList.remove('hidden');
+            document.getElementById('qrBase64').value = '';
+            document.getElementById('existingQrPath').value = '';
+            
+            document.getElementById('clearPhotoBtn').classList.add('hidden');
+            document.getElementById('clearQrBtn').classList.add('hidden');
         }
     </script>
 
