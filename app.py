@@ -254,6 +254,13 @@ def generate_html_resume(form_data: dict, template_name='fct_template_v6.18.html
     processed_data['logo_base64'] = _LOGO_B64_CACHE or get_base64_image(os.path.join(BASE_DIR, 'static', 'logo.png'))
     processed_data['bg_base64']   = _BG_B64_CACHE   or get_base64_image(os.path.join(BASE_DIR, 'static', 'fct_bg.png'), max_size=400, quality=75)
     
+    # Nhúng dữ liệu gốc (không chứa ảnh base64 nặng) để có thể nạp lại sau này
+    raw_for_embed = {k: v for k, v in form_data.items() if k not in ('photo', 'qr_line')}
+    # Đánh dấu nếu có ảnh
+    if form_data.get('photo'): raw_for_embed['__has_photo'] = True
+    if form_data.get('qr_line'): raw_for_embed['__has_qr'] = True
+    processed_data['raw_data_json'] = json.dumps(raw_for_embed, ensure_ascii=False)
+    
     if _TEMPLATE_CACHE: template = Template(_TEMPLATE_CACHE)
     else:
         with open(os.path.join(BASE_DIR, 'templates', template_name), 'r', encoding='utf-8') as f:

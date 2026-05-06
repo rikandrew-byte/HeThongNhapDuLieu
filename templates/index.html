@@ -390,6 +390,9 @@
             <button type="button" onclick="handleSubmit('word')" class="bg-gray-200 hover:bg-gray-300 text-slate-700 font-bold py-4 px-6 rounded-full shadow-lg transition-all transform hover:-translate-y-1 flex items-center gap-2">
                 <span>TẢI FILE (.HTML)</span>
             </button>
+            <button type="button" onclick="handleSubmit('save_only')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-4 px-6 rounded-full shadow-lg transition-all transform hover:-translate-y-1 flex items-center gap-2">
+                <span>Lưu form</span>
+            </button>
             <button type="button" onclick="handleSubmit('html')" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold py-4 px-8 rounded-full shadow-[0_10px_25px_rgba(5,150,105,0.4)] transition-all transform hover:-translate-y-1 flex items-center gap-3">
                 <span id="btnText">XEM FILE & IN PDF</span>
                 <div id="loading" class="hidden w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -895,6 +898,9 @@ async function loadHistory() {
                     } else if (mode === 'save') {
                         // CHỈ CẬP NHẬT: không mở file, chỉ báo thành công
                         alert("Đã lưu cập nhật dữ liệu thành công!");
+                    } else if (mode === 'save_only') {
+                        // LƯU FORM: lưu vào hệ thống mà không mở hay tải
+                        alert("Đã lưu form vào hệ thống thành công!");
                     }
 
                     // Reset editing state và ẩn nút
@@ -937,6 +943,73 @@ async function loadHistory() {
             document.getElementById('clearPhotoBtn').classList.add('hidden');
             document.getElementById('clearQrBtn').classList.add('hidden');
         }
+
+        // === NẠP DỮ LIỆU TỪ FILE HTML ĐÃ TẢI VỀ ===
+        function loadFromFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const html = e.target.result;
+                    // Tìm thẻ script chứa dữ liệu gốc
+                    const match = html.match(/<script\s+id=["']fct-raw-data["']\s+type=["']application\/json["']>(.*?)<\/script>/s);
+                    if (!match || !match[1]) {
+                        alert('File này không chứa dữ liệu FCT. Vui lòng chọn file HTML hồ sơ đã xuất từ hệ thống.');
+                        input.value = '';
+                        return;
+                    }
+                    const data = JSON.parse(match[1]);
+                    
+                    // Reset form
+                    const form = document.getElementById('resumeForm');
+                    form.reset();
+                    document.getElementById('editingRecordId').value = '';
+                    document.getElementById('existingPhotoPath').value = '';
+                    document.getElementById('existingQrPath').value = '';
+                    document.getElementById('photoPreview').classList.add('hidden');
+                    document.getElementById('dropzoneText').classList.remove('hidden');
+                    document.getElementById('clearPhotoBtn').classList.add('hidden');
+                    document.getElementById('clearQrBtn').classList.add('hidden');
+                    document.getElementById('photoBase64').value = '';
+                    document.getElementById('qrBase64').value = '';
+                    
+                    // Điền dữ liệu vào form
+                    for (const key in data) {
+                        if (key.startsWith('__')) continue; // bỏ qua các key nội bộ
+                        const elements = document.getElementsByName(key);
+                        if (elements.length > 0) {
+                            const el = elements[0];
+                            if (el.type === 'checkbox') {
+                                el.checked = !!data[key];
+                            } else if (el.type !== 'file') {
+                                el.value = data[key];
+                            }
+                        }
+                    }
+                    
+                    // Thông báo về ảnh
+                    if (data['__has_photo']) {
+                        document.getElementById('dropzoneText').innerHTML = "<span class='text-amber-600 font-bold'>⚠ Ảnh cũ không thể nạp từ file. Vui lòng upload lại nếu cần.</span>";
+                    }
+                    if (data['__has_qr']) {
+                        document.getElementById('qrDropzoneText').innerHTML = "<span class='text-amber-600 font-bold'>⚠ QR cũ không thể nạp từ file. Upload lại nếu cần.</span>";
+                    }
+                    
+                    calcAge();
+                    
+                    // Đóng modal và cuộn lên đầu
+                    document.getElementById('historyModal').style.display = 'none';
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    alert('Đã nạp dữ liệu từ file thành công! Vui lòng kiểm tra và bổ sung ảnh nếu cần.');
+                } catch (err) {
+                    console.error('Lỗi khi đọc file:', err);
+                    alert('Không thể đọc dữ liệu từ file này. File có thể bị lỗi hoặc không đúng định dạng.');
+                }
+                input.value = ''; // Reset input để có thể chọn lại cùng file
+            };
+            reader.readAsText(file, 'UTF-8');
+        }
     </script>
 
 <!-- Bảng Popup (Modal) hiển thị lịch sử (Mặc định ẩn) -->
@@ -951,7 +1024,11 @@ async function loadHistory() {
                 <div style="font-size:12px; color:#64748b;">FCT — <span id="historyTotalCount" style="color:#2563eb; font-weight:600;">0 hồ sơ</span></div>
             </div>
         </div>
-        <button type="button" onclick="document.getElementById('historyModal').style.display='none'" style="padding:6px 14px; background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">✕ Đóng</button>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <input type="file" id="importFileInput" accept=".html,.htm" style="display:none;" onchange="loadFromFile(this)">
+            <button type="button" onclick="document.getElementById('importFileInput').click()" title="Nạp lại dữ liệu từ form HTML trong máy để chỉnh sửa nếu form không còn trên hệ thống" style="padding:6px 14px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">📂 Nạp từ file</button>
+            <button type="button" onclick="document.getElementById('historyModal').style.display='none'" style="padding:6px 14px; background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">✕ Đóng</button>
+        </div>
     </div>
 
     <!-- Search + Filter -->
