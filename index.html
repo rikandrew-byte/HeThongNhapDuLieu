@@ -62,6 +62,7 @@
         <form id="resumeForm" autocomplete="off" class="max-w-4xl mx-auto space-y-12 pb-32">
             <input type="hidden" name="photo" id="existingPhotoPath" value="">
             <input type="hidden" name="qr_line" id="existingQrPath" value="">
+            <input type="hidden" id="editingRecordId" value="">
             <section>
                 <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
                     <span class="w-2 h-6 bg-blue-600 rounded-full"></span> 1. Thông tin cá nhân
@@ -558,6 +559,7 @@ async function loadHistory() {
                     <td style="padding:10px 8px; color:#64748b; font-size:13px;">${item.ngay_tao}</td>
                     <td style="padding:10px 8px; text-align:center;">
                         <div style="display:flex; gap:5px; justify-content:center; flex-wrap:wrap;">
+                            ${item.ma_so === 'CHO_DUYET' ? `<button onclick="restoreData(${index})" style="padding:5px 10px; background:#dcfce7; color:#16a34a; border:1px solid #86efac; border-radius:6px; font-size:12px; cursor:pointer; font-weight:700;">✅ Phê duyệt</button>` : ''}
                             <button onclick="restoreData(${index})" style="padding:5px 10px; background:#fffbeb; color:#d97706; border:1px solid #fde68a; border-radius:6px; font-size:12px; cursor:pointer; font-weight:600;">✍️ Sửa</button>
                             <a href="/cv/${item.id}/${encodeURIComponent(item.ma_so)}" target="_blank" style="padding:5px 10px; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; border-radius:6px; font-size:12px; text-decoration:none; font-weight:600;">🖨️ In PDF</a>
                             <button onclick="copyHistoryLink(${item.id}, '${item.ma_so}', this)" style="padding:5px 10px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:6px; font-size:12px; cursor:pointer; font-weight:600;">📤 Link</button>
@@ -590,8 +592,14 @@ async function loadHistory() {
             // Đặt lại form về trạng thái trống trước khi lấp đầy dữ liệu
             form.reset();
             document.getElementById('existingPhotoPath').value = "";
+            document.getElementById('existingQrPath').value = "";
             document.getElementById('photoPreview').classList.add('hidden');
             document.getElementById('dropzoneText').classList.remove('hidden');
+            document.getElementById('clearPhotoBtn').classList.add('hidden');
+            document.getElementById('clearQrBtn').classList.add('hidden');
+
+            // Ghi nhớ ID để UPDATE thay vì INSERT mới
+            document.getElementById('editingRecordId').value = item.id;
 
             for (const key in data) {
                 const elements = document.getElementsByName(key);
@@ -605,36 +613,23 @@ async function loadHistory() {
                 }
             }
             
-            // Xử lý riêng ảnh nếu có
-            if (data['photo']) {
-                document.getElementById('existingPhotoPath').value = data['photo'];
-                document.getElementById('dropzoneText').innerHTML = "<span class='text-green-600 font-bold'>Đã có ảnh từ form. Nhấn để tải ảnh khác nếu cần</span>";
-                document.getElementById('clearPhotoBtn').classList.remove('hidden');
+            // Ảnh: chỉ hiển thị thông báo, KHÔNG đưa base64 vào form để tránh lỗi 413
+            // Server sẽ giữ nguyên ảnh cũ trong DB nếu không upload ảnh mới
+            if (data['photo'] && data['photo'] !== '__HAS_IMAGE__') {
+                document.getElementById('dropzoneText').innerHTML = "<span class='text-green-600 font-bold'>✓ Đã có ảnh. Upload mới nếu muốn thay.</span>";
             }
-
-            // Xử lý riêng QR Line nếu có
-            if (data['qr_line']) {
-                document.getElementById('existingQrPath').value = data['qr_line'];
-                const qrPreview = document.getElementById('qrPreview');
-                const qrDropzoneText = document.getElementById('qrDropzoneText');
-                qrPreview.src = data['qr_line'];
-                qrPreview.classList.remove('hidden');
-                qrDropzoneText.classList.add('hidden');
-                document.getElementById('clearQrBtn').classList.remove('hidden');
+            if (data['qr_line'] && data['qr_line'] !== '__HAS_IMAGE__') {
+                document.getElementById('qrDropzoneText').innerHTML = "<span class='text-green-600 font-bold'>✓ Đã có QR. Upload mới nếu muốn thay.</span>";
             }
             
             // Xóa mã số nếu là CHO_DUYET để Admin nhập mã mới
             const maSoInput = document.getElementsByName("Maso")[0];
             if (maSoInput && (maSoInput.value === 'CHO_DUYET' || maSoInput.value === '')) {
                 maSoInput.value = '';
-                // Focus vào ô mã số để Master điền 
                 maSoInput.focus();
             }
 
-            // Gọi tính lại tuổi nếu đã điền ngày sinh
             calcAge();
-
-            // Đóng cửa sổ modal
             document.getElementById('historyModal').style.display = 'none';
         }
 
@@ -838,6 +833,13 @@ async function loadHistory() {
                 formData.set('data', JSON.stringify(plainData));
             }
 
+            // Gửi record_id nếu đang UPDATE
+            const recordId = document.getElementById('editingRecordId').value;
+            if (recordId) {
+                plainData['_record_id'] = recordId;
+                formData.set('data', JSON.stringify(plainData));
+            }
+
             try {
                 const response = await fetch('/api/submit-only', { method: 'POST', body: formData, credentials: 'same-origin' });
                 const result = await response.json();
@@ -850,6 +852,8 @@ async function loadHistory() {
                         // TẢI FILE: tải xuống file HTML
                         window.location.href = `/cv/${encodeURIComponent(result.ma_so)}`;
                     }
+                    // Reset editing state
+                    document.getElementById('editingRecordId').value = '';
                 } else {
                     alert("Lỗi: " + result.error);
                 }

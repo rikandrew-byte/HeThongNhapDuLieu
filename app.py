@@ -665,29 +665,56 @@ def api_submit_only():
                 data['qr_line'] = f"data:image/{qr_ext};base64,{qr_encoded}"
         else:
             data = request.get_json() or {}
-        
-        form_data = prepare_data(data)
-        
-        # --- LƯU LỊCH SỬ VÀO DATABASE (KHÔNG XUẤT WORD) ---
-        new_record = FormHistory(
-            ma_so=form_data.get('Maso', '') or 'CHO_DUYET',
-            ho_ten=form_data.get('Hoten', ''),
-            ten_file='',
-            data_json=json.dumps(_prepare_data_for_db(data), ensure_ascii=False)
-        )
-        try:
-            db.session.add(new_record)
-            db.session.commit()
-        except Exception:
-            db.session.rollback()
-            raise
 
-        return jsonify({
-            'success': True,
-            'id': new_record.id,
-            'ma_so': new_record.ma_so,
-            'msg': 'Đã nộp form thành công (chờ duyệt).'
-        })
+        form_data = prepare_data(data)
+        record_id = data.get('_record_id')  # ID để UPDATE nếu có
+
+        # --- INSERT hoặc UPDATE ---
+        if record_id:
+            # UPDATE bản ghi hiện có
+            record = FormHistory.query.get(int(record_id))
+            if not record:
+                return jsonify({'success': False, 'error': 'Không tìm thấy bản ghi để cập nhật'}), 404
+            # Giữ nguyên ảnh cũ nếu không upload mới
+            old_data = json.loads(record.data_json) if record.data_json else {}
+            if not data.get('photo') and old_data.get('photo'):
+                data['photo'] = old_data['photo']
+            if not data.get('qr_line') and old_data.get('qr_line'):
+                data['qr_line'] = old_data['qr_line']
+            record.ma_so = form_data.get('Maso', '') or 'CHO_DUYET'
+            record.ho_ten = form_data.get('Hoten', '')
+            record.data_json = json.dumps(_prepare_data_for_db(data), ensure_ascii=False)
+            try:
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+                raise
+            return jsonify({
+                'success': True,
+                'id': record.id,
+                'ma_so': record.ma_so,
+                'msg': 'Đã cập nhật hồ sơ thành công.'
+            })
+        else:
+            # INSERT bản mới
+            new_record = FormHistory(
+                ma_so=form_data.get('Maso', '') or 'CHO_DUYET',
+                ho_ten=form_data.get('Hoten', ''),
+                ten_file='',
+                data_json=json.dumps(_prepare_data_for_db(data), ensure_ascii=False)
+            )
+            try:
+                db.session.add(new_record)
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+                raise
+            return jsonify({
+                'success': True,
+                'id': new_record.id,
+                'ma_so': new_record.ma_so,
+                'msg': 'Đã nộp form thành công (chờ duyệt).'
+            })
     except Exception as e:
         traceback.print_exc()
         return jsonify({'success': False, 'error': str(e), 'trace': traceback.format_exc()}), 500
