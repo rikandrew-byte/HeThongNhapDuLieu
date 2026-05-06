@@ -381,7 +381,7 @@
                 <span>TẢI FILE (.HTML)</span>
             </button>
             <button type="button" onclick="handleSubmit('html')" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold py-4 px-8 rounded-full shadow-[0_10px_25px_rgba(5,150,105,0.4)] transition-all transform hover:-translate-y-1 flex items-center gap-3">
-                <span id="btnText">IN PDF</span>
+                <span id="btnText">XEM FILE & IN PDF</span>
                 <div id="loading" class="hidden w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             </button>
         </div>
@@ -578,7 +578,8 @@ async function loadHistory() {
                         <div style="display:flex; gap:5px; justify-content:center; flex-wrap:wrap;">
                             ${item.ma_so === 'CHO_DUYET' ? `<button onclick="restoreData(${index})" style="padding:5px 10px; background:#dcfce7; color:#16a34a; border:1px solid #86efac; border-radius:6px; font-size:12px; cursor:pointer; font-weight:700;">✅ Phê duyệt</button>` : ''}
                             <button onclick="restoreData(${index})" style="padding:5px 10px; background:#fffbeb; color:#d97706; border:1px solid #fde68a; border-radius:6px; font-size:12px; cursor:pointer; font-weight:600;">✍️ Sửa</button>
-                            <a href="/cv/${item.id}/${encodeURIComponent(item.ma_so)}" target="_blank" style="padding:5px 10px; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; border-radius:6px; font-size:12px; text-decoration:none; font-weight:600;">🖨️ In PDF</a>
+                            <a href="/cv/${item.id}/${encodeURIComponent(item.ma_so)}" target="_blank" style="padding:5px 10px; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; border-radius:6px; font-size:12px; text-decoration:none; font-weight:600;">🖨️ Xem file & In PDF</a>
+                            <button onclick="downloadShortcut(${item.id}, '${item.ma_so}', '${item.ho_ten.replace(/'/g, "\\'")}')" style="padding:5px 10px; background:#f3e8ff; color:#9333ea; border:1px solid #d8b4fe; border-radius:6px; font-size:12px; cursor:pointer; font-weight:600;">🔗 Shortcut</button>
                             <button onclick="copyHistoryLink(${item.id}, '${item.ma_so}', this)" style="padding:5px 10px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:6px; font-size:12px; cursor:pointer; font-weight:600;">📤 Link</button>
                             <button onclick="deleteHistory(${item.id}, this)" style="padding:5px 10px; background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:6px; font-size:12px; cursor:pointer; font-weight:600;">🗑️ Xóa</button>
                         </div>
@@ -684,6 +685,20 @@ async function loadHistory() {
                 btn.innerHTML = '✅ Đã copy';
                 setTimeout(() => btn.innerHTML = orig, 2000);
             }).catch(() => alert('Không thể copy link'));
+        }
+
+        function downloadShortcut(id, maso, name) {
+            const url = `${window.location.origin}/cv/${id}/${encodeURIComponent(maso)}`;
+            const content = `[InternetShortcut]\nURL=${url}`;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            // Lọc tên để tránh các ký tự không hợp lệ trong tên file Windows
+            const cleanName = name.replace(/[^\w\s\u00C0-\u1EF9]/gi, '').trim().replace(/\s+/g, ' ');
+            link.download = `${maso} - ${cleanName}.url`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         // ── Checkbox bulk ──
