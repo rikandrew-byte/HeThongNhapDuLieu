@@ -728,15 +728,29 @@ async function loadHistory() {
     }
 }
 
-        function restoreData(index) {
-            const item = currentHistoryData[index];
-            if (!item || !item.data_json) {
-                alert("Dữ liệu không tồn tại hoặc bị lỗi, không thể tự động điền!");
-                return;
+        async function restoreData(index) {
+            let item = currentHistoryData[index];
+            if (!item) return;
+
+            // Nếu dữ liệu JSON chưa được tải (Lazy Loading), hãy tải ngay bây giờ
+            if (!item.data_json) {
+                try {
+                    const res = await fetch(`/api/history/${item.id}/data`, { credentials: 'same-origin' });
+                    const result = await res.json();
+                    if (result.success) {
+                        item.data_json = result.data_json;
+                    } else {
+                        alert("Không thể tải chi tiết hồ sơ!");
+                        return;
+                    }
+                } catch (e) {
+                    alert("Lỗi kết nối khi tải chi tiết!");
+                    return;
+                }
             }
             
-            const form = document.getElementById('resumeForm');
             const data = item.data_json;
+            const form = document.getElementById('resumeForm');
             
             // Đặt lại form về trạng thái trống trước khi lấp đầy dữ liệu
             form.reset();
