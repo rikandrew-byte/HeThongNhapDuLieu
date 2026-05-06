@@ -406,38 +406,58 @@
             qrDropzone.addEventListener('mouseenter', () => pasteTarget = 'qr');
             qrDropzone.addEventListener('click', () => pasteTarget = 'qr');
 
+            // ── Resize ảnh bằng Canvas trước khi gửi (tránh lỗi 413) ──
+            function resizeImageToBlob(file, maxPx, quality, callback) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        let w = img.width, h = img.height;
+                        if (w > maxPx || h > maxPx) {
+                            if (w > h) { h = Math.round(h * maxPx / w); w = maxPx; }
+                            else { w = Math.round(w * maxPx / h); h = maxPx; }
+                        }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = w; canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                        canvas.toBlob((blob) => callback(blob, canvas.toDataURL('image/jpeg', quality)), 'image/jpeg', quality);
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+
             // ── Hàm set ảnh chân dung ──
             function setPhoto(file) {
                 if (!file || !file.type.startsWith('image/')) return;
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    photoPreview.src = e.target.result;
+                resizeImageToBlob(file, 1200, 0.82, (blob, dataUrl) => {
+                    photoPreview.src = dataUrl;
                     photoPreview.classList.remove('hidden');
                     dropzoneText.classList.add('hidden');
                     document.getElementById('clearPhotoBtn').classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-                const dt = new DataTransfer();
-                dt.items.add(file);
-                photoInput.files = dt.files;
-                document.getElementById('existingPhotoPath').value = '';
+                    // Thay file gốc bằng file đã resize
+                    const resized = new File([blob], 'photo.jpg', { type: 'image/jpeg' });
+                    const dt = new DataTransfer();
+                    dt.items.add(resized);
+                    photoInput.files = dt.files;
+                    document.getElementById('existingPhotoPath').value = '';
+                });
             }
 
             // ── Hàm set QR ──
             function setQR(file) {
                 if (!file || !file.type.startsWith('image/')) return;
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    qrPreview.src = ev.target.result;
+                resizeImageToBlob(file, 600, 0.85, (blob, dataUrl) => {
+                    qrPreview.src = dataUrl;
                     qrPreview.classList.remove('hidden');
                     qrDropzoneText.classList.add('hidden');
                     document.getElementById('clearQrBtn').classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-                const dt = new DataTransfer();
-                dt.items.add(file);
-                qrInput.files = dt.files;
-                document.getElementById('existingQrPath').value = '';
+                    const resized = new File([blob], 'qr.jpg', { type: 'image/jpeg' });
+                    const dt = new DataTransfer();
+                    dt.items.add(resized);
+                    qrInput.files = dt.files;
+                    document.getElementById('existingQrPath').value = '';
+                });
             }
 
             // ── Events ảnh chân dung ──
