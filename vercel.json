@@ -1,8 +1,0 @@
-{
-  "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "https://hethongnhapdulieu.onrender.com/api/:path*"
-    }
-  ]
-}

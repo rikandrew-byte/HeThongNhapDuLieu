@@ -1,54 +1,41 @@
 # -*- coding: utf-8 -*-
 """
 Document Automation System (DAS) - Flask Backend V3.0
-Nhập liệu Tiếng Việt → Xuất file Word với nội dung Tiếng Trung Phồn Thể
+Nhập liệu Tiếng Việt → Hệ thống quản lý và xuất hồ sơ thông minh.
 """
 import os, uuid, re, unicodedata, json, base64, traceback, io
 from datetime import date, datetime, timedelta, timezone
 from flask import Flask, request, jsonify, send_file, render_template, Response, make_response
 from flask_cors import CORS
 from jinja2 import Template
-from docxtpl import DocxTemplate, InlineImage, RichText
-from docx.shared import Mm, Pt
 from deep_translator import GoogleTranslator
 from dotenv import load_dotenv
 from urllib.parse import quote
 from unicodedata import normalize
-
+from flask_sqlalchemy import SQLAlchemy
+from flask_basicauth import BasicAuth
 
 load_dotenv()
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 app.debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
 CORS(app, resources={r"/*": {"origins": ["https://cv.fct.vn", "http://127.0.0.1:5000", "http://localhost:5000"]}})
-from flask_basicauth import BasicAuth
 
-app.config['BASIC_AUTH_USERNAME'] = 'fctvt'  # Tên đăng nhập bạn chọn
-app.config['BASIC_AUTH_PASSWORD'] = '1503'   # Mật khẩu bạn chọn
+app.config['BASIC_AUTH_USERNAME'] = 'fctvt'
+app.config['BASIC_AUTH_PASSWORD'] = '1503'
 app.config['BASIC_AUTH_FORCE_PROMPT'] = True
-
 basic_auth = BasicAuth(app)
 
-# --- MIDDLEWARE BẢO MẬT TÙY BIẾN ---
 def auth_required(f):
-    """
-    Nếu chạy trên Render (Cloud) -> Bắt buộc đăng nhập.
-    Nếu chạy Local -> Tạm thời bỏ qua Guard để MASTER thử nghiệm.
-    """
     if os.environ.get('RENDER'):
         return basic_auth.required(f)
     return f
 
-from flask_sqlalchemy import SQLAlchemy
-
-# --- CẤU HÌNH DATABASE (Linh hoạt Local & Cloud) ---
+# --- DATABASE CONFIG ---
 db_url = os.environ.get('DATABASE_URL')
-if db_url:
-    # Xử lý chuẩn hóa URL cho SQLAlchemy nếu dùng PostgreSQL
-    if db_url.startswith("postgres://"):
-        db_url = db_url.replace("postgres://", "postgresql://", 1)
-else:
-    # Nếu chạy local (không có DATABASE_URL), tự động dùng SQLite
+if db_url and db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+if not db_url:
     db_url = 'sqlite:///' + os.path.join(os.path.dirname(os.path.abspath(__file__)), 'history.db')
 
 app.config['SQLALCHEMY_DATABASE_URI'] = db_url
@@ -63,245 +50,130 @@ class FormHistory(db.Model):
     data_json = db.Column(db.Text)
     ngay_tao = db.Column(db.DateTime, default=datetime.utcnow)
 
-BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
-TMPL_DIR   = os.path.join(BASE_DIR, 'templates')
-OUT_DIR    = os.path.join(BASE_DIR, 'output')
-UPL_DIR    = os.path.join(BASE_DIR, 'uploads')
-for d in (TMPL_DIR, OUT_DIR, UPL_DIR):
-    os.makedirs(d, exist_ok=True)
-
-from jinja2 import ChoiceLoader, FileSystemLoader
-app.jinja_loader = ChoiceLoader([
-    FileSystemLoader(TMPL_DIR),
-    FileSystemLoader(BASE_DIR)
-])
-
-# Khởi tạo bảng trong Database nếu chưa có
 with app.app_context():
     db.create_all()
 
-# ─── Bảng dịch cố định Việt → Trung Phồn Thể ────────────────────────────────
-# Dùng chung cho cả Hôn nhân, Học vấn, Quốc gia VÀ Nghề nghiệp
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# --- TRANSLATION MAPS ---
 FIXED_TRANS = {
-    # Hôn nhân
-    'độc thân': '未婚', 'doc than': '未婚',
-    'đã kết hôn': '已婚', 'da ket hon': '已婚', 'có gia đình': '已婚',
-    'ly hôn': '離婚', 'ly hon': '離婚',
-    'góa': '喪偶', 'goa': '喪偶',
-    # Học vấn
-    'tiểu học': '國小', 'tieu hoc': '國小',
-    'thcs': '國中', 'trung học cơ sở': '國中',
-    'thpt': '高中', 'trung học phổ thông': '高中',
-    'trung cấp': '高職', 'trung cap': '高職',
-    'cao đẳng': '專科', 'cao dang': '專科',
-    'đại học': '大學', 'dai hoc': '大學',
-    'thạc sĩ': '碩士', 'thac si': '碩士',
-    'tiến sĩ': '博士', 'tien si': '博士',
-    # Quốc gia
-    'việt nam': '越南', 'viet nam': '越南',
-    'đài loan': '台灣',
-    'nhật bản': '日本',
-    'hàn quốc': '韓國',
-    'malaysia': '馬來西亞',
-    'macau': '澳門',
-    'thái lan': '泰國',
-    'châu âu': '歐洲',
-    'nga': '俄羅斯',
-    # Nghề nghiệp phổ biến (tránh Google dịch sai từ ngắn)
-    'may': '縫紉', 'thợ may': '縫紉', 'may mặc': '縫紉',
-    'hàn': '焊接', 'thợ hàn': '焊接',
-    'điện': '電工', 'thợ điện': '電工',
-    'sơn': '噴漆', 'thợ sơn': '噴漆',
-    'tiện': '車床', 'thợ tiện': '車床',
-    'phay': '銑床', 'thợ phay': '銑床',
-    'bào': '刨床', 'thợ bào': '刨床',
-    'đúc': '鑄造', 'thợ đúc': '鑄造',
-    'dệt': '紡織', 'thợ dệt': '紡織',
-    'mộc': '木工', 'thợ mộc': '木工',
-    'in ấn': '印刷', 'in': '印刷',
-    'cơ khí': '機械', 'gia công': '加工',
-    'xây dựng': '營造', 'xây': '營造',
-    'lắp ráp': '組裝', 'đóng gói': '包裝',
-    'kiểm tra': '檢查', 'qc': '品檢',
-    'kho': '倉庫', 'thủ kho': '倉管',
-    'nấu ăn': '烹飪', 'đầu bếp': '廚師',
-    'giúp việc': '幫傭',
-    'điều dưỡng': '護理',
-    'chăm sóc người già': '照顧老人',
-    'nông nghiệp': '農業', 'nông': '農業',
-    'chăn nuôi': '畜牧', 'thủy sản': '水產',
-    'nhựa': '塑膠',
-    'lái xe': '駕駛', 'tài xế': '司機',
-    'xe nâng': '堆高機', 'lái xe nâng': '堆高機',
+    'độc thân': '未婚', 'doc than': '未婚', 'đã kết hôn': '已婚', 'da ket hon': '已婚', 'có gia đình': '已婚',
+    'ly hôn': '離婚', 'ly hon': '離婚', 'góa': '喪偶', 'goa': '喪偶',
+    'tiểu học': '國小', 'tieu hoc': '國小', 'thcs': '國中', 'trung học cơ sở': '國中',
+    'thpt': '高中', 'trung học phổ thông': '高中', 'trung cấp': '高職', 'trung cap': '高職',
+    'cao đẳng': '專科', 'cao dang': '專科', 'đại học': '大學', 'dai hoc': '大學',
+    'thạc sĩ': '碩士', 'thac si': '碩士', 'tiến sĩ': '博士', 'tien si': '博士',
+    'việt nam': '越南', 'viet nam': '越南', 'đài loan': '台灣', 'nhật bản': '日本',
+    'hàn quốc': '韓國', 'malaysia': '馬來西亞', 'macau': '澳門', 'thái lan': '泰國',
+    'châu âu': '歐洲', 'nga': '俄羅斯',
+    'may': '縫紉', 'thợ may': '縫紉', 'may mặc': '縫紉', 'hàn': '焊接', 'thợ hàn': '焊接',
+    'điện': '電工', 'thợ điện': '電工', 'sơn': '噴漆', 'thợ sơn': '噴漆',
+    'tiện': '車床', 'thợ tiện': '車床', 'phay': '銑床', 'thợ phay': '銑床',
+    'bào': '刨床', 'thợ bào': '刨床', 'đúc': '鑄造', 'thợ đúc': '鑄造',
+    'dệt': '紡織', 'thợ dệt': '紡織', 'mộc': '木工', 'thợ mộc': '木工',
+    'in ấn': '印刷', 'in': '印刷', 'cơ khí': '機械', 'gia công': '加工',
+    'xây dựng': '營造', 'xây': '營造', 'lắp ráp': '組裝', 'đóng gói': '包裝',
+    'kiểm tra': '檢查', 'qc': '品檢', 'kho': '倉庫', 'thủ kho': '倉管',
+    'nấu ăn': '烹飪', 'đầu bếp': '廚師', 'giúp việc': '幫傭', 'điều dưỡng': '護理',
+    'chăm sóc người già': '照顧老人', 'nông nghiệp': '農業', 'nông': '農業',
+    'chăn nuôi': '畜牧', 'thủy sản': '水產', 'nhựa': '塑膠',
+    'lái xe': '駕駛', 'tài xế': '司機', 'xe nâng': '堆高機', 'lái xe nâng': '堆高機',
     'cnc': 'CNC', 'tig mig': 'Tig/Mig',
 }
 
-# Alias — dùng cho Hôn nhân / Học vấn (subset của FIXED_TRANS)
-TRANSLATION_MAP = FIXED_TRANS
 
-# BỘ TỪ ĐIỂN CÁC MỤC LƯU Ý ĐẶC BIỆT (MỤC TÔ VÀNG)
 YELLOW_ALERTS_MAP = {
-    "f05": "骨折",                 # Gãy xương
-    "f06": "手汗",                 # Mồ hôi tay
-    "f11": "脊椎受傷",             # Chấn thương cột sống
-    "f13": "伏地挺身 10~30 下",    # Chống đẩy 10~30 cái
-    "f14": "搬重 20~40 kg",        # Bê vác 20~40 kg
-    "f18": "肝炎",                 # Viêm gan
-    "f19": "斷指",                 # Cụt đốt ngón tay
-    "f20": "哮喘",                 # Hen suyễn
-    "f21": "伏地挺身 50 下以上",   # Chống đẩy >50 cái
-    "f22": "搬重 50kg 以上",       # Bê vác >50kg
+    "f05": "骨折", "f06": "手汗", "f11": "脊椎受傷", "f13": "伏地挺身 10~30 下",
+    "f14": "搬重 20~40 kg", "f18": "肝炎", "f19": "斷指", "f20": "哮喘",
+    "f21": "伏地挺身 50 下以上", "f22": "搬重 50kg 以上",
 }
 
+SKILL_MAPPING = {
+    'f23': 'Hàn điện / 電焊', 'f24': 'Hàn Argon / 氬焊', 'f25': 'Hàn CO2 / 氣焊', 'f26': 'Tig/Mig',
+    'f27': 'Đúc / 鑄造', 'f28': 'Dệt / 紡織', 'f29': 'May / 縫紉', 'f30': 'Lái xe nâng / 堆高機',
+    'f31': 'Tiện / 車床', 'f32': 'Phay / 銑床', 'f33': 'Bào / 刨床', 'f34': 'CNC',
+    'f35': 'Đột dập / 沖床', 'f36': 'In ấn / 印刷', 'f37': 'Thợ mộc / 木工', 'f38': 'Lái xe tải/khách / 卡車/客司機',
+    'f39': 'Nhựa / 塑膠', 'f40': 'Xây dựng / 營造', 'f41': 'Sửa chữa máy / 機械維修', 'f42': 'Điều dưỡng / 護理工',
+    'f43': 'Giúp việc / 幫傭', 'f44': 'Xe cẩu / 吊車', 'f45': 'Cẩu trục / 天車', 'f46': 'Máy xúc / 挖土機'
+}
+
+# --- HELPERS ---
 def is_chinese(text: str) -> bool:
-    """Kiểm tra xem text có chứa đa số ký tự Trung Quốc (CJK) không.
-    Nếu >= 50% ký tự (không tính khoảng trắng/dấu câu) là CJK → coi như tiếng Trung."""
-    if not text:
-        return False
+    if not text: return False
     cjk_count = sum(1 for c in text if '\u4e00' <= c <= '\u9fff' or '\u3400' <= c <= '\u4dbf' or '\uf900' <= c <= '\ufaff')
     non_space = len(text.replace(' ', '').replace(',', '').replace('，', '').replace('、', '').replace('。', ''))
     return non_space > 0 and (cjk_count / non_space) >= 0.5
 
 def translate_fixed(text: str) -> str:
-    """Dịch các từ cố định theo bảng tra cứu"""
-    if not text:
-        return text
-    key = text.strip().lower()
-    return FIXED_TRANS.get(key, text)
+    if not text: return text
+    return FIXED_TRANS.get(text.strip().lower(), text)
 
 def translate_free(text: str) -> str:
-    """Dịch văn bản tự do sang Tiếng Trung Phồn Thể.
-    - Nếu đầu vào đã là tiếng Trung → giữ nguyên, KHÔNG dịch lại.
-    - Ưu tiên tra bảng cố định trước, chỉ gọi Google nếu không tìm thấy."""
-    if not text or not text.strip():
-        return text
-    cleaned = text.strip()
-    # 1. Nếu đầu vào đã là tiếng Trung → KHÔNG dịch lại
-    if is_chinese(cleaned):
-        return text
-    # 2. Ưu tiên bảng tra cứu cố định (chính xác 100%)
-    fixed = FIXED_TRANS.get(cleaned.lower())
-    if fixed:
-        return fixed
-    # 3. Fallback: gọi Google Translator (Việt → Trung Phồn Thể)
+    if not text or not text.strip() or is_chinese(text): return text
+    fixed = FIXED_TRANS.get(text.strip().lower())
+    if fixed: return fixed
     try:
-        result = GoogleTranslator(source='vi', target='zh-TW').translate(cleaned)
+        result = GoogleTranslator(source='vi', target='zh-TW').translate(text.strip())
         return result if result else text
-    except Exception:
-        return text
+    except: return text
 
-def calc_age(dob_str: str) -> str:
-    """Tính tuổi từ chuỗi ngày sinh YYYY-MM-DD"""
-    if not dob_str:
-        return ''
+def sanitize_filename_master(name):
+    if not name: return "UnNamed"
+    s = normalize('NFKD', str(name)).encode('ascii', 'ignore').decode('ascii')
+    s = re.sub(r'[^\w\s-]', '', s).strip()
+    s = re.sub(r'[-\s]+', '_', s)
+    return s
+
+def fmt_date(d):
+    if not d: return ""
+    try: return datetime.strptime(str(d), "%Y-%m-%d").strftime("%d/%m/%Y")
+    except: return str(d)
+
+def calc_age(birth_str):
+    if not birth_str: return ""
     try:
-        p = dob_str.split('-')
-        dob = date(int(p[0]), int(p[1]), int(p[2]))
+        b = datetime.strptime(str(birth_str), "%Y-%m-%d")
         today = date.today()
-        age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
-        return str(age)
-    except Exception:
-        return ''
+        return today.year - b.year - ((today.month, today.day) < (b.month, b.day))
+    except: return ""
 
-def sanitize_filename_master(text):
-    # 1. Chuyển tiếng Việt có dấu thành không dấu
-    text = normalize('NFKD', text).encode('ascii', 'ignore').decode('ascii')
-    # 2. Viết hoa mỗi chữ cái đầu (Title Case)
-    text = text.title() 
-    # 3. Xóa ký tự đặc biệt, thay khoảng trắng bằng dấu gạch dưới
-    text = re.sub(r'[^\w\s-]', '', text).strip()
-    return text
+def chk(v):
+    return v in (True, 'true', '1', 1, 'yes', 'on', 'checked')
 
-def to_ascii(title: str) -> str:
-    """Chuyển tiếng Việt có dấu sang không dấu, viết hoa mỗi chữ cái đầu"""
-    if not title:
-        return ''
-    # Handle 'đ' and 'Đ' specifically as they are not handled by NFD normalization
-    title = title.replace('đ', 'd').replace('Đ', 'D')
-    nfd = unicodedata.normalize('NFD', title)
-    ascii_str = ''.join(c for c in nfd if unicodedata.category(c) != 'Mn')
-    return ' '.join(word.capitalize() for word in ascii_str.split())
-
-def fmt_date(d: str) -> str:
-    """Chuyển YYYY-MM-DD → DD/MM/YYYY"""
-    if d and '-' in d:
-        p = d.split('-')
-        if len(p) == 3:
-            return f'{p[2]}/{p[1]}/{p[0]}'
-    return d or ''
-
-def chk(val):
-    """Checkbox: True → ☑, False → □ (Định dạng MS Gothic size 11pt)"""
-    if val in (True, 'true', '1', 1, 'yes', 'on', 'checked'):
-        return RichText("☑", font='MS Gothic', size=22)
-    return RichText("□", font='MS Gothic', size=22)
-
-def get_base64_image(file_path, max_size=None, quality=82):
-    """Chuyển đổi file ảnh sang chuỗi Base64 để nhúng trực tiếp vào HTML.
-    Nếu max_size được chỉ định, resize ảnh trước khi encode (dùng Pillow).
-    """
-    if not file_path or not os.path.exists(file_path):
-        return ""
+def get_base64_image(path, max_size=None, quality=80):
+    if not os.path.exists(path): return ""
     try:
         if max_size:
             from PIL import Image
-            import io as _io
-            img = Image.open(file_path)
+            img = Image.open(path)
             img.thumbnail((max_size, max_size), Image.LANCZOS)
-            buf = _io.BytesIO()
-            fmt = 'PNG' if file_path.lower().endswith('.png') and img.mode == 'RGBA' else 'JPEG'
-            if fmt == 'JPEG' and img.mode in ('RGBA', 'P'):
-                img = img.convert('RGB')
-            img.save(buf, format=fmt, quality=quality, optimize=True)
-            data = base64.b64encode(buf.getvalue()).decode('utf-8')
-            mime = 'image/png' if fmt == 'PNG' else 'image/jpeg'
-            return f"data:{mime};base64,{data}"
-        else:
-            with open(file_path, "rb") as image_file:
-                encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
-                ext = os.path.splitext(file_path)[1][1:].lower()
-                if ext == 'jpg': ext = 'jpeg'
-                return f"data:image/{ext};base64,{encoded_string}"
-    except Exception as e:
-        print(f"Lỗi Base64: {e}")
-        return ""
+            if img.mode in ("RGBA", "P"): img = img.convert("RGB")
+            buf = io.BytesIO()
+            img.save(buf, format="JPEG", quality=quality)
+            return f"data:image/jpeg;base64,{base64.b64encode(buf.getvalue()).decode('utf-8')}"
+        with open(path, "rb") as f:
+            ext = path.split('.')[-1].lower()
+            return f"data:image/{ext};base64,{base64.b64encode(f.read()).decode('utf-8')}"
+    except: return ""
 
-# ─── CACHE TOÀN CỤC — Khởi tạo 1 lần khi server start ──────────────────────
+# --- CACHE ---
 _LOGO_B64_CACHE = None
 _BG_B64_CACHE   = None
 _TEMPLATE_CACHE = None
 
 def _init_cache():
-    """Đọc logo, background và template vào RAM 1 lần duy nhất khi server khởi động."""
     global _LOGO_B64_CACHE, _BG_B64_CACHE, _TEMPLATE_CACHE
     _LOGO_B64_CACHE = get_base64_image(os.path.join(BASE_DIR, 'static', 'logo.png'))
     _BG_B64_CACHE   = get_base64_image(os.path.join(BASE_DIR, 'static', 'fct_bg.png'), max_size=400, quality=75)
-    TEMPLATE_PATH   = os.path.join(BASE_DIR, 'templates', 'fct_template_v6.18.html')
-    with open(TEMPLATE_PATH, 'r', encoding='utf-8') as f:
-        _TEMPLATE_CACHE = f.read()
-    print('[CACHE] Logo, BG và Template đã được nạp vào RAM.')
+    try:
+        with open(os.path.join(BASE_DIR, 'templates', 'fct_template_v6.18.html'), 'r', encoding='utf-8') as f:
+            _TEMPLATE_CACHE = f.read()
+    except: pass
 
-# Nạp cache ngay khi module được import — chạy cả trên gunicorn (Render), không chỉ __main__
 _init_cache()
 
-SKILL_MAPPING = {
-    'f23': 'Hàn điện / 電焊', 'f24': 'Hàn Argon / 氬焊',
-    'f25': 'Hàn CO2 / 氣焊', 'f26': 'Tig/Mig',
-    'f27': 'Đúc / 鑄造', 'f28': 'Dệt / 紡織',
-    'f29': 'May / 縫紉', 'f30': 'Lái xe nâng / 堆高機',
-    'f31': 'Tiện / 車床', 'f32': 'Phay / 銑床',
-    'f33': 'Bào / 刨床', 'f34': 'CNC',
-    'f35': 'Đột dập / 沖床', 'f36': 'In ấn / 印刷',
-    'f37': 'Thợ mộc / 木工', 'f38': 'Lái xe tải/khách / 卡車/客司機',
-    'f39': 'Nhựa / 塑膠', 'f40': 'Xây dựng / 營造',
-    'f41': 'Sửa chữa máy / 機械維修', 'f42': 'Điều dưỡng / 護理工',
-    'f43': 'Giúp việc / 幫傭', 'f44': 'Xe cẩu / 吊車',
-    'f45': 'Cẩu trục / 天車', 'f46': 'Máy xúc / 挖土機'
-}
-
-def prepare_html_data(raw_data: dict) -> dict:
-    """Chuẩn hóa dữ liệu cho template HTML V6.24 (Cloud Optimized) - Không dịch tự động để tránh lỗi UTF-8"""
-    # Tạo bản sao dữ liệu để xử lý
+# --- LOGIC PREPARE ---
+def prepare_render_data(raw_data: dict) -> dict:
     data = {}
     fields = [
         'Maso', 'Hoten', 'TentiengTrung', 'Ngaysinh', 'Tuoi', 'Chieucao', 'Cannang', 
@@ -311,633 +183,203 @@ def prepare_html_data(raw_data: dict) -> dict:
     ]
     for f in fields:
         val = str(raw_data.get(f, '')).strip()
-        if f in ['Honnhan', 'Hocvan']:
-            data[f] = TRANSLATION_MAP.get(val.lower(), val)
-        elif f in ['QG1', 'QG2', 'QG3']:
-            data[f] = translate_fixed(val)
-        else:
-            data[f] = val
+        if f in ['Honnhan', 'Hocvan']: data[f] = FIXED_TRANS.get(val.lower(), val)
+        elif f in ['QG1', 'QG2', 'QG3']: data[f] = translate_fixed(val)
+        else: data[f] = val
 
-    # Dịch tự do các trường cần thiết sang tiếng Trung Phồn Thể — SONG SONG
+    data['Ngaysinh'] = fmt_date(data['Ngaysinh'])
+    if not data['Tuoi'] and raw_data.get('Ngaysinh'): data['Tuoi'] = calc_age(raw_data.get('Ngaysinh'))
+
     fields_to_translate = ['Noio', 'ndcv1', 'ndcv2', 'ndcv3', 'loi_binh_1', 'N1', 'N2', 'N3']
-    # Chỉ dịch những trường có giá trị thực sự
     non_empty = {f: data[f] for f in fields_to_translate if data.get(f, '').strip()}
-    
     if non_empty:
         from concurrent.futures import ThreadPoolExecutor, as_completed
         with ThreadPoolExecutor(max_workers=min(len(non_empty), 4)) as executor:
             future_map = {executor.submit(translate_free, v): k for k, v in non_empty.items()}
             for future in as_completed(future_map):
                 field = future_map[future]
-                try:
-                    data[field] = future.result()
-                except Exception:
-                    pass  # Giữ nguyên giá trị gốc nếu dịch lỗi
+                try: data[field] = future.result()
+                except: pass
 
-    # Gom các trường tô vàng vào loi_binh_1 (HTML Ver 6.30)
     yellow_alerts = []
     for i in range(1, 23):
         key = f'f{i:02d}'
-        if raw_data.get(key) in (True, 'true', '1', 1, 'yes', 'on', 'checked') and key in YELLOW_ALERTS_MAP:
-            yellow_alerts.append(YELLOW_ALERTS_MAP[key])
-            
+        if chk(raw_data.get(key)) and key in YELLOW_ALERTS_MAP: yellow_alerts.append(YELLOW_ALERTS_MAP[key])
     if yellow_alerts:
         alert_str = "、".join(yellow_alerts)
-        if data.get('loi_binh_1'):
-            data['loi_binh_1'] = data['loi_binh_1'] + "、" + alert_str
-        else:
-            data['loi_binh_1'] = alert_str
+        data['loi_binh_1'] = (data['loi_binh_1'] + "、" + alert_str) if data.get('loi_binh_1') else alert_str
 
-    # Kỹ năng
     skills_html = []
     for key, name in SKILL_MAPPING.items():
-        if raw_data.get(key) in (True, 'true', '1', 1, 'yes', 'on', 'checked'):
-            tag = f'<span class="px-2 py-1 bg-transparent border border-emerald-600 text-emerald-800 rounded text-[13px] font-bold uppercase">{name}</span>'
-            skills_html.append(tag)
+        if chk(raw_data.get(key)):
+            skills_html.append(f'<span class="px-2 py-1 bg-transparent border border-emerald-600 text-emerald-800 rounded text-[13px] font-bold uppercase">{name}</span>')
     data['KyNangList_HTML'] = "".join(skills_html)
 
-    # Các thông số đặc biệt
-    # Tay thuận — gom lại, tránh khoảng trắng thừa
-    tay_parts = []
-    if raw_data.get('f01') in (True, 'true', 1): tay_parts.append("右手")
-    if raw_data.get('f07') in (True, 'true', 1): tay_parts.append("左手")
-    data['TayThuan'] = " / ".join(tay_parts) if tay_parts else "右手"
+    tay = []
+    if chk(raw_data.get('f01')): tay.append("右手")
+    if chk(raw_data.get('f07')): tay.append("左手")
+    data['TayThuan'] = " / ".join(tay) if tay else "右手"
+    
+    vision_map = [('f02', "右眼受損"), ('f08', "左眼受損"), ('f16', "散光"), ('f17', "色盲"), ('f15', "近視")]
+    vision = [label for k, label in vision_map if chk(raw_data.get(k))]
+    data['ThiLuc'] = " / ".join(vision) if vision else "正常"
+    data['f12'] = "Có / 有" if chk(raw_data.get('f12')) else "無"
 
-    # Thị lực — gom lại, tránh khoảng trắng thừa
-    vision_map = [
-        ('f02', "右眼受損"),
-        ('f08', "左眼受損"),
-        ('f16', "散光"),
-        ('f17', "色盲"),
-        ('f15', "近視"),
-    ]
-    vision_parts = [label for key, label in vision_map
-                    if raw_data.get(key) in (True, 'true', 1)]
-    data['ThiLuc'] = " / ".join(vision_parts) if vision_parts else "正常"
-
-    data['f12'] = "Có / 有" if raw_data.get('f12') in (True, 'true', 1) else "無"
-
-    # Chuyển ảnh đại diện sang Base64
-    photo_path = raw_data.get('photo', '')
-    if photo_path and isinstance(photo_path, str) and photo_path.startswith('data:image/'):
-        data['photo_base64'] = photo_path
-    elif photo_path and isinstance(photo_path, str) and os.path.exists(photo_path):
-        data['photo_base64'] = get_base64_image(photo_path)
-    else:
-        data['photo_base64'] = ""
-
-    # Chuyển ảnh QR Line sang Base64
-    qr_path = raw_data.get('qr_line', '')
-    if qr_path and isinstance(qr_path, str) and qr_path.startswith('data:image/'):
-        data['qr_line_base64'] = qr_path
-    elif qr_path and isinstance(qr_path, str) and os.path.exists(qr_path):
-        data['qr_line_base64'] = get_base64_image(qr_path)
-    else:
-        data['qr_line_base64'] = ""
-            
+    for key in ('photo', 'qr_line'):
+        path = raw_data.get(key, '')
+        data[f'{key}_base64'] = path if (isinstance(path, str) and path.startswith('data:image/')) else ""
     return data
 
 def _protect_html(html: str) -> str:
-    """
-    Bảo vệ mã nguồn HTML:
-    1. Xóa comment HTML
-    2. Minify — xóa whitespace thừa giữa các tag
-    3. Inject JS chống DevTools (cản người thường, làm khó developer)
-    """
-    # 1. Xóa comment HTML (<!-- ... -->) nhưng giữ lại IE conditionals
     html = re.sub(r'<!--(?!\[if).*?-->', '', html, flags=re.DOTALL)
-
-    # 2. Minify: thu gọn khoảng trắng giữa các tag, xóa dòng trống
     html = re.sub(r'>\s+<', '><', html)
-    html = re.sub(r'\s{2,}', ' ', html)
-    html = html.strip()
-
-    # 3. Inject anti-devtools JS ngay trước </body>
+    html = re.sub(r'\s{2,}', ' ', html).strip()
     anti_devtools = (
         '<script>'
         '(function(){'
-        # Disable chuột phải
         'document.addEventListener("contextmenu",function(e){e.preventDefault();},false);'
-        # Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
         'document.addEventListener("keydown",function(e){'
-        'if(e.keyCode===123||'
-        '(e.ctrlKey&&e.shiftKey&&(e.keyCode===73||e.keyCode===74||e.keyCode===67))||'
-        '(e.ctrlKey&&e.keyCode===85)){'
+        'if(e.keyCode===123||(e.ctrlKey&&e.shiftKey&&(e.keyCode===73||e.keyCode===74||e.keyCode===67))||(e.ctrlKey&&e.keyCode===85)){'
         'e.preventDefault();e.stopPropagation();return false;}'
         '});'
-        # Phát hiện DevTools mở qua window size delta
-        'var _t=function(){'
-        'var w=window.outerWidth-window.innerWidth>160||window.outerHeight-window.innerHeight>160;'
-        'if(w){document.body.innerHTML="";}};'
+        'var _t=function(){if(window.outerWidth-window.innerWidth>160||window.outerHeight-window.innerHeight>160){document.body.innerHTML="";}};'
         'setInterval(_t,1000);'
         '})();'
         '</script>'
     )
-    html = html.replace('</body>', anti_devtools + '</body>')
-    return html
+    return html.replace('</body>', anti_devtools + '</body>')
 
 def generate_html_resume(form_data: dict, template_name='fct_template_v6.18.html') -> str:
-    """Render HTML Resume — dùng cache logo/bg/template để tăng tốc."""
-    processed_data = prepare_html_data(form_data)
-    
-    # Dùng cache nếu có, fallback đọc file nếu cache chưa sẵn sàng
+    processed_data = prepare_render_data(form_data)
     processed_data['logo_base64'] = _LOGO_B64_CACHE or get_base64_image(os.path.join(BASE_DIR, 'static', 'logo.png'))
     processed_data['bg_base64']   = _BG_B64_CACHE   or get_base64_image(os.path.join(BASE_DIR, 'static', 'fct_bg.png'), max_size=400, quality=75)
-
-    # Dùng template cache nếu là template mặc định
-    if template_name == 'fct_template_v6.18.html' and _TEMPLATE_CACHE:
-        template = Template(_TEMPLATE_CACHE)
+    
+    if _TEMPLATE_CACHE: template = Template(_TEMPLATE_CACHE)
     else:
-        TEMPLATE_PATH = os.path.join(BASE_DIR, 'templates', template_name)
-        with open(TEMPLATE_PATH, 'r', encoding='utf-8') as f:
+        with open(os.path.join(BASE_DIR, 'templates', template_name), 'r', encoding='utf-8') as f:
             template = Template(f.read())
-
-    rendered = template.render(processed_data)
-    return _protect_html(rendered)
-
-
-def export_resume(form_data, export_type='html'):
-    """Xuất hồ sơ sang định dạng HTML đã bảo vệ mã nguồn"""
-    rendered_html = generate_html_resume(form_data, 'fct_template_v6.18.html')
-
-    # Đặt tên file
-    ma_so = form_data.get('Maso', '').strip()
-    ho_ten = form_data.get('Hoten', '').strip()
-    clean_name = sanitize_filename_master(ho_ten)
-
-    if ma_so and clean_name:
-        base_name = f"{ma_so}_{clean_name}"
-    elif ma_so:
-        base_name = f"{ma_so}"
-    elif clean_name:
-        base_name = f"{clean_name}"
-    else:
-        base_name = f"resume_{uuid.uuid4().hex[:8]}"
-
-    file_name = f"{base_name}.html"
-    return rendered_html, file_name
-
-# ─── Chuẩn bị dữ liệu cho template ──────────────────────────────────────────
-def prepare_data(raw: dict) -> dict:
-    context = {}
-
-    # 1. Trường văn bản và gia đình (Khớp 1:1 với name trong HTML)
-    fields = [
-        'Maso', 'Hoten', 'TentiengTrung', 'Ngaysinh', 'Tuoi', 'Chieucao', 'Cannang', 
-        'Lienhe', 'Noio', 'HotenBo', 'TB', 'HotenMe', 'TM', 'VoChong', 'VC', 
-        'Socon', 'Anhchiem', 'Xepthu', 'f48', 'N1', 'N2', 'N3', 'ndcv1', 'ndcv2', 'ndcv3', 'loi_binh_1',
-        'video_link_1', 'video_link_2'
-    ]
-    for f in fields:
-        val = raw.get(f, '')
-        # Giữ nguyên newline cho loi_binh_1 để xuống dòng hiển thị đúng trên CV
-        if f == 'loi_binh_1':
-            context[f] = str(val).strip()
-        else:
-            context[f] = str(val).replace('\n', ' ').strip()
-
-    # 2. Ngày sinh và tuổi
-    context['Ngaysinh'] = fmt_date(context['Ngaysinh'])
-    if raw.get('Ngaysinh') and not context['Tuoi']:
-        context['Tuoi'] = calc_age(raw.get('Ngaysinh'))
-
-    # 3. Dịch thuật
-    for f in ['Honnhan', 'Hocvan', 'QG1', 'QG2', 'QG3']:
-        context[f] = translate_fixed(raw.get(f, ''))
-
-    # Dịch tự do song song (giống prepare_html_data)
-    fields_to_translate = ['Noio', 'ndcv1', 'ndcv2', 'ndcv3', 'loi_binh_1', 'N1', 'N2', 'N3']
-    non_empty = {f: context[f] for f in fields_to_translate if context.get(f, '').strip()}
-    if non_empty:
-        from concurrent.futures import ThreadPoolExecutor, as_completed
-        with ThreadPoolExecutor(max_workers=min(len(non_empty), 4)) as executor:
-            future_map = {executor.submit(translate_free, v): k for k, v in non_empty.items()}
-            for future in as_completed(future_map):
-                field = future_map[future]
-                try:
-                    context[field] = future.result()
-                except Exception:
-                    pass
-
-    # 4. Checkbox f01 -> f46
-    for i in range(1, 47):
-        key = f'f{i:02d}'
-        context[key] = chk(raw.get(key, False))
-
-    # Gom các trường tô vàng vào loi_binh_1 (Word & DB Sync)
-    yellow_alerts = []
-    for i in range(1, 23):
-        key = f'f{i:02d}'
-        if raw.get(key) in (True, 'true', '1', 1, 'yes', 'on', 'checked') and key in YELLOW_ALERTS_MAP:
-            yellow_alerts.append(YELLOW_ALERTS_MAP[key])
-            
-    if yellow_alerts:
-        alert_str = "、".join(yellow_alerts)
-        if context.get('loi_binh_1'):
-            context['loi_binh_1'] = context['loi_binh_1'] + "、" + alert_str
-        else:
-            context['loi_binh_1'] = alert_str
-
-    context['photo'] = raw.get('photo', '')
-    return context
-
-def generate_word(form_data: dict, template_name='resume_template_chuan.docx') -> str:
-    # 1. MỞ ĐÚNG FILE MẪU (Nằm cùng thư mục với app.py)
-    TEMPLATE_PATH = os.path.join(BASE_DIR, template_name)
-
-    if not os.path.exists(TEMPLATE_PATH):
-        raise FileNotFoundError(f'Template không tồn tại: {TEMPLATE_PATH}')
-    
-    doc = DocxTemplate(TEMPLATE_PATH)
-    
-    # 2. XỬ LÝ ẢNH CHUYÊN SÂU
-    photo_path = form_data.get('photo', '')
-    if photo_path and isinstance(photo_path, str) and photo_path.startswith('data:image/'):
-        try:
-            header, encoded = photo_path.split(",", 1)
-            img_data = base64.b64decode(encoded)
-            if not os.path.exists(UPL_DIR): os.makedirs(UPL_DIR)
-            temp_path = os.path.join(UPL_DIR, f"temp_avatar_{uuid.uuid4().hex[:8]}.png")
-            with open(temp_path, "wb") as fh:
-                fh.write(img_data)
-            form_data['photo'] = InlineImage(doc, temp_path, width=Mm(64), height=Mm(85))
-        except Exception as e:
-            print(f"Lỗi giải mã ảnh Base64 cho Word: {e}")
-            form_data['photo'] = ""
-    elif photo_path and isinstance(photo_path, str) and os.path.exists(photo_path):
-        form_data['photo'] = InlineImage(doc, photo_path, width=Mm(64), height=Mm(85))
-    else:
-        form_data['photo'] = ""
-    
-    # 3. ĐỔ DỮ LIỆU VÀO TEMPLATE
-    doc.render(form_data)
-    
-    # 4. LƯU FILE THEO QUY TẮC MASTER YÊU CẦU
-    ma_so = form_data.get('Maso', '').strip()
-    ho_ten = form_data.get('Hoten', '').strip()
-    ten_khong_dau = to_ascii(ho_ten)
-    if ma_so and ten_khong_dau:
-        fname = f"{ma_so} {ten_khong_dau}.docx"
-    elif ma_so:
-        fname = f"{ma_so}.docx"
-    elif ten_khong_dau:
-        fname = f"{ten_khong_dau}.docx"
-    else:
-        fname = f"resume_{uuid.uuid4().hex[:8]}.docx"
-    
-    out = os.path.join(OUT_DIR, fname)
-    doc.save(out)
-    return out
+    return _protect_html(template.render(processed_data))
 
 def _resize_image_for_db(data_uri: str, max_px: int = 800, quality: int = 75) -> str:
-    """
-    Resize ảnh base64 xuống max_px trước khi lưu DB.
-    Giảm kích thước đáng kể mà vẫn đủ chất lượng để restore vào form.
-    """
-    if not data_uri or not data_uri.startswith('data:image/'):
-        return data_uri
+    if not data_uri or not data_uri.startswith('data:image/'): return data_uri
     try:
         from PIL import Image
-        import io as _io
         header, encoded = data_uri.split(',', 1)
         img_bytes = base64.b64decode(encoded)
-        img = Image.open(_io.BytesIO(img_bytes))
-        # Chỉ resize nếu ảnh lớn hơn max_px
-        if max(img.width, img.height) > max_px:
-            img.thumbnail((max_px, max_px), Image.LANCZOS)
-        # Chuyển sang JPEG để nén tốt hơn (trừ PNG có transparency)
-        buf = _io.BytesIO()
-        if img.mode in ('RGBA', 'P'):
-            img = img.convert('RGB')
+        img = Image.open(io.BytesIO(img_bytes))
+        if max(img.width, img.height) > max_px: img.thumbnail((max_px, max_px), Image.LANCZOS)
+        buf = io.BytesIO()
+        if img.mode in ('RGBA', 'P'): img = img.convert('RGB')
         img.save(buf, format='JPEG', quality=quality, optimize=True)
-        resized_b64 = base64.b64encode(buf.getvalue()).decode('utf-8')
-        return f"data:image/jpeg;base64,{resized_b64}"
-    except Exception:
-        return data_uri  # Nếu lỗi thì giữ nguyên
+        return f"data:image/jpeg;base64,{base64.b64encode(buf.getvalue()).decode('utf-8')}"
+    except: return data_uri
 
 def _prepare_data_for_db(data: dict) -> dict:
-    """Resize ảnh trong data trước khi lưu DB để tránh vượt giới hạn kích thước."""
     clean = dict(data)
     for key in ('photo', 'qr_line'):
-        if clean.get(key):
-            clean[key] = _resize_image_for_db(clean[key], max_px=800, quality=75)
+        if clean.get(key): clean[key] = _resize_image_for_db(clean[key])
     return clean
 
-# ─── API Routes ──────────────────────────────────────────────────────────────
+# --- API ROUTES ---
 @app.route('/')
-def user_form():
-    return render_template('user_form.html')
+def user_form(): return render_template('user_form.html')
 
 @app.route('/fct-1503')
 @auth_required
-def index():
-    return render_template('index.html')
+def index(): return render_template('index.html')
 
 @app.route('/api/health')
-def health():
-    return jsonify({'ok': True, 'msg': 'DAS V3.0 running'})
+def health(): return jsonify({'ok': True, 'msg': 'DAS V3.0 running'})
 
-@app.route('/api/generate', methods=['POST'])
-@auth_required
-def api_generate():
-    try:
-        # Handle both FormData and JSON
-        if request.content_type and 'multipart/form-data' in request.content_type:
-            data = json.loads(request.form.get('data', '{}'))
-            photo_file = request.files.get('photo')
-            if photo_file:
-                file_bytes = photo_file.read()
-                encoded_string = base64.b64encode(file_bytes).decode('utf-8')
-                ext = os.path.splitext(photo_file.filename)[1][1:].lower()
-                if not ext: ext = 'png'
-                if ext == 'jpg': ext = 'jpeg'
-                data['photo'] = f"data:image/{ext};base64,{encoded_string}"
-        else:
-            data = request.get_json() or {}
-        
-        # 1. Render HTML từ template v6.18
-        form_data = prepare_data(data)
-        html_content, fn = export_resume(form_data, 'html')
-        
-        # 2. Bỏ qua việc lưu file vật lý để không chiếm ổ cứng Render
-
-        # 3. INSERT hoặc UPDATE vào Database Lịch sử (tránh trùng lặp khi sửa)
-        record_id = data.get('_record_id')
-
-        # --- KIỂM TRA TRÙNG LẶP MÃ SỐ ---
-        ma_so_moi = form_data.get('Maso', '').strip()
-        if ma_so_moi and ma_so_moi.upper() != 'CHO_DUYET':
-            existing_record = FormHistory.query.filter_by(ma_so=ma_so_moi).first()
-            if existing_record:
-                if not record_id or int(record_id) != existing_record.id:
-                    return jsonify({'success': False, 'error': f'Mã số "{ma_so_moi}" đã tồn tại trong hệ thống. Vui lòng nhập mã khác!'}), 400
-
-        try:
-            if record_id:
-                # UPDATE bản ghi hiện có
-                record = FormHistory.query.get(int(record_id))
-                if record:
-                    # Giữ nguyên ảnh cũ nếu không upload mới
-                    old_data = json.loads(record.data_json) if record.data_json else {}
-                    if not data.get('photo') and old_data.get('photo'):
-                        data['photo'] = old_data['photo']
-                    if not data.get('qr_line') and old_data.get('qr_line'):
-                        data['qr_line'] = old_data['qr_line']
-                    record.ma_so = form_data.get('Maso', '')
-                    record.ho_ten = form_data.get('Hoten', '')
-                    record.ten_file = fn
-                    record.data_json = json.dumps(_prepare_data_for_db(data), ensure_ascii=False)
-                    db.session.commit()
-                else:
-                    # ID không tồn tại → INSERT mới (fallback an toàn)
-                    new_record = FormHistory(
-                        ma_so=form_data.get('Maso', ''),
-                        ho_ten=form_data.get('Hoten', ''),
-                        ten_file=fn,
-                        data_json=json.dumps(_prepare_data_for_db(data), ensure_ascii=False)
-                    )
-                    db.session.add(new_record)
-                    db.session.commit()
-            else:
-                # INSERT bản ghi mới
-                new_record = FormHistory(
-                    ma_so=form_data.get('Maso', ''),
-                    ho_ten=form_data.get('Hoten', ''),
-                    ten_file=fn,
-                    data_json=json.dumps(_prepare_data_for_db(data), ensure_ascii=False)
-                )
-                db.session.add(new_record)
-                db.session.commit()
-        except Exception:
-            db.session.rollback()
-
-        # 4. Trả về Response để trình duyệt tải file
-        return Response(
-            html_content,
-            mimetype="text/html",
-            headers={
-                "Content-Disposition": f'attachment; filename="{fn}"',
-                "Content-Type": "text/html; charset=utf-8"
-            }
-        )
-
-    except Exception as e:
-        traceback.print_exc()
-        return jsonify({'success': False, 'error': str(e), 'trace': traceback.format_exc()}), 500
+def _process_form_data(request):
+    if request.content_type and 'multipart/form-data' in request.content_type:
+        data = json.loads(request.form.get('data', '{}'))
+        for key in ('photo', 'qr_line'):
+            file = request.files.get(key)
+            if file:
+                ext = os.path.splitext(file.filename)[1][1:].lower() or 'png'
+                data[key] = f"data:image/{'jpeg' if ext=='jpg' else ext};base64,{base64.b64encode(file.read()).decode('utf-8')}"
+    else: data = request.get_json() or {}
+    return data
 
 @app.route('/api/submit-only', methods=['POST'])
 def api_submit_only():
     try:
-        # Handle both FormData and JSON
-        if request.content_type and 'multipart/form-data' in request.content_type:
-            data = json.loads(request.form.get('data', '{}'))
-            photo_file = request.files.get('photo')
-            if photo_file:
-                file_bytes = photo_file.read()
-                encoded_string = base64.b64encode(file_bytes).decode('utf-8')
-                ext = os.path.splitext(photo_file.filename)[1][1:].lower()
-                if not ext: ext = 'png'
-                if ext == 'jpg': ext = 'jpeg'
-                data['photo'] = f"data:image/{ext};base64,{encoded_string}"
-            qr_file = request.files.get('qr_line')
-            if qr_file:
-                qr_bytes = qr_file.read()
-                qr_encoded = base64.b64encode(qr_bytes).decode('utf-8')
-                qr_ext = os.path.splitext(qr_file.filename)[1][1:].lower()
-                if not qr_ext: qr_ext = 'png'
-                if qr_ext == 'jpg': qr_ext = 'jpeg'
-                data['qr_line'] = f"data:image/{qr_ext};base64,{qr_encoded}"
-        else:
-            data = request.get_json() or {}
+        data = _process_form_data(request)
+        record_id = data.get('_record_id')
+        ma_so = str(data.get('Maso', '')).strip()
+        ho_ten = str(data.get('Hoten', '')).strip()
 
-        form_data = prepare_data(data)
-        record_id = data.get('_record_id')  # ID để UPDATE nếu có
+        if ma_so and ma_so.upper() != 'CHO_DUYET':
+            existing = FormHistory.query.filter_by(ma_so=ma_so).first()
+            if existing and (not record_id or int(record_id) != existing.id):
+                return jsonify({'success': False, 'error': f'Mã số "{ma_so}" đã tồn tại.'}), 400
 
-        # --- KIỂM TRA TRÙNG LẶP MÃ SỐ ---
-        ma_so_moi = form_data.get('Maso', '').strip()
-        if ma_so_moi and ma_so_moi.upper() != 'CHO_DUYET':
-            existing_record = FormHistory.query.filter_by(ma_so=ma_so_moi).first()
-            if existing_record:
-                if not record_id or int(record_id) != existing_record.id:
-                    return jsonify({'success': False, 'error': f'Mã số "{ma_so_moi}" đã tồn tại trong hệ thống. Vui lòng nhập mã khác!'}), 400
-
-        # --- INSERT hoặc UPDATE ---
         if record_id:
-            # UPDATE bản ghi hiện có
             record = FormHistory.query.get(int(record_id))
-            if not record:
-                return jsonify({'success': False, 'error': 'Không tìm thấy bản ghi để cập nhật'}), 404
-            # Giữ nguyên ảnh cũ nếu không upload mới
+            if not record: return jsonify({'success': False, 'error': 'Not found'}), 404
             old_data = json.loads(record.data_json) if record.data_json else {}
-            if not data.get('photo') and old_data.get('photo'):
-                data['photo'] = old_data['photo']
-            if not data.get('qr_line') and old_data.get('qr_line'):
-                data['qr_line'] = old_data['qr_line']
-            record.ma_so = form_data.get('Maso', '') or 'CHO_DUYET'
-            record.ho_ten = form_data.get('Hoten', '')
+            for key in ('photo', 'qr_line'):
+                if not data.get(key) and old_data.get(key): data[key] = old_data[key]
+            record.ma_so = ma_so or 'CHO_DUYET'
+            record.ho_ten = ho_ten
             record.data_json = json.dumps(_prepare_data_for_db(data), ensure_ascii=False)
-            try:
-                db.session.commit()
-            except Exception:
-                db.session.rollback()
-                raise
-            return jsonify({
-                'success': True,
-                'id': record.id,
-                'ma_so': record.ma_so,
-                'msg': 'Đã cập nhật hồ sơ thành công.'
-            })
+            db.session.commit()
+            msg = 'Đã cập nhật.'
         else:
-            # INSERT bản mới
-            new_record = FormHistory(
-                ma_so=form_data.get('Maso', '') or 'CHO_DUYET',
-                ho_ten=form_data.get('Hoten', ''),
-                ten_file='',
-                data_json=json.dumps(_prepare_data_for_db(data), ensure_ascii=False)
-            )
-            try:
-                db.session.add(new_record)
-                db.session.commit()
-            except Exception:
-                db.session.rollback()
-                raise
-            return jsonify({
-                'success': True,
-                'id': new_record.id,
-                'ma_so': new_record.ma_so,
-                'msg': 'Đã nộp form thành công (chờ duyệt).'
-            })
+            record = FormHistory(ma_so=ma_so or 'CHO_DUYET', ho_ten=ho_ten, data_json=json.dumps(_prepare_data_for_db(data), ensure_ascii=False))
+            db.session.add(record)
+            db.session.commit()
+            msg = 'Đã nộp form.'
+
+        return jsonify({'success': True, 'id': record.id, 'ma_so': record.ma_so, 'msg': msg})
     except Exception as e:
         traceback.print_exc()
-        return jsonify({'success': False, 'error': str(e), 'trace': traceback.format_exc()}), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
-# --- API DỊCH TỰ ĐỘNG CHO GIAO DIỆN ---
 @app.route('/api/translate', methods=['POST'])
 def api_translate():
     try:
         data = request.get_json() or {}
-        text = data.get('text', '')
-        return jsonify({'success': True, 'translated': translate_free(text)})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': True, 'translated': translate_free(data.get('text', ''))})
+    except: return jsonify({'success': False}), 500
 
 @app.route('/cv/<maso>', methods=['GET'])
 @auth_required
 def download_history(maso):
     try:
-        # 1. Gọi Database lấy data theo maso
         record = FormHistory.query.filter_by(ma_so=maso).order_by(FormHistory.ngay_tao.desc()).first()
-        if not record:
-            return jsonify({"error": "Không tìm thấy hồ sơ với mã số này"}), 404
-            
-        data = json.loads(record.data_json)
-        
-        # 2. Render lại HTML từ data lấy được (Đảm bảo đã chạy qua bộ lọc dịch tiếng Trung)
-        html_content = generate_html_resume(data, 'fct_template_v6.18.html')
-        
-        # 3. Tạo tên file chuẩn (Không dấu, viết hoa chữ cái đầu)
-        clean_name = sanitize_filename_master(record.ho_ten)
-        filename = f"{maso} {clean_name}.html"
-        
-        # 4. Trả file về trình duyệt
-        return send_file(
-            io.BytesIO(html_content.encode('utf-8')),
-            mimetype='text/html',
-            as_attachment=True,
-            download_name=filename
-        )
-    except Exception:
-        return jsonify({"error": "Không thể tải file, vui lòng kiểm tra lại data"}), 400
+        if not record: return jsonify({"error": "Not found"}), 404
+        html_content = generate_html_resume(json.loads(record.data_json))
+        filename = f"{maso}_{sanitize_filename_master(record.ho_ten)}.html"
+        return send_file(io.BytesIO(html_content.encode('utf-8')), mimetype='text/html', as_attachment=True, download_name=filename)
+    except: return jsonify({"error": "Error"}), 400
 
 @app.route('/resume-<int:record_id>.html')
 @auth_required
 def api_preview(record_id):
     try:
         record = FormHistory.query.get(record_id)
-        if not record:
-            return "Không tìm thấy hồ sơ", 404
-        
-        data = json.loads(record.data_json)
-        html_content = generate_html_resume(data)
+        if not record: return "Not found", 404
+        html_content = generate_html_resume(json.loads(record.data_json))
         return Response(html_content, mimetype="text/html", headers={"Content-Type": "text/html; charset=utf-8"})
-    except Exception as e:
-        return f"Lỗi render: {str(e)}<pre>{traceback.format_exc()}</pre>", 500
-
-@app.route('/api/view-photo')
-@auth_required
-def api_view_photo():
-    """Route để hiển thị ảnh từ path tuyệt đối trong thẻ <img>"""
-    path = request.args.get('path')
-    if path and os.path.exists(path):
-        return send_file(path)
-    return "Not Found", 404
-
-@app.route('/admin', methods=['GET', 'POST'])
-def admin_portal():
-    admin_pass = os.environ.get('ADMIN_PASSWORD', '123456')
-    
-    def get_admin_records():
-        vietnam_tz = timezone(timedelta(hours=7))
-        records = FormHistory.query.with_entities(
-            FormHistory.id, 
-            FormHistory.ma_so, 
-            FormHistory.ho_ten, 
-            FormHistory.ngay_tao
-        ).order_by(FormHistory.ngay_tao.desc()).all()
-        
-        data = []
-        for r in records:
-            data.append({
-                'id': r.id,
-                'ma_so': r.ma_so,
-                'ho_ten': r.ho_ten,
-                'ngay_tao': r.ngay_tao.replace(tzinfo=timezone.utc).astimezone(vietnam_tz).strftime("%d/%m/%Y %H:%M:%S") if r.ngay_tao else ''
-            })
-        return data
-
-    if request.method == 'POST':
-        pwd = request.form.get('password')
-        if pwd == admin_pass:
-            records = get_admin_records()
-            resp = make_response(render_template('admin.html', records=records, authenticated=True))
-            resp.set_cookie('admin_auth', pwd, max_age=60*60*24)
-            return resp
-        else:
-            return render_template('admin.html', authenticated=False, error="Mật khẩu không chính xác!")
-            
-    cookie_pwd = request.cookies.get('admin_auth')
-    if cookie_pwd == admin_pass:
-        records = get_admin_records()
-        return render_template('admin.html', records=records, authenticated=True)
-    else:
-        return render_template('admin.html', authenticated=False)
+    except Exception as e: return str(e), 500
 
 @app.route('/cv/<id>/<maso>', methods=['GET'])
 def secure_web_view(id, maso):
     try:
-        record_id = int(id)
-        record = FormHistory.query.get(record_id)
-        if not record or record.ma_so != maso:
-            return "Không tìm thấy hồ sơ", 404
-            
-        data = json.loads(record.data_json)
-        html_content = generate_html_resume(data, 'fct_template_v6.18.html')
-        
-        clean_name = sanitize_filename_master(record.ho_ten)
-        filename = f"{maso} {clean_name}.html"
+        record = FormHistory.query.get(int(id))
+        if not record or record.ma_so != maso: return "Not found", 404
+        html_content = generate_html_resume(json.loads(record.data_json))
+        filename = f"{maso} {sanitize_filename_master(record.ho_ten)}.html"
         encoded_filename = quote(filename)
-        
         response = Response(html_content, mimetype="text/html")
         response.headers["Content-Type"] = "text/html; charset=utf-8"
         response.headers["Content-Disposition"] = f'inline; filename="{filename}"; filename*=UTF-8\'\'{encoded_filename}'
         return response
-        
-    except ValueError:
-        return "ID không hợp lệ", 404
-    except Exception as e:
-        return f"Lỗi hệ thống: {str(e)}", 500
+    except Exception as e: return str(e), 500
 
-# --- API LẤY DANH SÁCH LỊCH SỬ ---
+
 @app.route('/api/history', methods=['GET'])
 @auth_required
 def api_history():
@@ -945,63 +387,38 @@ def api_history():
         records = FormHistory.query.order_by(FormHistory.ngay_tao.desc()).limit(100).all()
         vietnam_tz = timezone(timedelta(hours=7))
         data = [{
-            'id': r.id,
-            'ma_so': r.ma_so,
-            'ho_ten': r.ho_ten,
-            'ten_file': r.ten_file,
+            'id': r.id, 'ma_so': r.ma_so, 'ho_ten': r.ho_ten,
             'data_json': json.loads(r.data_json) if r.data_json else None,
             'ngay_tao': r.ngay_tao.replace(tzinfo=timezone.utc).astimezone(vietnam_tz).strftime("%d/%m/%Y %H:%M:%S") if r.ngay_tao else ''
         } for r in records]
         return jsonify({'success': True, 'data': data})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+    except: return jsonify({'success': False}), 500
 
-# --- API XÓA HÀNG LOẠT ---
 @app.route('/api/history/bulk-delete', methods=['POST'])
 @auth_required
 def api_bulk_delete_history():
     try:
         data = request.get_json() or {}
         ids = data.get('ids', [])
-        if not ids:
-            return jsonify({'success': False, 'error': 'Không có ID nào được chọn'}), 400
-
-        int_ids = [int(i) for i in ids]
-        records = FormHistory.query.filter(FormHistory.id.in_(int_ids)).all()
-
-        for record in records:
-            if record.ten_file:
-                file_path = os.path.join(OUT_DIR, record.ten_file)
-                if os.path.exists(file_path) and os.path.isfile(file_path):
-                    os.remove(file_path)
-            db.session.delete(record)
-
+        if not ids: return jsonify({'success': False, 'error': 'No IDs'}), 400
+        records = FormHistory.query.filter(FormHistory.id.in_([int(i) for i in ids])).all()
+        for r in records: db.session.delete(r)
         db.session.commit()
-        deleted = len(records)
-        return jsonify({'success': True, 'deleted': deleted, 'msg': f'Đã xóa {deleted} hồ sơ'})
+        return jsonify({'success': True, 'deleted': len(records)})
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
 
-# --- API XÓA LỊCH SỬ ---
 @app.route('/api/history/<int:record_id>', methods=['DELETE'])
 @auth_required
 def api_delete_history(record_id):
     try:
         record = FormHistory.query.get(record_id)
-        if not record:
-            return jsonify({'success': False, 'error': 'Không tìm thấy bản ghi'}), 404
-
-        if record.ten_file:
-            file_path = os.path.join(OUT_DIR, record.ten_file)
-            if os.path.exists(file_path) and os.path.isfile(file_path):
-                os.remove(file_path)
-
-        db.session.delete(record)
-        db.session.commit()
-        return jsonify({'success': True, 'msg': 'Xóa thành công'})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        if record:
+            db.session.delete(record)
+            db.session.commit()
+        return jsonify({'success': True})
+    except: return jsonify({'success': False}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))

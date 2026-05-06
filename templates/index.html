@@ -20,7 +20,7 @@
         <div class="absolute top-0 left-0 w-full h-1 lg:h-1.5 bg-blue-600"></div>
         
         <div class="flex flex-row items-center gap-3 lg:flex-col lg:items-start lg:gap-0">
-            <img src="LogoFCT.png" alt="FCT Logo" class="w-10 lg:w-28 lg:mb-8 drop-shadow-md" onerror="this.src='https://via.placeholder.com/150?text=Logo+FCT'">
+            <img src="{{ url_for('static', filename='LogoFCT.png') }}" alt="FCT Logo" class="w-10 lg:w-28 lg:mb-8 drop-shadow-md" onerror="this.src='https://via.placeholder.com/150?text=Logo+FCT'">
             
             <div>
                 <h1 class="block lg:hidden text-lg font-extrabold text-slate-800 tracking-tight leading-none">

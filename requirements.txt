@@ -1,8 +1,6 @@
 Flask
 flask-cors
 python-dotenv
-docxtpl
-python-docx
 deep-translator
 Flask-BasicAuth
 Flask-SQLAlchemy==3.1.1
