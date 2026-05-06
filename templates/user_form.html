@@ -77,6 +77,8 @@
     <div class="w-full lg:w-2/3 h-full overflow-y-auto relative bg-[#FAFAFA] px-4 py-6 lg:px-16 lg:py-12">
 
         <form id="resumeForm" autocomplete="off" class="max-w-4xl mx-auto space-y-12 pb-32">
+            <input type="hidden" id="photoBase64" value="">
+            <input type="hidden" id="qrBase64" value="">
 
             <section>
                 <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
@@ -514,55 +516,49 @@
             qrDropzone.addEventListener('mouseenter', () => pasteTarget = 'qr');
             qrDropzone.addEventListener('click', () => pasteTarget = 'qr');
 
-            // ── Resize ảnh bằng Canvas trước khi gửi (tránh lỗi 413) ──
-            function resizeImageToBlob(file, maxPx, quality, callback) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        let w = img.width, h = img.height;
-                        if (w > maxPx || h > maxPx) {
-                            if (w > h) { h = Math.round(h * maxPx / w); w = maxPx; }
-                            else { w = Math.round(w * maxPx / h); h = maxPx; }
-                        }
-                        const canvas = document.createElement('canvas');
-                        canvas.width = w; canvas.height = h;
-                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                        canvas.toBlob((blob) => callback(blob, canvas.toDataURL('image/jpeg', quality)), 'image/jpeg', quality);
+            // ── Hàm resize ảnh → trả về Promise<base64> ──
+            function resizeToBase64(file, maxPx, quality) {
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            let w = img.width, h = img.height;
+                            if (w > maxPx || h > maxPx) {
+                                if (w > h) { h = Math.round(h * maxPx / w); w = maxPx; }
+                                else { w = Math.round(w * maxPx / h); h = maxPx; }
+                            }
+                            const canvas = document.createElement('canvas');
+                            canvas.width = w; canvas.height = h;
+                            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                            resolve(canvas.toDataURL('image/jpeg', quality));
+                        };
+                        img.src = e.target.result;
                     };
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
-
-            // ── Hàm set ảnh chân dung ──
-            function setPhoto(file) {
-                if (!file || !file.type.startsWith('image/')) return;
-                resizeImageToBlob(file, 1200, 0.82, (blob, dataUrl) => {
-                    photoPreview.src = dataUrl;
-                    photoPreview.classList.remove('hidden');
-                    dropzoneText.classList.add('hidden');
-                    document.getElementById('clearPhotoBtn').classList.remove('hidden');
-                    const resized = new File([blob], 'photo.jpg', { type: 'image/jpeg' });
-                    const dt = new DataTransfer();
-                    dt.items.add(resized);
-                    photoInput.files = dt.files;
+                    reader.readAsDataURL(file);
                 });
             }
 
-            // ── Hàm set QR ──
-            function setQR(file) {
+            // ── Hàm set ảnh chân dung — lưu base64 vào hidden field ──
+            async function setPhoto(file) {
                 if (!file || !file.type.startsWith('image/')) return;
-                resizeImageToBlob(file, 600, 0.85, (blob, dataUrl) => {
-                    qrPreview.src = dataUrl;
-                    qrPreview.classList.remove('hidden');
-                    qrDropzoneText.classList.add('hidden');
-                    document.getElementById('clearQrBtn').classList.remove('hidden');
-                    const resized = new File([blob], 'qr.jpg', { type: 'image/jpeg' });
-                    const dt = new DataTransfer();
-                    dt.items.add(resized);
-                    qrInput.files = dt.files;
-                });
+                const b64 = await resizeToBase64(file, 1200, 0.82);
+                photoPreview.src = b64;
+                photoPreview.classList.remove('hidden');
+                dropzoneText.classList.add('hidden');
+                document.getElementById('clearPhotoBtn').classList.remove('hidden');
+                document.getElementById('photoBase64').value = b64;
+            }
+
+            // ── Hàm set QR — lưu base64 vào hidden field ──
+            async function setQR(file) {
+                if (!file || !file.type.startsWith('image/')) return;
+                const b64 = await resizeToBase64(file, 600, 0.85);
+                qrPreview.src = b64;
+                qrPreview.classList.remove('hidden');
+                qrDropzoneText.classList.add('hidden');
+                document.getElementById('clearQrBtn').classList.remove('hidden');
+                document.getElementById('qrBase64').value = b64;
             }
 
             // ── Events ảnh chân dung ──
@@ -599,6 +595,7 @@
                 photoPreview.src = ''; photoPreview.classList.add('hidden');
                 dropzoneText.classList.remove('hidden');
                 photoInput.value = '';
+                document.getElementById('photoBase64').value = '';
                 document.getElementById('clearPhotoBtn').classList.add('hidden');
             });
             document.getElementById('clearQrBtn').addEventListener('click', (e) => {
@@ -606,6 +603,7 @@
                 qrPreview.src = ''; qrPreview.classList.add('hidden');
                 qrDropzoneText.classList.remove('hidden');
                 qrInput.value = '';
+                document.getElementById('qrBase64').value = '';
                 document.getElementById('clearQrBtn').classList.add('hidden');
             });
         });
@@ -649,7 +647,6 @@
             btnText.innerText = "ĐANG XỬ LÝ...";
             loading.classList.remove('hidden');
 
-            const formData = new FormData();
             const plainData = {};
 
             new FormData(form).forEach((value, key) => {
@@ -668,26 +665,23 @@
                 loading.classList.add('hidden');
                 return;
             }
-            console.log("Payload gửi đi:", plainData);
 
-            formData.append('data', JSON.stringify(plainData));
-
-            const photoFile = document.getElementById('photoInput').files[0];
-            if (photoFile) formData.append('photo', photoFile);
-
-            const qrFile = document.getElementById('qrInput').files[0];
-            if (qrFile) formData.append('qr_line', qrFile);
+            // Đưa ảnh base64 đã resize vào plainData (không dùng multipart)
+            const photoB64 = document.getElementById('photoBase64').value;
+            if (photoB64) plainData['photo'] = photoB64;
+            const qrB64 = document.getElementById('qrBase64').value;
+            if (qrB64) plainData['qr_line'] = qrB64;
 
             try {
-                console.log("Đang gọi API: /api/submit-only");
-                const response = await fetch('/api/submit-only', { method: 'POST', body: formData });
+                const response = await fetch('/api/submit-only', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(plainData)
+                });
                 const result = await response.json();
                 if (result.success) {
-                    alert('Hồ sơ đã được gửi tới hệ thống. Hệ thống sẽ mở bản in trong tab mới.');
-                    // Mở bản preview trong tab mới
-                    window.open(`/resume-${result.id}.html`, '_blank');
-                    // Reload lại form sau một chút để clear data
-                    setTimeout(() => window.location.reload(), 1000);
+                    alert('Hồ sơ đã được gửi tới hệ thống thành công!');
+                    setTimeout(() => window.location.reload(), 500);
                 } else {
                     alert("Lỗi: " + result.error);
                 }

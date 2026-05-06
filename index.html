@@ -63,6 +63,8 @@
             <input type="hidden" name="photo" id="existingPhotoPath" value="">
             <input type="hidden" name="qr_line" id="existingQrPath" value="">
             <input type="hidden" id="editingRecordId" value="">
+            <input type="hidden" id="photoBase64" value="">
+            <input type="hidden" id="qrBase64" value="">
             <section>
                 <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
                     <span class="w-2 h-6 bg-blue-600 rounded-full"></span> 1. Thông tin cá nhân
@@ -406,58 +408,51 @@
             qrDropzone.addEventListener('mouseenter', () => pasteTarget = 'qr');
             qrDropzone.addEventListener('click', () => pasteTarget = 'qr');
 
-            // ── Resize ảnh bằng Canvas trước khi gửi (tránh lỗi 413) ──
-            function resizeImageToBlob(file, maxPx, quality, callback) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        let w = img.width, h = img.height;
-                        if (w > maxPx || h > maxPx) {
-                            if (w > h) { h = Math.round(h * maxPx / w); w = maxPx; }
-                            else { w = Math.round(w * maxPx / h); h = maxPx; }
-                        }
-                        const canvas = document.createElement('canvas');
-                        canvas.width = w; canvas.height = h;
-                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                        canvas.toBlob((blob) => callback(blob, canvas.toDataURL('image/jpeg', quality)), 'image/jpeg', quality);
+            // ── Hàm resize ảnh → trả về Promise<base64> ──
+            function resizeToBase64(file, maxPx, quality) {
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            let w = img.width, h = img.height;
+                            if (w > maxPx || h > maxPx) {
+                                if (w > h) { h = Math.round(h * maxPx / w); w = maxPx; }
+                                else { w = Math.round(w * maxPx / h); h = maxPx; }
+                            }
+                            const canvas = document.createElement('canvas');
+                            canvas.width = w; canvas.height = h;
+                            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                            resolve(canvas.toDataURL('image/jpeg', quality));
+                        };
+                        img.src = e.target.result;
                     };
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
-
-            // ── Hàm set ảnh chân dung ──
-            function setPhoto(file) {
-                if (!file || !file.type.startsWith('image/')) return;
-                resizeImageToBlob(file, 1200, 0.82, (blob, dataUrl) => {
-                    photoPreview.src = dataUrl;
-                    photoPreview.classList.remove('hidden');
-                    dropzoneText.classList.add('hidden');
-                    document.getElementById('clearPhotoBtn').classList.remove('hidden');
-                    // Thay file gốc bằng file đã resize
-                    const resized = new File([blob], 'photo.jpg', { type: 'image/jpeg' });
-                    const dt = new DataTransfer();
-                    dt.items.add(resized);
-                    photoInput.files = dt.files;
-                    document.getElementById('existingPhotoPath').value = '';
+                    reader.readAsDataURL(file);
                 });
             }
 
-            // ── Hàm set QR ──
-            function setQR(file) {
+            // ── Hàm set ảnh chân dung — lưu base64 vào hidden field ──
+            async function setPhoto(file) {
                 if (!file || !file.type.startsWith('image/')) return;
-                resizeImageToBlob(file, 600, 0.85, (blob, dataUrl) => {
-                    qrPreview.src = dataUrl;
-                    qrPreview.classList.remove('hidden');
-                    qrDropzoneText.classList.add('hidden');
-                    document.getElementById('clearQrBtn').classList.remove('hidden');
-                    const resized = new File([blob], 'qr.jpg', { type: 'image/jpeg' });
-                    const dt = new DataTransfer();
-                    dt.items.add(resized);
-                    qrInput.files = dt.files;
-                    document.getElementById('existingQrPath').value = '';
-                });
+                const b64 = await resizeToBase64(file, 1200, 0.82);
+                photoPreview.src = b64;
+                photoPreview.classList.remove('hidden');
+                dropzoneText.classList.add('hidden');
+                document.getElementById('clearPhotoBtn').classList.remove('hidden');
+                document.getElementById('photoBase64').value = b64;
+                document.getElementById('existingPhotoPath').value = '';
+            }
+
+            // ── Hàm set QR — lưu base64 vào hidden field ──
+            async function setQR(file) {
+                if (!file || !file.type.startsWith('image/')) return;
+                const b64 = await resizeToBase64(file, 600, 0.85);
+                qrPreview.src = b64;
+                qrPreview.classList.remove('hidden');
+                qrDropzoneText.classList.add('hidden');
+                document.getElementById('clearQrBtn').classList.remove('hidden');
+                document.getElementById('qrBase64').value = b64;
+                document.getElementById('existingQrPath').value = '';
             }
 
             // ── Events ảnh chân dung ──
@@ -495,6 +490,7 @@
                 dropzoneText.classList.remove('hidden');
                 photoInput.value = '';
                 document.getElementById('existingPhotoPath').value = '';
+                document.getElementById('photoBase64').value = '';
                 document.getElementById('clearPhotoBtn').classList.add('hidden');
             });
             document.getElementById('clearQrBtn').addEventListener('click', (e) => {
@@ -503,6 +499,7 @@
                 qrDropzoneText.classList.remove('hidden');
                 qrInput.value = '';
                 document.getElementById('existingQrPath').value = '';
+                document.getElementById('qrBase64').value = '';
                 document.getElementById('clearQrBtn').classList.add('hidden');
             });
         });
@@ -835,33 +832,24 @@ async function loadHistory() {
                 return;
             }
 
-            formData.append('data', JSON.stringify(plainData));
-            
-            const photoFile = document.getElementById('photoInput').files[0];
-            if (photoFile) {
-                formData.append('photo', photoFile);
-            } else if (document.getElementById('existingPhotoPath').value) {
-                plainData['photo'] = document.getElementById('existingPhotoPath').value;
-                formData.set('data', JSON.stringify(plainData));
-            }
+            // Đưa ảnh base64 đã resize vào plainData (không dùng multipart)
+            const photoB64 = document.getElementById('photoBase64').value;
+            if (photoB64) plainData['photo'] = photoB64;
 
-            const qrFile = document.getElementById('qrInput').files[0];
-            if (qrFile) {
-                formData.append('qr_line', qrFile);
-            } else if (document.getElementById('existingQrPath').value) {
-                plainData['qr_line'] = document.getElementById('existingQrPath').value;
-                formData.set('data', JSON.stringify(plainData));
-            }
+            const qrB64 = document.getElementById('qrBase64').value;
+            if (qrB64) plainData['qr_line'] = qrB64;
 
             // Gửi record_id nếu đang UPDATE
             const recordId = document.getElementById('editingRecordId').value;
-            if (recordId) {
-                plainData['_record_id'] = recordId;
-                formData.set('data', JSON.stringify(plainData));
-            }
+            if (recordId) plainData['_record_id'] = recordId;
 
             try {
-                const response = await fetch('/api/submit-only', { method: 'POST', body: formData, credentials: 'same-origin' });
+                const response = await fetch('/api/submit-only', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(plainData),
+                    credentials: 'same-origin'
+                });
                 const result = await response.json();
                 
                 if (result.success) {
