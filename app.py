@@ -81,7 +81,7 @@ with app.app_context():
     db.create_all()
 
 # ─── Bảng dịch cố định Việt → Trung Phồn Thể ────────────────────────────────
-# Dùng chung cho cả Hôn nhân, Học vấn và Quốc gia
+# Dùng chung cho cả Hôn nhân, Học vấn, Quốc gia VÀ Nghề nghiệp
 FIXED_TRANS = {
     # Hôn nhân
     'độc thân': '未婚', 'doc than': '未婚',
@@ -107,6 +107,33 @@ FIXED_TRANS = {
     'thái lan': '泰國',
     'châu âu': '歐洲',
     'nga': '俄羅斯',
+    # Nghề nghiệp phổ biến (tránh Google dịch sai từ ngắn)
+    'may': '縫紉', 'thợ may': '縫紉', 'may mặc': '縫紉',
+    'hàn': '焊接', 'thợ hàn': '焊接',
+    'điện': '電工', 'thợ điện': '電工',
+    'sơn': '噴漆', 'thợ sơn': '噴漆',
+    'tiện': '車床', 'thợ tiện': '車床',
+    'phay': '銑床', 'thợ phay': '銑床',
+    'bào': '刨床', 'thợ bào': '刨床',
+    'đúc': '鑄造', 'thợ đúc': '鑄造',
+    'dệt': '紡織', 'thợ dệt': '紡織',
+    'mộc': '木工', 'thợ mộc': '木工',
+    'in ấn': '印刷', 'in': '印刷',
+    'cơ khí': '機械', 'gia công': '加工',
+    'xây dựng': '營造', 'xây': '營造',
+    'lắp ráp': '組裝', 'đóng gói': '包裝',
+    'kiểm tra': '檢查', 'qc': '品檢',
+    'kho': '倉庫', 'thủ kho': '倉管',
+    'nấu ăn': '烹飪', 'đầu bếp': '廚師',
+    'giúp việc': '幫傭',
+    'điều dưỡng': '護理',
+    'chăm sóc người già': '照顧老人',
+    'nông nghiệp': '農業', 'nông': '農業',
+    'chăn nuôi': '畜牧', 'thủy sản': '水產',
+    'nhựa': '塑膠',
+    'lái xe': '駕駛', 'tài xế': '司機',
+    'xe nâng': '堆高機', 'lái xe nâng': '堆高機',
+    'cnc': 'CNC', 'tig mig': 'Tig/Mig',
 }
 
 # Alias — dùng cho Hôn nhân / Học vấn (subset của FIXED_TRANS)
@@ -126,6 +153,15 @@ YELLOW_ALERTS_MAP = {
     "f22": "搬重 50kg 以上",       # Bê vác >50kg
 }
 
+def is_chinese(text: str) -> bool:
+    """Kiểm tra xem text có chứa đa số ký tự Trung Quốc (CJK) không.
+    Nếu >= 50% ký tự (không tính khoảng trắng/dấu câu) là CJK → coi như tiếng Trung."""
+    if not text:
+        return False
+    cjk_count = sum(1 for c in text if '\u4e00' <= c <= '\u9fff' or '\u3400' <= c <= '\u4dbf' or '\uf900' <= c <= '\ufaff')
+    non_space = len(text.replace(' ', '').replace(',', '').replace('，', '').replace('、', '').replace('。', ''))
+    return non_space > 0 and (cjk_count / non_space) >= 0.5
+
 def translate_fixed(text: str) -> str:
     """Dịch các từ cố định theo bảng tra cứu"""
     if not text:
@@ -134,11 +170,22 @@ def translate_fixed(text: str) -> str:
     return FIXED_TRANS.get(key, text)
 
 def translate_free(text: str) -> str:
-    """Dịch văn bản tự do sang Tiếng Trung Phồn Thể"""
+    """Dịch văn bản tự do sang Tiếng Trung Phồn Thể.
+    - Nếu đầu vào đã là tiếng Trung → giữ nguyên, KHÔNG dịch lại.
+    - Ưu tiên tra bảng cố định trước, chỉ gọi Google nếu không tìm thấy."""
     if not text or not text.strip():
         return text
+    cleaned = text.strip()
+    # 1. Nếu đầu vào đã là tiếng Trung → KHÔNG dịch lại
+    if is_chinese(cleaned):
+        return text
+    # 2. Ưu tiên bảng tra cứu cố định (chính xác 100%)
+    fixed = FIXED_TRANS.get(cleaned.lower())
+    if fixed:
+        return fixed
+    # 3. Fallback: gọi Google Translator (Việt → Trung Phồn Thể)
     try:
-        result = GoogleTranslator(source='vi', target='zh-TW').translate(text)
+        result = GoogleTranslator(source='vi', target='zh-TW').translate(cleaned)
         return result if result else text
     except Exception:
         return text
@@ -614,16 +661,53 @@ def api_generate():
         
         # 2. Bỏ qua việc lưu file vật lý để không chiếm ổ cứng Render
 
-        # 3. Lưu vào Database Lịch sử trước khi trả về file
+        # 3. INSERT hoặc UPDATE vào Database Lịch sử (tránh trùng lặp khi sửa)
+        record_id = data.get('_record_id')
+
+        # --- KIỂM TRA TRÙNG LẶP MÃ SỐ ---
+        ma_so_moi = form_data.get('Maso', '').strip()
+        if ma_so_moi and ma_so_moi.upper() != 'CHO_DUYET':
+            existing_record = FormHistory.query.filter_by(ma_so=ma_so_moi).first()
+            if existing_record:
+                if not record_id or int(record_id) != existing_record.id:
+                    return jsonify({'success': False, 'error': f'Mã số "{ma_so_moi}" đã tồn tại trong hệ thống. Vui lòng nhập mã khác!'}), 400
+
         try:
-            new_record = FormHistory(
-                ma_so=form_data.get('Maso', ''),
-                ho_ten=form_data.get('Hoten', ''),
-                ten_file=fn,
-                data_json=json.dumps(_prepare_data_for_db(data), ensure_ascii=False)
-            )
-            db.session.add(new_record)
-            db.session.commit()
+            if record_id:
+                # UPDATE bản ghi hiện có
+                record = FormHistory.query.get(int(record_id))
+                if record:
+                    # Giữ nguyên ảnh cũ nếu không upload mới
+                    old_data = json.loads(record.data_json) if record.data_json else {}
+                    if not data.get('photo') and old_data.get('photo'):
+                        data['photo'] = old_data['photo']
+                    if not data.get('qr_line') and old_data.get('qr_line'):
+                        data['qr_line'] = old_data['qr_line']
+                    record.ma_so = form_data.get('Maso', '')
+                    record.ho_ten = form_data.get('Hoten', '')
+                    record.ten_file = fn
+                    record.data_json = json.dumps(_prepare_data_for_db(data), ensure_ascii=False)
+                    db.session.commit()
+                else:
+                    # ID không tồn tại → INSERT mới (fallback an toàn)
+                    new_record = FormHistory(
+                        ma_so=form_data.get('Maso', ''),
+                        ho_ten=form_data.get('Hoten', ''),
+                        ten_file=fn,
+                        data_json=json.dumps(_prepare_data_for_db(data), ensure_ascii=False)
+                    )
+                    db.session.add(new_record)
+                    db.session.commit()
+            else:
+                # INSERT bản ghi mới
+                new_record = FormHistory(
+                    ma_so=form_data.get('Maso', ''),
+                    ho_ten=form_data.get('Hoten', ''),
+                    ten_file=fn,
+                    data_json=json.dumps(_prepare_data_for_db(data), ensure_ascii=False)
+                )
+                db.session.add(new_record)
+                db.session.commit()
         except Exception:
             db.session.rollback()
 
@@ -668,6 +752,14 @@ def api_submit_only():
 
         form_data = prepare_data(data)
         record_id = data.get('_record_id')  # ID để UPDATE nếu có
+
+        # --- KIỂM TRA TRÙNG LẶP MÃ SỐ ---
+        ma_so_moi = form_data.get('Maso', '').strip()
+        if ma_so_moi and ma_so_moi.upper() != 'CHO_DUYET':
+            existing_record = FormHistory.query.filter_by(ma_so=ma_so_moi).first()
+            if existing_record:
+                if not record_id or int(record_id) != existing_record.id:
+                    return jsonify({'success': False, 'error': f'Mã số "{ma_so_moi}" đã tồn tại trong hệ thống. Vui lòng nhập mã khác!'}), 400
 
         # --- INSERT hoặc UPDATE ---
         if record_id:
