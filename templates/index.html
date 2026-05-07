@@ -643,6 +643,14 @@
                 console.error("Lỗi khi dịch tên:", error);
             }
         }
+        
+        // Helper: Tạo slug từ tên (không dấu, bỏ ký tự lạ)
+        function sanitizeSlug(name) {
+            if (!name) return "UnNamed";
+            return name.normalize('NFD').replace(/[\u0300-\u036f]/g, "")
+                       .replace(/[^\w\s-]/gi, '').trim()
+                       .replace(/[-\s]+/g, '_');
+        }
 
         // Data lịch sử lưu tạm để load vào form khi xử lý
         let currentHistoryData = [];
@@ -711,9 +719,9 @@ async function loadHistory() {
                         <div class="action-grid" style="display:flex; gap:6px; justify-content:center; flex-wrap:wrap;">
                             ${item.ma_so === 'CHO_DUYET' ? `<button onclick="restoreData(${index})" class="btn-action" style="padding:6px 12px; background:#dcfce7; color:#16a34a; border:1px solid #86efac; border-radius:8px; font-size:12px; cursor:pointer; font-weight:700;">✅ Duyệt</button>` : ''}
                             <button onclick="restoreData(${index})" class="btn-action" style="padding:6px 12px; background:#fffbeb; color:#d97706; border:1px solid #fde68a; border-radius:8px; font-size:12px; cursor:pointer; font-weight:700;">✍️ Sửa</button>
-                            <a href="/cv/${item.id}/${encodeURIComponent(item.ma_so)}" target="_blank" class="btn-action" style="padding:6px 12px; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; border-radius:8px; font-size:12px; text-decoration:none; font-weight:700; display:inline-flex; align-items:center; gap:4px;">🖨️ Xem & In</a>
+                            <a href="/cv/${item.ma_so === 'CHO_DUYET' ? `${item.id}/` : ''}${item.ma_so}${item.ho_ten ? '_' + sanitizeSlug(item.ho_ten) : ''}" target="_blank" class="btn-action" style="padding:6px 12px; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; border-radius:8px; font-size:12px; text-decoration:none; font-weight:700; display:inline-flex; align-items:center; gap:4px;">🖨️ Xem & In</a>
                             <button onclick="downloadShortcut(${item.id}, '${item.ma_so}', '${item.ho_ten.replace(/'/g, "\\'")}')" class="btn-action" style="padding:6px 12px; background:#f3e8ff; color:#9333ea; border:1px solid #d8b4fe; border-radius:8px; font-size:12px; cursor:pointer; font-weight:700;">🔗 Link</button>
-                            <button onclick="copyHistoryLink(${item.id}, '${item.ma_so}', this)" class="btn-action" style="padding:6px 12px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:8px; font-size:12px; cursor:pointer; font-weight:700;">📤 Copy</button>
+                            <button onclick="copyHistoryLink(${item.id}, '${item.ma_so}', '${item.ho_ten.replace(/'/g, "\\'")}', this)" class="btn-action" style="padding:6px 12px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:8px; font-size:12px; cursor:pointer; font-weight:700;">📤 Copy</button>
                             <button onclick="deleteHistory(${item.id}, this)" class="btn-action" style="padding:6px 12px; background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:8px; font-size:12px; cursor:pointer; font-weight:700;">🗑️ Xóa</button>
                         </div>
                     </td>
@@ -833,8 +841,9 @@ async function loadHistory() {
             }
         }
 
-        function copyHistoryLink(id, maso, btn) {
-            const url = `${window.location.origin}/cv/${id}/${encodeURIComponent(maso)}`;
+        function copyHistoryLink(id, maso, hoTen, btn) {
+            const slug = (maso === 'CHO_DUYET' ? `${id}/` : '') + maso + (hoTen ? '_' + sanitizeSlug(hoTen) : '');
+            const url = `${window.location.origin}/cv/${slug}`;
             navigator.clipboard.writeText(url).then(() => {
                 const orig = btn.innerHTML;
                 btn.innerHTML = '✅ Đã copy';
@@ -843,7 +852,8 @@ async function loadHistory() {
         }
 
         function downloadShortcut(id, maso, name) {
-            const url = `${window.location.origin}/cv/${id}/${encodeURIComponent(maso)}`;
+            const slug = (maso === 'CHO_DUYET' ? `${id}/` : '') + maso + (name ? '_' + sanitizeSlug(name) : '');
+            const url = `${window.location.origin}/cv/${slug}`;
             const content = `[InternetShortcut]\nURL=${url}`;
             const blob = new Blob([content], { type: 'text/plain' });
             const link = document.createElement('a');
@@ -927,7 +937,8 @@ async function loadHistory() {
                 const id = row.dataset.id;
                 const maso = row.dataset.masoOrig;
                 const name = row.dataset.nameOrig;
-                return `${maso} — ${name}\n${window.location.origin}/cv/${id}/${encodeURIComponent(maso)}`;
+                const slug = (maso === 'CHO_DUYET' ? `${id}/` : '') + maso + (name ? '_' + sanitizeSlug(name) : '');
+                return `${maso} — ${name}\n${window.location.origin}/cv/${slug}`;
             });
             navigator.clipboard.writeText(lines.join('\n\n')).then(() => {
                 alert(`Đã copy ${checked.length} link!`);
@@ -1070,10 +1081,11 @@ async function loadHistory() {
                 if (result.success) {
                     if (mode === 'html') {
                         // IN PDF: mở tab mới với giao diện CV inline → có nút SAVE AS PDF
-                        window.open(`/cv/${result.id}/${encodeURIComponent(result.ma_so)}`, '_blank');
+                        const slug = (result.ma_so === 'CHO_DUYET' ? `${result.id}/` : '') + result.ma_so + (plainData['Hoten'] ? '_' + sanitizeSlug(plainData['Hoten']) : '');
+                        window.open(`/cv/${slug}`, '_blank');
                     } else if (mode === 'word') {
-                        // TẢI FILE: tải xuống file HTML
-                        window.location.href = `/cv/${encodeURIComponent(result.ma_so)}`;
+                        // TẢI FILE: tải xuống file HTML qua API riêng
+                        window.location.href = `/api/download-cv/${encodeURIComponent(result.ma_so)}`;
                     } else if (mode === 'save') {
                         // CHỈ CẬP NHẬT: không mở file, chỉ báo thành công
                         alert("Đã lưu cập nhật dữ liệu thành công!");

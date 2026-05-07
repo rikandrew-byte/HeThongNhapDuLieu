@@ -356,7 +356,7 @@ def api_translate():
         return jsonify({'success': True, 'translated': translate_free(data.get('text', ''))})
     except: return jsonify({'success': False}), 500
 
-@app.route('/cv/<maso>', methods=['GET'])
+@app.route('/api/download-cv/<maso>', methods=['GET'])
 @auth_required
 def download_history(maso):
     try:
@@ -377,19 +377,53 @@ def api_preview(record_id):
         return Response(html_content, mimetype="text/html", headers={"Content-Type": "text/html; charset=utf-8"})
     except Exception as e: return str(e), 500
 
-@app.route('/cv/<id>/<maso>', methods=['GET'])
-def secure_web_view(id, maso):
+@app.route('/cv/<path:slug>', methods=['GET'])
+def secure_web_view(slug):
     try:
-        record = FormHistory.query.get(int(id))
-        if not record or record.ma_so != maso: return "Not found", 404
+        # Hỗ trợ 2 định dạng:
+        # 1. /cv/92/MD13243_Nguyen_Van_Chuc (id/slug) -> Ưu tiên ID (chính xác nhất)
+        # 2. /cv/MD13243_Nguyen_Van_Chuc (slug) -> Tìm theo Maso (tiện lợi)
+        
+        parts = slug.split('/')
+        record = None
+        
+        if len(parts) >= 2:
+            # Định dạng id/slug
+            try:
+                rid = int(parts[0])
+                record = FormHistory.query.get(rid)
+            except: pass
+        
+        if not record:
+            # Định dạng slug (tìm theo Maso)
+            # Tách lấy phần trước dấu _ đầu tiên hoặc dùng cả slug nếu không có _
+            maso_part = slug.split('_')[0] if '_' in slug else slug
+            # Trường hợp đặc biệt: Nếu slug là số nguyên, thử tìm theo ID
+            if slug.isdigit():
+                record = FormHistory.query.get(int(slug))
+            
+            if not record:
+                # Tìm bản ghi mới nhất có mã số này
+                record = FormHistory.query.filter_by(ma_so=maso_part).order_by(FormHistory.ngay_tao.desc()).first()
+
+        if not record: return "Không tìm thấy hồ sơ / Not found", 404
+        
+        # Kiểm tra maso trong slug (nếu có id/maso) để đảm bảo tính bảo mật/nhất quán
+        # (Nếu dùng Maso từ slug thì record đã khớp rồi)
+        
         html_content = generate_html_resume(json.loads(record.data_json))
-        filename = f"{maso} {sanitize_filename_master(record.ho_ten)}.html"
+        # Tạo tên file đẹp cho trình duyệt
+        clean_name = sanitize_filename_master(record.ho_ten)
+        filename = f"{record.ma_so}_{clean_name}.html"
         encoded_filename = quote(filename)
+        
         response = Response(html_content, mimetype="text/html")
         response.headers["Content-Type"] = "text/html; charset=utf-8"
         response.headers["Content-Disposition"] = f'inline; filename="{filename}"; filename*=UTF-8\'\'{encoded_filename}'
         return response
-    except Exception as e: return str(e), 500
+    except Exception as e:
+        traceback.print_exc()
+        return str(e), 500
 
 
 @app.route('/api/history', methods=['GET'])
