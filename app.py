@@ -430,15 +430,28 @@ def secure_web_view(slug):
 @auth_required
 def api_history():
     try:
+        # Tối ưu: Chỉ lấy metadata, không lấy data_json nặng nề
         records = FormHistory.query.order_by(FormHistory.ngay_tao.desc()).limit(100).all()
         vietnam_tz = timezone(timedelta(hours=7))
         data = [{
             'id': r.id, 'ma_so': r.ma_so, 'ho_ten': r.ho_ten,
-            'data_json': json.loads(r.data_json) if r.data_json else None,
             'ngay_tao': r.ngay_tao.replace(tzinfo=timezone.utc).astimezone(vietnam_tz).strftime("%d/%m/%Y %H:%M:%S") if r.ngay_tao else ''
         } for r in records]
         return jsonify({'success': True, 'data': data})
     except: return jsonify({'success': False}), 500
+
+@app.route('/api/history/<int:record_id>/data', methods=['GET'])
+@auth_required
+def api_history_data(record_id):
+    try:
+        record = FormHistory.query.get(record_id)
+        if not record: return jsonify({'success': False, 'error': 'Not found'}), 404
+        return jsonify({
+            'success': True, 
+            'data_json': json.loads(record.data_json) if record.data_json else {}
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/history/bulk-delete', methods=['POST'])
 @auth_required
