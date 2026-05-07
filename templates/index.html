@@ -682,6 +682,8 @@ async function loadHistory() {
                 row.className = 'history-card-row';
                 row.dataset.name = item.ho_ten.toLowerCase();
                 row.dataset.maso = item.ma_so.toLowerCase();
+                row.dataset.nameOrig = item.ho_ten;
+                row.dataset.masoOrig = item.ma_so;
                 row.dataset.id = item.id;
                 row.onmouseover = () => { if (!row.dataset.checked) row.style.background = '#f8fafc'; };
                 row.onmouseout  = () => { if (!row.dataset.checked) row.style.background = ''; };
@@ -923,8 +925,8 @@ async function loadHistory() {
             const lines = checked.map(cb => {
                 const row = cb.closest('tr');
                 const id = row.dataset.id;
-                const maso = row.querySelector('td:nth-child(2)').textContent.trim();
-                const name = row.querySelector('td:nth-child(3)').textContent.trim();
+                const maso = row.dataset.masoOrig;
+                const name = row.dataset.nameOrig;
                 return `${maso} — ${name}\n${window.location.origin}/cv/${id}/${encodeURIComponent(maso)}`;
             });
             navigator.clipboard.writeText(lines.join('\n\n')).then(() => {
