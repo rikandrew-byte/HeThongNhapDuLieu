@@ -3,7 +3,7 @@
 Document Automation System (DAS) - Flask Backend V3.0
 Nhập liệu Tiếng Việt → Hệ thống quản lý và xuất hồ sơ thông minh.
 """
-import os, uuid, re, unicodedata, json, base64, traceback, io, zipfile
+import os, uuid, re, unicodedata, json, base64, traceback, io, zipfile, requests
 from datetime import date, datetime, timedelta, timezone
 from flask import Flask, request, jsonify, send_file, render_template, Response, make_response
 from flask_cors import CORS
@@ -49,6 +49,7 @@ class FormHistory(db.Model):
     ten_file = db.Column(db.String(255))
     data_json = db.Column(db.Text)
     ngay_tao = db.Column(db.DateTime, default=datetime.utcnow)
+    is_selected = db.Column(db.Boolean, default=False)  # Trúng tuyển
 
 with app.app_context():
     db.create_all()
@@ -435,6 +436,7 @@ def api_history():
         vietnam_tz = timezone(timedelta(hours=7))
         data = [{
             'id': r.id, 'ma_so': r.ma_so, 'ho_ten': r.ho_ten,
+            'is_selected': r.is_selected,
             'ngay_tao': r.ngay_tao.replace(tzinfo=timezone.utc).astimezone(vietnam_tz).strftime("%d/%m/%Y %H:%M:%S") if r.ngay_tao else ''
         } for r in records]
         return jsonify({'success': True, 'data': data})
@@ -550,6 +552,76 @@ def api_bulk_print():
             
         return Response(final_html, mimetype="text/html", headers={"Content-Type": "text/html; charset=utf-8"})
     except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# ─── TRÚNG TUYỂN: Toggle trạng thái và gửi sang B ───────────────────
+@app.route('/api/history/<int:record_id>/toggle-selected', methods=['POST'])
+@auth_required
+def api_toggle_selected(record_id):
+    try:
+        record = FormHistory.query.get(record_id)
+        if not record:
+            return jsonify({'success': False, 'error': 'Not found'}), 404
+        
+        # Toggle trạng thái
+        record.is_selected = not record.is_selected
+        db.session.commit()
+        
+        # Nếu trúng tuyển (is_selected = True), gửi dữ liệu sang B
+        if record.is_selected:
+            try:
+                form_data = json.loads(record.data_json) if record.data_json else {}
+                
+                # Mapping dữ liệu A → B
+                worker_data = {
+                    'id': record.ma_so or f'worker_{record.id}',
+                    'full_name': record.ho_ten or '',
+                    'date_of_birth': form_data.get('Ngaysinh') or None,
+                    'phone_number': form_data.get('Lienhe') or None,
+                    'hometown': form_data.get('Noio') or None,
+                    'avatar_url': form_data.get('photo') or '',  # Base64 ảnh
+                    'win_date': datetime.utcnow().strftime('%Y-%m-%d'),
+                    'status': 'DRAFT',
+                    'is_placed': False,
+                    'passport_expiry': '',
+                    'id_card_expiry': '',
+                    'health_check_expiry': '',
+                    'judicial_record_2_expiry': '',
+                }
+                
+                # Gửi sang B (Firebase)
+                b_api_url = os.environ.get('B_API_URL', 'http://localhost:3000')
+                response = requests.post(
+                    f'{b_api_url}/api/workers/sync-from-a',
+                    json=worker_data,
+                    timeout=10
+                )
+                
+                if response.status_code != 200:
+                    # Nếu gửi thất bại, rollback toggle
+                    record.is_selected = False
+                    db.session.commit()
+                    return jsonify({
+                        'success': False,
+                        'error': f'Failed to sync to B: {response.text}'
+                    }), 500
+            except Exception as e:
+                # Nếu có lỗi, rollback toggle
+                record.is_selected = False
+                db.session.commit()
+                traceback.print_exc()
+                return jsonify({
+                    'success': False,
+                    'error': f'Sync error: {str(e)}'
+                }), 500
+        
+        return jsonify({
+            'success': True,
+            'is_selected': record.is_selected,
+            'message': 'Đã trúng tuyển' if record.is_selected else 'Đã bỏ trúng tuyển'
+        })
+    except Exception as e:
+        traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
 
 if __name__ == '__main__':
