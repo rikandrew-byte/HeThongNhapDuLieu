@@ -848,6 +848,23 @@ async function loadHistory() {
             if (!confirm(`Bạn có chắc muốn ${action} ứng viên này?`)) return;
             
             if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
+            
+            // Optimistic update: cập nhật UI ngay lập tức
+            const newState = !currentState;
+            const newText = newState ? '🎯 Trúng tuyển' : '📝 Gửi form';
+            const newBg = newState ? '#dbeafe' : '#f3f4f6';
+            const newColor = newState ? '#0369a1' : '#6b7280';
+            const newBorder = newState ? '#0284c7' : '#d1d5db';
+            
+            if (btn) {
+                btn.textContent = newText;
+                btn.style.background = newBg;
+                btn.style.color = newColor;
+                btn.style.borderColor = newBorder;
+                btn.disabled = false;
+            }
+            
+            // Gọi API async (không chờ)
             try {
                 const response = await fetch(`/api/history/${id}/toggle-selected`, { 
                     method: 'POST',
@@ -856,16 +873,27 @@ async function loadHistory() {
                 });
                 const result = await response.json();
                 if (result.success) {
-                    // Reload lịch sử để cập nhật trạng thái
-                    loadHistory();
-                    alert(result.message);
+                    // Chỉ show message, không reload
+                    console.log(result.message);
                 } else {
+                    // Nếu lỗi, revert UI
                     alert("Lỗi: " + result.error);
-                    if (btn) { btn.disabled = false; btn.textContent = currentState ? '🎯 Trúng tuyển' : '📝 Gửi form'; }
+                    if (btn) { 
+                        btn.textContent = currentState ? '🎯 Trúng tuyển' : '📝 Gửi form';
+                        btn.style.background = currentState ? '#dbeafe' : '#f3f4f6';
+                        btn.style.color = currentState ? '#0369a1' : '#6b7280';
+                        btn.style.borderColor = currentState ? '#0284c7' : '#d1d5db';
+                    }
                 }
             } catch (error) {
-                alert("Lỗi kết nối: " + error.message);
-                if (btn) { btn.disabled = false; btn.textContent = currentState ? '🎯 Trúng tuyển' : '📝 Gửi form'; }
+                // Nếu lỗi kết nối, revert UI
+                console.error("Lỗi kết nối:", error.message);
+                if (btn) { 
+                    btn.textContent = currentState ? '🎯 Trúng tuyển' : '📝 Gửi form';
+                    btn.style.background = currentState ? '#dbeafe' : '#f3f4f6';
+                    btn.style.color = currentState ? '#0369a1' : '#6b7280';
+                    btn.style.borderColor = currentState ? '#0284c7' : '#d1d5db';
+                }
             }
         }
 
