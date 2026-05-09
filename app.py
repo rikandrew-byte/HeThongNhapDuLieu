@@ -436,11 +436,13 @@ def api_history():
         vietnam_tz = timezone(timedelta(hours=7))
         data = [{
             'id': r.id, 'ma_so': r.ma_so, 'ho_ten': r.ho_ten,
-            'is_selected': r.is_selected,
+            'is_selected': getattr(r, 'is_selected', False),  # Fallback nếu field chưa tồn tại
             'ngay_tao': r.ngay_tao.replace(tzinfo=timezone.utc).astimezone(vietnam_tz).strftime("%d/%m/%Y %H:%M:%S") if r.ngay_tao else ''
         } for r in records]
         return jsonify({'success': True, 'data': data})
-    except: return jsonify({'success': False}), 500
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/history/<int:record_id>/data', methods=['GET'])
 @auth_required
@@ -562,6 +564,10 @@ def api_toggle_selected(record_id):
         record = FormHistory.query.get(record_id)
         if not record:
             return jsonify({'success': False, 'error': 'Not found'}), 404
+        
+        # Nếu field is_selected chưa tồn tại, set default = False
+        if not hasattr(record, 'is_selected') or record.is_selected is None:
+            record.is_selected = False
         
         # Toggle trạng thái
         record.is_selected = not record.is_selected
