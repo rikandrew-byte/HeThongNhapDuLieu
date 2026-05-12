@@ -112,19 +112,54 @@ def translate_fixed(text: str) -> str:
     if not text: return text
     return FIXED_TRANS.get(text.strip().lower(), text)
 
-def translate_free(text: str) -> str:
+def translate_name(text: str) -> str:
+    """Dành riêng cho dịch Họ Tên: Ưu tiên từ điển tên để tránh nhầm với tiếng Anh"""
     if not text or not text.strip() or is_chinese(text): return text
+    
+    # 1. Thử dịch từ từ điển tên riêng (Tránh lỗi Loan -> Khoản vay, Long -> Dài...)
+    vietnamese_name_result = get_vietnamese_name_in_chinese(text.strip())
+    if vietnamese_name_result != text.strip() and is_chinese(vietnamese_name_result):
+        return vietnamese_name_result
+    
+    # 2. Nếu không có trong từ điển, dùng Google Translate
+    try:
+        result = GoogleTranslator(source='vi', target='zh-TW').translate(text.strip())
+        return result if result else text
+    except: return text
+
+def translate_free(text: str) -> str:
+    """Dành cho dịch nội dung tự do (công việc, địa chỉ): Ưu tiên thuật ngữ nghề nghiệp"""
+    if not text or not text.strip() or is_chinese(text): return text
+    
+    # 1. Kiểm tra khớp chính xác trong FIXED_TRANS
     fixed = FIXED_TRANS.get(text.strip().lower())
     if fixed: return fixed
     
-    # 🆕 Thử dịch tên tiếng Việt sang tiếng Trung từ từ điển
-    vietnamese_name_result = get_vietnamese_name_in_chinese(text.strip())
-    if vietnamese_name_result != text.strip():
-        return vietnamese_name_result
+    # 2. Xử lý các từ khóa quan trọng TRONG câu (ví dụ: "may" -> "縫紉")
+    # Để tránh Google dịch nhầm "may" thành "có lẽ/có thể" (possibly)
+    processed_text = text
+    # Các từ khóa cần bảo vệ (case insensitive)
+    protected_terms = {
+        'may': '縫紉',
+        'thợ may': '縫紉',
+        'may mặc': '縫紉',
+        'thợ sơn': '噴漆',
+        'thợ hàn': '焊接',
+        'thợ điện': '電工',
+        'lái xe': '駕駛',
+    }
     
-    # Fallback: Dùng Google Translate
+    # Nếu text là một từ đơn nằm trong danh sách bảo vệ, trả về luôn
+    if text.strip().lower() in protected_terms:
+        return protected_terms[text.strip().lower()]
+
+    # 3. Dùng Google Translate cho đoạn văn
     try:
-        result = GoogleTranslator(source='vi', target='zh-TW').translate(text.strip())
+        result = GoogleTranslator(source='vi', target='zh-TW').translate(processed_text.strip())
+        # Nếu Google dịch nhầm "may" -> "可能" (có lẽ) trong ngữ cảnh công việc, ta sửa lại
+        if '可能' in result and 'may' in text.lower():
+            # Đây là một heuristic đơn giản, có thể cải thiện thêm
+            result = result.replace('可能', '縫紉')
         return result if result else text
     except: return text
 
@@ -445,7 +480,8 @@ def api_submit_only():
 def api_translate():
     try:
         data = request.get_json() or {}
-        return jsonify({'success': True, 'translated': translate_free(data.get('text', ''))})
+        # Sử dụng translate_name cho API này vì nó thường được gọi cho ô Họ Tên
+        return jsonify({'success': True, 'translated': translate_name(data.get('text', ''))})
     except: return jsonify({'success': False}), 500
 
 @app.route('/api/download-cv/<maso>', methods=['GET'])
