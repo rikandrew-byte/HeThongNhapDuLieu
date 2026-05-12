@@ -14,6 +14,8 @@ from urllib.parse import quote
 from unicodedata import normalize
 from flask_sqlalchemy import SQLAlchemy
 from flask_basicauth import BasicAuth
+import boto3
+from PIL import Image
 
 load_dotenv()
 
@@ -172,6 +174,67 @@ def _init_cache():
     except: pass
 
 _init_cache()
+
+# --- R2 UPLOAD HELPER ---
+def init_r2_client():
+    """Khởi tạo R2 client (Cloudflare)"""
+    try:
+        r2_client = boto3.client(
+            's3',
+            endpoint_url=f"https://{os.environ.get('R2_ACCOUNT_ID')}.r2.cloudflarestorage.com",
+            aws_access_key_id=os.environ.get('R2_ACCESS_KEY'),
+            aws_secret_access_key=os.environ.get('R2_SECRET_KEY'),
+            region_name='auto'
+        )
+        return r2_client
+    except Exception as e:
+        print(f"⚠️ R2 client init failed: {str(e)}")
+        return None
+
+r2_client = init_r2_client()
+
+def upload_to_r2(file_data, filename, folder='documents'):
+    """Upload ảnh lên R2 (tự động compress & resize)"""
+    if not r2_client:
+        return None
+    
+    try:
+        # Resize ảnh để tiết kiệm storage
+        img = Image.open(io.BytesIO(file_data))
+        
+        # Giới hạn kích thước
+        max_size = 1200
+        if img.width > max_size or img.height > max_size:
+            img.thumbnail((max_size, max_size), Image.LANCZOS)
+        
+        # Convert RGBA → RGB nếu cần
+        if img.mode in ('RGBA', 'P'):
+            img = img.convert('RGB')
+        
+        # Compress ảnh
+        buf = io.BytesIO()
+        img.save(buf, format='JPEG', quality=75, optimize=True)
+        buf.seek(0)
+        
+        # Tạo key duy nhất
+        key = f"{folder}/{uuid.uuid4()}_{filename}"
+        
+        # Upload lên R2
+        r2_client.upload_fileobj(
+            buf,
+            os.environ.get('R2_BUCKET_NAME'),
+            key,
+            ExtraArgs={'ContentType': 'image/jpeg'}
+        )
+        
+        # Trả về public URL
+        public_url = f"https://{os.environ.get('R2_PUBLIC_URL')}/{key}"
+        print(f"✅ Uploaded to R2: {public_url}")
+        return public_url
+    except Exception as e:
+        print(f"❌ R2 upload error: {str(e)}")
+        traceback.print_exc()
+        return None
 
 # --- LOGIC PREPARE ---
 def prepare_render_data(raw_data: dict) -> dict:
@@ -345,7 +408,27 @@ def api_submit_only():
             db.session.commit()
             msg = 'Đã nộp form.'
 
-        return jsonify({'success': True, 'id': record.id, 'ma_so': record.ma_so, 'msg': msg})
+        # 🆕 Upload ảnh tài liệu lên R2
+        document_urls = []
+        if 'documents' in request.files:
+            files = request.files.getlist('documents')
+            for file in files:
+                if file and file.filename:
+                    try:
+                        url = upload_to_r2(file.read(), file.filename, f'documents/{ma_so}')
+                        if url:
+                            document_urls.append(url)
+                    except Exception as e:
+                        print(f"⚠️ Failed to upload {file.filename}: {str(e)}")
+            
+            # Lưu URLs vào database
+            if document_urls:
+                data_to_save = json.loads(record.data_json) if record.data_json else {}
+                data_to_save['document_urls'] = document_urls
+                record.data_json = json.dumps(data_to_save, ensure_ascii=False)
+                db.session.commit()
+
+        return jsonify({'success': True, 'id': record.id, 'ma_so': record.ma_so, 'msg': msg, 'documents_uploaded': len(document_urls)})
     except Exception as e:
         traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500

@@ -482,6 +482,33 @@
                     </div>
                 </div>
             </section>
+
+            <!-- 🆕 Section 5: Tài liệu & Giấy tờ -->
+            <section>
+                <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
+                    <span class="w-2 h-6 bg-purple-600 rounded-full"></span> 5. Tài liệu & Giấy tờ
+                </h2>
+                
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-3">
+                        📄 Scan giấy tờ, bằng cấp, chứng chỉ...
+                    </label>
+                    
+                    <!-- Kéo thả ảnh -->
+                    <div id="documentDropzone" class="w-full border-2 border-dashed border-purple-300 rounded-xl p-6 text-center cursor-pointer hover:border-purple-500 transition-colors bg-purple-50">
+                        <input type="file" id="documentInput" accept="image/*" multiple class="hidden">
+                        
+                        <div class="text-sm text-gray-600">
+                            <p class="font-semibold text-purple-600">📸 Kéo thả ảnh vào đây</p>
+                            <p class="text-xs text-gray-500 mt-1">hoặc nhấp để chọn (có thể chọn nhiều ảnh)</p>
+                            <p class="text-xs text-gray-400 mt-2">Hỗ trợ: JPG, PNG (tối đa 10 ảnh, mỗi ảnh ≤ 10MB)</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Hiển thị ảnh đã chọn -->
+                    <div id="documentPreview" class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+                </div>
+            </section>
         </form>
 
         <div class="fixed bottom-8 right-8 z-50 flex gap-4">
@@ -1085,6 +1112,49 @@ async function loadHistory() {
             document.getElementById('displayAge').value = age;
         }
 
+        // 🆕 Kéo thả ảnh tài liệu
+        const dropzone = document.getElementById('documentDropzone');
+        const fileInput = document.getElementById('documentInput');
+        const preview = document.getElementById('documentPreview');
+
+        dropzone.addEventListener('click', () => fileInput.click());
+
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.style.borderColor = '#a855f7';
+            dropzone.style.backgroundColor = '#faf5ff';
+        });
+
+        dropzone.addEventListener('dragleave', () => {
+            dropzone.style.borderColor = '#d8b4fe';
+            dropzone.style.backgroundColor = '#faf5ff';
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileInput.files = e.dataTransfer.files;
+            displayDocumentPreview();
+        });
+
+        fileInput.addEventListener('change', displayDocumentPreview);
+
+        function displayDocumentPreview() {
+            preview.innerHTML = '';
+            const files = fileInput.files;
+            
+            for (let file of files) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'w-full h-24 object-cover rounded border border-gray-200 hover:opacity-80 cursor-pointer';
+                    img.onclick = () => window.open(e.target.result, '_blank'); // Click để xem full size
+                    preview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
         async function handleSubmit(mode = 'html') {
             const form = document.getElementById('resumeForm');
             const btnText = document.getElementById('btnText');
@@ -1114,7 +1184,7 @@ async function loadHistory() {
                 return;
             }
 
-            // Đưa ảnh base64 đã resize vào plainData (không dùng multipart)
+            // Đưa ảnh base64 đã resize vào plainData
             const photoB64 = document.getElementById('photoBase64').value;
             if (photoB64) plainData['photo'] = photoB64;
 
@@ -1125,11 +1195,20 @@ async function loadHistory() {
             const recordId = document.getElementById('editingRecordId').value;
             if (recordId) plainData['_record_id'] = recordId;
 
+            // 🆕 Tạo FormData để gửi files + data
+            const submitFormData = new FormData();
+            submitFormData.append('data', JSON.stringify(plainData));
+            
+            // 🆕 Thêm ảnh tài liệu
+            const documentFiles = document.getElementById('documentInput').files;
+            for (let file of documentFiles) {
+                submitFormData.append('documents', file);
+            }
+
             try {
                 const response = await fetch('/api/submit-only', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(plainData),
+                    body: submitFormData,
                     credentials: 'same-origin'
                 });
                 const result = await response.json();
