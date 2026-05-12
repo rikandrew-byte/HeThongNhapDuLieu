@@ -16,6 +16,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_basicauth import BasicAuth
 import boto3
 from PIL import Image
+from vietnamese_names_dict import get_vietnamese_name_in_chinese
 
 load_dotenv()
 
@@ -115,6 +116,13 @@ def translate_free(text: str) -> str:
     if not text or not text.strip() or is_chinese(text): return text
     fixed = FIXED_TRANS.get(text.strip().lower())
     if fixed: return fixed
+    
+    # 🆕 Thử dịch tên tiếng Việt sang tiếng Trung từ từ điển
+    vietnamese_name_result = get_vietnamese_name_in_chinese(text.strip())
+    if vietnamese_name_result != text.strip():
+        return vietnamese_name_result
+    
+    # Fallback: Dùng Google Translate
     try:
         result = GoogleTranslator(source='vi', target='zh-TW').translate(text.strip())
         return result if result else text
