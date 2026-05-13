@@ -73,90 +73,8 @@
             transform: scale(0.95);
         }
 
-        /* Mobile Optimization */
-        @media (max-width: 768px) {
-            #historyModal {
-                top: 0 !important;
-                left: 0 !important;
-                width: 100% !important;
-                height: 100% !important;
-                max-height: 100% !important;
-                border-radius: 0 !important;
-            }
-            .history-table thead {
-                display: none !important;
-            }
-            .history-table, .history-table tbody, .history-table tr, .history-table td {
-                display: block !important;
-                width: 100% !important;
-            }
-            .history-card-row {
-                padding: 20px !important;
-                margin-bottom: 16px !important;
-                background: white !important;
-                border: 1px solid #f1f5f9 !important;
-                border-radius: 20px !important;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
-                position: relative;
-            }
-            .history-card-row td {
-                padding: 4px 0 !important;
-                border: none !important;
-                text-align: left !important;
-            }
-            .history-card-row td:first-child {
-                display: flex !important;
-                align-items: center;
-                gap: 12px;
-                border-bottom: 1px solid #f8fafc !important;
-                padding-bottom: 12px !important;
-                margin-bottom: 12px !important;
-            }
-            .history-card-row td:last-child {
-                margin-top: 16px !important;
-                padding-top: 16px !important;
-                border-top: 1px dashed #f1f5f9 !important;
-            }
-            .mobile-label {
-                display: inline-block;
-                width: 70px;
-                font-size: 10px;
-                font-weight: 800;
-                color: #cbd5e1;
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
-            }
-            .action-grid {
-                display: grid !important;
-                grid-template-columns: repeat(2, 1fr) !important;
-                gap: 12px !important;
-                margin-top: 10px !important;
-            }
-            .action-grid .btn-action, .action-grid a.btn-action {
-                height: 48px !important;
-                padding: 0 10px !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                gap: 8px !important;
-                font-size: 12px !important;
-                border-radius: 14px !important;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.05) !important;
-                width: 100% !important;
-                box-sizing: border-box !important;
-            }
-            
-            #historyBulkBar {
-                position: sticky;
-                bottom: 0;
-                left: 0;
-                width: 100%;
-                z-index: 100;
-                border-radius: 24px 24px 0 0;
-                box-shadow: 0 -15px 30px rgba(0,0,0,0.1);
-                padding: 15px 20px !important;
-            }
-        }
+        /* Mobile Optimization - Moved to bottom for priority */
+
         
         /* Filter Button Styles */
         .filter-btn {
@@ -575,27 +493,28 @@
             </section>
         </form>
 
-        <div class="fixed bottom-8 right-8 z-50 flex gap-4">
-            <!-- Nút Hủy (Chỉ hiện khi đang sửa) -->
-            <button type="button" id="btnCancelEdit" onclick="cancelEdit()" class="hidden bg-white hover:bg-gray-100 text-slate-600 font-bold py-4 px-6 rounded-full shadow-lg border border-gray-300 transition-all transform hover:-translate-y-1 flex items-center gap-2">
-                <span>✕ HỦY</span>
-            </button>
-            
-            <!-- Nút Cập nhật (Chỉ hiện khi đang sửa) -->
-            <button type="button" id="btnUpdateOnly" onclick="handleSubmit('save')" class="hidden bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-full shadow-[0_10px_25px_rgba(37,99,235,0.4)] transition-all transform hover:-translate-y-1 flex items-center gap-3">
-                <span id="btnUpdateText">💾 CẬP NHẬT DỮ LIỆU</span>
-            </button>
+        <!-- Nút thao tác chính - Thiết kế lại cho Bản 3.1 -->
+        <div class="main-actions-outer">
+            <div class="main-actions-container">
+                <!-- Nút Hủy & Cập nhật (Chỉ hiện khi đang sửa) -->
+                <button type="button" id="btnCancelEdit" onclick="cancelEdit()" class="hidden btn-main btn-secondary">
+                    <span class="icon">✕</span> Hủy
+                </button>
+                <button type="button" id="btnUpdateOnly" onclick="handleSubmit('save')" class="hidden btn-main btn-primary">
+                    <span class="icon">💾</span> Cập nhật
+                </button>
 
-            <button type="button" onclick="handleSubmit('word')" class="bg-gray-200 hover:bg-gray-300 text-slate-700 font-bold py-4 px-6 rounded-full shadow-lg transition-all transform hover:-translate-y-1 flex items-center gap-2">
-                <span>TẢI FILE (.HTML)</span>
-            </button>
-            <button type="button" onclick="handleSubmit('save_only')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-4 px-6 rounded-full shadow-lg transition-all transform hover:-translate-y-1 flex items-center gap-2">
-                <span>Lưu form</span>
-            </button>
-            <button type="button" onclick="handleSubmit('html')" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold py-4 px-8 rounded-full shadow-[0_10px_25px_rgba(5,150,105,0.4)] transition-all transform hover:-translate-y-1 flex items-center gap-3">
-                <span id="btnText">XEM FILE & IN PDF</span>
-                <div id="loading" class="hidden w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            </button>
+                <button type="button" onclick="handleSubmit('word')" class="btn-main btn-secondary">
+                    <span class="icon">📥</span> Tải HTML
+                </button>
+                <button type="button" onclick="handleSubmit('save_only')" class="btn-main btn-primary">
+                    <span class="icon">💾</span> Lưu Form
+                </button>
+                <button type="button" onclick="handleSubmit('html')" class="btn-main btn-accent">
+                    <span class="icon">🖨️</span> Xem & In
+                    <div id="loading" class="hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -1429,6 +1348,126 @@ async function loadHistory() {
         }
     </script>
 
+    <style>
+        /* CSS CHO CÁC NÚT BẤM CHÍNH (MAIN ACTIONS) */
+        .main-actions-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 40px;
+            padding-bottom: 20px;
+        }
+        .btn-main {
+            padding: 12px 24px;
+            border-radius: 16px;
+            font-weight: 800;
+            font-size: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            min-width: 100px;
+        }
+        .btn-main .icon { font-size: 20px; }
+        .btn-secondary { background: #f1f5f9; color: #475569; }
+        .btn-primary { background: #f97316; color: white; }
+        .btn-accent { background: #0d9488; color: white; }
+        .btn-main:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+
+        @media (max-width: 768px) {
+            .main-actions-container {
+                padding: 15px;
+                background: rgba(255,255,255,0.8);
+                backdrop-filter: blur(10px);
+                position: sticky;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                z-index: 99;
+                box-sizing: border-box;
+                margin-top: 20px;
+                box-shadow: 0 -10px 25px rgba(0,0,0,0.05);
+                border-radius: 24px 24px 0 0;
+                gap: 10px;
+            }
+            .btn-main {
+                flex: 1;
+                padding: 10px 5px;
+                font-size: 11px;
+                min-width: 0;
+                border-radius: 14px;
+            }
+            .btn-main .icon { font-size: 16px; }
+
+            /* FORCE MOBILE OVERRIDES - VERSION 3.1 */
+            #historyModal {
+                top: 0 !important; left: 0 !important;
+                width: 100vw !important; height: 100vh !important;
+                max-height: 100vh !important; border-radius: 0 !important;
+            }
+            .history-card-row {
+                padding: 24px !important;
+                margin: 0 16px 20px 16px !important;
+                background: #ffffff !important;
+                border: 1px solid #f1f5f9 !important;
+                border-radius: 24px !important;
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05) !important;
+            }
+            .action-grid {
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 12px !important;
+                margin-top: 20px !important;
+            }
+            .action-grid .btn-action, .action-grid a.btn-action {
+                height: 52px !important;
+                border-radius: 16px !important;
+                font-size: 13px !important;
+                box-shadow: none !important;
+                border: 1px solid rgba(0,0,0,0.05) !important;
+                padding: 0 10px !important;
+            }
+            .mobile-label { width: 85px !important; font-size: 11px !important; }
+        }
+    </style>
+
+    <style>
+        /* FORCE MOBILE OVERRIDES - VERSION 3.1 */
+        @media (max-width: 768px) {
+            #historyModal {
+                top: 0 !important; left: 0 !important;
+                width: 100vw !important; height: 100vh !important;
+                max-height: 100vh !important; border-radius: 0 !important;
+            }
+            .history-card-row {
+                padding: 24px !important;
+                margin: 0 16px 20px 16px !important;
+                background: #ffffff !important;
+                border: 1px solid #f1f5f9 !important;
+                border-radius: 24px !important;
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05) !important;
+            }
+            .action-grid {
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 12px !important;
+                margin-top: 20px !important;
+            }
+            .action-grid .btn-action, .action-grid a.btn-action {
+                height: 52px !important;
+                border-radius: 16px !important;
+                font-size: 13px !important;
+                box-shadow: none !important;
+                border: 1px solid rgba(0,0,0,0.05) !important;
+            }
+            .mobile-label { width: 85px !important; font-size: 11px !important; }
+        }
+    </style>
+
 <!-- Bảng Popup (Modal) hiển thị lịch sử (Mặc định ẩn) -->
 <div id="historyModal" class="glass-modal" style="display:none; position:fixed; top:3%; left:5%; width:90%; max-height:94%; z-index:9999; overflow-y:auto; border-radius: 20px; font-family:'Inter',sans-serif;">
 
@@ -1437,7 +1476,7 @@ async function loadHistory() {
         <div style="display:flex; align-items:center; gap:10px;">
             <span style="font-size:20px;">📁</span>
             <div>
-                <div style="font-size:16px; font-weight:800; color:#1e293b;">Quản trị Hồ sơ FCT</div>
+                <div style="font-size:16px; font-weight:800; color:#1e293b;">Quản trị Hồ sơ FCT (Bản 3.1)</div>
                 <div style="font-size:12px; color:#64748b;">Hệ thống — <span id="historyTotalCount" style="color:#2563eb; font-weight:600;">0 hồ sơ</span></div>
             </div>
         </div>
