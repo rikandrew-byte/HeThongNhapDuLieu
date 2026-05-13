@@ -504,14 +504,14 @@
                     <span class="icon">💾</span> <span id="btnUpdateText">Cập nhật</span>
                 </button>
 
-                <button type="button" onclick="handleSubmit('word')" class="btn-main">
-                    Tải HTML
+                <button type="button" onclick="handleSubmit('word')" class="btn-main btn-secondary">
+                    📄 Tải HTML
                 </button>
                 <button type="button" onclick="handleSubmit('save_only')" class="btn-main btn-primary">
-                    Lưu Form
+                    💾 Lưu Form
                 </button>
                 <button type="button" onclick="handleSubmit('html')" class="btn-main btn-accent">
-                    <span id="btnText">Xem & In</span>
+                    <span id="btnText">🖨️ Xem & In</span>
                     <div id="loading" class="hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin ml-2"></div>
                 </button>
             </div>
@@ -1390,22 +1390,31 @@ async function loadHistory() {
         }
 
         .btn-main {
-            padding: 10px 20px;
+            padding: 10px 24px;
             border-radius: 12px;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 13px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            border: 1px solid var(--border);
+            border: 1px solid #e2e8f0;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             background: white;
-            color: var(--text-main);
+            color: #475569;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
-        .btn-primary { background: var(--primary) !important; color: white !important; border: none !important; }
-        .btn-accent { background: var(--accent) !important; color: white !important; border: none !important; }
+        .btn-main:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            filter: brightness(1.02);
+        }
+        .btn-main:active { transform: translateY(0); }
+        
+        .btn-primary { background: #1e293b !important; color: white !important; border: none !important; }
+        .btn-accent { background: #2563eb !important; color: white !important; border: none !important; }
+        .btn-secondary { background: #f8fafc !important; color: #475569 !important; border: 1px solid #e2e8f0 !important; }
         
         .main-actions-outer {
             margin-top: 40px;
@@ -1578,7 +1587,7 @@ async function loadHistory() {
         <div style="display:flex; align-items:center; gap:10px;">
             <span style="font-size:20px;">📁</span>
                 <div style="font-size:16px; font-weight:700; color:#0f172a;">Quản trị Hồ sơ Hệ thống</div>
-                <div style="font-size:12px; color:#64748b;">Version 3.5.4 (Core Logic Fix) — <span id="historyTotalCount" style="color:#0f172a; font-weight:600;">0 hồ sơ</span></div>
+                <div style="font-size:12px; color:#64748b;">Version 3.5.5 (Unified UI) — <span id="historyTotalCount" style="color:#0f172a; font-weight:600;">0 hồ sơ</span></div>
         </div>
         <div style="display:flex; align-items:center; gap:6px;">
             <button type="button" onclick="loadHistory()" class="btn-action" style="padding:6px 12px; background:#fff; color:#64748b; border:1px solid #e2e8f0; border-radius:10px; cursor:pointer; font-size:12px; font-weight:700;">🔄 Làm mới</button>
