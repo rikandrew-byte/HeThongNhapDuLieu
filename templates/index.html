@@ -110,17 +110,21 @@
             .action-grid {
                 display: grid !important;
                 grid-template-columns: repeat(2, 1fr) !important;
-                gap: 10px !important;
+                gap: 12px !important;
+                margin-top: 10px !important;
             }
-            .btn-action {
-                height: 42px !important;
-                padding: 0 8px !important;
+            .action-grid .btn-action, .action-grid a.btn-action {
+                height: 48px !important;
+                padding: 0 10px !important;
                 display: flex !important;
                 align-items: center !important;
                 justify-content: center !important;
-                gap: 6px !important;
-                font-size: 11px !important;
-                border-radius: 12px !important;
+                gap: 8px !important;
+                font-size: 12px !important;
+                border-radius: 14px !important;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.05) !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
             }
             
             #historyBulkBar {
@@ -1414,8 +1418,8 @@ async function loadHistory() {
         <div style="display:flex; align-items:center; gap:10px;">
             <span style="font-size:20px;">📁</span>
             <div>
-                <div style="font-size:16px; font-weight:800; color:#1e293b;">Quản lý Hồ sơ Ứng viên</div>
-                <div style="font-size:12px; color:#64748b;">FCT — <span id="historyTotalCount" style="color:#2563eb; font-weight:600;">0 hồ sơ</span></div>
+                <div style="font-size:16px; font-weight:800; color:#1e293b;">Quản trị Hồ sơ FCT</div>
+                <div style="font-size:12px; color:#64748b;">Hệ thống — <span id="historyTotalCount" style="color:#2563eb; font-weight:600;">0 hồ sơ</span></div>
             </div>
         </div>
         <div style="display:flex; align-items:center; gap:6px;">
