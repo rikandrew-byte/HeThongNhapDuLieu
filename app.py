@@ -57,26 +57,20 @@ class FormHistory(db.Model):
 with app.app_context():
     try:
         db.create_all()
-        # Tự động kiểm tra và thêm cột is_selected nếu thiếu (Dành cho cả SQLite và Postgres trên Render)
+        # Vá lỗi thiếu cột is_selected (Chạy trực tiếp cho cả SQLite/Postgres/Xata)
         try:
             from sqlalchemy import text
-            # Kiểm tra xem cột is_selected đã tồn tại chưa
-            if db.engine.name == 'sqlite':
-                columns = [c['name'] for c in db.inspect(db.engine).get_columns('form_history')]
-            else:
-                # Đối với Postgres
-                result = db.session.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name='form_history' AND column_name='is_selected'"))
-                columns = [row[0] for row in result]
-            
-            if 'is_selected' not in columns:
-                print("Adding missing column 'is_selected'...")
-                db.session.execute(text("ALTER TABLE form_history ADD COLUMN is_selected BOOLEAN DEFAULT FALSE"))
-                db.session.commit()
+            # Thử thêm cột, nếu đã có rồi thì SQL sẽ báo lỗi và ta sẽ rollback/bỏ qua
+            db.session.execute(text("ALTER TABLE form_history ADD COLUMN is_selected BOOLEAN DEFAULT FALSE"))
+            db.session.commit()
+            print("✅ Database migration: Column 'is_selected' added.")
         except Exception as e:
             db.session.rollback()
-            print(f"Migration notice: {e}")
+            # Lỗi thường là do cột đã tồn tại, ta im lặng bỏ qua
+            if "already exists" not in str(e).lower() and "duplicate column" not in str(e).lower():
+                print(f"⚠️ Migration notice: {e}")
     except Exception as e:
-        print(f"Database initialization error: {e}")
+        print(f"❌ Database initialization error: {e}")
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
