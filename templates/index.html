@@ -45,7 +45,26 @@
 
         .btn-action {
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            border: 1px solid transparent;
         }
+        .btn-approve { background: #dcfce7; color: #16a34a; border-color: #86efac; }
+        .btn-edit { background: #fffbeb; color: #d97706; border-color: #fde68a; }
+        .btn-selected { background: #dbeafe; color: #0369a1; border-color: #0284c7; }
+        .btn-normal { background: #f3f4f6; color: #6b7280; border-color: #d1d5db; }
+        .btn-view { background: #eff6ff; color: #2563eb; border-color: #bfdbfe; text-decoration: none; }
+        .btn-download { background: #f3e8ff; color: #9333ea; border-color: #d8b4fe; }
+        .btn-copy { background: #f0fdf4; color: #16a34a; border-color: #bbf7d0; }
+        .btn-delete { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+
         .btn-action:hover {
             transform: scale(1.05);
             filter: brightness(1.05);
@@ -789,13 +808,13 @@ async function loadHistory() {
                     </td>
                     <td style="padding:12px 8px; text-align:center;">
                         <div class="action-grid">
-                            ${item.ma_so === 'CHO_DUYET' ? `<button onclick="restoreData(${index})" class="btn-action" style="background:#dcfce7; color:#16a34a; border:1px solid #86efac; font-weight:700;">✅ Duyệt</button>` : ''}
-                            <button onclick="restoreData(${index})" class="btn-action" style="background:#fffbeb; color:#d97706; border:1px solid #fde68a; font-weight:700;">✍️ Sửa</button>
-                            <button onclick="toggleSelected(${item.id}, ${item.is_selected ? 'true' : 'false'}, this)" class="btn-action" style="background:${item.is_selected ? '#dbeafe' : '#f3f4f6'}; color:${item.is_selected ? '#0369a1' : '#6b7280'}; border:2px solid ${item.is_selected ? '#0284c7' : '#d1d5db'}; font-weight:700;">${item.is_selected ? '🎯 Trúng tuyển' : '📝 Gửi form'}</button>
-                            <a href="/cv/${item.ma_so === 'CHO_DUYET' ? `${item.id}/` : ''}${item.ma_so}${item.ho_ten ? '_' + sanitizeSlug(item.ho_ten) : ''}" target="_blank" class="btn-action" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; font-weight:700; display:inline-flex; align-items:center; gap:4px; text-decoration:none;">🖨️ Xem & In</a>
-                            <button onclick="downloadShortcut(${item.id}, '${item.ma_so}', '${item.ho_ten.replace(/'/g, "\\'")}')" class="btn-action" style="background:#f3e8ff; color:#9333ea; border:1px solid #d8b4fe; font-weight:700;">🔗 Tải link</button>
-                            <button onclick="copyHistoryLink(${item.id}, '${item.ma_so}', '${item.ho_ten.replace(/'/g, "\\'")}', this)" class="btn-action" style="background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; font-weight:700;">📤 Copy link</button>
-                            <button onclick="deleteHistory(${item.id}, this)" class="btn-action" style="background:#fef2f2; color:#dc2626; border:1px solid #fecaca; font-weight:700;">🗑️ Xóa</button>
+                            ${item.ma_so === 'CHO_DUYET' ? `<button onclick="restoreData(${index})" class="btn-action btn-approve">✅ Duyệt</button>` : ''}
+                            <button onclick="restoreData(${index})" class="btn-action btn-edit">✍️ Sửa</button>
+                            <button onclick="toggleSelected(${item.id}, ${item.is_selected ? 'true' : 'false'}, this)" class="btn-action ${item.is_selected ? 'btn-selected' : 'btn-normal'}">${item.is_selected ? '🎯 Trúng tuyển' : '📝 Gửi form'}</button>
+                            <a href="/cv/${item.ma_so === 'CHO_DUYET' ? `${item.id}/` : ''}${item.ma_so}${item.ho_ten ? '_' + sanitizeSlug(item.ho_ten) : ''}" target="_blank" class="btn-action btn-view">🖨️ Xem & In</a>
+                            <button onclick="downloadShortcut(${item.id}, '${item.ma_so}', '${item.ho_ten.replace(/'/g, "\\'")}')" class="btn-action btn-download">🔗 Tải link</button>
+                            <button onclick="copyHistoryLink(${item.id}, '${item.ma_so}', '${item.ho_ten.replace(/'/g, "\\'")}', this)" class="btn-action btn-copy">📤 Copy link</button>
+                            <button onclick="deleteHistory(${item.id}, this)" class="btn-action btn-delete">🗑️ Xóa</button>
                         </div>
                     </td>
                 `;
