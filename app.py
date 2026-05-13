@@ -295,6 +295,25 @@ def upload_to_r2(file_data, filename, folder='documents'):
         traceback.print_exc()
         return None
 
+def _fetch_r2_image_as_base64(url: str) -> str:
+    """Tải ảnh từ URL R2 về và chuyển thành Base64 để nhúng vào HTML offline.
+    Đây là cầu nối giữa R2 (lưu file thật) và file HTML (cần Base64 để offline được).
+    """
+    if not url or not url.startswith('http'):
+        return ""
+    try:
+        resp = requests.get(url, timeout=10)
+        if resp.status_code != 200:
+            print(f"⚠️ R2 fetch failed ({resp.status_code}): {url}")
+            return ""
+        # Xác định mime type từ Content-Type header hoặc extension URL
+        content_type = resp.headers.get('Content-Type', 'image/jpeg').split(';')[0].strip()
+        b64 = base64.b64encode(resp.content).decode('utf-8')
+        return f"data:{content_type};base64,{b64}"
+    except Exception as e:
+        print(f"⚠️ R2 fetch error: {e}")
+        return ""
+
 # --- LOGIC PREPARE ---
 def prepare_render_data(raw_data: dict) -> dict:
     data = {}
@@ -350,7 +369,15 @@ def prepare_render_data(raw_data: dict) -> dict:
 
     for key in ('photo', 'qr_line'):
         path = raw_data.get(key, '')
-        data[f'{key}_base64'] = path if (isinstance(path, str) and path.startswith('data:image/')) else ""
+        if isinstance(path, str) and path.startswith('data:image/'):
+            # Đã là Base64 (upload từ Local hoặc cũ) → dùng luôn
+            data[f'{key}_base64'] = path
+        elif isinstance(path, str) and path.startswith('http'):
+            # Là URL từ Cloudflare R2 → Kéo về và chuyển thành Base64 để nhúng offline
+            print(f"🔄 Fetching {key} from R2 for offline HTML...")
+            data[f'{key}_base64'] = _fetch_r2_image_as_base64(path)
+        else:
+            data[f'{key}_base64'] = ""
     return data
 
 def _protect_html(html: str) -> str:
