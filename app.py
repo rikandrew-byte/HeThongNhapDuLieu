@@ -458,12 +458,26 @@ def health(): return jsonify({'ok': True, 'msg': 'DAS V3.0 running'})
 def debug_db():
     try:
         from sqlalchemy import inspect
+        import os
         inspector = inspect(db.engine)
         tables = inspector.get_table_names()
         details = {}
         for table in tables:
             details[table] = [c['name'] for c in inspector.get_columns(table)]
-        return jsonify({'success': True, 'tables': tables, 'details': details, 'db_type': db.engine.name})
+        
+        # Lấy thông tin host để xác nhận (chỉ hiện 1 phần để bảo mật)
+        db_url = os.environ.get('DATABASE_URL', '')
+        db_host = db_url.split('@')[-1].split('/')[0] if '@' in db_url else 'unknown'
+        masked_host = db_host[:10] + "..." if len(db_host) > 10 else db_host
+
+        return jsonify({
+            'success': True, 
+            'current_branch': os.environ.get('RENDER_GIT_BRANCH', 'local/unknown'),
+            'db_type': db.engine.name,
+            'db_host_preview': masked_host,
+            'tables': tables,
+            'details': details
+        })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
