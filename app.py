@@ -451,7 +451,12 @@ def user_form(): return render_template('user_form.html')
 
 @app.route('/fct-1503')
 @auth_required
-def index(): return render_template('index.html')
+def index():
+    resp = make_response(render_template('index.html'))
+    resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    resp.headers['Pragma'] = 'no-cache'
+    resp.headers['Expires'] = '0'
+    return resp
 
 @app.route('/api/health')
 def health(): return jsonify({'ok': True, 'msg': 'DAS V3.0 running'})

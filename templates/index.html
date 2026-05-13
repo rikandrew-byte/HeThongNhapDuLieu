@@ -726,7 +726,17 @@ async function loadHistory() {
                         <span style="color:#64748b; font-size:12px; font-weight:500;">${item.ngay_tao}</span>
                     </td>
                     <td style="padding:12px 8px; text-align:center;">
-                        <div class="action-grid">
+                        <button class="mobile-overflow-btn md:hidden" onclick="toggleMobileMenu(${item.id})">⋮</button>
+                        <div id="menu-${item.id}" class="mobile-action-menu md:hidden">
+                            ${item.ma_so === 'CHO_DUYET' ? `<button onclick="restoreData(${index})" class="btn-action">✅ Duyệt hồ sơ</button>` : ''}
+                            <button onclick="restoreData(${index})" class="btn-action">✍️ Chỉnh sửa</button>
+                            <button onclick="toggleSelected(${item.id}, ${item.is_selected ? 'true' : 'false'}, this)" class="btn-action">${item.is_selected ? '🎯 Bỏ trúng tuyển' : '🎯 Trúng tuyển'}</button>
+                            <a href="/cv/${item.ma_so === 'CHO_DUYET' ? `${item.id}/` : ''}${item.ma_so}${item.ho_ten ? '_' + sanitizeSlug(item.ho_ten) : ''}" target="_blank" class="btn-action">🖨️ Xem & In PDF</a>
+                            <button onclick="downloadShortcut(${item.id}, '${item.ma_so}', '${item.ho_ten.replace(/'/g, "\\'")}')" class="btn-action">🔗 Tải link hồ sơ</button>
+                            <button onclick="copyHistoryLink(${item.id}, '${item.ma_so}', '${item.ho_ten.replace(/'/g, "\\'")}', this)" class="btn-action">📤 Copy link</button>
+                            <button onclick="deleteHistory(${item.id}, this)" class="btn-action">🗑️ Xóa vĩnh viễn</button>
+                        </div>
+                        <div class="action-grid hidden md:grid">
                             ${item.ma_so === 'CHO_DUYET' ? `<button onclick="restoreData(${index})" class="btn-action btn-approve">✅ Duyệt</button>` : ''}
                             <button onclick="restoreData(${index})" class="btn-action btn-edit">✍️ Sửa</button>
                             <button onclick="toggleSelected(${item.id}, ${item.is_selected ? 'true' : 'false'}, this)" class="btn-action ${item.is_selected ? 'btn-selected' : 'btn-normal'}">${item.is_selected ? '🎯 Trúng tuyển' : '📝 Gửi form'}</button>
@@ -998,6 +1008,38 @@ async function loadHistory() {
         function bulkCopyHistoryLinks() {
             const checked = [...document.querySelectorAll('.history-row-checkbox:checked')];
             if (!checked.length) return;
+            const ids = checked.map(cb => parseInt(cb.value));
+            const links = ids.map(id => {
+                const item = currentHistoryData.find(i => i.id === id);
+                if (!item) return "";
+                const slug = (item.ma_so === 'CHO_DUYET' ? `${id}/` : '') + item.ma_so + (item.ho_ten ? '_' + sanitizeSlug(item.ho_ten) : '');
+                return `${window.location.origin}/cv/${slug}`;
+            }).filter(l => l !== "");
+            navigator.clipboard.writeText(links.join('\n')).then(() => {
+                alert(`Đã copy ${links.length} link hồ sơ!`);
+            });
+        }
+
+        // --- Toggle Menu Mobile ---
+        function toggleMobileMenu(id) {
+            const menu = document.getElementById(`menu-${id}`);
+            const isActive = menu.classList.contains('active');
+            
+            // Đóng tất cả menu khác
+            document.querySelectorAll('.mobile-action-menu').forEach(m => m.classList.remove('active'));
+            
+            // Nếu chưa mở thì mở
+            if (!isActive) menu.classList.add('active');
+            
+            // Đóng khi click ra ngoài
+            const closeMenu = (e) => {
+                if (!menu.contains(e.target) && !e.target.closest('.mobile-overflow-btn')) {
+                    menu.classList.remove('active');
+                    document.removeEventListener('click', closeMenu);
+                }
+            };
+            setTimeout(() => document.addEventListener('click', closeMenu), 10);
+        }
             const lines = checked.map(cb => {
                 const row = cb.closest('tr');
                 const id = row.dataset.id;
@@ -1415,32 +1457,124 @@ async function loadHistory() {
                 max-height: 100vh !important; border-radius: 0 !important;
                 background: white !important;
             }
+            .history-table thead { display: none !important; }
+            .history-table, .history-table tbody, .history-table tr, .history-table td { 
+                display: block !important; 
+                width: 100% !important; 
+                box-sizing: border-box !important;
+            }
             .history-card-row {
-                padding: 16px !important;
-                margin: 0 0 1px 0 !important;
-                border: none !important;
-                border-bottom: 1px solid #f1f5f9 !important;
-                border-radius: 0 !important;
-                box-shadow: none !important;
+                background: white !important;
+                border: 1px solid #e2e8f0 !important;
+                border-radius: 16px !important;
+                margin-bottom: 16px !important;
+                padding: 12px !important;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
             }
-            .action-grid {
+            .history-card-row td {
+                padding: 6px 0 !important;
+                border: none !important;
                 display: flex !important;
-                flex-wrap: wrap !important;
-                gap: 6px !important;
-                margin-top: 12px !important;
+                align-items: center !important;
+                gap: 8px !important;
             }
-            .btn-action {
-                height: 32px !important;
-                padding: 0 10px !important;
-                font-size: 11px !important;
-                border-radius: 6px !important;
-                background: #f1f5f9 !important;
-                color: #475569 !important;
+            .history-card-row td:last-child {
+                display: block !important;
+                margin-top: 10px !important;
+                border-top: 1px dashed #e2e8f0 !important;
+                padding-top: 12px !important;
+            }
+
+            .action-grid {
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 10px !important;
+            }
+
+            /* Mobile Overflow Menu */
+            .mobile-overflow-btn {
+                display: flex !important;
+                align-items: center;
+                justify-content: center;
+                width: 40px;
+                height: 40px;
+                background: #f8fafc;
+                border: 1px solid #e2e8f0;
+                border-radius: 12px;
+                font-size: 20px;
+                color: #64748b;
+                cursor: pointer;
+                position: absolute;
+                top: 12px;
+                right: 12px;
+                z-index: 5;
+            }
+            .mobile-action-menu {
+                display: none;
+                position: absolute;
+                top: 55px;
+                right: 12px;
+                background: white;
+                border: 1px solid #e2e8f0;
+                border-radius: 14px;
+                box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+                z-index: 100;
+                width: 220px;
+                padding: 8px;
+                animation: slideIn 0.2s ease-out;
+            }
+            .mobile-action-menu.active { display: block !important; }
+            @keyframes slideIn {
+                from { opacity: 0; transform: translateY(-10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .mobile-action-menu .btn-action {
+                width: 100% !important;
+                margin-bottom: 6px !important;
+                justify-content: flex-start !important;
+                padding: 0 16px !important;
+                height: 44px !important;
+                font-size: 13px !important;
                 border: none !important;
+                background: transparent !important;
                 box-shadow: none !important;
+                color: #475569 !important;
             }
-            .btn-action.btn-approve { background: #0f172a !important; color: white !important; }
-            .mobile-label { width: 70px !important; color: #94a3b8 !important; }
+            .mobile-action-menu .btn-action:hover { background: #f1f5f9 !important; }
+            .mobile-action-menu .btn-action:last-child { margin-bottom: 0 !important; color: #dc2626 !important; }
+            .btn-action {
+                height: 38px !important;
+                padding: 0 8px !important;
+                font-size: 11px !important;
+                border-radius: 10px !important;
+                background: #f8fafc !important;
+                color: #475569 !important;
+                border: 1px solid #e2e8f0 !important;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                text-decoration: none !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+            }
+            .btn-action.btn-approve { background: #0f172a !important; color: white !important; border: none !important; font-weight: 700; grid-column: span 2; height: 42px !important; margin-bottom: 4px; }
+            .btn-action.btn-edit { background: #eff6ff !important; color: #2563eb !important; border: 1px solid #dbeafe !important; }
+            .history-container { padding: 8px !important; }
+            .mobile-label { width: 80px !important; color: #94a3b8 !important; font-weight: 600; font-size: 11px; text-transform: uppercase; flex-shrink: 0; }
+            
+            /* Glassmorphism Badge */
+            .badge-maso {
+                background: #f1f5f9;
+                padding: 4px 10px;
+                border-radius: 999px;
+                font-family: 'JetBrains Mono', monospace;
+                font-weight: 800;
+                font-size: 13px;
+                color: #0f172a;
+                border: 1px solid #e2e8f0;
+            }
         }
     </style>
 
@@ -1451,12 +1585,11 @@ async function loadHistory() {
     <div style="background:#fff; border-bottom:1px solid #e2e8f0; padding:16px 20px; border-radius:16px 16px 0 0; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:10;">
         <div style="display:flex; align-items:center; gap:10px;">
             <span style="font-size:20px;">📁</span>
-            <div>
                 <div style="font-size:16px; font-weight:700; color:#0f172a;">Quản trị Hồ sơ Hệ thống</div>
-                <div style="font-size:12px; color:#64748b;">Version 3.2 — <span id="historyTotalCount" style="color:#0f172a; font-weight:600;">0 hồ sơ</span></div>
-            </div>
+                <div style="font-size:12px; color:#64748b;">Version 3.5 (Premium Menu) — <span id="historyTotalCount" style="color:#0f172a; font-weight:600;">0 hồ sơ</span></div>
         </div>
         <div style="display:flex; align-items:center; gap:6px;">
+            <button type="button" onclick="loadHistory()" class="btn-action" style="padding:6px 12px; background:#fff; color:#64748b; border:1px solid #e2e8f0; border-radius:10px; cursor:pointer; font-size:12px; font-weight:700;">🔄 Làm mới</button>
             <input type="file" id="importFileInput" accept=".html,.htm" style="display:none;" onchange="loadFromFile(this)">
             <button type="button" onclick="document.getElementById('importFileInput').click()" class="btn-action" style="padding:6px 12px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:10px; cursor:pointer; font-size:12px; font-weight:700;">📂 Nạp file</button>
             <button type="button" onclick="document.getElementById('historyModal').style.display='none'" class="btn-action" style="padding:6px 12px; background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:10px; cursor:pointer; font-size:12px; font-weight:700;">✕ Đóng</button>
@@ -1498,7 +1631,7 @@ async function loadHistory() {
     </div>
 
     <!-- Table -->
-    <div style="padding:16px 20px;">
+    <div class="history-container" style="padding:16px 20px;">
         <table class="history-table" style="width:100%; border-collapse:collapse; background:transparent;">
             <thead>
                 <tr style="background:#f8fafc; border-bottom:1px solid #e2e8f0;">
