@@ -504,15 +504,15 @@
                     <span class="icon">💾</span> Cập nhật
                 </button>
 
-                <button type="button" onclick="handleSubmit('word')" class="btn-main btn-secondary">
-                    <span class="icon">📥</span> Tải HTML
+                <button type="button" onclick="handleSubmit('word')" class="btn-main">
+                    Tải HTML
                 </button>
                 <button type="button" onclick="handleSubmit('save_only')" class="btn-main btn-primary">
-                    <span class="icon">💾</span> Lưu Form
+                    Lưu Form
                 </button>
                 <button type="button" onclick="handleSubmit('html')" class="btn-main btn-accent">
-                    <span class="icon">🖨️</span> Xem & In
-                    <div id="loading" class="hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Xem & In
+                    <div id="loading" class="hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin ml-2"></div>
                 </button>
             </div>
         </div>
@@ -1348,123 +1348,99 @@ async function loadHistory() {
         }
     </script>
 
+            reader.readAsText(file, 'UTF-8');
+        }
+    </script>
+
     <style>
-        /* CSS CHO CÁC NÚT BẤM CHÍNH (MAIN ACTIONS) */
+        /* MINIMALIST PREMIUM DESIGN SYSTEM */
+        :root {
+            --primary: #1e293b;
+            --accent: #2563eb;
+            --bg-soft: #f8fafc;
+            --border: #e2e8f0;
+            --text-main: #334155;
+        }
+
+        .btn-main {
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+            color: var(--text-main);
+        }
+        .btn-primary { background: var(--primary) !important; color: white !important; border: none !important; }
+        .btn-accent { background: var(--accent) !important; color: white !important; border: none !important; }
+        
+        .main-actions-outer {
+            margin-top: 40px;
+            border-top: 1px solid var(--border);
+            padding-top: 30px;
+        }
         .main-actions-container {
             display: flex;
             justify-content: center;
-            gap: 15px;
-            margin-top: 40px;
-            padding-bottom: 20px;
+            gap: 12px;
+            max-width: 800px;
+            margin: 0 auto;
         }
-        .btn-main {
-            padding: 12px 24px;
-            border-radius: 16px;
-            font-weight: 800;
-            font-size: 14px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            min-width: 100px;
-        }
-        .btn-main .icon { font-size: 20px; }
-        .btn-secondary { background: #f1f5f9; color: #475569; }
-        .btn-primary { background: #f97316; color: white; }
-        .btn-accent { background: #0d9488; color: white; }
-        .btn-main:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
 
         @media (max-width: 768px) {
-            .main-actions-container {
-                padding: 15px;
-                background: rgba(255,255,255,0.8);
-                backdrop-filter: blur(10px);
+            .main-actions-outer {
                 position: sticky;
                 bottom: 0;
                 left: 0;
                 width: 100%;
-                z-index: 99;
+                background: white;
+                padding: 12px 16px;
                 box-sizing: border-box;
-                margin-top: 20px;
-                box-shadow: 0 -10px 25px rgba(0,0,0,0.05);
-                border-radius: 24px 24px 0 0;
-                gap: 10px;
+                border-top: 1px solid var(--border);
+                z-index: 1000;
+                margin-top: 0;
             }
-            .btn-main {
-                flex: 1;
-                padding: 10px 5px;
-                font-size: 11px;
-                min-width: 0;
-                border-radius: 14px;
-            }
-            .btn-main .icon { font-size: 16px; }
-
-            /* FORCE MOBILE OVERRIDES - VERSION 3.1 */
+            .main-actions-container { gap: 8px; }
+            .btn-main { padding: 10px 5px; font-size: 11px; flex: 1; border-radius: 8px; }
+            
             #historyModal {
                 top: 0 !important; left: 0 !important;
                 width: 100vw !important; height: 100vh !important;
                 max-height: 100vh !important; border-radius: 0 !important;
+                background: white !important;
             }
             .history-card-row {
-                padding: 24px !important;
-                margin: 0 16px 20px 16px !important;
-                background: #ffffff !important;
-                border: 1px solid #f1f5f9 !important;
-                border-radius: 24px !important;
-                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05) !important;
+                padding: 16px !important;
+                margin: 0 0 1px 0 !important;
+                border: none !important;
+                border-bottom: 1px solid #f1f5f9 !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
             }
             .action-grid {
-                display: grid !important;
-                grid-template-columns: repeat(2, 1fr) !important;
-                gap: 12px !important;
-                margin-top: 20px !important;
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 6px !important;
+                margin-top: 12px !important;
             }
-            .action-grid .btn-action, .action-grid a.btn-action {
-                height: 52px !important;
-                border-radius: 16px !important;
-                font-size: 13px !important;
-                box-shadow: none !important;
-                border: 1px solid rgba(0,0,0,0.05) !important;
+            .btn-action {
+                height: 32px !important;
                 padding: 0 10px !important;
-            }
-            .mobile-label { width: 85px !important; font-size: 11px !important; }
-        }
-    </style>
-
-    <style>
-        /* FORCE MOBILE OVERRIDES - VERSION 3.1 */
-        @media (max-width: 768px) {
-            #historyModal {
-                top: 0 !important; left: 0 !important;
-                width: 100vw !important; height: 100vh !important;
-                max-height: 100vh !important; border-radius: 0 !important;
-            }
-            .history-card-row {
-                padding: 24px !important;
-                margin: 0 16px 20px 16px !important;
-                background: #ffffff !important;
-                border: 1px solid #f1f5f9 !important;
-                border-radius: 24px !important;
-                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05) !important;
-            }
-            .action-grid {
-                display: grid !important;
-                grid-template-columns: repeat(2, 1fr) !important;
-                gap: 12px !important;
-                margin-top: 20px !important;
-            }
-            .action-grid .btn-action, .action-grid a.btn-action {
-                height: 52px !important;
-                border-radius: 16px !important;
-                font-size: 13px !important;
+                font-size: 11px !important;
+                border-radius: 6px !important;
+                background: #f1f5f9 !important;
+                color: #475569 !important;
+                border: none !important;
                 box-shadow: none !important;
-                border: 1px solid rgba(0,0,0,0.05) !important;
             }
-            .mobile-label { width: 85px !important; font-size: 11px !important; }
+            .btn-action.btn-approve { background: #0f172a !important; color: white !important; }
+            .mobile-label { width: 70px !important; color: #94a3b8 !important; }
         }
     </style>
 
@@ -1476,8 +1452,8 @@ async function loadHistory() {
         <div style="display:flex; align-items:center; gap:10px;">
             <span style="font-size:20px;">📁</span>
             <div>
-                <div style="font-size:16px; font-weight:800; color:#1e293b;">Quản trị Hồ sơ FCT (Bản 3.1)</div>
-                <div style="font-size:12px; color:#64748b;">Hệ thống — <span id="historyTotalCount" style="color:#2563eb; font-weight:600;">0 hồ sơ</span></div>
+                <div style="font-size:16px; font-weight:700; color:#0f172a;">Quản trị Hồ sơ Hệ thống</div>
+                <div style="font-size:12px; color:#64748b;">Version 3.2 — <span id="historyTotalCount" style="color:#0f172a; font-weight:600;">0 hồ sơ</span></div>
             </div>
         </div>
         <div style="display:flex; align-items:center; gap:6px;">
