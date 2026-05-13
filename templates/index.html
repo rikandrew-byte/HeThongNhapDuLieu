@@ -501,7 +501,7 @@
                     <span class="icon">✕</span> Hủy
                 </button>
                 <button type="button" id="btnUpdateOnly" onclick="handleSubmit('save')" class="hidden btn-main btn-primary">
-                    <span class="icon">💾</span> Cập nhật
+                    <span class="icon">💾</span> <span id="btnUpdateText">Cập nhật</span>
                 </button>
 
                 <button type="button" onclick="handleSubmit('word')" class="btn-main">
@@ -511,7 +511,7 @@
                     Lưu Form
                 </button>
                 <button type="button" onclick="handleSubmit('html')" class="btn-main btn-accent">
-                    Xem & In
+                    <span id="btnText">Xem & In</span>
                     <div id="loading" class="hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin ml-2"></div>
                 </button>
             </div>
@@ -1197,11 +1197,13 @@ async function loadHistory() {
         async function handleSubmit(mode = 'html') {
             const form = document.getElementById('resumeForm');
             const btnText = document.getElementById('btnText');
+            const btnUpdateText = document.getElementById('btnUpdateText');
             const loading = document.getElementById('loading');
             
-            const originalText = btnText.innerText;
-            btnText.innerText = "ĐANG XỬ LÝ...";
-            loading.classList.remove('hidden');
+            const originalText = btnText ? btnText.innerText : "Xem & In";
+            if (btnText) btnText.innerText = "ĐANG XỬ LÝ...";
+            if (btnUpdateText) btnUpdateText.innerText = "ĐANG XỬ LÝ...";
+            if (loading) loading.classList.remove('hidden');
 
             const formData = new FormData();
             const plainData = {};
@@ -1281,9 +1283,9 @@ async function loadHistory() {
             } catch (error) {
                 alert("Lỗi kết nối máy chủ.");
             } finally {
-                btnText.innerText = originalText;
-                document.getElementById('btnUpdateText').innerText = "💾 CẬP NHẬT DỮ LIỆU";
-                loading.classList.add('hidden');
+                if (btnText) btnText.innerText = originalText;
+                if (btnUpdateText) btnUpdateText.innerText = "Cập nhật";
+                if (loading) loading.classList.add('hidden');
             }
         }
 
@@ -1576,7 +1578,7 @@ async function loadHistory() {
         <div style="display:flex; align-items:center; gap:10px;">
             <span style="font-size:20px;">📁</span>
                 <div style="font-size:16px; font-weight:700; color:#0f172a;">Quản trị Hồ sơ Hệ thống</div>
-                <div style="font-size:12px; color:#64748b;">Version 3.5.3 (Final Fix) — <span id="historyTotalCount" style="color:#0f172a; font-weight:600;">0 hồ sơ</span></div>
+                <div style="font-size:12px; color:#64748b;">Version 3.5.4 (Core Logic Fix) — <span id="historyTotalCount" style="color:#0f172a; font-weight:600;">0 hồ sơ</span></div>
         </div>
         <div style="display:flex; align-items:center; gap:6px;">
             <button type="button" onclick="loadHistory()" class="btn-action" style="padding:6px 12px; background:#fff; color:#64748b; border:1px solid #e2e8f0; border-radius:10px; cursor:pointer; font-size:12px; font-weight:700;">🔄 Làm mới</button>
