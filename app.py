@@ -426,6 +426,20 @@ def index(): return render_template('index.html')
 @app.route('/api/health')
 def health(): return jsonify({'ok': True, 'msg': 'DAS V3.0 running'})
 
+@app.route('/api/debug/db')
+@auth_required
+def debug_db():
+    try:
+        from sqlalchemy import inspect
+        inspector = inspect(db.engine)
+        tables = inspector.get_table_names()
+        details = {}
+        for table in tables:
+            details[table] = [c['name'] for c in inspector.get_columns(table)]
+        return jsonify({'success': True, 'tables': tables, 'details': details, 'db_type': db.engine.name})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
 def _process_form_data(request):
     if request.content_type and 'multipart/form-data' in request.content_type:
         data = json.loads(request.form.get('data', '{}'))
