@@ -422,7 +422,7 @@ def generate_html_resume(form_data: dict, template_name='fct_template_v6.18.html
     # Thay placeholder bằng JSON thật SAU KHI minify xong
     return html.replace('___FCT_RAW_PLACEHOLDER___', raw_json_str)
 
-def _resize_image_for_db(data_uri: str, max_px: int = 800, quality: int = 75) -> str:
+def _resize_image_for_db(data_uri: str, max_px: int = 1200, quality: int = 85) -> str:
     if not data_uri or not data_uri.startswith('data:image/'): return data_uri
     try:
         from PIL import Image
