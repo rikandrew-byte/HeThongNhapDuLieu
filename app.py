@@ -85,6 +85,7 @@ FIXED_TRANS = {
     'việt nam': '越南', 'viet nam': '越南', 'đài loan': '台灣', 'nhật bản': '日本',
     'hàn quốc': '韓國', 'malaysia': '馬來西亞', 'macau': '澳門', 'thái lan': '泰國',
     'châu âu': '歐洲', 'nga': '俄羅斯',
+    'nghệ an': '藝安', 'nghe an': '藝安',
     'may': '縫紉', 'thợ may': '縫紉', 'may mặc': '縫紉', 'hàn': '焊接', 'thợ hàn': '焊接',
     'điện': '電工', 'thợ điện': '電工', 'sơn': '噴漆', 'thợ sơn': '噴漆',
     'tiện': '車床', 'thợ tiện': '車床', 'phay': '銑床', 'thợ phay': '銑床',
@@ -163,6 +164,7 @@ def translate_free(text: str) -> str:
         'thợ hàn': '焊接',
         'thợ điện': '電工',
         'lái xe': '駕駛',
+        'nghệ an': '藝安',
     }
     
     # Nếu text là một từ đơn nằm trong danh sách bảo vệ, trả về luôn
@@ -172,10 +174,11 @@ def translate_free(text: str) -> str:
     # 3. Dùng Google Translate cho đoạn văn
     try:
         result = GoogleTranslator(source='vi', target='zh-TW').translate(processed_text.strip())
-        # Nếu Google dịch nhầm "may" -> "可能" (có lẽ) trong ngữ cảnh công việc, ta sửa lại
+        # Nếu Google dịch nhầm "may" -> "可能" hoặc "Nghệ An" -> "义安", ta sửa lại
         if '可能' in result and 'may' in text.lower():
-            # Đây là một heuristic đơn giản, có thể cải thiện thêm
             result = result.replace('可能', '縫紉')
+        if '义安' in result and 'nghệ an' in text.lower():
+            result = result.replace('义安', '藝安')
         return result if result else text
     except: return text
 
