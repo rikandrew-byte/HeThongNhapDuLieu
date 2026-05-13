@@ -1040,19 +1040,6 @@ async function loadHistory() {
             };
             setTimeout(() => document.addEventListener('click', closeMenu), 10);
         }
-            const lines = checked.map(cb => {
-                const row = cb.closest('tr');
-                const id = row.dataset.id;
-                const maso = row.dataset.masoOrig;
-                const name = row.dataset.nameOrig;
-                const slug = (maso === 'CHO_DUYET' ? `${id}/` : '') + maso + (name ? '_' + sanitizeSlug(name) : '');
-                return `${maso} — ${name}\n${window.location.origin}/cv/${slug}`;
-            });
-            navigator.clipboard.writeText(lines.join('\n\n')).then(() => {
-                alert(`Đã copy ${checked.length} link!`);
-                clearHistorySelection();
-            }).catch(() => alert('Không thể copy'));
-        }
 
         async function bulkDownloadHistory() {
             const checked = [...document.querySelectorAll('.history-row-checkbox:checked')];
@@ -1390,10 +1377,6 @@ async function loadHistory() {
         }
     </script>
 
-            reader.readAsText(file, 'UTF-8');
-        }
-    </script>
-
     <style>
         /* MINIMALIST PREMIUM DESIGN SYSTEM */
         :root {
@@ -1586,7 +1569,7 @@ async function loadHistory() {
         <div style="display:flex; align-items:center; gap:10px;">
             <span style="font-size:20px;">📁</span>
                 <div style="font-size:16px; font-weight:700; color:#0f172a;">Quản trị Hồ sơ Hệ thống</div>
-                <div style="font-size:12px; color:#64748b;">Version 3.5 (Premium Menu) — <span id="historyTotalCount" style="color:#0f172a; font-weight:600;">0 hồ sơ</span></div>
+                <div style="font-size:12px; color:#64748b;">Version 3.5.1 (Stable) — <span id="historyTotalCount" style="color:#0f172a; font-weight:600;">0 hồ sơ</span></div>
         </div>
         <div style="display:flex; align-items:center; gap:6px;">
             <button type="button" onclick="loadHistory()" class="btn-action" style="padding:6px 12px; background:#fff; color:#64748b; border:1px solid #e2e8f0; border-radius:10px; cursor:pointer; font-size:12px; font-weight:700;">🔄 Làm mới</button>
