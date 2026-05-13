@@ -8,3 +8,4 @@ psycopg2-binary==2.9.9; sys_platform == 'linux'
 gunicorn
 boto3==1.28.85
 Pillow==10.0.0
+requests
