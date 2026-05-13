@@ -1390,102 +1390,22 @@ async function loadHistory() {
     </script>
 
     <style>
-        /* MINIMALIST PREMIUM DESIGN SYSTEM */
-        :root {
-            --primary: #1e293b;
-            --accent: #2563eb;
-            --bg-soft: #f8fafc;
-            --border: #e2e8f0;
-            --text-main: #334155;
-        }
+        /* ===== CSS CHỈ GIữ LẠI NHỮNG GÌ THỰC SỰ CẦN, TAILWIND XọN LẠI ===== */
 
-        .btn-main {
-            padding: 10px 24px;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            border: 1px solid #dbeafe;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            background: #eff6ff;
-            color: #2563eb;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        }
-        .btn-main:hover {
-            background: #dbeafe;
-            transform: translateY(-1px);
-        }
-        
-        .btn-primary, .btn-accent { 
-            background: #2563eb !important; 
-            color: white !important; 
-            border: none !important;
-            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2) !important;
-        }
-        .btn-primary:hover, .btn-accent:hover {
-            background: #1d4ed8 !important;
-            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3) !important;
-        }
-        
-        .btn-secondary { 
-            background: #f8fafc !important; 
-            color: #64748b !important; 
-            border: 1px solid #e2e8f0 !important; 
-        }
-        
-        .main-actions-outer {
-            margin-top: 40px;
-            border-top: 1px solid var(--border);
-            padding-top: 30px;
-        }
-        .main-actions-container {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .action-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            justify-content: center;
-        }
-
+        /* Mobile: History modal hiển thị toàn màn hình */
         @media (max-width: 768px) {
-            .main-actions-outer {
-                position: sticky;
-                bottom: 0;
-                left: 0;
-                width: 100%;
-                background: white;
-                padding: 12px 16px 32px 16px; /* Tăng padding dưới cho Mobile */
-                padding-bottom: max(32px, env(safe-area-inset-bottom, 32px));
-                box-sizing: border-box;
-                border-top: 1px solid var(--border);
-                box-shadow: 0 -10px 15px -3px rgba(0,0,0,0.05);
-                z-index: 1000;
-                margin-top: 0;
-            }
-            .main-actions-container { gap: 6px; }
-            .btn-main { padding: 12px 4px; font-size: 10px; flex: 1; border-radius: 10px; flex-direction: column; gap: 4px; }
-            .btn-main .icon { font-size: 16px; }
-            
             #historyModal {
                 top: 0 !important; left: 0 !important;
                 width: 100vw !important; height: 100vh !important;
                 max-height: 100vh !important; border-radius: 0 !important;
                 background: white !important;
             }
+
+            /* History table -> Card layout trên mobile */
             .history-table thead { display: none !important; }
-            .history-table, .history-table tbody, .history-table tr, .history-table td { 
-                display: block !important; 
-                width: 100% !important; 
+            .history-table, .history-table tbody, .history-table tr, .history-table td {
+                display: block !important;
+                width: 100% !important;
                 box-sizing: border-box !important;
             }
             .history-card-row {
@@ -1494,7 +1414,8 @@ async function loadHistory() {
                 border-radius: 16px !important;
                 margin-bottom: 16px !important;
                 padding: 12px !important;
-                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
+                position: relative !important;
+                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05) !important;
             }
             .history-card-row td {
                 padding: 6px 0 !important;
@@ -1510,98 +1431,73 @@ async function loadHistory() {
                 padding-top: 12px !important;
             }
 
-            .action-grid {
-                display: grid !important;
-                grid-template-columns: repeat(2, 1fr) !important;
-                gap: 10px !important;
-            }
-
-            /* Mobile Overflow Menu */
+            /* Nút overflow "..." trên mobile */
             .mobile-overflow-btn {
                 display: flex !important;
                 align-items: center;
                 justify-content: center;
-                width: 40px;
-                height: 40px;
+                width: 36px; height: 36px;
                 background: #f8fafc;
                 border: 1px solid #e2e8f0;
-                border-radius: 12px;
-                font-size: 20px;
+                border-radius: 10px;
+                font-size: 18px;
                 color: #64748b;
                 cursor: pointer;
                 position: absolute;
-                top: 12px;
-                right: 12px;
+                top: 12px; right: 12px;
                 z-index: 5;
             }
+
+            /* Menu xuất hiện khi nhấn "..." */
             .mobile-action-menu {
                 display: none;
                 position: absolute;
-                top: 55px;
-                right: 12px;
+                top: 52px; right: 12px;
                 background: white;
                 border: 1px solid #e2e8f0;
                 border-radius: 14px;
-                box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
-                z-index: 100;
-                width: 220px;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+                z-index: 9999;
+                width: 210px;
                 padding: 8px;
-                animation: slideIn 0.2s ease-out;
+                animation: slideIn 0.18s ease-out;
             }
             .mobile-action-menu.active { display: block !important; }
             @keyframes slideIn {
-                from { opacity: 0; transform: translateY(-10px); }
-                to { opacity: 1; transform: translateY(0); }
+                from { opacity: 0; transform: translateY(-8px); }
+                to   { opacity: 1; transform: translateY(0); }
             }
             .mobile-action-menu .btn-action {
                 width: 100% !important;
-                margin-bottom: 6px !important;
+                display: flex !important;
+                align-items: center !important;
                 justify-content: flex-start !important;
-                padding: 0 16px !important;
-                height: 44px !important;
+                padding: 0 14px !important;
+                height: 42px !important;
                 font-size: 13px !important;
                 border: none !important;
                 background: transparent !important;
                 box-shadow: none !important;
-                color: #475569 !important;
+                color: #334155 !important;
+                margin-bottom: 2px !important;
+                border-radius: 8px !important;
             }
             .mobile-action-menu .btn-action:hover { background: #f1f5f9 !important; }
-            .mobile-action-menu .btn-action:last-child { margin-bottom: 0 !important; color: #dc2626 !important; }
-            .btn-action {
-                height: 38px !important;
-                padding: 0 8px !important;
-                font-size: 11px !important;
-                border-radius: 10px !important;
-                background: #f8fafc !important;
-                color: #475569 !important;
-                border: 1px solid #e2e8f0 !important;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                text-decoration: none !important;
-                white-space: nowrap !important;
-                overflow: hidden !important;
-                text-overflow: ellipsis !important;
-            }
-            .btn-action.btn-approve { background: #0f172a !important; color: white !important; border: none !important; font-weight: 700; grid-column: span 2; height: 42px !important; margin-bottom: 4px; }
-            .btn-action.btn-edit { background: #eff6ff !important; color: #2563eb !important; border: 1px solid #dbeafe !important; }
+            .mobile-action-menu .btn-action:last-child { color: #dc2626 !important; }
+
+            /* Desktop grid buttons -> Ẩn trên mobile */
+            .action-grid { display: none !important; }
+
             .history-container { padding: 8px !important; }
             .mobile-label { width: 80px !important; color: #94a3b8 !important; font-weight: 600; font-size: 11px; text-transform: uppercase; flex-shrink: 0; }
-            
-            /* Glassmorphism Badge */
-            .badge-maso {
-                background: #f1f5f9;
-                padding: 4px 10px;
-                border-radius: 999px;
-                font-family: 'JetBrains Mono', monospace;
-                font-weight: 800;
-                font-size: 13px;
-                color: #0f172a;
-                border: 1px solid #e2e8f0;
-            }
         }
-    </style>
+
+        /* Desktop: Ẩn nút "..." và hiện grid actions */
+        @media (min-width: 769px) {
+            .mobile-overflow-btn { display: none !important; }
+            .mobile-action-menu { display: none !important; }
+            .action-grid { display: flex !important; flex-wrap: wrap; gap: 6px; justify-content: center; }
+        }
 
 <!-- Bảng Popup (Modal) hiển thị lịch sử (Mặc định ẩn) -->
 <div id="historyModal" class="glass-modal" style="display:none; position:fixed; top:3%; left:5%; width:90%; max-height:94%; z-index:9999; overflow-y:auto; border-radius: 20px; font-family:'Inter',sans-serif;">
@@ -1611,7 +1507,7 @@ async function loadHistory() {
         <div style="display:flex; align-items:center; gap:10px;">
             <span style="font-size:20px;">📁</span>
                 <div style="font-size:16px; font-weight:700; color:#0f172a;">Quản trị Hồ sơ Hệ thống</div>
-                <div style="font-size:12px; color:#64748b;">Version 3.5.6 (Safe Area Fix) — <span id="historyTotalCount" style="color:#0f172a; font-weight:600;">0 hồ sơ</span></div>
+                <div style="font-size:12px; color:#64748b;">Version 3.6.0 (Clean &amp; Stable) — <span id="historyTotalCount" style="color:#0f172a; font-weight:600;">0 hồ sơ</span></div>
         </div>
         <div style="display:flex; align-items:center; gap:6px;">
             <button type="button" onclick="loadHistory()" class="btn-action" style="padding:6px 12px; background:#fff; color:#64748b; border:1px solid #e2e8f0; border-radius:10px; cursor:pointer; font-size:12px; font-weight:700;">🔄 Làm mới</button>
