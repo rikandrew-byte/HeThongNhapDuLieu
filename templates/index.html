@@ -72,11 +72,13 @@
                 width: 100% !important;
             }
             .history-card-row {
-                padding: 16px !important;
-                margin-bottom: 12px !important;
+                padding: 20px !important;
+                margin-bottom: 16px !important;
                 background: white !important;
-                border: 1px solid #e2e8f0 !important;
-                border-radius: 12px !important;
+                border: 1px solid #f1f5f9 !important;
+                border-radius: 20px !important;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
+                position: relative;
             }
             .history-card-row td {
                 padding: 4px 0 !important;
@@ -86,28 +88,39 @@
             .history-card-row td:first-child {
                 display: flex !important;
                 align-items: center;
-                gap: 8px;
-                border-bottom: 1px solid #f1f5f9 !important;
-                padding-bottom: 8px !important;
-                margin-bottom: 8px !important;
+                gap: 12px;
+                border-bottom: 1px solid #f8fafc !important;
+                padding-bottom: 12px !important;
+                margin-bottom: 12px !important;
             }
             .history-card-row td:last-child {
-                margin-top: 12px !important;
-                padding-top: 12px !important;
-                border-top: 1px dashed #e2e8f0 !important;
+                margin-top: 16px !important;
+                padding-top: 16px !important;
+                border-top: 1px dashed #f1f5f9 !important;
             }
             .mobile-label {
                 display: inline-block;
-                width: 80px;
-                font-size: 11px;
-                font-weight: 700;
-                color: #94a3b8;
+                width: 70px;
+                font-size: 10px;
+                font-weight: 800;
+                color: #cbd5e1;
                 text-transform: uppercase;
+                letter-spacing: 0.05em;
             }
             .action-grid {
                 display: grid !important;
-                grid-template-columns: 1fr 1fr;
-                gap: 8px !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 10px !important;
+            }
+            .btn-action {
+                height: 42px !important;
+                padding: 0 8px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 6px !important;
+                font-size: 11px !important;
+                border-radius: 12px !important;
             }
             
             #historyBulkBar {
@@ -116,8 +129,9 @@
                 left: 0;
                 width: 100%;
                 z-index: 100;
-                border-radius: 20px 20px 0 0;
-                box-shadow: 0 -10px 20px rgba(0,0,0,0.1);
+                border-radius: 24px 24px 0 0;
+                box-shadow: 0 -15px 30px rgba(0,0,0,0.1);
+                padding: 15px 20px !important;
             }
         }
         
@@ -770,14 +784,14 @@ async function loadHistory() {
                         <span style="color:#64748b; font-size:12px; font-weight:500;">${item.ngay_tao}</span>
                     </td>
                     <td style="padding:12px 8px; text-align:center;">
-                        <div class="action-grid" style="display:flex; gap:6px; justify-content:center; flex-wrap:wrap;">
-                            ${item.ma_so === 'CHO_DUYET' ? `<button onclick="restoreData(${index})" class="btn-action" style="padding:6px 12px; background:#dcfce7; color:#16a34a; border:1px solid #86efac; border-radius:8px; font-size:12px; cursor:pointer; font-weight:700;">✅ Duyệt</button>` : ''}
-                            <button onclick="restoreData(${index})" class="btn-action" style="padding:6px 12px; background:#fffbeb; color:#d97706; border:1px solid #fde68a; border-radius:8px; font-size:12px; cursor:pointer; font-weight:700;">✍️ Sửa</button>
-                            <button onclick="toggleSelected(${item.id}, ${item.is_selected ? 'true' : 'false'}, this)" class="btn-action" style="padding:6px 12px; background:${item.is_selected ? '#dbeafe' : '#f3f4f6'}; color:${item.is_selected ? '#0369a1' : '#6b7280'}; border:2px solid ${item.is_selected ? '#0284c7' : '#d1d5db'}; border-radius:8px; font-size:12px; cursor:pointer; font-weight:700; transition:all 0.2s;">${item.is_selected ? '🎯 Trúng tuyển' : '📝 Gửi form'}</button>
-                            <a href="/cv/${item.ma_so === 'CHO_DUYET' ? `${item.id}/` : ''}${item.ma_so}${item.ho_ten ? '_' + sanitizeSlug(item.ho_ten) : ''}" target="_blank" class="btn-action" style="padding:6px 12px; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; border-radius:8px; font-size:12px; text-decoration:none; font-weight:700; display:inline-flex; align-items:center; gap:4px;">🖨️ Xem & In</a>
-                            <button onclick="downloadShortcut(${item.id}, '${item.ma_so}', '${item.ho_ten.replace(/'/g, "\\'")}')" class="btn-action" style="padding:6px 12px; background:#f3e8ff; color:#9333ea; border:1px solid #d8b4fe; border-radius:8px; font-size:12px; cursor:pointer; font-weight:700;">🔗 Tải link</button>
-                            <button onclick="copyHistoryLink(${item.id}, '${item.ma_so}', '${item.ho_ten.replace(/'/g, "\\'")}', this)" class="btn-action" style="padding:6px 12px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:8px; font-size:12px; cursor:pointer; font-weight:700;">📤 Copy link</button>
-                            <button onclick="deleteHistory(${item.id}, this)" class="btn-action" style="padding:6px 12px; background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:8px; font-size:12px; cursor:pointer; font-weight:700;">🗑️ Xóa</button>
+                        <div class="action-grid">
+                            ${item.ma_so === 'CHO_DUYET' ? `<button onclick="restoreData(${index})" class="btn-action" style="background:#dcfce7; color:#16a34a; border:1px solid #86efac; font-weight:700;">✅ Duyệt</button>` : ''}
+                            <button onclick="restoreData(${index})" class="btn-action" style="background:#fffbeb; color:#d97706; border:1px solid #fde68a; font-weight:700;">✍️ Sửa</button>
+                            <button onclick="toggleSelected(${item.id}, ${item.is_selected ? 'true' : 'false'}, this)" class="btn-action" style="background:${item.is_selected ? '#dbeafe' : '#f3f4f6'}; color:${item.is_selected ? '#0369a1' : '#6b7280'}; border:2px solid ${item.is_selected ? '#0284c7' : '#d1d5db'}; font-weight:700;">${item.is_selected ? '🎯 Trúng tuyển' : '📝 Gửi form'}</button>
+                            <a href="/cv/${item.ma_so === 'CHO_DUYET' ? `${item.id}/` : ''}${item.ma_so}${item.ho_ten ? '_' + sanitizeSlug(item.ho_ten) : ''}" target="_blank" class="btn-action" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; font-weight:700; display:inline-flex; align-items:center; gap:4px; text-decoration:none;">🖨️ Xem & In</a>
+                            <button onclick="downloadShortcut(${item.id}, '${item.ma_so}', '${item.ho_ten.replace(/'/g, "\\'")}')" class="btn-action" style="background:#f3e8ff; color:#9333ea; border:1px solid #d8b4fe; font-weight:700;">🔗 Tải link</button>
+                            <button onclick="copyHistoryLink(${item.id}, '${item.ma_so}', '${item.ho_ten.replace(/'/g, "\\'")}', this)" class="btn-action" style="background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; font-weight:700;">📤 Copy link</button>
+                            <button onclick="deleteHistory(${item.id}, this)" class="btn-action" style="background:#fef2f2; color:#dc2626; border:1px solid #fecaca; font-weight:700;">🗑️ Xóa</button>
                         </div>
                     </td>
                 `;
@@ -1404,10 +1418,10 @@ async function loadHistory() {
                 <div style="font-size:12px; color:#64748b;">FCT — <span id="historyTotalCount" style="color:#2563eb; font-weight:600;">0 hồ sơ</span></div>
             </div>
         </div>
-        <div style="display:flex; align-items:center; gap:8px;">
+        <div style="display:flex; align-items:center; gap:6px;">
             <input type="file" id="importFileInput" accept=".html,.htm" style="display:none;" onchange="loadFromFile(this)">
-            <button type="button" onclick="document.getElementById('importFileInput').click()" title="Nạp lại dữ liệu từ form HTML trong máy để chỉnh sửa nếu form không còn trên hệ thống" style="padding:6px 14px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">📂 Nạp từ file</button>
-            <button type="button" onclick="document.getElementById('historyModal').style.display='none'" style="padding:6px 14px; background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">✕ Đóng</button>
+            <button type="button" onclick="document.getElementById('importFileInput').click()" class="btn-action" style="padding:6px 12px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:10px; cursor:pointer; font-size:12px; font-weight:700;">📂 Nạp file</button>
+            <button type="button" onclick="document.getElementById('historyModal').style.display='none'" class="btn-action" style="padding:6px 12px; background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:10px; cursor:pointer; font-size:12px; font-weight:700;">✕ Đóng</button>
         </div>
     </div>
 
