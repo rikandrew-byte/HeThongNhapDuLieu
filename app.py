@@ -115,12 +115,13 @@ def translate_fixed(text: str) -> str:
 def translate_name(text: str) -> str:
     """Dành riêng cho dịch Họ Tên: Ưu tiên từ điển tên để tránh nhầm với tiếng Anh"""
     if not text or not text.strip() or is_chinese(text): return text
-    
-    # 1. Thử dịch từ từ điển tên riêng (Tránh lỗi Loan -> Khoản vay, Long -> Dài...)
-    vietnamese_name_result = get_vietnamese_name_in_chinese(text.strip())
-    if vietnamese_name_result != text.strip() and is_chinese(vietnamese_name_result):
-        return vietnamese_name_result
-    
+
+    # 1. Thử dịch từ từ điển tên riêng
+    # Hàm trả về None nếu có phần nào không tìm thấy → fallback Google Translate
+    dict_result = get_vietnamese_name_in_chinese(text.strip())
+    if dict_result is not None:
+        return dict_result
+
     # 2. Nếu không có trong từ điển, dùng Google Translate
     try:
         result = GoogleTranslator(source='vi', target='zh-TW').translate(text.strip())
