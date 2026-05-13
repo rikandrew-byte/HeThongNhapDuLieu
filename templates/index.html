@@ -1164,28 +1164,31 @@ async function loadHistory() {
         const fileInput = document.getElementById('documentInput');
         const preview = document.getElementById('documentPreview');
 
-        dropzone.addEventListener('click', () => fileInput.click());
+        if (dropzone && fileInput) {
+            dropzone.addEventListener('click', () => fileInput.click());
 
-        dropzone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropzone.style.borderColor = '#a855f7';
-            dropzone.style.backgroundColor = '#faf5ff';
-        });
+            dropzone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropzone.style.borderColor = '#a855f7';
+                dropzone.style.backgroundColor = '#faf5ff';
+            });
 
-        dropzone.addEventListener('dragleave', () => {
-            dropzone.style.borderColor = '#d8b4fe';
-            dropzone.style.backgroundColor = '#faf5ff';
-        });
+            dropzone.addEventListener('dragleave', () => {
+                dropzone.style.borderColor = '#d8b4fe';
+                dropzone.style.backgroundColor = '#faf5ff';
+            });
 
-        dropzone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            fileInput.files = e.dataTransfer.files;
-            displayDocumentPreview();
-        });
+            dropzone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                fileInput.files = e.dataTransfer.files;
+                displayDocumentPreview();
+            });
 
-        fileInput.addEventListener('change', displayDocumentPreview);
+            fileInput.addEventListener('change', displayDocumentPreview);
+        }
 
         function displayDocumentPreview() {
+            if (!preview || !fileInput) return;
             preview.innerHTML = '';
             const files = fileInput.files;
             
@@ -1195,7 +1198,7 @@ async function loadHistory() {
                     const img = document.createElement('img');
                     img.src = e.target.result;
                     img.className = 'w-full h-24 object-cover rounded border border-gray-200 hover:opacity-80 cursor-pointer';
-                    img.onclick = () => window.open(e.target.result, '_blank'); // Click để xem full size
+                    img.onclick = () => window.open(e.target.result, '_blank');
                     preview.appendChild(img);
                 };
                 reader.readAsDataURL(file);
