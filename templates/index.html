@@ -1398,23 +1398,34 @@ async function loadHistory() {
             align-items: center;
             justify-content: center;
             gap: 8px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #dbeafe;
             cursor: pointer;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            background: white;
-            color: #475569;
+            background: #eff6ff;
+            color: #2563eb;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
         .btn-main:hover {
+            background: #dbeafe;
             transform: translateY(-1px);
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            filter: brightness(1.02);
         }
-        .btn-main:active { transform: translateY(0); }
         
-        .btn-primary { background: #1e293b !important; color: white !important; border: none !important; }
-        .btn-accent { background: #2563eb !important; color: white !important; border: none !important; }
-        .btn-secondary { background: #f8fafc !important; color: #475569 !important; border: 1px solid #e2e8f0 !important; }
+        .btn-primary, .btn-accent { 
+            background: #2563eb !important; 
+            color: white !important; 
+            border: none !important;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2) !important;
+        }
+        .btn-primary:hover, .btn-accent:hover {
+            background: #1d4ed8 !important;
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3) !important;
+        }
+        
+        .btn-secondary { 
+            background: #f8fafc !important; 
+            color: #64748b !important; 
+            border: 1px solid #e2e8f0 !important; 
+        }
         
         .main-actions-outer {
             margin-top: 40px;
@@ -1443,14 +1454,17 @@ async function loadHistory() {
                 left: 0;
                 width: 100%;
                 background: white;
-                padding: 12px 16px;
+                padding: 12px 16px 32px 16px; /* Tăng padding dưới cho Mobile */
+                padding-bottom: max(32px, env(safe-area-inset-bottom, 32px));
                 box-sizing: border-box;
                 border-top: 1px solid var(--border);
+                box-shadow: 0 -10px 15px -3px rgba(0,0,0,0.05);
                 z-index: 1000;
                 margin-top: 0;
             }
-            .main-actions-container { gap: 8px; }
-            .btn-main { padding: 10px 5px; font-size: 11px; flex: 1; border-radius: 8px; }
+            .main-actions-container { gap: 6px; }
+            .btn-main { padding: 12px 4px; font-size: 10px; flex: 1; border-radius: 10px; flex-direction: column; gap: 4px; }
+            .btn-main .icon { font-size: 16px; }
             
             #historyModal {
                 top: 0 !important; left: 0 !important;
@@ -1587,7 +1601,7 @@ async function loadHistory() {
         <div style="display:flex; align-items:center; gap:10px;">
             <span style="font-size:20px;">📁</span>
                 <div style="font-size:16px; font-weight:700; color:#0f172a;">Quản trị Hồ sơ Hệ thống</div>
-                <div style="font-size:12px; color:#64748b;">Version 3.5.5 (Unified UI) — <span id="historyTotalCount" style="color:#0f172a; font-weight:600;">0 hồ sơ</span></div>
+                <div style="font-size:12px; color:#64748b;">Version 3.5.6 (Safe Area Fix) — <span id="historyTotalCount" style="color:#0f172a; font-weight:600;">0 hồ sơ</span></div>
         </div>
         <div style="display:flex; align-items:center; gap:6px;">
             <button type="button" onclick="loadHistory()" class="btn-action" style="padding:6px 12px; background:#fff; color:#64748b; border:1px solid #e2e8f0; border-radius:10px; cursor:pointer; font-size:12px; font-weight:700;">🔄 Làm mới</button>
