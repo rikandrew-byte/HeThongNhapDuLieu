@@ -928,7 +928,12 @@ async function loadHistory() {
         function copyHistoryLink(id, maso, hoTen, btn) {
             const slug = (maso === 'CHO_DUYET' ? `${id}/` : '') + maso + (hoTen ? '_' + sanitizeSlug(hoTen) : '');
             const url = `${window.location.origin}/cv/${slug}`;
-            navigator.clipboard.writeText(url).then(() => {
+            
+            // Tạo tiêu đề: Mã số - Tên không dấu (ví dụ: MD13275 - Nguyen Ngoc Ha)
+            const cleanName = sanitizeSlug(hoTen).replace(/_/g, ' ');
+            const textToCopy = `${maso} - ${cleanName}\n${url}`;
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
                 const orig = btn.innerHTML;
                 btn.innerHTML = '✅ Đã copy';
                 setTimeout(() => btn.innerHTML = orig, 2000);
@@ -1004,14 +1009,17 @@ async function loadHistory() {
             const checked = [...document.querySelectorAll('.history-row-checkbox:checked')];
             if (!checked.length) return;
             const ids = checked.map(cb => parseInt(cb.value));
-            const links = ids.map(id => {
+            const formattedLinks = ids.map(id => {
                 const item = currentHistoryData.find(i => i.id === id);
                 if (!item) return "";
                 const slug = (item.ma_so === 'CHO_DUYET' ? `${id}/` : '') + item.ma_so + (item.ho_ten ? '_' + sanitizeSlug(item.ho_ten) : '');
-                return `${window.location.origin}/cv/${slug}`;
+                const url = `${window.location.origin}/cv/${slug}`;
+                const cleanName = sanitizeSlug(item.ho_ten).replace(/_/g, ' ');
+                return `${item.ma_so} - ${cleanName}\n${url}`;
             }).filter(l => l !== "");
-            navigator.clipboard.writeText(links.join('\n')).then(() => {
-                alert(`Đã copy ${links.length} link hồ sơ!`);
+            
+            navigator.clipboard.writeText(formattedLinks.join('\n\n')).then(() => {
+                alert(`Đã copy ${formattedLinks.length} link hồ sơ kèm thông tin!`);
             });
         }
 
