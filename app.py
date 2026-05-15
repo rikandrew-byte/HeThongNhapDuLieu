@@ -381,6 +381,10 @@ def prepare_render_data(raw_data: dict) -> dict:
             data[f'{key}_base64'] = _fetch_r2_image_as_base64(path)
         else:
             data[f'{key}_base64'] = ""
+
+    # Xử lý ảnh tài liệu (giấy tờ) để render trang 2
+    data['document_images'] = raw_data.get('document_images', [])
+
     return data
 
 def _protect_html(html: str) -> str:
@@ -408,7 +412,7 @@ def generate_html_resume(form_data: dict, template_name='fct_template_v6.18.html
     processed_data['bg_base64']   = _BG_B64_CACHE   or get_base64_image(os.path.join(BASE_DIR, 'static', 'fct_bg.png'), max_size=400, quality=75)
     
     # Nhúng dữ liệu gốc (không chứa ảnh base64 nặng) để có thể nạp lại sau này
-    raw_for_embed = {k: v for k, v in form_data.items() if k not in ('photo', 'qr_line')}
+    raw_for_embed = {k: v for k, v in form_data.items() if k not in ('photo', 'qr_line', 'document_images')}
     # Đánh dấu nếu có ảnh
     if form_data.get('photo'): raw_for_embed['__has_photo'] = True
     if form_data.get('qr_line'): raw_for_embed['__has_qr'] = True
@@ -443,6 +447,9 @@ def _prepare_data_for_db(data: dict) -> dict:
     clean = dict(data)
     for key in ('photo', 'qr_line'):
         if clean.get(key): clean[key] = _resize_image_for_db(clean[key])
+    # Resize ảnh tài liệu nếu có
+    if clean.get('document_images') and isinstance(clean['document_images'], list):
+        clean['document_images'] = [_resize_image_for_db(img, max_px=1200, quality=75) for img in clean['document_images'] if img]
     return clean
 
 # --- API ROUTES ---
@@ -502,27 +509,7 @@ def api_submit_only():
             db.session.commit()
             msg = 'Đã nộp form.'
 
-        # 🆕 Upload ảnh tài liệu lên R2
-        document_urls = []
-        if 'documents' in request.files:
-            files = request.files.getlist('documents')
-            for file in files:
-                if file and file.filename:
-                    try:
-                        url = upload_to_r2(file.read(), file.filename, f'documents/{ma_so}')
-                        if url:
-                            document_urls.append(url)
-                    except Exception as e:
-                        print(f"⚠️ Failed to upload {file.filename}: {str(e)}")
-            
-            # Lưu URLs vào database
-            if document_urls:
-                data_to_save = json.loads(record.data_json) if record.data_json else {}
-                data_to_save['document_urls'] = document_urls
-                record.data_json = json.dumps(data_to_save, ensure_ascii=False)
-                db.session.commit()
-
-        return jsonify({'success': True, 'id': record.id, 'ma_so': record.ma_so, 'msg': msg, 'documents_uploaded': len(document_urls)})
+        return jsonify({'success': True, 'id': record.id, 'ma_so': record.ma_so, 'msg': msg})
     except Exception as e:
         traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500

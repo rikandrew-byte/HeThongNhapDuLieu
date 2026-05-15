@@ -73,8 +73,9 @@
 
         @page { size: A4; margin: 0 !important; }
         @media print {
-            html, body { background: none !important; padding: 0 !important; margin: 0 !important; min-height: 0 !important; height: 297mm !important; overflow: hidden !important; }
-            .a4-page { width: 210mm !important; height: 297mm !important; overflow: hidden !important; page-break-after: avoid !important; page-break-inside: avoid !important; }
+            html, body { background: none !important; padding: 0 !important; margin: 0 !important; min-height: 0 !important; height: auto !important; overflow: visible !important; }
+            .a4-page { width: 210mm !important; height: 297mm !important; overflow: hidden !important; page-break-after: always !important; page-break-inside: avoid !important; }
+            .a4-page:last-of-type { page-break-after: avoid !important; }
             .fct-visual-header { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             .header-bg-img { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; display: block !important; }
             .content-wrapper { flex-direction: row !important; }
@@ -216,6 +217,36 @@
             <p class="text-[9px] font-bold tracking-widest uppercase italic text-center" style="color:#c9a227; letter-spacing: 0.15em;">Tôi cam đoan thông tin trên là đúng sự thật &nbsp;✦&nbsp; 我保證以上信息屬實</p>
         </div>
     </div>
+{% if document_images %}
+    <!-- TRANG 2: TÀI LIỆU & GIẤY TỜ -->
+    <div class="a4-page notranslate" style="page-break-before: always; display: flex; flex-direction: column;">
+        <!-- Header trang 2 -->
+        <div style="background: linear-gradient(135deg, #041c14 0%, #073d22 50%, #041c14 100%); padding: 16px 30px; border-bottom: 3px solid transparent; border-image: linear-gradient(90deg, #B8960C 0%, #00e68a 40%, #00e68a 60%, #B8960C 100%) 1; -webkit-print-color-adjust: exact; print-color-adjust: exact; flex-shrink: 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h2 style="color: #fff; font-size: 18px; font-weight: 900; letter-spacing: 0.1em; margin: 0; text-transform: uppercase;">📄 Tài liệu & Giấy tờ</h2>
+                    <p style="color: #86efac; font-size: 11px; font-weight: 600; margin: 2px 0 0 0; letter-spacing: 0.05em;">文件與證件 / Documents & Certificates</p>
+                </div>
+                <div style="text-align: right;">
+                    <p style="color: #B8960C; font-size: 13px; font-weight: 900;">ID: {{Maso}}</p>
+                    <p style="color: #e2e8f0; font-size: 12px; font-weight: 700;">{{Hoten}}</p>
+                </div>
+            </div>
+        </div>
+        <!-- Nội dung ảnh tài liệu -->
+        <div style="flex: 1; padding: 20px 25px; display: flex; flex-wrap: wrap; gap: 15px; align-content: flex-start; overflow: hidden;">
+            {% for img in document_images %}
+            <div style="width: calc(50% - 8px); border: 1.5px solid #d1d5db; border-radius: 10px; overflow: hidden; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
+                <img src="{{img}}" style="width: 100%; height: auto; display: block; object-fit: contain;" alt="Document {{loop.index}}">
+            </div>
+            {% endfor %}
+        </div>
+        <!-- Footer trang 2 -->
+        <div style="background: linear-gradient(90deg, #041c14 0%, #073d22 50%, #041c14 100%); padding: 8px 30px; border-top: 2px solid transparent; border-image: linear-gradient(90deg, #B8960C 0%, #00e68a 40%, #00e68a 60%, #B8960C 100%) 1; flex-shrink: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+            <p style="font-size: 9px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; font-style: italic; text-align: center; color: #c9a227; margin: 0;">Trang 2 — Tài liệu đính kèm &nbsp;✦&nbsp; 第2頁 — 附件文件</p>
+        </div>
+    </div>
+{% endif %}
 <script id="fct-raw-data" type="application/json">{{raw_data_json}}</script>
 </body>
 </html>

@@ -527,6 +527,29 @@
     </div>
 
     <script>
+        // ── Hàm resize ảnh → trả về Promise<base64> (Global scope để dùng chung) ──
+        function resizeToBase64(file, maxPx, quality) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        let w = img.width, h = img.height;
+                        if (w > maxPx || h > maxPx) {
+                            if (w > h) { h = Math.round(h * maxPx / w); w = maxPx; }
+                            else { w = Math.round(w * maxPx / h); h = maxPx; }
+                        }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = w; canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                        resolve(canvas.toDataURL('image/jpeg', quality));
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
         // --- Xử lý Kéo Thả và Dán Ảnh ---
         document.addEventListener('DOMContentLoaded', () => {
             const dropzone = document.getElementById('dropzone');
@@ -539,6 +562,9 @@
             const qrPreview = document.getElementById('qrPreview');
             const qrDropzoneText = document.getElementById('qrDropzoneText');
 
+            // ── Document dropzone (Section 5: Tài liệu & Giấy tờ) ──
+            const docDropzone = document.getElementById('documentDropzone');
+
             // Track ô nào đang được focus để paste đúng chỗ
             // Mặc định: ảnh chân dung
             let pasteTarget = 'photo';
@@ -546,28 +572,10 @@
             dropzone.addEventListener('click', () => pasteTarget = 'photo');
             qrDropzone.addEventListener('mouseenter', () => pasteTarget = 'qr');
             qrDropzone.addEventListener('click', () => pasteTarget = 'qr');
-
-            // ── Hàm resize ảnh → trả về Promise<base64> ──
-            function resizeToBase64(file, maxPx, quality) {
-                return new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const img = new Image();
-                        img.onload = () => {
-                            let w = img.width, h = img.height;
-                            if (w > maxPx || h > maxPx) {
-                                if (w > h) { h = Math.round(h * maxPx / w); w = maxPx; }
-                                else { w = Math.round(w * maxPx / h); h = maxPx; }
-                            }
-                            const canvas = document.createElement('canvas');
-                            canvas.width = w; canvas.height = h;
-                            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                            resolve(canvas.toDataURL('image/jpeg', quality));
-                        };
-                        img.src = e.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                });
+            // Khi hover/click vào vùng tài liệu → CHẶN paste vào QR/Photo
+            if (docDropzone) {
+                docDropzone.addEventListener('mouseenter', () => pasteTarget = 'document');
+                docDropzone.addEventListener('click', () => pasteTarget = 'document');
             }
 
             // ── Hàm set ảnh chân dung — lưu base64 vào hidden field ──
@@ -615,8 +623,24 @@
             });
 
             // ── Paste: vào đúng ô đang hover/focus ──
+            // QUAN TRỌNG: Nếu user đang ở vùng tài liệu (document), bỏ qua paste global
+            // để tránh ảnh giấy tờ nhảy vào ô QR hoặc Photo
             document.addEventListener('paste', (e) => {
                 if (e.clipboardData && e.clipboardData.files.length > 0) {
+                    if (pasteTarget === 'document') {
+                        // Đang ở vùng tài liệu → thêm vào document preview
+                        const docInput = document.getElementById('documentInput');
+                        const dt = new DataTransfer();
+                        // Giữ lại các file cũ
+                        if (docInput.files) {
+                            for (let f of docInput.files) dt.items.add(f);
+                        }
+                        // Thêm file mới từ clipboard
+                        for (let f of e.clipboardData.files) dt.items.add(f);
+                        docInput.files = dt.files;
+                        displayDocumentPreview();
+                        return; // Không cho chạy xuống photo/qr
+                    }
                     if (pasteTarget === 'qr') setQR(e.clipboardData.files[0]);
                     else setPhoto(e.clipboardData.files[0]);
                 }
@@ -1242,15 +1266,20 @@ async function loadHistory() {
             const recordId = document.getElementById('editingRecordId').value;
             if (recordId) plainData['_record_id'] = recordId;
 
-            // 🆕 Tạo FormData để gửi files + data
+            // 🆕 Chuyển đổi ảnh tài liệu sang base64 (resize) và đưa vào plainData
+            // → Lưu trực tiếp vào DB thay vì phụ thuộc R2
+            const documentFiles = document.getElementById('documentInput').files;
+            if (documentFiles && documentFiles.length > 0) {
+                const docBase64Array = [];
+                for (let file of documentFiles) {
+                    const b64 = await resizeToBase64(file, 1200, 0.75);
+                    docBase64Array.push(b64);
+                }
+                plainData['document_images'] = docBase64Array;
+            }
+
             const submitFormData = new FormData();
             submitFormData.append('data', JSON.stringify(plainData));
-            
-            // 🆕 Thêm ảnh tài liệu
-            const documentFiles = document.getElementById('documentInput').files;
-            for (let file of documentFiles) {
-                submitFormData.append('documents', file);
-            }
 
             try {
                 const response = await fetch('/api/submit-only', {
