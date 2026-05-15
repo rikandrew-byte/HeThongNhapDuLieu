@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google" content="notranslate">
-    <title>FCT-Premium V7.9 Strict A4</title>
+    <title>FCT-Premium V8.0 Final Strict</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -31,16 +31,15 @@
             color: #1e293b;
         }
 
+        /* TRANG 1: KHÓA CỨNG HOÀN TOÀN */
         .a4-page {
             width: 210mm; height: 295mm; min-height: 295mm; max-height: 295mm;
             background-color: white;
             display: flex; flex-direction: column; position: relative; overflow: hidden;
             box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.1);
             flex-shrink: 0;
-            page-break-after: always;
         }
 
-        /* TRANG TÀI LIỆU: LINH HOẠT */
         .a4-page-dynamic {
             width: 210mm; min-height: 296mm; 
             background-color: white;
@@ -68,7 +67,7 @@
             -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
         }
 
-        .content-wrapper { display: flex; flex: 1; overflow: hidden; background: #fff; min-height: 0; }
+        .content-wrapper { display: flex; flex: 1; overflow: hidden; background: #fff; min-height: 0; max-height: 82.5%; }
         
         .sidebar { 
             background-color: #f0fdf4; 
@@ -76,15 +75,17 @@
             display: flex; 
             flex-direction: column;
             border-right: 1px solid #d1fae5;
+            height: 100%;
         }
 
-        .main { width: 61.804%; display: flex; flex-direction: column; background: white; min-height: 0; }
+        .main { width: 61.804%; display: flex; flex-direction: column; background: white; height: 100%; overflow: hidden; }
 
         h1, h2, h3 { font-family: 'Playfair Display', serif; }
 
-        .section-personal { flex-basis: 50%; display: flex; flex-direction: column; padding: 25px 25px 15px 25px; }
-        .section-skills { flex-basis: 20%; display: flex; flex-direction: column; padding: 0 25px 15px 25px; }
-        .section-experience { flex-basis: 30%; display: flex; flex-direction: column; padding: 0 25px 25px 25px; overflow: hidden; }
+        /* KHỐNG CHẾ CHIỀU CAO TỪNG PHẦN */
+        .section-personal { height: 50%; max-height: 50%; display: flex; flex-direction: column; padding: 20px 25px 10px 25px; overflow: hidden; }
+        .section-skills { height: 20%; max-height: 20%; display: flex; flex-direction: column; padding: 0 25px 10px 25px; overflow: hidden; }
+        .section-experience { height: 30%; max-height: 30%; display: flex; flex-direction: column; padding: 0 25px 20px 25px; overflow: hidden; }
 
         .section-title {
             font-size: 15px;
@@ -97,60 +98,47 @@
             align-items: center;
             padding: 4px 0;
             border-bottom: 2px solid #bdf1da;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
+            flex-shrink: 0;
         }
 
-        .section-title span:last-child {
-            font-size: 14px;
-            color: #b45309;
-            font-family: 'Inter', sans-serif;
-            font-weight: 800;
-        }
+        .section-title span:last-child { font-size: 14px; color: #b45309; font-family: 'Inter', sans-serif; font-weight: 800; }
 
-        .info-grid { display: grid; grid-template-cols: repeat(2, 1fr); gap: 6px; }
+        .info-grid { display: grid; grid-template-cols: repeat(2, 1fr); gap: 5px; flex: 1; min-height: 0; }
         .info-item {
             background: #fff;
             border: 1px solid #e2e8f0;
-            padding: 6px 10px;
+            padding: 5px 8px;
             border-radius: 6px;
             display: flex;
             flex-direction: column;
+            justify-content: center;
         }
-        .info-label { font-size: 9px; font-weight: 800; color: #64748b; text-transform: uppercase; }
-        .info-value { font-size: 13px; font-weight: 700; color: #0f172a; }
+        .info-label { font-size: 9px; font-weight: 800; color: #64748b; text-transform: uppercase; line-height: 1.1; }
+        .info-value { font-size: 12.5px; font-weight: 700; color: #0f172a; line-height: 1.2; }
 
         @page { size: A4; margin: 0 !important; }
         @media print {
             html, body { 
-                width: 210mm;
-                height: auto;
-                padding: 0 !important; 
-                margin: 0 !important; 
-                background: white !important; 
-                display: block !important;
-                overflow: visible !important;
+                width: 210mm; height: auto; padding: 0 !important; margin: 0 !important; 
+                background: white !important; display: block !important; overflow: visible !important;
             }
             .a4-page { 
-                box-shadow: none !important; 
-                margin: 0 !important; 
-                border: none !important;
-                width: 210mm !important; 
-                height: 295mm !important; 
-                max-height: 295mm !important;
-                page-break-after: always !important; 
+                box-shadow: none !important; margin: 0 !important; border: none !important;
+                width: 210mm !important; height: 295mm !important; 
                 page-break-inside: avoid !important;
                 -webkit-print-color-adjust: exact !important;
             }
+            /* CHỈ NGẮT TRANG KHI CÓ TRANG TIẾP THEO */
+            .has-docs { page-break-after: always !important; }
+            
             .a4-page-dynamic { 
-                box-shadow: none !important; 
-                margin: 0 !important; 
-                border: none !important;
-                width: 210mm !important; 
-                page-break-before: always !important;
+                box-shadow: none !important; margin: 0 !important; border: none !important;
+                width: 210mm !important; page-break-before: always !important;
                 page-break-inside: avoid !important;
                 -webkit-print-color-adjust: exact !important;
             }
-            .fct-visual-header { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background: linear-gradient(135deg, #065f46 0%, #10b981 100%) !important; }
+            .fct-visual-header { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             .sidebar { background-color: #f0fdf4 !important; -webkit-print-color-adjust: exact !important; }
             .footer-bright { background-color: #10b981 !important; -webkit-print-color-adjust: exact !important; }
             .header-bg-img { display: block !important; }
@@ -160,13 +148,13 @@
 </head>
 <body>
     <div class="no-print w-full max-w-[210mm] mb-4 px-4 flex justify-between items-center bg-emerald-600 p-3 rounded-xl text-white shadow-lg">
-        <p class="text-xs font-bold uppercase tracking-widest">FCT Premium V7.9 Strict A4</p>
+        <p class="text-xs font-bold uppercase tracking-widest">FCT Premium V8.0 Strict</p>
         <button onclick="window.print()" class="px-5 py-1.5 bg-white text-emerald-700 font-black rounded-lg text-[10px] uppercase shadow-md active:scale-95 transition-all">🖨️ SAVE AS PDF</button>
     </div>
 
-    <div class="a4-page notranslate">
+    <div class="a4-page notranslate {% if document_images %}has-docs{% endif %}">
         <div class="fct-visual-header">
-            <img src="data:image/jpeg;base64,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達達" alt="" class="header-bg-img" aria-hidden="true">
+            <img src="data:image/jpeg;base64,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_8A/9k=" alt="" class="header-bg-img" aria-hidden="true">
             <div class="relative z-10 w-full h-full flex flex-col justify-center items-center">
                 <div class="absolute top-4 left-8 animate-pulse-soft hidden sm:block">
                     <p class="text-[9px] text-emerald-100 font-black uppercase tracking-widest">世 có 伯 樂 ， 然 後 有 千 里 馬</p>
@@ -180,16 +168,16 @@
 
         <div class="content-wrapper">
             <div class="sidebar p-5 border-r border-emerald-100 flex flex-col h-full">
-                <div class="mb-4 text-center border-b-2 border-emerald-200 pb-3">
+                <div class="mb-4 text-center border-b-2 border-emerald-200 pb-3 flex-shrink-0">
                     <p class="text-[11px] font-black text-amber-600 mb-0.5 uppercase tracking-widest">ID: {{Maso}}</p>
                     <h1 class="text-[18px] font-black uppercase text-slate-900 leading-tight mb-0.5 whitespace-nowrap overflow-hidden" style="font-family: 'Inter', sans-serif;">{{Hoten}}</h1>
                     <p class="text-[16px] font-bold text-emerald-600 italic tracking-[0.05em]">{{TentiengTrung}}</p>
                 </div>
-                <div class="w-full aspect-[3/4] bg-white rounded-2xl shadow-md p-1 mb-4 border border-emerald-100 overflow-hidden">
+                <div class="w-full aspect-[3/4] bg-white rounded-2xl shadow-md p-1 mb-4 border border-emerald-100 overflow-hidden flex-shrink-0">
                     <img src="{{photo_base64}}" class="w-full h-full object-cover rounded-xl">
                 </div>
 
-                <div class="space-y-3 mb-4 px-1">
+                <div class="space-y-3 mb-4 px-1 flex-shrink-0">
                     {% if video_link_1 or video_link_2 %}
                     <div class="grid grid-cols-2 gap-2">
                         {% if video_link_1 %}
@@ -210,15 +198,15 @@
                     {% endif %}
                 </div>
 
-                <div class="mt-auto bg-white p-4 rounded-xl border border-emerald-100 flex flex-col h-[25%] shadow-sm">
-                    <h2 class="text-[14px] font-black text-emerald-900 border-b border-emerald-100 pb-1 mb-2 uppercase flex justify-between items-center">
+                <div class="mt-auto bg-white p-4 rounded-xl border border-emerald-100 flex flex-col h-[25%] shadow-sm overflow-hidden">
+                    <h2 class="text-[14px] font-black text-emerald-900 border-b border-emerald-100 pb-1 mb-2 uppercase flex justify-between items-center flex-shrink-0">
                         <span>Ghi chú / 備註</span><span class="text-emerald-500">✒</span>
                     </h2>
                     <div class="text-[11.5px] text-slate-600 leading-relaxed italic font-medium overflow-hidden">{{loi_binh_1}}</div>
                 </div>
             </div>
 
-            <div class="main flex flex-col">
+            <div class="main flex flex-col overflow-hidden">
                 <section class="section-personal">
                     <div class="section-title">
                         <span>THÔNG TIN CÁ NHÂN</span><span>基本個人信息</span>
@@ -242,22 +230,22 @@
                     <div class="section-title">
                         <span>Kỹ năng & Ngoại ngữ</span><span>技能與語言</span>
                     </div>
-                    <div class="flex flex-wrap gap-1.5 px-1 text-[13px] font-semibold text-slate-700">{{KyNangList_HTML}}</div>
+                    <div class="flex flex-wrap gap-1.5 px-1 text-[13px] font-semibold text-slate-700 overflow-hidden">{{KyNangList_HTML}}</div>
                 </section>
 
                 <section class="section-experience">
                     <div class="section-title">
                         <span>Kinh nghiệm làm việc</span><span>工作經驗</span>
                     </div>
-                    <div class="space-y-3 relative border-l-2 border-emerald-100 ml-4 flex-1 overflow-hidden">
-                        {% if ndcv1 %}<div class="pl-6 relative"><div class="absolute w-2.5 h-2.5 bg-amber-500 rounded-full -left-[6px] border-2 border-white top-1 shadow-sm"></div><h3 class="text-[13.5px] font-black text-slate-900 uppercase leading-tight">{{ndcv1}}</h3><p class="text-[11px] text-emerald-600 font-bold italic">{{QG1}} ({{N1}})</p></div>{% endif %}
-                        {% if ndcv2 %}<div class="pl-6 relative"><div class="absolute w-2.5 h-2.5 bg-amber-500 rounded-full -left-[6px] border-2 border-white top-1 shadow-sm"></div><h3 class="text-[13.5px] font-black text-slate-900 uppercase leading-tight">{{ndcv2}}</h3><p class="text-[11px] text-emerald-600 font-bold italic">{{QG2}} ({{N2}})</p></div>{% endif %}
+                    <div class="space-y-1 relative border-l-2 border-emerald-100 ml-4 flex-1 overflow-hidden">
+                        {% if ndcv1 %}<div class="pl-6 relative mb-2"><div class="absolute w-2.5 h-2.5 bg-amber-500 rounded-full -left-[6px] border-2 border-white top-1 shadow-sm"></div><h3 class="text-[13px] font-black text-slate-900 uppercase leading-tight">{{ndcv1}}</h3><p class="text-[10.5px] text-emerald-600 font-bold italic">{{QG1}} ({{N1}})</p></div>{% endif %}
+                        {% if ndcv2 %}<div class="pl-6 relative"><div class="absolute w-2.5 h-2.5 bg-amber-500 rounded-full -left-[6px] border-2 border-white top-1 shadow-sm"></div><h3 class="text-[13px] font-black text-slate-900 uppercase leading-tight">{{ndcv2}}</h3><p class="text-[10.5px] text-emerald-600 font-bold italic">{{QG2}} ({{N2}})</p></div>{% endif %}
                     </div>
                 </section>
             </div>
         </div>
         
-        <div class="footer-bright px-10 py-3 flex justify-center items-center mt-auto bg-emerald-600 border-t-2 border-amber-400">
+        <div class="footer-bright px-10 py-3 flex justify-center items-center mt-auto bg-emerald-600 border-t-2 border-amber-400 flex-shrink-0">
             <p class="text-[9px] font-black tracking-widest uppercase italic text-center text-white">Tôi cam đoan thông tin trên là đúng sự thật &nbsp;✦&nbsp; 我保證以上信息屬實</p>
         </div>
     </div>
