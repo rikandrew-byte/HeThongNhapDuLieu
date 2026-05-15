@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google" content="notranslate">
-    <title>FCT-Premium V7.8 Bright Hope</title>
+    <title>FCT-Premium V7.9 Strict A4</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -31,12 +31,23 @@
             color: #1e293b;
         }
 
+        /* TRANG 1: CỐ ĐỊNH CỨNG */
         .a4-page {
-            width: 210mm; height: 296.5mm; min-height: 296.5mm; max-height: 296.5mm;
+            width: 210mm; height: 296mm; min-height: 296mm; max-height: 296mm;
             background-color: white;
             display: flex; flex-direction: column; position: relative; overflow: hidden;
             box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.1);
             flex-shrink: 0;
+            page-break-after: always;
+        }
+
+        /* TRANG TÀI LIỆU: LINH HOẠT */
+        .a4-page-dynamic {
+            width: 210mm; min-height: 296mm; 
+            background-color: white;
+            display: flex; flex-direction: column; position: relative;
+            box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
         }
 
         .fct-visual-header {
@@ -58,7 +69,7 @@
             -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
         }
 
-        .content-wrapper { display: flex; flex: 1; overflow: hidden; background: #fff; }
+        .content-wrapper { display: flex; flex: 1; overflow: hidden; background: #fff; min-height: 0; }
         
         .sidebar { 
             background-color: #f0fdf4; 
@@ -68,13 +79,13 @@
             border-right: 1px solid #d1fae5;
         }
 
-        .main { width: 61.804%; display: flex; flex-direction: column; background: white; }
+        .main { width: 61.804%; display: flex; flex-direction: column; background: white; min-height: 0; }
 
         h1, h2, h3 { font-family: 'Playfair Display', serif; }
 
         .section-personal { flex-basis: 50%; display: flex; flex-direction: column; padding: 25px 25px 15px 25px; }
         .section-skills { flex-basis: 20%; display: flex; flex-direction: column; padding: 0 25px 15px 25px; }
-        .section-experience { flex-basis: 30%; display: flex; flex-direction: column; padding: 0 25px 25px 25px; }
+        .section-experience { flex-basis: 30%; display: flex; flex-direction: column; padding: 0 25px 25px 25px; overflow: hidden; }
 
         .section-title {
             font-size: 15px;
@@ -112,7 +123,19 @@
         @page { size: A4; margin: 0 !important; }
         @media print {
             body { padding: 0 !important; background: none !important; }
-            .a4-page { box-shadow: none !important; margin: 0 !important; }
+            .a4-page { 
+                box-shadow: none !important; margin: 0 !important; 
+                width: 210mm !important; height: 296mm !important; 
+                page-break-after: always !important; 
+                page-break-inside: avoid !important;
+                -webkit-print-color-adjust: exact !important;
+            }
+            .a4-page-dynamic { 
+                box-shadow: none !important; margin: 0 !important; 
+                width: 210mm !important; 
+                page-break-before: always !important;
+                -webkit-print-color-adjust: exact !important;
+            }
             .fct-visual-header { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background: linear-gradient(135deg, #065f46 0%, #10b981 100%) !important; }
             .sidebar { background-color: #f0fdf4 !important; -webkit-print-color-adjust: exact !important; }
             .footer-bright { background-color: #10b981 !important; -webkit-print-color-adjust: exact !important; }
@@ -122,13 +145,13 @@
 </head>
 <body>
     <div class="no-print w-full max-w-[210mm] mb-4 px-4 flex justify-between items-center bg-emerald-600 p-3 rounded-xl text-white shadow-lg">
-        <p class="text-xs font-bold uppercase tracking-widest">FCT Premium V7.8 Active</p>
+        <p class="text-xs font-bold uppercase tracking-widest">FCT Premium V7.9 Strict A4</p>
         <button onclick="window.print()" class="px-5 py-1.5 bg-white text-emerald-700 font-black rounded-lg text-[10px] uppercase shadow-md active:scale-95 transition-all">🖨️ SAVE AS PDF</button>
     </div>
 
     <div class="a4-page notranslate">
         <div class="fct-visual-header">
-            <img src="data:image/jpeg;base64,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達達" alt="" class="header-bg-img" aria-hidden="true">
+            <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAkGBwgHBgkIBwgKCgkLDRYPDQwMDRsUFRAWIB0iIiAdHx8kKDQsJCYxJx8fLT0tMTU3Ojo6Iys/RD84QzQ5Ojf/2wBDAQoKCg0MDRoPDxo3JR8lNzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzf/wAARCAGQAZADASIAAhEBAxEB/8QAHAAAAgIDAQEAAAAAAAAAAAAABAUDBgABAgcI/8QARhAAAgEDAwIEBAMFBQYFBAMBAQIDAAQRBRIhMUEGEyJRYXGBkRQjMkJSobHBBxUkM9FDYnKCkuFEU6Lw8RYlNbI0c9LC/8QAGgEAAwEBAQEAAAAAAAAAAAAAAAECAwQFBv/EADARAAICAQQBAwEHBQADAAAAAAABAhEDBBIhMUETIlFhMnGBkaGx8AUUwdHxI0Lh/9oADAMBAAIRAxEAPwDw6srKymIysrdZQBqt1lZQBlZisrKAMrK3WUAardZWUAZWVuspiNVmK3WUAZisrdbCMRkKcUAc1lZW6ANVlbrKANVlbrMUAarMVvFZQBqsrdbAoA5rK3itUAZWVlZQBlaxW6ygDVZitgEnAFTJbs3WgG0iCtVPLAUqGgE7NYrK3WUhmq1W6ygDWKzFbrKAMxWq3WUAarKysoAytVusNIZlZW6zFMRlZW6ygDWK3WVugDmt1mK3imI1WVusoAysreKygDKysrKAMrMVsDJqeCHLqPc0Cbo6tLNp3AxxVgXT0S1IK84qawtFhiBxRm3II96CLbKVcw7JmX41DjFNtWh8u4z70tdKBqRHW8VlboLNYreKzNZmgDWK1it1ugDnFbrK3QBoitYrZrRoA1WVlTW0DTyhFHWgCCtqpY4pzeaV5NuWxjApbEmKBN0TW8IHJokkDoK4UgLzXSkGgxfdmMgcc0BcQ7TkUy4AoWZgxxQUnQv6VlTyoMVBQap2ZWqyspDMrKysoAysAzwKJs7R7lsDgU2h0+KEZYZNAmxTBYyzdsCubm38ltueasCjjCgAUu1ZRvVgKCbFJGDzWjUjDNRmkWmdCsrK3VCNVlbrKAMrKyjrW1EgoFKSXYDXQRj0BNHPagHpUtt5aMA1AtwtMbAZKmuasF0IGh9OM4pLJGAcigFKyGt10Fre0UFEdZUmBWYFAGov1ijovTKjHoKDTAcGjGIKCgzn2WOG+gMajI4FTJcwnowqoHI6E1z50inhzRYlyP8XY0dN6EE0iIwvNSrcSSJh2zWpkIjyaTZLfNAZ61laYYNapmyN10EJ6Cu7eIySAY4prLahIhgc4obM55VF0A29jLPxErMfhXE9pLA+2VSp9jVp8KXtraLIs5UOT1NCeKruC6nBtsEL1Yd6m3ZxLV5HqPT28fJW2jIFcUZCBI6qehNSajZrAoZPrVHfGV9i41lSRx7zRcentIOBQVYEi7jVm8P6eSwZl60le0ktmDEHAp/pWsRQIBkA0BYx16ALb4A4xVNJCmrdqerQ3FvjjpVOkOXOKCZGSyE8CtxufeudmRmtA7aTJfITJIQlDLknNE2Vnc6jKIrWJnJ6kDgVd9O8MWmiWTX+qEPIoyFPQGgSVIobwyHgqQcZ5oFhgkU6v7r8ZcSTD05PpUdhQEsQdcjhqBxlTBUQucCuzHt61JbelsEV1dEdqC23ZEIwa5aPBrSuc8URGu8r8TS5sG2mO9Ng8u2BxyamlGBRcEQFugHtWTIvAxzVCA0wwCgc9zS/VZFJWMdRR93cJbxkA+o1X5XZ5NxPWkBwwxXDrkcUS67kGOtQ4wcGgEyIVIkTN2rdsoeUA08FqgiBAHSmNsRNCy1wQaMujtJFEWdsGh3OOtAbhUvJp1YFRHz7UPqOnNaMrgelqijlKrwaCJrciW5lAc4qJSWNQsSzZre4jipsFwix6bov46MYc59qk1Pw5+FgJwc4pZpGrz2bgbiUq3S6pDqNhhmGcdaoZ523pYg9RXcULynCijJbM/imLfpzUxKQ/5eM0DcqRxBpnOZDUd5ZhTiP+FSm5lbjpRFiAW/M5+dKyPU5ErRuh5BqYK4QEg7ferG9lFMpGBmg9RRYYSgHOMYpNiySargTyAgZqEnNTtlhisNnOE3mNtvyosFJLsy1I3DPvRt8UMShfegIfS2D70XcqvlZB5FJ9mc170wKUAdOtcxJlhmuwhc0RHEB14qzfdSoaadYRtF5hOSaGu5HEhjUdOKktrsW6FQ3Wg7qZg+9R1oMtibtkqWkgG9hk1Gys0qrLnLnFMdIvoidtzj61mpz2zBvLx8KCmuBZdRrCwKGoZJnlXa5zitt6lyTUUYLHipsUeFyT2aqG5ppDdRxHtSoAqcd63gk807LUrHrtFdRE8UhmQJKR2oiKcxrgGo3SSZsqjn5LTG2QlsDrXAIJopNLvpf0W0mPcjFQrE9tPiVeV6ikI4LY4xXJXJHHFSTyK7gqMCtxAyHaoyaYPgvXhXxFpNjbpbtCIpO7kdaC8da9HeOtrbShogMkg9aqOcNtqKQbpcUrEnZ0mc8dKKtrSS6dI4+M9M1ws6JD5e0bqOtWeNo3U4K88UrMcsnFcAeoWD2Nz5bnLYzXEGn3F6paJDtHet6reSXN47tknGKc6HrVvZwhZkJGOlDboWTJmhhTirkV97J4JCkgww+FS6dHvvo4z0zmjtVvkvZspjr7dKEtVK3alTz70KzXFKco3NUWuSMLgLjgUq1C7W3B5y5rmZ5wcCTk0ouw7PuckmnZSmmcs5mbdITyagmTD+g5FSs6hAK4達達" alt="" class="header-bg-img" aria-hidden="true">
             <div class="relative z-10 w-full h-full flex flex-col justify-center items-center">
                 <div class="absolute top-4 left-8 animate-pulse-soft hidden sm:block">
                     <p class="text-[9px] text-emerald-100 font-black uppercase tracking-widest">世 có 伯 樂 ， 然 後 有 千 里 馬</p>
@@ -211,7 +234,7 @@
                     <div class="section-title">
                         <span>Kinh nghiệm làm việc</span><span>工作經驗</span>
                     </div>
-                    <div class="space-y-3 relative border-l-2 border-emerald-100 ml-4 flex-1">
+                    <div class="space-y-3 relative border-l-2 border-emerald-100 ml-4 flex-1 overflow-hidden">
                         {% if ndcv1 %}<div class="pl-6 relative"><div class="absolute w-2.5 h-2.5 bg-amber-500 rounded-full -left-[6px] border-2 border-white top-1 shadow-sm"></div><h3 class="text-[13.5px] font-black text-slate-900 uppercase leading-tight">{{ndcv1}}</h3><p class="text-[11px] text-emerald-600 font-bold italic">{{QG1}} ({{N1}})</p></div>{% endif %}
                         {% if ndcv2 %}<div class="pl-6 relative"><div class="absolute w-2.5 h-2.5 bg-amber-500 rounded-full -left-[6px] border-2 border-white top-1 shadow-sm"></div><h3 class="text-[13.5px] font-black text-slate-900 uppercase leading-tight">{{ndcv2}}</h3><p class="text-[11px] text-emerald-600 font-bold italic">{{QG2}} ({{N2}})</p></div>{% endif %}
                     </div>
@@ -226,7 +249,7 @@
 {% if document_images %}
     {% for i in range(0, document_images|length, 2) %}
     {% set batch = document_images[i:i+2] %}
-    <div class="a4-page notranslate" style="page-break-before: always; margin-bottom: 20px;">
+    <div class="a4-page-dynamic notranslate" style="page-break-before: always; margin-bottom: 20px;">
         <div style="background: linear-gradient(135deg, #065f46 0%, #10b981 100%); padding: 15px 40px; border-bottom: 4px solid #d4af37; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <h2 style="color: #fff; font-size: 14px; font-weight: 900; margin: 0; text-transform: uppercase;">Tài liệu & Giấy tờ / 證明文件</h2>
