@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google" content="notranslate">
-    <title>FCT-Premium V7.1</title>
+    <title>FCT-Premium V7.2</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -17,7 +17,6 @@
             --slate-900: #0f172a;
             --slate-700: #334155;
             --slate-400: #94a3b8;
-            --glass: rgba(255, 255, 255, 0.7);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -41,7 +40,6 @@
             flex-shrink: 0;
         }
 
-        /* Robust Header Design */
         .fct-visual-header {
             position: relative; 
             background: #052c1a linear-gradient(135deg, #041c14 0%, #073d22 50%, #041c14 100%);
@@ -63,11 +61,6 @@
             opacity: 0.4;
         }
 
-        .emerald-eagle {
-            filter: drop-shadow(0 0 10px rgba(0, 230, 138, 0.6));
-            -webkit-filter: drop-shadow(0 0 10px rgba(0, 230, 138, 0.6));
-        }
-
         .content-wrapper { display: flex; flex: 1; overflow: hidden; background: #fff; }
         
         .sidebar { 
@@ -76,14 +69,13 @@
             display: flex; 
             flex-direction: column;
             border-right: 1px solid rgba(0,0,0,0.05);
-            padding: 25px 20px;
+            padding: 25px 15px;
         }
 
-        .main { width: 61.804%; display: flex; flex-direction: column; background: white; padding: 30px 35px; gap: 25px; }
+        .main { width: 61.804%; display: flex; flex-direction: column; background: white; padding: 30px 35px; gap: 20px; }
 
         h1, h2, h3 { font-family: 'Playfair Display', serif; }
 
-        /* Section Styling */
         .section-title {
             font-size: 16px;
             font-weight: 900;
@@ -95,7 +87,7 @@
             align-items: center;
             padding: 6px 0;
             border-bottom: 2px solid var(--emerald-50);
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
         .section-title span:last-child {
@@ -105,38 +97,36 @@
             font-weight: 800;
         }
 
-        /* Info Grid */
-        .info-grid { display: grid; grid-template-cols: repeat(2, 1fr); gap: 10px; }
+        .info-grid { display: grid; grid-template-cols: repeat(2, 1fr); gap: 8px; }
         .info-item {
             background: #fff;
             border: 1px solid #f1f5f9;
-            padding: 8px 12px;
-            border-radius: 10px;
+            padding: 7px 10px;
+            border-radius: 8px;
             display: flex;
             flex-direction: column;
         }
-        .info-label { font-size: 9px; font-weight: 800; color: var(--slate-400); text-transform: uppercase; }
-        .info-value { font-size: 13px; font-weight: 700; color: var(--slate-900); }
+        .info-label { font-size: 8.5px; font-weight: 800; color: var(--slate-400); text-transform: uppercase; }
+        .info-value { font-size: 12px; font-weight: 700; color: var(--slate-900); }
 
-        /* Timeline Fix */
-        .timeline-container { position: relative; padding-left: 35px; }
+        /* Timeline Fix V7.2 */
+        .timeline-container { position: relative; padding-left: 50px; }
         .timeline-line {
-            position: absolute; left: 10px; top: 0; bottom: 0;
+            position: absolute; left: 15px; top: 0; bottom: 0;
             width: 2px; background: var(--accent-gold); opacity: 0.2;
         }
         .timeline-dot {
-            position: absolute; left: 5px; top: 4px;
+            position: absolute; left: 10px; top: 4px;
             width: 12px; height: 12px;
             background: var(--accent-gold); border: 2.5px solid white;
             border-radius: 50%; box-shadow: 0 0 8px rgba(197, 160, 33, 0.4);
             z-index: 2;
         }
 
-        /* Skill tags */
         .skill-tag {
             background: white; border: 1.5px solid var(--emerald-100);
-            color: var(--primary-emerald); padding: 4px 10px;
-            border-radius: 8px; font-size: 11px; font-weight: 800;
+            color: var(--primary-emerald); padding: 3px 8px;
+            border-radius: 6px; font-size: 10.5px; font-weight: 800;
             text-transform: uppercase; display: inline-flex;
         }
 
@@ -150,7 +140,7 @@
 </head>
 <body>
     <div class="no-print w-full max-w-[210mm] mb-4 px-4 flex justify-between items-center bg-emerald-950 border border-emerald-500/30 p-4 rounded-xl text-white">
-        <p class="text-xs font-bold uppercase tracking-widest">FCT Premium V7.1 Active</p>
+        <p class="text-xs font-bold uppercase tracking-widest">FCT Premium V7.2 Active</p>
         <button onclick="window.print()" class="px-5 py-2 bg-emerald-500 text-slate-950 font-black rounded-lg text-xs uppercase tracking-tighter">🖨️ SAVE AS PDF</button>
     </div>
 
@@ -162,7 +152,7 @@
                     <p class="text-[10px] text-emerald-100 font-black uppercase tracking-[0.2em]">世有伯樂，然後有千里馬</p>
                 </div>
                 <div class="flex flex-col items-center">
-                    <img src="{{logo_base64}}" alt="Logo" class="h-24 w-auto object-contain emerald-eagle z-10">
+                    <img src="{{logo_base64}}" alt="Logo" class="h-24 w-auto object-contain z-10" style="filter: drop-shadow(0 0 10px rgba(0, 230, 138, 0.6));">
                     <h2 class="text-2xl font-bold uppercase text-white tracking-[0.5em] mt-[-20px] z-20" style="text-shadow: 0 0 15px rgba(197,160,33,0.8);">Resumé</h2>
                 </div>
             </div>
@@ -170,44 +160,49 @@
 
         <div class="content-wrapper">
             <div class="sidebar">
-                <div class="mb-6 text-center">
+                <div class="mb-5 text-center px-2">
                     <div class="inline-block px-3 py-1 bg-emerald-900 text-[10px] font-black text-emerald-100 rounded-full mb-3 uppercase tracking-widest">ID: {{Maso}}</div>
-                    <h1 class="text-[24px] font-black uppercase text-slate-900 leading-[1.2] mb-1">{{Hoten}}</h1>
-                    <p class="text-[19px] font-bold text-emerald-700 notranslate italic">{{TentiengTrung}}</p>
+                    <h1 class="text-[18px] font-black uppercase text-slate-900 leading-[1.2] mb-1 whitespace-nowrap overflow-hidden text-ellipsis">{{Hoten}}</h1>
+                    <p class="text-[17px] font-bold text-emerald-700 notranslate italic">{{TentiengTrung}}</p>
                 </div>
 
-                <div class="w-full aspect-[3/4] bg-white rounded-3xl shadow-xl p-1.5 mb-6 border border-slate-100 overflow-hidden">
+                <div class="w-full aspect-[3/4] bg-white rounded-3xl shadow-xl p-1 mb-5 border border-slate-100 overflow-hidden">
                     <img src="{{photo_base64}}" class="w-full h-full object-contain bg-slate-50">
                 </div>
 
                 {% if video_link_1 or video_link_2 %}
-                <div class="flex flex-col gap-2.5 mb-6">
+                <div class="flex flex-col gap-2.5 mb-5 px-1">
                     {% if video_link_1 %}
-                    <a href="{{video_link_1}}" target="_blank" class="flex items-center justify-center w-full py-2.5 bg-slate-900 text-white text-[10px] font-black rounded-xl uppercase tracking-wider">▶ VIEW INTRODUCTION</a>
+                    <a href="{{video_link_1}}" target="_blank" class="flex flex-col items-center justify-center w-full py-2 bg-slate-900 text-white rounded-xl shadow-lg border-b-4 border-slate-700 active:translate-y-1">
+                        <span class="text-xl">▶</span>
+                        <span class="text-[9px] font-black uppercase tracking-widest">Xem Video / 點擊查看</span>
+                    </a>
                     {% endif %}
                     {% if video_link_2 %}
-                    <a href="{{video_link_2}}" target="_blank" class="flex items-center justify-center w-full py-2.5 bg-emerald-700 text-white text-[10px] font-black rounded-xl uppercase tracking-wider">▶ SKILL TEST VIDEO</a>
+                    <a href="{{video_link_2}}" target="_blank" class="flex flex-col items-center justify-center w-full py-2 bg-emerald-700 text-white rounded-xl shadow-lg border-b-4 border-emerald-800 active:translate-y-1">
+                        <span class="text-xl">▶</span>
+                        <span class="text-[9px] font-black uppercase tracking-widest">Skill Video / 技能影片</span>
+                    </a>
                     {% endif %}
                 </div>
                 {% endif %}
 
                 {% if qr_line_base64 %}
-                <div class="flex flex-col items-center mb-6">
+                <div class="flex flex-col items-center mb-5">
                     <div class="bg-white p-2 shadow-lg border border-slate-200 rounded-xl">
-                        <img src="{{qr_line_base64}}" class="w-[85px] h-[85px] object-contain">
+                        <img src="{{qr_line_base64}}" class="w-[80px] h-[80px] object-contain">
                     </div>
-                    <p class="text-[10px] font-black text-emerald-600 tracking-widest mt-2 uppercase">Connect on LINE</p>
+                    <p class="text-[9px] font-black text-emerald-600 tracking-widest mt-2 uppercase">Connect on LINE</p>
                 </div>
                 {% endif %}
 
-                <div class="mt-auto bg-white/50 backdrop-blur-sm p-5 rounded-2xl border border-emerald-100 flex flex-col h-[22%]">
-                    <h2 class="text-[13px] font-black text-emerald-900 border-b border-emerald-200 pb-2 mb-3 uppercase flex justify-between items-center">
+                <div class="mt-auto bg-white/50 backdrop-blur-sm p-4 rounded-2xl border border-emerald-100 flex flex-col h-[22%]">
+                    <h2 class="text-[12px] font-black text-emerald-900 border-b border-emerald-200 pb-1.5 mb-2 uppercase flex justify-between items-center">
                         <span>Ghi chú / 備註</span><span class="text-emerald-500">✒</span>
                     </h2>
-                    <div class="text-[12px] text-slate-600 leading-relaxed italic font-medium overflow-hidden">{{loi_binh_1}}</div>
+                    <div class="text-[11.5px] text-slate-600 leading-relaxed italic font-medium overflow-hidden">{{loi_binh_1}}</div>
                     <div class="mt-auto pt-2 flex justify-between items-center opacity-60">
-                        <span class="text-[9px] font-black uppercase">By:</span>
-                        <span class="text-[10px] font-black uppercase">{{f48}}</span>
+                        <span class="text-[9px] font-black uppercase">By: {{f48}}</span>
                     </div>
                 </div>
             </div>
@@ -271,8 +266,8 @@
             </div>
         </div>
         
-        <div class="px-10 py-3.5 flex justify-center items-center mt-auto bg-slate-900 border-t-2 border-emerald-500">
-            <p class="text-[10px] font-black tracking-widest uppercase italic text-center text-emerald-400">
+        <div class="px-10 py-3 flex justify-center items-center mt-auto bg-slate-900 border-t-2 border-emerald-500">
+            <p class="text-[9px] font-black tracking-widest uppercase italic text-center text-emerald-400">
                 Tôi cam đoan thông tin trên là đúng sự thật &nbsp;✦&nbsp; 我保證以上信息屬實
             </p>
         </div>
@@ -282,21 +277,17 @@
     {% for i in range(0, document_images|length, 2) %}
     {% set batch = document_images[i:i+2] %}
     <div class="a4-page notranslate" style="page-break-before: always; margin-bottom: 20px;">
-        <div style="background: #052c1a; padding: 20px 40px; border-bottom: 4px solid var(--accent-gold); -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+        <div style="background: #052c1a; padding: 15px 40px; border-bottom: 4px solid var(--accent-gold); -webkit-print-color-adjust: exact; print-color-adjust: exact;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h2 style="color: #fff; font-size: 16px; font-weight: 900; margin: 0; text-transform: uppercase;">Tài liệu & Giấy tờ / 證明文件</h2>
-                <div style="color: #00e68a; font-size: 12px; font-weight: 900;">FCT PREMIUM SYSTEM</div>
+                <h2 style="color: #fff; font-size: 14px; font-weight: 900; margin: 0; text-transform: uppercase;">Tài liệu & Giấy tờ / 證明文件</h2>
             </div>
         </div>
-        <div style="flex: 1; padding: 30px; display: flex; flex-direction: column; gap: 20px; align-items: center; justify-content: flex-start; background: #f8fafc;">
+        <div style="flex: 1; padding: 25px; display: flex; flex-direction: column; gap: 15px; align-items: center; justify-content: flex-start; background: #f8fafc;">
             {% for img in batch %}
-            <div style="width: 100%; border: 1px solid #e2e8f0; border-radius: 15px; overflow: hidden; background: #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; padding: 8px;">
+            <div style="width: 100%; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 8px 16px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; padding: 5px;">
                 <img src="{{img}}" style="width: 100%; height: auto; max-height: 440px; display: block; object-fit: contain;">
             </div>
             {% endfor %}
-        </div>
-        <div style="padding: 12px 40px; border-top: 1px solid #e2e8f0; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
-            <p style="font-size: 10px; color: #94a3b8; font-weight: 800; text-transform: uppercase; margin: 0;">TRANG {{loop.index + 1}} — {{Hoten}}</p>
         </div>
     </div>
     {% endfor %}
