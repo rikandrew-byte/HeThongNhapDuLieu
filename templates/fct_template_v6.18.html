@@ -225,34 +225,49 @@
         </div>
     </div>
 {% if document_images %}
-    <!-- TRANG 2: TÀI LIỆU & GIẤY TỜ (Dynamic height to prevent cut-off) -->
-    <div class="a4-page-dynamic notranslate" style="page-break-before: always; display: flex; flex-direction: column;">
-        <!-- Header trang 2 -->
+    {% for batch in document_images|batch(2) %}
+    <!-- TRANG {{loop.index + 1}}: TÀI LIỆU & GIẤY TỜ -->
+    <div class="a4-page notranslate" style="page-break-before: always; display: flex; flex-direction: column;">
+        <!-- Header trang {{loop.index + 1}} -->
         <div style="background: linear-gradient(135deg, #041c14 0%, #073d22 50%, #041c14 100%); padding: 16px 30px; border-bottom: 3px solid transparent; border-image: linear-gradient(90deg, #B8960C 0%, #00e68a 40%, #00e68a 60%, #B8960C 100%) 1; -webkit-print-color-adjust: exact; print-color-adjust: exact; flex-shrink: 0;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <h2 style="color: #fff; font-size: 18px; font-weight: 900; letter-spacing: 0.1em; margin: 0; text-transform: uppercase;">📄 Tài liệu & Giấy tờ</h2>
-                    <p style="color: #86efac; font-size: 11px; font-weight: 600; margin: 2px 0 0 0; letter-spacing: 0.05em;">文件與證件 / Documents & Certificates</p>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 32px; height: 32px; background: rgba(255,255,255,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.2);">
+                        <span style="color: #00e68a; font-size: 16px;">📄</span>
+                    </div>
+                    <div>
+                        <h2 style="color: #fff; font-size: 16px; font-weight: 800; margin: 0; text-transform: uppercase; letter-spacing: 1px;">Tài liệu & Giấy tờ</h2>
+                        <p style="color: rgba(255,255,255,0.6); font-size: 10px; margin: 0; font-weight: 600;">Documents & Certificates / 證明文件</p>
+                    </div>
                 </div>
                 <div style="text-align: right;">
-                    <p style="color: #B8960C; font-size: 13px; font-weight: 900;">ID: {{Maso}}</p>
-                    <p style="color: #e2e8f0; font-size: 12px; font-weight: 700;">{{Hoten}}</p>
+                    <div style="color: #00e68a; font-size: 12px; font-weight: 800;">FCT HR SYSTEM</div>
+                    <div style="color: rgba(255,255,255,0.5); font-size: 9px; font-weight: 600;">V3.6.0 Stable</div>
                 </div>
             </div>
         </div>
-        <!-- Nội dung ảnh tài liệu -->
-        <div style="flex: 1; padding: 20px 25px; display: flex; flex-wrap: wrap; gap: 15px; align-content: flex-start; overflow: visible;">
-            {% for img in document_images %}
-            <div style="width: calc(50% - 8px); border: 1.5px solid #d1d5db; border-radius: 10px; overflow: hidden; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
-                <img src="{{img}}" style="width: 100%; height: auto; display: block; object-fit: contain;" alt="Document {{loop.index}}">
+
+        <!-- Nội dung ảnh tài liệu (Tối đa 2 ảnh/trang) -->
+        <div style="flex: 1; padding: 25px; display: flex; flex-direction: column; gap: 20px; align-items: center; justify-content: flex-start; overflow: hidden; background: #f9fafb;">
+            {% for img in batch %}
+            <div style="width: 100%; max-height: 44%; border: 1.5px solid #e5e7eb; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center;">
+                <img src="{{img}}" style="width: 100%; height: 100%; display: block; object-fit: contain; padding: 10px;" alt="Document">
             </div>
             {% endfor %}
         </div>
-        <!-- Footer trang 2 -->
-        <div style="background: linear-gradient(90deg, #041c14 0%, #073d22 50%, #041c14 100%); padding: 8px 30px; border-top: 2px solid transparent; border-image: linear-gradient(90deg, #B8960C 0%, #00e68a 40%, #00e68a 60%, #B8960C 100%) 1; flex-shrink: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
-            <p style="font-size: 9px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; font-style: italic; text-align: center; color: #c9a227; margin: 0;">Trang 2 — Tài liệu đính kèm &nbsp;✦&nbsp; 第2頁 — 附件文件</p>
+
+        <!-- Footer trang {{loop.index + 1}} -->
+        <div style="padding: 12px 30px; border-top: 1.5px solid #e2e8f0; -webkit-print-color-adjust: exact; print-color-adjust: exact; flex-shrink: 0; background: #fff;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="display: inline-block; width: 6px; height: 6px; background: #00e68a; border-radius: 50%;"></span>
+                    <p style="font-size: 10px; color: #64748b; font-weight: 700; text-transform: uppercase;">TRANG {{loop.index + 1}} — TÀI LIỆU CỦA ỨNG VIÊN</p>
+                </div>
+                <p style="font-size: 10px; color: #64748b; font-weight: 700;">{{ma_so}} — {{Hoten}}</p>
+            </div>
         </div>
     </div>
+    {% endfor %}
 {% endif %}
 <script id="fct-raw-data" type="application/json">{{raw_data_json}}</script>
 </body>

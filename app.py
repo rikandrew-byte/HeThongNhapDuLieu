@@ -502,7 +502,7 @@ def api_submit_only():
             if not record: return jsonify({'success': False, 'error': 'Not found'}), 404
             old_data = json.loads(record.data_json) if record.data_json else {}
             for key in ('photo', 'qr_line', 'document_images'):
-                if not data.get(key) and old_data.get(key): data[key] = old_data[key]
+                if key not in data and old_data.get(key): data[key] = old_data[key]
             record.ma_so = ma_so or 'CHO_DUYET'
             record.ho_ten = ho_ten
             record.data_json = json.dumps(_prepare_data_for_db(data), ensure_ascii=False)
