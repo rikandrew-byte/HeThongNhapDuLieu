@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google" content="notranslate">
-    <title>FCT-Premium V8.2 Deep Emerald</title>
+    <title>FCT-Premium V8.3 Golden Eagle</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -106,14 +106,15 @@
         .info-item {
             background: #fff;
             border: 1px solid #e2e8f0;
-            padding: 5px 8px;
-            border-radius: 6px;
+            padding: 6px 10px;
+            border-radius: 8px;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            gap: 2px; /* TẠO KHOẢNG CÁCH GIỮA NHÃN VÀ GIÁ TRỊ */
         }
-        .info-label { font-size: 9px; font-weight: 800; color: #64748b; text-transform: uppercase; line-height: 1.1; }
-        .info-value { font-size: 12.5px; font-weight: 700; color: #0f172a; line-height: 1.2; }
+        .info-label { font-size: 9px; font-weight: 800; color: #64748b; text-transform: uppercase; line-height: 1.2; }
+        .info-value { font-size: 12.5px; font-weight: 700; color: #0f172a; line-height: 1.4; }
 
         .skill-tag-container > * {
             display: inline-block;
@@ -153,12 +154,14 @@
             .footer-bright { background-color: #10b981 !important; -webkit-print-color-adjust: exact !important; }
             .skill-tag-container > * { border: 1.5px solid #10b981 !important; background: #f0fdf4 !important; -webkit-print-color-adjust: exact !important; }
             .header-bg-img { display: block !important; opacity: 0.8 !important; }
+            /* GIỮ NGUYÊN MÀU VÀNG CỦA LOGO KHI IN */
+            .logo-golden { -webkit-filter: sepia(1) saturate(10) hue-rotate(-10deg) brightness(1.1) !important; filter: sepia(1) saturate(10) hue-rotate(-10deg) brightness(1.1) !important; }
         }
     </style>
 </head>
 <body>
     <div class="no-print w-full max-w-[210mm] mb-4 px-4 flex justify-between items-center bg-emerald-600 p-3 rounded-xl text-white shadow-lg">
-        <p class="text-xs font-bold uppercase tracking-widest">FCT Premium V8.2 Deep Emerald</p>
+        <p class="text-xs font-bold uppercase tracking-widest">FCT Premium V8.3 Golden Eagle</p>
         <button onclick="window.print()" class="px-5 py-1.5 bg-white text-emerald-700 font-black rounded-lg text-[10px] uppercase shadow-md active:scale-95 transition-all">🖨️ SAVE AS PDF</button>
     </div>
 
@@ -170,7 +173,7 @@
                     <p class="text-[9px] text-emerald-100 font-black uppercase tracking-widest">世 有 伯 樂 ， 然 後 有 千 里 馬</p>
                 </div>
                 <div class="flex flex-col items-center">
-                    <img src="{{logo_base64}}" alt="Logo" class="h-24 w-auto object-contain z-10 scale-x-125" style="filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.5));">
+                    <img src="{{logo_base64}}" alt="Logo" class="h-24 w-auto object-contain z-10 scale-x-125 logo-golden" style="filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.5)) sepia(1) saturate(10) hue-rotate(-10deg) brightness(1.1);">
                     <h2 class="text-3xl font-black uppercase text-white tracking-[0.6em] mt-[-20px] z-20" style="text-shadow: 0 4px 8px rgba(0,0,0,0.4); font-family: 'Playfair Display', serif;">Resumé</h2>
                 </div>
             </div>
