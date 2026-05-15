@@ -4,18 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google" content="notranslate">
-    <title>FCT-Premium V7.3</title>
+    <title>FCT-Premium V7.4 Bright Hope</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
-            --primary-emerald: #064e3b;
-            --emerald-600: #059669;
+            --primary-emerald: #059669;
+            --emerald-700: #047857;
             --emerald-100: #d1fae5;
-            --emerald-50: #f0fdf4;
-            --accent-gold: #c5a021;
-            --slate-900: #0f172a;
-            --slate-700: #334155;
+            --emerald-50: #ecfdf5;
+            --accent-gold: #d4af37;
+            --slate-800: #1e293b;
+            --slate-600: #475569;
             --slate-400: #94a3b8;
         }
 
@@ -23,30 +23,31 @@
         
         body { 
             font-family: 'Inter', sans-serif; 
-            background-color: #0f172a; 
+            background-color: #f1f5f9; 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
             min-height: 100vh; 
             padding: 40px 0;
-            color: var(--slate-900);
+            color: #1e293b;
         }
 
         .a4-page {
             width: 210mm; height: 296.5mm; min-height: 296.5mm; max-height: 296.5mm;
             background-color: white;
             display: flex; flex-direction: column; position: relative; overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
             flex-shrink: 0;
         }
 
+        /* Bright & Hopeful Header */
         .fct-visual-header {
             position: relative; 
-            background: #052c1a linear-gradient(135deg, #041c14 0%, #073d22 50%, #041c14 100%);
+            background: linear-gradient(135deg, #065f46 0%, #10b981 50%, #065f46 100%);
             height: 14%; 
             overflow: hidden; 
             color: white; 
-            border-bottom: 4px solid var(--accent-gold);
+            border-bottom: 5px solid var(--accent-gold);
             flex-shrink: 0;
             z-index: 10;
             display: flex;
@@ -55,20 +56,25 @@
             -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
         }
 
+        .header-shine {
+            position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
         .header-pattern {
             position: absolute; inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-            opacity: 0.4;
+            background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M0 38.59V40h1.41l1.1-1.11L1.41 37.78 0 38.59zM0 1.41L1.1 0H0v1.41zM40 1.41V0h-1.41l-1.1 1.11 1.1 1.11L40 1.41zM40 38.59L38.9 40H40v-1.41zM20 18.59L18.9 20l1.1 1.11L21.1 20 20 18.59z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
         }
 
         .content-wrapper { display: flex; flex: 1; overflow: hidden; background: #fff; }
         
         .sidebar { 
-            background-color: #f8fafc; 
+            background-color: #f0fdf4; 
             width: 38.196%; 
             display: flex; 
             flex-direction: column;
-            border-right: 1px solid rgba(0,0,0,0.05);
+            border-right: 1px solid #d1fae5;
             padding: 25px 15px;
         }
 
@@ -79,80 +85,84 @@
         .section-title {
             font-size: 16px;
             font-weight: 900;
-            color: var(--primary-emerald);
+            color: #064e3b;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 6px 0;
-            border-bottom: 2px solid var(--emerald-50);
+            border-bottom: 2px solid #bdf1da;
             margin-bottom: 12px;
         }
 
         .section-title span:last-child {
             font-size: 13px;
-            color: var(--accent-gold);
+            color: #b45309;
             font-family: 'Inter', sans-serif;
             font-weight: 800;
         }
 
-        .info-grid { display: grid; grid-template-cols: repeat(2, 1fr); gap: 8px; }
+        .info-grid { display: grid; grid-template-cols: repeat(2, 1fr); gap: 10px; }
         .info-item {
             background: #fff;
-            border: 1px solid #f1f5f9;
-            padding: 7px 10px;
+            border: 1px solid #e2e8f0;
+            padding: 8px 10px;
             border-radius: 8px;
             display: flex;
             flex-direction: column;
         }
-        .info-label { font-size: 8.5px; font-weight: 800; color: var(--slate-400); text-transform: uppercase; }
-        .info-value { font-size: 12px; font-weight: 700; color: var(--slate-900); }
+        .info-label { font-size: 8.5px; font-weight: 800; color: #64748b; text-transform: uppercase; }
+        .info-value { font-size: 12.5px; font-weight: 700; color: #0f172a; }
 
-        .timeline-container { position: relative; padding-left: 50px; }
+        /* Left-Aligned Vertical Timeline Fix */
+        .timeline-container { position: relative; padding-left: 45px; }
         .timeline-line {
-            position: absolute; left: 15px; top: 0; bottom: 0;
-            width: 2px; background: var(--accent-gold); opacity: 0.2;
+            position: absolute; left: 10px; top: 0; bottom: 0;
+            width: 3px; background: #10b981; opacity: 0.2;
+            border-radius: 3px;
         }
         .timeline-dot {
-            position: absolute; left: 10px; top: 4px;
-            width: 12px; height: 12px;
-            background: var(--accent-gold); border: 2.5px solid white;
-            border-radius: 50%; box-shadow: 0 0 8px rgba(197, 160, 33, 0.4);
+            position: absolute; left: 4px; top: 4px;
+            width: 15px; height: 15px;
+            background: #10b981; border: 3px solid white;
+            border-radius: 50%; shadow: 0 4px 6px rgba(0,0,0,0.1);
             z-index: 2;
         }
 
         .skill-tag {
-            background: white; border: 1.5px solid var(--emerald-100);
-            color: var(--primary-emerald); padding: 3px 8px;
-            border-radius: 6px; font-size: 10.5px; font-weight: 800;
+            background: #ecfdf5; border: 1.5px solid #10b981;
+            color: #065f46; padding: 4px 10px;
+            border-radius: 8px; font-size: 11px; font-weight: 800;
             text-transform: uppercase; display: inline-flex;
         }
 
         @media print {
             body { padding: 0 !important; background: none !important; }
             .a4-page { box-shadow: none !important; margin: 0 !important; }
-            .fct-visual-header { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background: #052c1a !important; }
-            .sidebar { background-color: #f8fafc !important; -webkit-print-color-adjust: exact !important; }
+            .fct-visual-header { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background: linear-gradient(135deg, #065f46 0%, #10b981 100%) !important; }
+            .sidebar { background-color: #f0fdf4 !important; -webkit-print-color-adjust: exact !important; }
+            .footer-bright { background-color: #10b981 !important; -webkit-print-color-adjust: exact !important; }
         }
     </style>
 </head>
 <body>
-    <div class="no-print w-full max-w-[210mm] mb-4 px-4 flex justify-between items-center bg-emerald-950 border border-emerald-500/30 p-4 rounded-xl text-white">
-        <p class="text-xs font-bold uppercase tracking-widest">FCT Premium V7.3 Active</p>
-        <button onclick="window.print()" class="px-5 py-2 bg-emerald-500 text-slate-950 font-black rounded-lg text-xs uppercase tracking-tighter">🖨️ SAVE AS PDF</button>
+    <div class="no-print w-full max-w-[210mm] mb-4 px-4 flex justify-between items-center bg-emerald-600 p-4 rounded-xl text-white shadow-xl">
+        <p class="text-xs font-bold uppercase tracking-widest">FCT Premium V7.4 Bright Hope Edition</p>
+        <button onclick="window.print()" class="px-5 py-2 bg-white text-emerald-700 font-black rounded-lg text-xs uppercase tracking-tighter shadow-lg active:scale-95 transition-all">🖨️ SAVE AS PDF</button>
     </div>
 
     <div class="a4-page notranslate">
         <div class="fct-visual-header">
             <div class="header-pattern"></div>
+            <div class="header-shine"></div>
             <div class="relative z-10 w-full h-full flex flex-col justify-center items-center">
-                <div class="absolute top-4 left-8 opacity-60">
-                    <p class="text-[10px] text-emerald-100 font-black uppercase tracking-[0.2em]">世有伯樂，然後有千里馬</p>
+                <div class="absolute top-4 left-8 opacity-80">
+                    <p class="text-[10px] text-emerald-50 font-black uppercase tracking-[0.2em]">世有伯樂，然後有千里馬</p>
                 </div>
                 <div class="flex flex-col items-center">
-                    <img src="{{logo_base64}}" alt="Logo" class="h-24 w-auto object-contain z-10" style="filter: drop-shadow(0 0 10px rgba(0, 230, 138, 0.6));">
-                    <h2 class="text-2xl font-bold uppercase text-white tracking-[0.5em] mt-[-20px] z-20" style="text-shadow: 0 0 15px rgba(197,160,33,0.8);">Resumé</h2>
+                    <img src="{{logo_base64}}" alt="Logo" class="h-24 w-auto object-contain z-10" style="filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.4));">
+                    <h2 class="text-2xl font-bold uppercase text-white tracking-[0.5em] mt-[-20px] z-20" style="text-shadow: 0 4px 10px rgba(0,0,0,0.2);">Resumé</h2>
                 </div>
             </div>
         </div>
@@ -160,27 +170,27 @@
         <div class="content-wrapper">
             <div class="sidebar">
                 <div class="mb-5 text-center px-2">
-                    <div class="inline-block px-3 py-1 bg-emerald-900 text-[10px] font-black text-emerald-100 rounded-full mb-3 uppercase tracking-widest">ID: {{Maso}}</div>
+                    <div class="inline-block px-3 py-1 bg-emerald-100 text-[10px] font-black text-emerald-800 rounded-full mb-3 uppercase tracking-widest border border-emerald-200">ID: {{Maso}}</div>
                     <h1 class="text-[18px] font-black uppercase text-slate-900 leading-[1.2] mb-1 whitespace-nowrap overflow-hidden text-ellipsis">{{Hoten}}</h1>
-                    <p class="text-[17px] font-bold text-emerald-700 notranslate italic">{{TentiengTrung}}</p>
+                    <p class="text-[17px] font-bold text-emerald-600 notranslate italic">{{TentiengTrung}}</p>
                 </div>
 
-                <div class="w-full aspect-[3/4] bg-white rounded-3xl shadow-xl p-1 mb-5 border border-slate-100 overflow-hidden">
-                    <img src="{{photo_base64}}" class="w-full h-full object-contain bg-slate-50">
+                <div class="w-full aspect-[3/4] bg-white rounded-3xl shadow-lg p-1.5 mb-5 border border-emerald-100 overflow-hidden relative">
+                    <img src="{{photo_base64}}" class="w-full h-full object-contain bg-slate-50 rounded-2xl">
                 </div>
 
                 {% if video_link_1 or video_link_2 %}
-                <div class="flex flex-col gap-2.5 mb-5 px-1">
+                <div class="flex flex-col gap-3 mb-5 px-1">
                     {% if video_link_1 %}
-                    <a href="{{video_link_1}}" target="_blank" class="flex flex-col items-center justify-center w-full py-2 bg-slate-900 text-white rounded-xl shadow-lg border-b-4 border-slate-700 active:translate-y-1">
-                        <span class="text-xl">▶</span>
-                        <span class="text-[9px] font-black uppercase tracking-widest">Xem Video / 點擊查看</span>
+                    <a href="{{video_link_1}}" target="_blank" class="flex flex-col items-center justify-center w-full py-2.5 bg-emerald-600 text-white rounded-2xl shadow-md border-b-4 border-emerald-800 active:translate-y-1 transition-all">
+                        <span class="text-xl mb-0.5">▶</span>
+                        <span class="text-[11px] font-black uppercase tracking-widest">Xem Video / 點擊影片</span>
                     </a>
                     {% endif %}
                     {% if video_link_2 %}
-                    <a href="{{video_link_2}}" target="_blank" class="flex flex-col items-center justify-center w-full py-2 bg-emerald-700 text-white rounded-xl shadow-lg border-b-4 border-emerald-800 active:translate-y-1">
-                        <span class="text-xl">▶</span>
-                        <span class="text-[9px] font-black uppercase tracking-widest">Skill Video / 技能影片</span>
+                    <a href="{{video_link_2}}" target="_blank" class="flex flex-col items-center justify-center w-full py-2.5 bg-emerald-50 text-emerald-700 rounded-2xl shadow-md border-b-4 border-emerald-200 active:translate-y-1 transition-all border border-emerald-100">
+                        <span class="text-xl mb-0.5">▶</span>
+                        <span class="text-[11px] font-black uppercase tracking-widest">Skill Video / 技能影片</span>
                     </a>
                     {% endif %}
                 </div>
@@ -188,20 +198,20 @@
 
                 {% if qr_line_base64 %}
                 <div class="flex flex-col items-center mb-5">
-                    <div class="bg-white p-2 shadow-lg border border-slate-200 rounded-xl">
-                        <img src="{{qr_line_base64}}" class="w-[80px] h-[80px] object-contain">
+                    <div class="bg-white p-2 shadow-md border border-emerald-100 rounded-2xl">
+                        <img src="{{qr_line_base64}}" class="w-[85px] h-[85px] object-contain">
                     </div>
                     <p class="text-[9px] font-black text-emerald-600 tracking-widest mt-2 uppercase">Connect on LINE</p>
                 </div>
                 {% endif %}
 
-                <div class="mt-auto bg-white/50 backdrop-blur-sm p-4 rounded-2xl border border-emerald-100 flex flex-col h-[22%]">
-                    <h2 class="text-[12px] font-black text-emerald-900 border-b border-emerald-200 pb-1.5 mb-2 uppercase flex justify-between items-center">
+                <div class="mt-auto bg-white p-4 rounded-2xl border border-emerald-100 flex flex-col h-[22%] shadow-sm">
+                    <h2 class="text-[12px] font-black text-emerald-900 border-b border-emerald-100 pb-1.5 mb-2 uppercase flex justify-between items-center">
                         <span>Ghi chú / 備註</span><span class="text-emerald-500">✒</span>
                     </h2>
                     <div class="text-[11.5px] text-slate-600 leading-relaxed italic font-medium overflow-hidden">{{loi_binh_1}}</div>
-                    <div class="mt-auto pt-2 flex justify-between items-center opacity-60">
-                        <span class="text-[9px] font-black uppercase">By: {{f48}}</span>
+                    <div class="mt-auto pt-2 flex justify-between items-center opacity-40">
+                        <span class="text-[9px] font-black uppercase">FCT System Verified</span>
                     </div>
                 </div>
             </div>
@@ -222,7 +232,7 @@
                         <div class="info-item"><span class="info-label">Liên hệ / 聯繫方式</span><span class="info-value">{{Lienhe}}</span></div>
                         <div class="info-item"><span class="info-label">Thị lực / 視力</span><span class="info-value">{{ThiLuc}}</span></div>
                         <div class="info-item"><span class="info-label">Tay thuận / 慣用手</span><span class="info-value">{{TayThuan}}</span></div>
-                        <div class="info-item col-span-2 border-emerald-50 bg-emerald-50/20"><span class="info-label">Hình xăm / 刺青</span><span class="info-value">{{f12}}</span></div>
+                        <div class="info-item col-span-2 border-emerald-100 bg-emerald-50/30"><span class="info-label">Hình xăm / 刺青</span><span class="info-value">{{f12}}</span></div>
                     </div>
                 </section>
                 
@@ -230,7 +240,7 @@
                     <div class="section-title">
                         <span>Kỹ năng & Ngoại ngữ</span><span>技能與語言</span>
                     </div>
-                    <div class="flex flex-wrap gap-2">{{KyNangList_HTML}}</div>
+                    <div class="flex flex-wrap gap-2.5">{{KyNangList_HTML}}</div>
                 </section>
 
                 <section class="flex-1">
@@ -265,8 +275,8 @@
             </div>
         </div>
         
-        <div class="px-10 py-3 flex justify-center items-center mt-auto bg-slate-900 border-t-2 border-emerald-500">
-            <p class="text-[9px] font-black tracking-widest uppercase italic text-center text-emerald-400">
+        <div class="footer-bright px-10 py-3.5 flex justify-center items-center mt-auto bg-emerald-600 border-t-2 border-yellow-400">
+            <p class="text-[10px] font-black tracking-widest uppercase italic text-center text-white">
                 Tôi cam đoan thông tin trên là đúng sự thật &nbsp;✦&nbsp; 我保證以上信息屬實
             </p>
         </div>
@@ -276,14 +286,14 @@
     {% for i in range(0, document_images|length, 2) %}
     {% set batch = document_images[i:i+2] %}
     <div class="a4-page notranslate" style="page-break-before: always; margin-bottom: 20px;">
-        <div style="background: #052c1a; padding: 15px 40px; border-bottom: 4px solid var(--accent-gold); -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+        <div style="background: linear-gradient(135deg, #065f46 0%, #10b981 100%); padding: 15px 40px; border-bottom: 4px solid #d4af37; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <h2 style="color: #fff; font-size: 14px; font-weight: 900; margin: 0; text-transform: uppercase;">Tài liệu & Giấy tờ / 證明文件</h2>
             </div>
         </div>
         <div style="flex: 1; padding: 25px; display: flex; flex-direction: column; gap: 15px; align-items: center; justify-content: flex-start; background: #f8fafc;">
             {% for img in batch %}
-            <div style="width: 100%; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 8px 16px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; padding: 5px;">
+            <div style="width: 100%; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: center; padding: 5px;">
                 <img src="{{img}}" style="width: 100%; height: auto; max-height: 440px; display: block; object-fit: contain;">
             </div>
             {% endfor %}
