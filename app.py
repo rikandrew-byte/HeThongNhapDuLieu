@@ -358,7 +358,7 @@ def prepare_render_data(raw_data: dict) -> dict:
     skills_html = []
     for key, name in SKILL_MAPPING.items():
         if chk(raw_data.get(key)):
-            skills_html.append(f'<span class="px-2 py-1 bg-transparent border border-emerald-600 text-emerald-800 rounded text-[13px] font-bold uppercase">{name}</span>')
+            skills_html.append(f'<span class="skill-tag">{name}</span>')
     data['KyNangList_HTML'] = "".join(skills_html)
 
     tay = []
