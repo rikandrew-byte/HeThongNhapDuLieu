@@ -698,8 +698,6 @@ def api_bulk_print():
         if not htmls: return jsonify({'success': False, 'error': 'Failed to render records'}), 500
         
         base_html = htmls[0]
-        # Modify CSS for bulk print
-        base_html = base_html.replace('height: 297mm !important; overflow: hidden !important;', 'height: auto !important; overflow: visible !important;', 1)
         base_html = base_html.replace('page-break-after: avoid !important;', 'page-break-after: always !important;')
         
         pages_to_append = []

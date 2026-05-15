@@ -82,7 +82,7 @@
         @page { size: A4; margin: 0 !important; }
         @media print {
             html, body { background: none !important; padding: 0 !important; margin: 0 !important; min-height: 0 !important; height: auto !important; overflow: visible !important; }
-            .a4-page { width: 210mm !important; height: 297mm !important; overflow: hidden !important; page-break-after: always !important; page-break-inside: avoid !important; }
+            .a4-page { width: 210mm !important; height: 296.5mm !important; min-height: 296.5mm !important; max-height: 296.5mm !important; overflow: hidden !important; page-break-after: always !important; page-break-inside: avoid !important; }
             .a4-page-dynamic { width: 210mm !important; min-height: 297mm !important; height: auto !important; overflow: visible !important; page-break-after: always !important; }
             .a4-page:last-of-type, .a4-page-dynamic:last-of-type { page-break-after: avoid !important; }
             .fct-visual-header { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
