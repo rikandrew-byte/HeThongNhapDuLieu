@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google" content="notranslate">
-    <title>FCT-Premium V8.6 Zoom-Stable</title>
+    <title>FCT-Premium V8.7 Prestige</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -23,7 +23,7 @@
         body { 
             font-family: 'Inter', sans-serif; 
             background-color: #f8fafc; 
-            display: block; /* GIẢI PHÁP: Chuyển sang block để ổn định khi zoom */
+            display: block; 
             min-height: 100vh; 
             padding: 20px 0;
             color: #1e293b;
@@ -47,7 +47,7 @@
             background-color: white;
             display: flex; flex-direction: column; position: relative; overflow: hidden;
             box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.1);
-            margin: 0 auto; /* CĂN GIỮA TRANG CV */
+            margin: 0 auto; 
             flex-shrink: 0;
         }
 
@@ -180,7 +180,7 @@
 </head>
 <body>
     <div class="no-print-header no-print">
-        <p class="text-xs font-bold uppercase tracking-widest">FCT Premium V8.6 Zoom-Stable</p>
+        <p class="text-xs font-bold uppercase tracking-widest">FCT Premium V8.7 Prestige</p>
         <button onclick="window.print()" class="px-5 py-1.5 bg-white text-emerald-700 font-black rounded-lg text-[10px] uppercase shadow-md active:scale-95 transition-all">🖨️ SAVE AS PDF</button>
     </div>
 
@@ -193,23 +193,25 @@
                 </div>
                 <div class="flex flex-col items-center">
                     <img src="{{logo_base64}}" alt="Logo" class="h-24 w-auto object-contain z-10 scale-x-125 logo-platinum">
-                    <h2 class="text-3xl font-black uppercase text-white tracking-[0.6em] mt-[-20px] z-20" style="text-shadow: 0 4px 8px rgba(0,0,0,0.4); font-family: 'Playfair Display', serif;">Resumé</h2>
+                    <!-- CHUYỂN MÀU CHỮ RESUME SANG VÀNG KIM (ACCENT GOLD) -->
+                    <h2 class="text-3xl font-black uppercase tracking-[0.6em] mt-[-20px] z-20" style="color: var(--accent-gold); text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-family: 'Playfair Display', serif;">Resumé</h2>
                 </div>
             </div>
         </div>
 
         <div class="content-wrapper">
             <div class="sidebar p-5 border-r border-emerald-100 flex flex-col h-full">
-                <div class="mb-4 text-center border-b-2 border-emerald-200 pb-3 flex-shrink-0">
-                    <p class="text-[11px] font-black text-amber-600 mb-0.5 uppercase tracking-widest">ID: {{Maso}}</p>
-                    <h1 class="text-[18px] font-black uppercase text-slate-900 leading-tight mb-0.5 whitespace-nowrap overflow-hidden" style="font-family: 'Inter', sans-serif;">{{Hoten}}</h1>
+                <div class="mb-5 text-center border-b-2 border-emerald-200 pb-4 flex-shrink-0">
+                    <!-- PHÓNG TO ID VÀ MÃ SỐ LÊN 14PX -->
+                    <p class="text-[14px] font-black text-amber-600 mb-1 uppercase tracking-[0.1em]">ID: {{Maso}}</p>
+                    <h1 class="text-[19px] font-black uppercase text-slate-900 leading-tight mb-0.5 whitespace-nowrap overflow-hidden" style="font-family: 'Inter', sans-serif;">{{Hoten}}</h1>
                     <p class="text-[16px] font-bold text-emerald-600 italic tracking-[0.05em]">{{TentiengTrung}}</p>
                 </div>
-                <div class="w-full aspect-[3/4] bg-white rounded-2xl shadow-md p-1 mb-4 border border-emerald-100 overflow-hidden flex-shrink-0">
+                <div class="w-full aspect-[3/4] bg-white rounded-2xl shadow-md p-1 mb-5 border border-emerald-100 overflow-hidden flex-shrink-0">
                     <img src="{{photo_base64}}" class="w-full h-full object-cover rounded-xl">
                 </div>
 
-                <div class="space-y-3 mb-4 px-1 flex-shrink-0">
+                <div class="space-y-3 mb-5 px-1 flex-shrink-0">
                     {% if video_link_1 or video_link_2 %}
                     <div class="grid grid-cols-2 gap-2">
                         {% if video_link_1 %}
@@ -230,7 +232,7 @@
                     {% endif %}
                 </div>
 
-                <div class="mt-auto bg-white p-4 rounded-xl border border-emerald-100 flex flex-col h-[25%] shadow-sm overflow-hidden">
+                <div class="mt-auto bg-white p-4 rounded-xl border border-emerald-100 flex flex-col h-[22%] shadow-sm overflow-hidden">
                     <h2 class="text-[14px] font-black text-emerald-900 border-b border-emerald-100 pb-1 mb-2 uppercase flex justify-between items-center flex-shrink-0">
                         <span>Ghi chú / 備註</span><span class="text-emerald-500">✒</span>
                     </h2>
