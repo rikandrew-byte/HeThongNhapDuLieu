@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google" content="notranslate">
-    <title>FCT-Premium V9.0 Final</title>
+    <title>FCT-Premium V9.1 Adaptive Space</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -44,10 +44,9 @@
 
         .a4-page {
             width: 210mm; 
-            height: 293mm; /* KHÓA CỨNG CHIỀU CAO ĐỂ GIỮ BỐ CỤC */
+            min-height: 293mm; /* DÙNG MIN-HEIGHT THAY VÌ HEIGHT CỐ ĐỊNH ĐỂ ZOOM MƯỢT */
             background-color: white;
             display: flex; flex-direction: column; position: relative; 
-            overflow: visible; /* QUAN TRỌNG: Để visible trên màn hình giúp Zoom không bị mất ảnh */
             box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.1);
             margin: 0 auto 40px auto; 
             flex-shrink: 0;
@@ -64,7 +63,7 @@
         .fct-visual-header {
             position: relative; 
             background: #064e3b;
-            height: 13.5%; 
+            height: 40mm; /* DÙNG ĐƠN VỊ MM CỐ ĐỊNH */
             overflow: hidden; 
             color: white; 
             border-bottom: 4px solid var(--accent-gold);
@@ -78,7 +77,7 @@
             opacity: 0.8; filter: brightness(1.0) saturate(1.1); z-index: 0;
         }
 
-        .content-wrapper { display: flex; flex: 1; overflow: hidden; background: #fff; min-height: 0; max-height: 82.5%; }
+        .content-wrapper { display: flex; flex: 1; background: #fff; min-height: 0; }
         
         .sidebar { 
             background-color: #f0fdf4; 
@@ -86,17 +85,17 @@
             display: flex; 
             flex-direction: column;
             border-right: 1px solid #d1fae5;
-            height: 100%;
+            padding: 15px;
         }
 
-        .main { width: 61.804%; display: flex; flex-direction: column; background: white; height: 100%; overflow: hidden; }
+        .main { width: 61.804%; display: flex; flex-direction: column; background: white; }
 
         h1, h2, h3 { font-family: 'Playfair Display', serif; }
 
-        /* KHÓA CHẾT TỶ LỆ CÁC PHẦN TRÊN MÀN HÌNH */
-        .section-personal { height: 50%; max-height: 50%; display: flex; flex-direction: column; padding: 20px 25px 10px 25px; overflow: hidden; }
-        .section-skills { height: 18%; max-height: 18%; display: flex; flex-direction: column; padding: 0 25px 10px 25px; overflow: hidden; }
-        .section-experience { height: 32%; max-height: 32%; display: flex; flex-direction: column; padding: 0 25px 20px 25px; overflow: hidden; }
+        /* SỬ DỤNG MIN-HEIGHT (VÙNG ĐỆM ẨN) ĐỂ KHÓA BỐ CỤC THEO Ý NGƯỜI DÙNG */
+        .section-personal { min-height: 125mm; display: flex; flex-direction: column; padding: 20px 25px 10px 25px; }
+        .section-skills { min-height: 45mm; display: flex; flex-direction: column; padding: 0 25px 10px 25px; }
+        .section-experience { min-height: 75mm; display: flex; flex-direction: column; padding: 0 25px 20px 25px; flex: 1; }
 
         .section-title {
             font-size: 15px;
@@ -115,7 +114,7 @@
 
         .section-title span:last-child { font-size: 14px; color: #b45309; font-family: 'Inter', sans-serif; font-weight: 800; }
 
-        .info-grid { display: grid; grid-template-cols: repeat(2, 1fr); gap: 5px; flex: 1; min-height: 0; }
+        .info-grid { display: grid; grid-template-cols: repeat(2, 1fr); gap: 5px; }
         .info-item {
             background: #fff;
             border: 1px solid #e2e8f0;
@@ -159,7 +158,8 @@
             .a4-page { 
                 box-shadow: none !important; margin: 0 !important; border: none !important;
                 width: 210mm !important; height: 293mm !important; 
-                overflow: hidden !important; /* CHỈ GIỚI HẠN KHI IN */
+                max-height: 293mm !important;
+                overflow: hidden !important; /* CHỈ KHÓA KHI IN ĐỂ ĐẢM BẢO 1 TRANG */
                 page-break-inside: avoid !important;
                 page-break-before: avoid !important;
                 -webkit-print-color-adjust: exact !important;
@@ -184,7 +184,7 @@
 </head>
 <body>
     <div class="no-print-header no-print">
-        <p class="text-xs font-bold uppercase tracking-widest">FCT Premium V9.0 Final</p>
+        <p class="text-xs font-bold uppercase tracking-widest">FCT Premium V9.1 Adaptive-Space</p>
         <button onclick="window.print()" class="px-5 py-1.5 bg-white text-emerald-700 font-black rounded-lg text-[10px] uppercase shadow-md active:scale-95 transition-all">🖨️ SAVE AS PDF</button>
     </div>
 
@@ -203,7 +203,7 @@
         </div>
 
         <div class="content-wrapper">
-            <div class="sidebar p-4 border-r border-emerald-100 flex flex-col h-full">
+            <div class="sidebar border-r border-emerald-100 flex flex-col">
                 <div class="mb-5 text-center border-b-2 border-emerald-200 pb-4 flex-shrink-0">
                     <p class="text-[14px] font-black text-amber-600 mb-1.5 uppercase tracking-[0.1em]">ID: {{Maso}}</p>
                     <h1 class="text-[17px] font-black uppercase text-slate-900 leading-tight mb-0.5 whitespace-nowrap overflow-hidden" style="font-family: 'Inter', sans-serif; letter-spacing: -0.03em;">{{Hoten}}</h1>
@@ -234,7 +234,7 @@
                     {% endif %}
                 </div>
 
-                <div class="mt-auto bg-white p-4 rounded-xl border border-emerald-100 flex flex-col h-[22%] shadow-sm overflow-hidden">
+                <div class="mt-auto bg-white p-4 rounded-xl border border-emerald-100 flex flex-col min-h-[60mm] shadow-sm overflow-hidden">
                     <h2 class="text-[14px] font-black text-emerald-900 border-b border-emerald-100 pb-1 mb-2 uppercase flex justify-between items-center flex-shrink-0">
                         <span>Ghi chú / 備註</span><span class="text-emerald-500">✒</span>
                     </h2>
@@ -242,7 +242,7 @@
                 </div>
             </div>
 
-            <div class="main flex flex-col overflow-hidden">
+            <div class="main flex flex-col">
                 <section class="section-personal">
                     <div class="section-title">
                         <span>THÔNG TIN CÁ NHÂN</span><span>基本個人信息</span>
@@ -266,14 +266,14 @@
                     <div class="section-title">
                         <span>Kỹ năng & Ngoại ngữ</span><span>技能與語言</span>
                     </div>
-                    <div class="skill-tag-container px-1 overflow-hidden">{{KyNangList_HTML}}</div>
+                    <div class="skill-tag-container px-1">{{KyNangList_HTML}}</div>
                 </section>
 
                 <section class="section-experience">
                     <div class="section-title">
                         <span>Kinh nghiệm làm việc</span><span>工作經驗</span>
                     </div>
-                    <div class="space-y-1 relative border-l-2 border-emerald-100 ml-4 flex-1 overflow-hidden">
+                    <div class="space-y-1 relative border-l-2 border-emerald-100 ml-4 flex-1">
                         {% if ndcv1 %}<div class="pl-6 relative mb-2"><div class="absolute w-2.5 h-2.5 bg-amber-500 rounded-full -left-[6px] border-2 border-white top-1 shadow-sm"></div><h3 class="text-[13px] font-black text-slate-900 uppercase leading-tight" style="font-family: 'Inter', sans-serif;">{{ndcv1}}</h3><p class="text-[10.5px] text-emerald-600 font-bold italic">{{QG1}} ({{N1}})</p></div>{% endif %}
                         {% if ndcv2 %}<div class="pl-6 relative"><div class="absolute w-2.5 h-2.5 bg-amber-500 rounded-full -left-[6px] border-2 border-white top-1 shadow-sm"></div><h3 class="text-[13px] font-black text-slate-900 uppercase leading-tight" style="font-family: 'Inter', sans-serif;">{{ndcv2}}</h3><p class="text-[10.5px] text-emerald-600 font-bold italic">{{QG2}} ({{N2}})</p></div>{% endif %}
                     </div>
