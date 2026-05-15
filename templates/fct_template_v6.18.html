@@ -29,9 +29,11 @@
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; background-color: #0f172a; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px 0; }
 
         .a4-page {
-            width: 210mm; height: 296.5mm; background-color: white;
+            width: 210mm; height: 296.5mm; min-height: 296.5mm; max-height: 296.5mm;
+            background-color: white;
             display: flex; flex-direction: column; position: relative; overflow: hidden;
             box-shadow: 0 0 30px rgba(0,0,0,0.6);
+            flex-shrink: 0;
         }
 
         .a4-page-dynamic {
@@ -220,14 +222,16 @@
             </div>
         </div>
         
-        <div class="px-10 py-2.5 flex justify-center items-center flex-shrink-0" style="background: linear-gradient(90deg, #041c14 0%, #073d22 50%, #041c14 100%); border-top: 2px solid transparent; border-image: linear-gradient(90deg, #B8960C 0%, #00e68a 40%, #00e68a 60%, #B8960C 100%) 1;">
+        <div class="px-10 py-2.5 flex justify-center items-center flex-shrink-0 mt-auto" style="background: linear-gradient(90deg, #041c14 0%, #073d22 50%, #041c14 100%); border-top: 2px solid transparent; border-image: linear-gradient(90deg, #B8960C 0%, #00e68a 40%, #00e68a 60%, #B8960C 100%) 1;">
             <p class="text-[9px] font-bold tracking-widest uppercase italic text-center" style="color:#c9a227; letter-spacing: 0.15em;">Tôi cam đoan thông tin trên là đúng sự thật &nbsp;✦&nbsp; 我保證以上信息屬實</p>
         </div>
     </div>
 {% if document_images %}
-    {% for batch in document_images|batch(2) %}
+    {# Render documents in pairs, each pair on a new A4 page #}
+    {% for i in range(0, document_images|length, 2) %}
+    {% set batch = document_images[i:i+2] %}
     <!-- TRANG {{loop.index + 1}}: TÀI LIỆU & GIẤY TỜ -->
-    <div class="a4-page notranslate" style="page-break-before: always; display: flex; flex-direction: column;">
+    <div class="a4-page-dynamic notranslate" style="page-break-before: always; display: flex; flex-direction: column; margin-bottom: 20px;">
         <!-- Header trang {{loop.index + 1}} -->
         <div style="background: linear-gradient(135deg, #041c14 0%, #073d22 50%, #041c14 100%); padding: 16px 30px; border-bottom: 3px solid transparent; border-image: linear-gradient(90deg, #B8960C 0%, #00e68a 40%, #00e68a 60%, #B8960C 100%) 1; -webkit-print-color-adjust: exact; print-color-adjust: exact; flex-shrink: 0;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -248,10 +252,10 @@
         </div>
 
         <!-- Nội dung ảnh tài liệu (Tối đa 2 ảnh/trang) -->
-        <div style="flex: 1; padding: 25px; display: flex; flex-direction: column; gap: 20px; align-items: center; justify-content: flex-start; overflow: hidden; background: #f9fafb;">
+        <div style="flex: 1; padding: 25px; display: flex; flex-direction: column; gap: 15px; align-items: center; justify-content: flex-start; background: #f9fafb;">
             {% for img in batch %}
-            <div style="width: 100%; max-height: 44%; border: 1.5px solid #e5e7eb; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center;">
-                <img src="{{img}}" style="width: 100%; height: 100%; display: block; object-fit: contain; padding: 10px;" alt="Document">
+            <div style="width: 100%; border: 1.5px solid #e5e7eb; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center;">
+                <img src="{{img}}" style="width: 100%; height: auto; max-height: 440px; display: block; object-fit: contain; padding: 5px;" alt="Document">
             </div>
             {% endfor %}
         </div>
