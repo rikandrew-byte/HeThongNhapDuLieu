@@ -622,6 +622,27 @@
                 if (e.dataTransfer.files[0]) setQR(e.dataTransfer.files[0]);
             });
 
+            // ── Events Tài liệu ──
+            if (docDropzone) {
+                docDropzone.addEventListener('click', () => document.getElementById('documentInput').click());
+                document.getElementById('documentInput').addEventListener('change', () => displayDocumentPreview());
+
+                docDropzone.addEventListener('dragover', (e) => { e.preventDefault(); docDropzone.classList.add('border-purple-500', 'bg-purple-100'); });
+                docDropzone.addEventListener('dragleave', (e) => { e.preventDefault(); docDropzone.classList.remove('border-purple-500', 'bg-purple-100'); });
+                docDropzone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    docDropzone.classList.remove('border-purple-500', 'bg-purple-100');
+                    if (e.dataTransfer.files.length > 0) {
+                        const docInput = document.getElementById('documentInput');
+                        const dt = new DataTransfer();
+                        if (docInput.files) for (let f of docInput.files) dt.items.add(f);
+                        for (let f of e.dataTransfer.files) dt.items.add(f);
+                        docInput.files = dt.files;
+                        displayDocumentPreview();
+                    }
+                });
+            }
+
             // ── Paste: vào đúng ô đang hover/focus ──
             // QUAN TRỌNG: Nếu user đang ở vùng tài liệu (document), bỏ qua paste global
             // để tránh ảnh giấy tờ nhảy vào ô QR hoặc Photo
@@ -665,6 +686,39 @@
                 document.getElementById('qrBase64').value = '';
                 document.getElementById('clearQrBtn').classList.add('hidden');
             });
+
+            // ── Hàm hiển thị preview tài liệu ──
+            window.displayDocumentPreview = function() {
+                const preview = document.getElementById('documentPreview');
+                const files = document.getElementById('documentInput').files;
+                preview.innerHTML = '';
+                if (!files || files.length === 0) return;
+
+                Array.from(files).forEach((file, index) => {
+                    if (!file.type.startsWith('image/')) return;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const div = document.createElement('div');
+                        div.className = 'relative group';
+                        div.innerHTML = `
+                            <img src="${e.target.result}" class="w-full h-32 object-cover rounded-lg border border-gray-200 shadow-sm">
+                            <button type="button" onclick="removeDocument(${index})" class="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
+                        `;
+                        preview.appendChild(div);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            };
+
+            window.removeDocument = function(index) {
+                const input = document.getElementById('documentInput');
+                const dt = new DataTransfer();
+                const files = Array.from(input.files);
+                files.splice(index, 1);
+                files.forEach(f => dt.items.add(f));
+                input.files = dt.files;
+                displayDocumentPreview();
+            };
         });
 
         // Hàm tự động dịch tên sang tiếng Trung

@@ -384,7 +384,11 @@ def prepare_render_data(raw_data: dict) -> dict:
             data[f'{key}_base64'] = ""
 
     # Xử lý ảnh tài liệu (giấy tờ) để render trang 2
-    data['document_images'] = raw_data.get('document_images', [])
+    # Hỗ trợ cả document_images (mới) và document_urls (cũ)
+    doc_imgs = raw_data.get('document_images', [])
+    if not doc_imgs:
+        doc_imgs = raw_data.get('document_urls', [])
+    data['document_images'] = doc_imgs
 
     return data
 
@@ -497,7 +501,7 @@ def api_submit_only():
             record = FormHistory.query.get(int(record_id))
             if not record: return jsonify({'success': False, 'error': 'Not found'}), 404
             old_data = json.loads(record.data_json) if record.data_json else {}
-            for key in ('photo', 'qr_line'):
+            for key in ('photo', 'qr_line', 'document_images'):
                 if not data.get(key) and old_data.get(key): data[key] = old_data[key]
             record.ma_so = ma_so or 'CHO_DUYET'
             record.ho_ten = ho_ten
