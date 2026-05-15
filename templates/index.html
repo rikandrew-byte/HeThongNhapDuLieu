@@ -1272,7 +1272,7 @@ async function loadHistory() {
             if (documentFiles && documentFiles.length > 0) {
                 const docBase64Array = [];
                 for (let file of documentFiles) {
-                    const b64 = await resizeToBase64(file, 1200, 0.75);
+                    const b64 = await resizeToBase64(file, 900, 0.6);
                     docBase64Array.push(b64);
                 }
                 plainData['document_images'] = docBase64Array;

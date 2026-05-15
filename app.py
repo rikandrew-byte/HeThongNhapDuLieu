@@ -23,6 +23,7 @@ load_dotenv()
 app = Flask(__name__, static_folder='static', static_url_path='')
 app.debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
 CORS(app, resources={r"/*": {"origins": ["https://cv.fct.vn", "http://127.0.0.1:5000", "http://localhost:5000"]}})
+app.config['MAX_CONTENT_LENGTH'] = 20 * 1024 * 1024  # 20MB limit
 
 app.config['BASIC_AUTH_USERNAME'] = 'fctvt'
 app.config['BASIC_AUTH_PASSWORD'] = '1503'
@@ -447,9 +448,9 @@ def _prepare_data_for_db(data: dict) -> dict:
     clean = dict(data)
     for key in ('photo', 'qr_line'):
         if clean.get(key): clean[key] = _resize_image_for_db(clean[key])
-    # Resize ảnh tài liệu nếu có
+    # Resize ảnh tài liệu nếu có - Giảm sâu hơn để tránh lỗi 413 (900px, quality 60)
     if clean.get('document_images') and isinstance(clean['document_images'], list):
-        clean['document_images'] = [_resize_image_for_db(img, max_px=1200, quality=75) for img in clean['document_images'] if img]
+        clean['document_images'] = [_resize_image_for_db(img, max_px=900, quality=60) for img in clean['document_images'] if img]
     return clean
 
 # --- API ROUTES ---
