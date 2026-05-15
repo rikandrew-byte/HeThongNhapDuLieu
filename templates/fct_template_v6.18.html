@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google" content="notranslate">
-    <title>FCT-Premium V7.5 Professional</title>
+    <title>FCT-Premium V7.6 Professional</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -93,7 +93,6 @@
             font-weight: 800;
         }
 
-        .info-grid { display: grid; grid-template-cols: repeat(2, 1fr); gap: 8px; }
         .info-item {
             background: #fff;
             border: 1px solid #e2e8f0;
@@ -105,7 +104,6 @@
         .info-label { font-size: 8px; font-weight: 800; color: #64748b; text-transform: uppercase; }
         .info-value { font-size: 12px; font-weight: 700; color: #0f172a; }
 
-        /* Experience Vertical Axis */
         .timeline-container { position: relative; padding-left: 40px; }
         .timeline-line {
             position: absolute; left: 10px; top: 0; bottom: 0;
@@ -138,7 +136,7 @@
 </head>
 <body>
     <div class="no-print w-full max-w-[210mm] mb-4 px-4 flex justify-between items-center bg-emerald-600 p-3 rounded-xl text-white shadow-lg">
-        <p class="text-xs font-bold uppercase tracking-widest">FCT Premium V7.5 Active</p>
+        <p class="text-xs font-bold uppercase tracking-widest">FCT Premium V7.6 Final Active</p>
         <button onclick="window.print()" class="px-5 py-1.5 bg-white text-emerald-700 font-black rounded-lg text-[10px] uppercase shadow-md active:scale-95 transition-all">🖨️ SAVE AS PDF</button>
     </div>
 
@@ -212,7 +210,7 @@
                     <div class="section-title">
                         <span>Thông tin cá nhân</span><span>基本個人信息</span>
                     </div>
-                    <div class="info-grid">
+                    <div class="grid grid-cols-2 gap-2">
                         <div class="info-item"><span class="info-label">Tuổi / 年齡</span><span class="info-value">{{Tuoi}}</span></div>
                         <div class="info-item"><span class="info-label">Ngày sinh / 生日</span><span class="info-value">{{Ngaysinh}}</span></div>
                         <div class="info-item"><span class="info-label">Chiều cao / 身高</span><span class="info-value">{{Chieucao}} cm</span></div>
@@ -234,7 +232,6 @@
                     <div class="flex flex-wrap gap-2">{{KyNangList_HTML}}</div>
                 </section>
 
-                <!-- Experience pushed to bottom to align with Remarks -->
                 <section class="mt-auto h-[23%] flex flex-col">
                     <div class="section-title">
                         <span>Kinh nghiệm làm việc</span><span>工作經驗</span>
