@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google" content="notranslate">
-    <title>FCT-Premium V9.1 Adaptive Space</title>
+    <title>FCT-Premium V9.2 GPU-Safe</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -29,8 +29,9 @@
             color: #1e293b;
         }
 
+        /* DÙNG PIXEL CHO MÀN HÌNH ĐỂ ZOOM SIÊU MƯỢT (1mm = 3.78px) */
         .no-print-header {
-            width: 210mm;
+            width: 794px; /* 210mm */
             margin: 0 auto 20px auto;
             display: flex;
             justify-content: space-between;
@@ -43,17 +44,18 @@
         }
 
         .a4-page {
-            width: 210mm; 
-            min-height: 293mm; /* DÙNG MIN-HEIGHT THAY VÌ HEIGHT CỐ ĐỊNH ĐỂ ZOOM MƯỢT */
+            width: 794px; 
+            min-height: 1107px; /* 293mm */
             background-color: white;
             display: flex; flex-direction: column; position: relative; 
             box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.1);
             margin: 0 auto 40px auto; 
-            flex-shrink: 0;
+            transform: translateZ(0); /* ÉP TĂNG TỐC PHẦN CỨNG */
+            backface-visibility: hidden;
         }
 
         .a4-page-dynamic {
-            width: 210mm; min-height: 296mm; 
+            width: 794px; min-height: 1120px; 
             background-color: white;
             display: flex; flex-direction: column; position: relative;
             box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.1);
@@ -63,7 +65,7 @@
         .fct-visual-header {
             position: relative; 
             background: #064e3b;
-            height: 40mm; /* DÙNG ĐƠN VỊ MM CỐ ĐỊNH */
+            height: 151px; /* 40mm */
             overflow: hidden; 
             color: white; 
             border-bottom: 4px solid var(--accent-gold);
@@ -92,10 +94,10 @@
 
         h1, h2, h3 { font-family: 'Playfair Display', serif; }
 
-        /* SỬ DỤNG MIN-HEIGHT (VÙNG ĐỆM ẨN) ĐỂ KHÓA BỐ CỤC THEO Ý NGƯỜI DÙNG */
-        .section-personal { min-height: 125mm; display: flex; flex-direction: column; padding: 20px 25px 10px 25px; }
-        .section-skills { min-height: 45mm; display: flex; flex-direction: column; padding: 0 25px 10px 25px; }
-        .section-experience { min-height: 75mm; display: flex; flex-direction: column; padding: 0 25px 20px 25px; flex: 1; }
+        /* SỬ DỤNG PIXEL CHO CÁC VÙNG ĐỆM THEO Ý TƯỞNG CỦA NGƯỜI */
+        .section-personal { min-height: 472px; display: flex; flex-direction: column; padding: 20px 25px 10px 25px; }
+        .section-skills { min-height: 170px; display: flex; flex-direction: column; padding: 0 25px 10px 25px; }
+        .section-experience { min-height: 283px; display: flex; flex-direction: column; padding: 0 25px 20px 25px; flex: 1; }
 
         .section-title {
             font-size: 15px;
@@ -143,9 +145,10 @@
             -webkit-print-color-adjust: exact;
         }
 
+        /* TỐI GIẢN FILTER TRÊN MÀN HÌNH ĐỂ TRÁNH CRASH KHI ZOOM */
         .logo-platinum {
-            filter: brightness(2.5) contrast(1.2) saturate(0) drop-shadow(0 0 10px rgba(255, 255, 255, 0.7)) !important;
-            -webkit-filter: brightness(2.5) contrast(1.2) saturate(0) drop-shadow(0 0 10px rgba(255, 255, 255, 0.7)) !important;
+            filter: brightness(2.5) contrast(1.2) saturate(0) !important;
+            -webkit-filter: brightness(2.5) contrast(1.2) saturate(0) !important;
         }
 
         @page { size: A4; margin: 0 !important; }
@@ -154,37 +157,32 @@
                 width: 100%; height: auto; padding: 0 !important; margin: 0 !important; 
                 background: white !important; display: block !important; overflow: visible !important;
             }
-            .no-print, .no-print-header { display: none !important; visibility: hidden !important; }
+            .no-print, .no-print-header { display: none !important; }
             .a4-page { 
                 box-shadow: none !important; margin: 0 !important; border: none !important;
                 width: 210mm !important; height: 293mm !important; 
                 max-height: 293mm !important;
-                overflow: hidden !important; /* CHỈ KHÓA KHI IN ĐỂ ĐẢM BẢO 1 TRANG */
+                overflow: hidden !important; 
                 page-break-inside: avoid !important;
                 page-break-before: avoid !important;
                 -webkit-print-color-adjust: exact !important;
                 position: relative !important;
                 top: 0 !important;
             }
-            .has-docs { page-break-after: always !important; }
+            /* KHÔI PHỤC FILTER PHÁT SÁNG KHI IN PDF */
+            .logo-platinum { filter: brightness(2.5) contrast(1.2) saturate(0) drop-shadow(0 0 10px rgba(255, 255, 255, 0.7)) !important; }
             .a4-page-dynamic { 
                 box-shadow: none !important; margin: 0 !important; border: none !important;
                 width: 210mm !important; page-break-before: always !important;
                 page-break-inside: avoid !important;
                 -webkit-print-color-adjust: exact !important;
             }
-            .fct-visual-header { background: #064e3b !important; -webkit-print-color-adjust: exact !important; }
-            .sidebar { background-color: #f0fdf4 !important; -webkit-print-color-adjust: exact !important; }
-            .footer-bright { background-color: #10b981 !important; -webkit-print-color-adjust: exact !important; }
-            .skill-tag-container > * { border: 1.5px solid #10b981 !important; background: #f0fdf4 !important; -webkit-print-color-adjust: exact !important; }
-            .logo-platinum { filter: brightness(2.5) contrast(1.2) saturate(0) drop-shadow(0 0 10px rgba(255, 255, 255, 0.7)) !important; }
-            .header-bg-img { display: block !important; opacity: 0.8 !important; -webkit-print-color-adjust: exact !important; }
         }
     </style>
 </head>
 <body>
     <div class="no-print-header no-print">
-        <p class="text-xs font-bold uppercase tracking-widest">FCT Premium V9.1 Adaptive-Space</p>
+        <p class="text-xs font-bold uppercase tracking-widest">FCT Premium V9.2 GPU-Safe</p>
         <button onclick="window.print()" class="px-5 py-1.5 bg-white text-emerald-700 font-black rounded-lg text-[10px] uppercase shadow-md active:scale-95 transition-all">🖨️ SAVE AS PDF</button>
     </div>
 
@@ -234,7 +232,7 @@
                     {% endif %}
                 </div>
 
-                <div class="mt-auto bg-white p-4 rounded-xl border border-emerald-100 flex flex-col min-h-[60mm] shadow-sm overflow-hidden">
+                <div class="mt-auto bg-white p-4 rounded-xl border border-emerald-100 flex flex-col min-h-[220px] shadow-sm overflow-hidden">
                     <h2 class="text-[14px] font-black text-emerald-900 border-b border-emerald-100 pb-1 mb-2 uppercase flex justify-between items-center flex-shrink-0">
                         <span>Ghi chú / 備註</span><span class="text-emerald-500">✒</span>
                     </h2>
