@@ -929,9 +929,8 @@ async function loadHistory() {
             const slug = (maso === 'CHO_DUYET' ? `${id}/` : '') + maso + (hoTen ? '_' + sanitizeSlug(hoTen) : '');
             const url = `${window.location.origin}/cv/${slug}`;
             
-            // Tạo tiêu đề: Mã số - Tên không dấu (ví dụ: MD13275 - Nguyen Ngoc Ha)
-            const cleanName = sanitizeSlug(hoTen).replace(/_/g, ' ');
-            const textToCopy = `${maso} - ${cleanName}\n${url}`;
+            // Master yêu cầu copy đơn lẻ chỉ lấy URL để tránh phải xóa thủ công text header
+            const textToCopy = url;
 
             navigator.clipboard.writeText(textToCopy).then(() => {
                 const orig = btn.innerHTML;
