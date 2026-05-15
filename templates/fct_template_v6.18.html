@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google" content="notranslate">
-    <title>FCT-Premium V8.0 Final Strict</title>
+    <title>FCT-Premium V8.1 Majestic</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -31,7 +31,6 @@
             color: #1e293b;
         }
 
-        /* TRANG 1: KHÓA CỨNG HOÀN TOÀN */
         .a4-page {
             width: 210mm; height: 295mm; min-height: 295mm; max-height: 295mm;
             background-color: white;
@@ -82,10 +81,9 @@
 
         h1, h2, h3 { font-family: 'Playfair Display', serif; }
 
-        /* KHỐNG CHẾ CHIỀU CAO TỪNG PHẦN */
         .section-personal { height: 50%; max-height: 50%; display: flex; flex-direction: column; padding: 20px 25px 10px 25px; overflow: hidden; }
-        .section-skills { height: 20%; max-height: 20%; display: flex; flex-direction: column; padding: 0 25px 10px 25px; overflow: hidden; }
-        .section-experience { height: 30%; max-height: 30%; display: flex; flex-direction: column; padding: 0 25px 20px 25px; overflow: hidden; }
+        .section-skills { height: 18%; max-height: 18%; display: flex; flex-direction: column; padding: 0 25px 10px 25px; overflow: hidden; }
+        .section-experience { height: 32%; max-height: 32%; display: flex; flex-direction: column; padding: 0 25px 20px 25px; overflow: hidden; }
 
         .section-title {
             font-size: 15px;
@@ -98,7 +96,7 @@
             align-items: center;
             padding: 4px 0;
             border-bottom: 2px solid #bdf1da;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             flex-shrink: 0;
         }
 
@@ -117,6 +115,22 @@
         .info-label { font-size: 9px; font-weight: 800; color: #64748b; text-transform: uppercase; line-height: 1.1; }
         .info-value { font-size: 12.5px; font-weight: 700; color: #0f172a; line-height: 1.2; }
 
+        /* TẠO VIỀN CHO TỪNG KỸ NĂNG */
+        .skill-tag-container > * {
+            display: inline-block;
+            border: 1.5px solid #10b981;
+            background: #f0fdf4;
+            padding: 3px 12px;
+            border-radius: 8px;
+            color: #064e3b;
+            font-weight: 800;
+            font-size: 12.5px;
+            margin-right: 6px;
+            margin-bottom: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+            -webkit-print-color-adjust: exact;
+        }
+
         @page { size: A4; margin: 0 !important; }
         @media print {
             html, body { 
@@ -129,26 +143,22 @@
                 page-break-inside: avoid !important;
                 -webkit-print-color-adjust: exact !important;
             }
-            /* CHỈ NGẮT TRANG KHI CÓ TRANG TIẾP THEO */
             .has-docs { page-break-after: always !important; }
-            
             .a4-page-dynamic { 
                 box-shadow: none !important; margin: 0 !important; border: none !important;
                 width: 210mm !important; page-break-before: always !important;
                 page-break-inside: avoid !important;
                 -webkit-print-color-adjust: exact !important;
             }
-            .fct-visual-header { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             .sidebar { background-color: #f0fdf4 !important; -webkit-print-color-adjust: exact !important; }
             .footer-bright { background-color: #10b981 !important; -webkit-print-color-adjust: exact !important; }
-            .header-bg-img { display: block !important; }
-            .no-print { display: none !important; }
+            .skill-tag-container > * { border: 1.5px solid #10b981 !important; background: #f0fdf4 !important; -webkit-print-color-adjust: exact !important; }
         }
     </style>
 </head>
 <body>
     <div class="no-print w-full max-w-[210mm] mb-4 px-4 flex justify-between items-center bg-emerald-600 p-3 rounded-xl text-white shadow-lg">
-        <p class="text-xs font-bold uppercase tracking-widest">FCT Premium V8.0 Strict</p>
+        <p class="text-xs font-bold uppercase tracking-widest">FCT Premium V8.1 Majestic</p>
         <button onclick="window.print()" class="px-5 py-1.5 bg-white text-emerald-700 font-black rounded-lg text-[10px] uppercase shadow-md active:scale-95 transition-all">🖨️ SAVE AS PDF</button>
     </div>
 
@@ -160,8 +170,8 @@
                     <p class="text-[9px] text-emerald-100 font-black uppercase tracking-widest">世 có 伯 樂 ， 然 後 有 千 里 馬</p>
                 </div>
                 <div class="flex flex-col items-center">
-                    <img src="{{logo_base64}}" alt="Logo" class="h-20 w-auto object-contain z-10" style="filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.4));">
-                    <h2 class="text-xl font-bold uppercase text-white tracking-[0.5em] mt-[-15px] z-20" style="text-shadow: 0 2px 4px rgba(0,0,0,0.3);">Resumé</h2>
+                    <img src="{{logo_base64}}" alt="Logo" class="h-24 w-auto object-contain z-10 scale-x-125" style="filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.5));">
+                    <h2 class="text-3xl font-black uppercase text-white tracking-[0.6em] mt-[-20px] z-20" style="text-shadow: 0 4px 8px rgba(0,0,0,0.4); font-family: 'Playfair Display', serif;">Resumé</h2>
                 </div>
             </div>
         </div>
@@ -230,7 +240,7 @@
                     <div class="section-title">
                         <span>Kỹ năng & Ngoại ngữ</span><span>技能與語言</span>
                     </div>
-                    <div class="flex flex-wrap gap-1.5 px-1 text-[13px] font-semibold text-slate-700 overflow-hidden">{{KyNangList_HTML}}</div>
+                    <div class="skill-tag-container px-1 overflow-hidden">{{KyNangList_HTML}}</div>
                 </section>
 
                 <section class="section-experience">
@@ -238,8 +248,8 @@
                         <span>Kinh nghiệm làm việc</span><span>工作經驗</span>
                     </div>
                     <div class="space-y-1 relative border-l-2 border-emerald-100 ml-4 flex-1 overflow-hidden">
-                        {% if ndcv1 %}<div class="pl-6 relative mb-2"><div class="absolute w-2.5 h-2.5 bg-amber-500 rounded-full -left-[6px] border-2 border-white top-1 shadow-sm"></div><h3 class="text-[13px] font-black text-slate-900 uppercase leading-tight">{{ndcv1}}</h3><p class="text-[10.5px] text-emerald-600 font-bold italic">{{QG1}} ({{N1}})</p></div>{% endif %}
-                        {% if ndcv2 %}<div class="pl-6 relative"><div class="absolute w-2.5 h-2.5 bg-amber-500 rounded-full -left-[6px] border-2 border-white top-1 shadow-sm"></div><h3 class="text-[13px] font-black text-slate-900 uppercase leading-tight">{{ndcv2}}</h3><p class="text-[10.5px] text-emerald-600 font-bold italic">{{QG2}} ({{N2}})</p></div>{% endif %}
+                        {% if ndcv1 %}<div class="pl-6 relative mb-2"><div class="absolute w-2.5 h-2.5 bg-amber-500 rounded-full -left-[6px] border-2 border-white top-1 shadow-sm"></div><h3 class="text-[13px] font-black text-slate-900 uppercase leading-tight" style="font-family: 'Inter', sans-serif;">{{ndcv1}}</h3><p class="text-[10.5px] text-emerald-600 font-bold italic">{{QG1}} ({{N1}})</p></div>{% endif %}
+                        {% if ndcv2 %}<div class="pl-6 relative"><div class="absolute w-2.5 h-2.5 bg-amber-500 rounded-full -left-[6px] border-2 border-white top-1 shadow-sm"></div><h3 class="text-[13px] font-black text-slate-900 uppercase leading-tight" style="font-family: 'Inter', sans-serif;">{{ndcv2}}</h3><p class="text-[10.5px] text-emerald-600 font-bold italic">{{QG2}} ({{N2}})</p></div>{% endif %}
                     </div>
                 </section>
             </div>
