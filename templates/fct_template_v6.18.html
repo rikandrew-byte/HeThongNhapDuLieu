@@ -122,24 +122,39 @@
 
         @page { size: A4; margin: 0 !important; }
         @media print {
-            body { padding: 0 !important; background: none !important; }
+            html, body { 
+                width: 210mm;
+                height: auto;
+                padding: 0 !important; 
+                margin: 0 !important; 
+                background: white !important; 
+                display: block !important;
+                overflow: visible !important;
+            }
             .a4-page { 
-                box-shadow: none !important; margin: 0 !important; 
-                width: 210mm !important; height: 296mm !important; 
+                box-shadow: none !important; 
+                margin: 0 !important; 
+                border: none !important;
+                width: 210mm !important; 
+                height: 296mm !important; 
                 page-break-after: always !important; 
                 page-break-inside: avoid !important;
                 -webkit-print-color-adjust: exact !important;
             }
             .a4-page-dynamic { 
-                box-shadow: none !important; margin: 0 !important; 
+                box-shadow: none !important; 
+                margin: 0 !important; 
+                border: none !important;
                 width: 210mm !important; 
                 page-break-before: always !important;
+                page-break-inside: avoid !important;
                 -webkit-print-color-adjust: exact !important;
             }
             .fct-visual-header { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background: linear-gradient(135deg, #065f46 0%, #10b981 100%) !important; }
             .sidebar { background-color: #f0fdf4 !important; -webkit-print-color-adjust: exact !important; }
             .footer-bright { background-color: #10b981 !important; -webkit-print-color-adjust: exact !important; }
             .header-bg-img { display: block !important; }
+            .no-print { display: none !important; }
         }
     </style>
 </head>
