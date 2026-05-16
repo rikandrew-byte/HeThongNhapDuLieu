@@ -164,26 +164,29 @@
                 max-width: 95vw !important;
             }
             .fct-visual-header { height: 120px; }
-            .section-personal { min-height: auto !important; padding: 15px !important; order: 5; }
-            .section-skills { min-height: auto !important; padding: 15px !important; order: 6; }
-            .section-experience { min-height: auto !important; padding: 15px !important; order: 7; }
             
-            /* Mobile Layout: Flattened for ordering */
-            .content-wrapper { display: flex !important; flex-direction: column !important; }
+            /* Mobile Layout: Grid System to interleave items */
+            .content-wrapper { 
+                display: grid !important; 
+                grid-template-columns: 1fr !important;
+                background: white !important;
+            }
             .sidebar, .main { display: contents !important; }
             
-            /* Cài đặt thứ tự hiển thị */
-            .sidebar-top { order: 2; width: 100%; background: #f0fdf4; padding: 20px; }
-            .sidebar-photo { order: 3; width: 100%; background: #f0fdf4; padding: 0 20px 20px 20px; }
-            .sidebar-extra { order: 4; width: 100%; background: #f0fdf4; padding: 0 20px 20px 20px; border-bottom: 1px solid #d1fae5; }
-            .sidebar-notes { order: 8; width: 100%; background: #fff; padding: 20px; border-top: 1px solid #e2e8f0; }
-            .sidebar-npt { order: 9; width: 100%; background: #f8fafc; padding: 15px 20px; border-top: 1px solid #e2e8f0; }
+            /* Cài đặt thứ tự hiển thị bằng Grid Row */
+            .sidebar-top { grid-row: 1; width: 100%; background: #f0fdf4; padding: 20px; }
+            .sidebar-photo { grid-row: 2; width: 100%; background: #f0fdf4; padding: 0 20px 20px 20px; }
+            .sidebar-extra { grid-row: 3; width: 100%; background: #f0fdf4; padding: 0 20px 20px 20px; border-bottom: 1px solid #d1fae5; }
+            
+            .section-personal { grid-row: 4; min-height: auto !important; padding: 20px 15px !important; }
+            .section-skills { grid-row: 5; min-height: auto !important; padding: 15px !important; }
+            .section-experience { grid-row: 6; min-height: auto !important; padding: 15px !important; }
+            
+            .sidebar-notes { grid-row: 7; width: 100%; background: #fff; padding: 20px; border-top: 1px solid #e2e8f0; }
+            .sidebar-npt { grid-row: 8; width: 100%; background: #f8fafc; padding: 15px 20px; border-top: 1px solid #e2e8f0; }
             
             .info-grid { grid-template-cols: 1fr !important; }
         }
-        
-        /* Đảm bảo thứ tự mặc định cho Desktop */
-        .sidebar-top, .sidebar-photo, .sidebar-extra, .sidebar-notes, .sidebar-npt { order: initial; }
         
         @media print {
             html, body { 
