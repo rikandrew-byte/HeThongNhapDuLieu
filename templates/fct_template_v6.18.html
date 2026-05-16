@@ -32,6 +32,7 @@
         /* DÙNG PIXEL CHO MÀN HÌNH ĐỂ ZOOM SIÊU MƯỢT (1mm = 3.78px) */
         .no-print-header {
             width: 794px; /* 210mm */
+            max-width: 100vw; /* Responsive cho zoom cao */
             margin: 0 auto 20px auto;
             display: flex;
             justify-content: space-between;
@@ -45,6 +46,7 @@
 
         .a4-page {
             width: 794px; 
+            max-width: 100vw; /* Responsive cho zoom cao */
             min-height: 1107px; /* 293mm */
             background-color: white;
             display: flex; flex-direction: column; position: relative; 
@@ -55,7 +57,9 @@
         }
 
         .a4-page-dynamic {
-            width: 794px; min-height: 1120px; 
+            width: 794px; 
+            max-width: 100vw; /* Responsive cho zoom cao */
+            min-height: 1120px; 
             background-color: white;
             display: flex; flex-direction: column; position: relative;
             box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.1);
@@ -147,11 +151,24 @@
 
         /* TỐI GIẢN FILTER TRÊN MÀN HÌNH ĐỂ TRÁNH CRASH KHI ZOOM */
         .logo-platinum {
-            filter: brightness(2.5) contrast(1.2) saturate(0) !important;
-            -webkit-filter: brightness(2.5) contrast(1.2) saturate(0) !important;
+            filter: brightness(1.8) !important;
+            -webkit-filter: brightness(1.8) !important;
         }
 
         @page { size: A4; margin: 0 !important; }
+        
+        /* XỬ LÝ ZOOM CAO (≥125%) */
+        @media screen and (max-width: 900px) {
+            .a4-page, .a4-page-dynamic, .no-print-header {
+                width: 95vw !important;
+                max-width: 95vw !important;
+            }
+            .fct-visual-header { height: 120px; }
+            .section-personal { min-height: 400px; }
+            .section-skills { min-height: 140px; }
+            .section-experience { min-height: 240px; }
+        }
+        
         @media print {
             html, body { 
                 width: 100%; height: auto; padding: 0 !important; margin: 0 !important; 
