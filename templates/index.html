@@ -97,10 +97,17 @@
             transform: translateY(-1px);
         }
         .filter-btn.active {
-            background: #2563eb;
-            color: #fff;
-            border-color: #2563eb;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+            background: #2563eb !important;
+            color: #fff !important;
+            border-color: #2563eb !important;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4) !important;
+            transform: scale(1.05);
+        }
+        /* Optimize touch for mobile filters */
+        .filter-btn {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
         }
     </style>
 </head>
@@ -1178,9 +1185,14 @@ async function loadHistory() {
         function setFilterPrefix(prefix) {
             currentFilterPrefix = prefix;
             
-            // Cập nhật trạng thái active của nút
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(`filter-${prefix}`).classList.add('active');
+            // Cập nhật trạng thái active của nút (sử dụng class để đảm bảo chính xác)
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.id === `filter-${prefix}`) {
+                    btn.classList.add('active');
+                }
+            });
             
             filterHistory();
         }
@@ -1192,15 +1204,15 @@ async function loadHistory() {
             const rows = document.querySelectorAll('#historyTableBody tr');
             
             rows.forEach(row => {
-                const name = (row.dataset.name || '');
-                const maso = (row.dataset.maso || '').toUpperCase();
+                const name = (row.dataset.name || '').toLowerCase();
+                const maso = (row.dataset.maso || '').toUpperCase().trim();
                 
                 // 1. Kiểm tra prefix mã số
                 let prefixMatch = false;
                 if (currentFilterPrefix === 'ALL') {
                     prefixMatch = true;
                 } else if (currentFilterPrefix === 'OTHER') {
-                    // Không bắt đầu bằng MD, FD, KD
+                    // Không bắt đầu bằng MD, FD, KD (và không trống nếu cần, nhưng ở đây ta tính cả trống là mã khác)
                     prefixMatch = !maso.startsWith('MD') && !maso.startsWith('FD') && !maso.startsWith('KD');
                 } else {
                     prefixMatch = maso.startsWith(currentFilterPrefix);
@@ -1627,8 +1639,8 @@ async function loadHistory() {
         <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
             <div style="position:relative; flex:1; min-width:200px;">
                 <span style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#94a3b8;">🔍</span>
-                <input type="text" id="searchInput" onkeyup="filterHistory()"
-                    placeholder="Tìm tên, mã số... (nhiều mã cách nhau bằng dấu phẩy: MD001, MD002)"
+                <input type="text" id="searchInput" oninput="filterHistory()"
+                    placeholder="Tìm tên, mã số..."
                     style="width:100%; padding:9px 12px 9px 32px; border:1px solid #e2e8f0; border-radius:10px; font-size:13px; font-family:'Inter',sans-serif; box-sizing:border-box; background:#f8fafc; outline:none;">
             </div>
             <button onclick="clearHistoryFilters()" style="padding:8px 14px; background:#f8fafc; color:#475569; border:1px solid #e2e8f0; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">✕ Xóa lọc</button>
