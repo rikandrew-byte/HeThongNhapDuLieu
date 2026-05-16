@@ -335,6 +335,13 @@
         <div style="flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 15px; align-items: center; justify-content: flex-start; background: #f8fafc;">
             {% for img in batch %}
             <div style="width: 100%; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: center; padding: 5px;">
-    <script id="fct-raw-data" type="application/json">{{raw_data_json}}</script>
+                <img src="{{img}}" style="width: 100%; height: auto; max-height: 440px; display: block; object-fit: contain;">
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+{% endif %}
+<script id="fct-raw-data" type="application/json">{{raw_data_json}}</script>
 </body>
 </html>
