@@ -791,10 +791,15 @@ async function loadHistory() {
             result.data.forEach((item, index) => {
                 const row = document.createElement('tr');
                 row.className = 'history-card-row';
-                row.dataset.name = item.ho_ten.toLowerCase();
-                row.dataset.maso = item.ma_so.toLowerCase();
-                row.dataset.nameOrig = item.ho_ten;
-                row.dataset.masoOrig = item.ma_so;
+                
+                // Đảm bảo dữ liệu không bao giờ bị null để tránh sập script
+                const safeName = (item.ho_ten || '').toString();
+                const safeMaso = (item.ma_so || '').toString();
+                
+                row.dataset.name = safeName.toLowerCase();
+                row.dataset.maso = safeMaso.toLowerCase();
+                row.dataset.nameOrig = safeName;
+                row.dataset.masoOrig = safeMaso;
                 row.dataset.id = item.id;
                 row.onmouseover = () => { if (!row.dataset.checked) row.style.background = '#f8fafc'; };
                 row.onmouseout  = () => { if (!row.dataset.checked) row.style.background = ''; };
