@@ -103,6 +103,9 @@
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4) !important;
             transform: scale(1.05);
         }
+        /* Lớp ẩn hàng có độ ưu tiên cao nhất để thắng !important của Mobile CSS */
+        .history-row-hidden { display: none !important; }
+        
         /* Optimize touch for mobile filters */
         .filter-btn {
             touch-action: manipulation;
@@ -1179,9 +1182,12 @@ async function loadHistory() {
         }
 
         function updateHistoryCount() {
-            const total = document.querySelectorAll('#historyTableBody tr').length;
+            const tbody = document.getElementById('historyTableBody');
+            if (!tbody) return;
+            const rows = tbody.getElementsByTagName('tr');
+            const total = rows.length;
             document.getElementById('historyTotalCount').textContent = total + ' hồ sơ';
-            const visible = [...document.querySelectorAll('#historyTableBody tr')].filter(r => r.style.display !== 'none').length;
+            const visible = Array.from(rows).filter(r => !r.classList.contains('history-row-hidden')).length;
             document.getElementById('historyVisibleCount').textContent = `Hiển thị ${visible} / ${total} hồ sơ`;
         }
 
@@ -1244,7 +1250,12 @@ async function loadHistory() {
                 // 2. Kiểm tra từ khóa tìm kiếm
                 const searchMatch = terms.length === 0 || terms.some(t => name.includes(t) || maso.toLowerCase().includes(t));
                 
-                row.style.display = (prefixMatch && searchMatch) ? '' : 'none';
+                // 3. Sử dụng Class để ẩn/hiện thay vì style.display để thắng !important CSS
+                if (prefixMatch && searchMatch) {
+                    row.classList.remove('history-row-hidden');
+                } else {
+                    row.classList.add('history-row-hidden');
+                }
             });
             updateHistoryCount();
         }
