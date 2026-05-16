@@ -164,48 +164,25 @@
                 max-width: 95vw !important;
             }
             .fct-visual-header { height: 120px; }
-            .section-personal { min-height: auto !important; padding: 15px !important; }
-            .section-skills { min-height: auto !important; padding: 15px !important; }
-            .section-experience { min-height: auto !important; padding: 15px !important; }
+            .section-personal { min-height: auto !important; padding: 15px !important; order: 5; }
+            .section-skills { min-height: auto !important; padding: 15px !important; order: 6; }
+            .section-experience { min-height: auto !important; padding: 15px !important; order: 7; }
             
-            /* Mobile Layout: Stacked */
-            .content-wrapper { flex-direction: column !important; }
-            .sidebar { 
-                width: 100% !important; 
-                border-right: none !important; 
-                border-bottom: 1px solid #d1fae5; 
-                padding: 20px !important;
-            }
-            .main { width: 100% !important; }
-            .info-grid { grid-template-cols: 1fr !important; } /* Một cột trên mobile cho dễ đọc */
+            /* Mobile Layout: Flattened for ordering */
+            .content-wrapper { display: flex !important; flex-direction: column !important; }
+            .sidebar, .main { display: contents !important; }
             
-            /* Quick Nav Bar */
-            .quick-nav {
-                display: flex !important;
-                position: fixed;
-                bottom: 20px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: rgba(6, 78, 59, 0.9);
-                backdrop-filter: blur(8px);
-                padding: 10px 20px;
-                border-radius: 999px;
-                gap: 20px;
-                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-                z-index: 9999;
-                border: 1px solid rgba(255,255,255,0.1);
-            }
-            .nav-item {
-                color: white;
-                font-size: 20px;
-                text-decoration: none;
-                opacity: 0.8;
-                transition: all 0.2s;
-            }
-            .nav-item:active { transform: scale(1.2); opacity: 1; }
+            /* Cài đặt thứ tự hiển thị */
+            .sidebar-top { order: 2; width: 100%; background: #f0fdf4; padding: 20px; }
+            .sidebar-photo { order: 3; width: 100%; background: #f0fdf4; padding: 0 20px 20px 20px; }
+            .sidebar-extra { order: 4; width: 100%; background: #f0fdf4; padding: 0 20px 20px 20px; border-bottom: 1px solid #d1fae5; }
+            .sidebar-notes { order: 9; width: 100%; background: #fff; padding: 20px; border-top: 1px solid #e2e8f0; }
+            
+            .info-grid { grid-template-cols: 1fr !important; }
         }
         
-        .quick-nav { display: none; } /* Mặc định ẩn trên desktop */
+        /* Đảm bảo thứ tự mặc định cho Desktop */
+        .sidebar-top, .sidebar-photo, .sidebar-extra, .sidebar-notes { order: initial; }
         
         @media print {
             html, body { 
@@ -257,16 +234,16 @@
 
         <div class="content-wrapper">
             <div class="sidebar border-r border-emerald-100 flex flex-col">
-                <div class="mb-5 text-center border-b-2 border-emerald-200 pb-4 flex-shrink-0">
+                <div class="sidebar-top mb-5 text-center border-b-2 border-emerald-200 pb-4 flex-shrink-0">
                     <p class="text-[14px] font-black text-amber-600 mb-1.5 uppercase tracking-[0.1em]">ID: {{Maso}}</p>
                     <h1 class="text-[17px] font-black uppercase text-slate-900 leading-tight mb-0.5 whitespace-nowrap overflow-hidden" style="font-family: 'Inter', sans-serif; letter-spacing: -0.03em;">{{Hoten}}</h1>
                     <p class="text-[16px] font-bold text-emerald-600 italic tracking-[0.05em]">{{TentiengTrung}}</p>
                 </div>
-                <div class="w-full aspect-[3/4] bg-white rounded-2xl shadow-md p-1 mb-5 border border-emerald-100 overflow-hidden flex-shrink-0">
+                <div class="sidebar-photo w-full aspect-[3/4] bg-white rounded-2xl shadow-md p-1 mb-5 border border-emerald-100 overflow-hidden flex-shrink-0">
                     <img src="{{photo_base64}}" class="w-full h-full object-cover rounded-xl">
                 </div>
 
-                <div class="space-y-3 mb-5 px-1 flex-shrink-0">
+                <div class="sidebar-extra space-y-3 mb-5 px-1 flex-shrink-0">
                     {% if video_link_1 or video_link_2 %}
                     <div class="grid grid-cols-2 gap-2">
                         {% if video_link_1 %}
@@ -287,11 +264,18 @@
                     {% endif %}
                 </div>
 
-                <div class="mt-auto bg-white p-4 rounded-xl border border-emerald-100 flex flex-col min-h-[220px] shadow-sm overflow-hidden">
+                <div class="sidebar-notes mt-auto bg-white p-4 rounded-xl border border-emerald-100 flex flex-col min-h-[220px] shadow-sm overflow-hidden">
                     <h2 class="text-[14px] font-black text-emerald-900 border-b border-emerald-100 pb-1 mb-2 uppercase flex justify-between items-center flex-shrink-0">
                         <span>Ghi chú / 備註</span><span class="text-emerald-500">✒</span>
                     </h2>
-                    <div class="text-[11.5px] text-slate-600 leading-relaxed italic font-medium overflow-hidden">{{loi_binh_1}}</div>
+                    <div class="text-[11.5px] text-slate-600 leading-relaxed italic font-medium mb-3 overflow-hidden">{{loi_binh_1}}</div>
+                    
+                    {% if f48 %}
+                    <div class="mt-auto pt-2 border-t border-dashed border-emerald-100">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Người phụ trách / 負責人</p>
+                        <p class="text-[13px] font-black text-emerald-700">{{f48}}</p>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
 
@@ -350,31 +334,6 @@
         <div style="flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 15px; align-items: center; justify-content: flex-start; background: #f8fafc;">
             {% for img in batch %}
             <div style="width: 100%; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: center; padding: 5px;">
-                <img src="{{img}}" style="width: 100%; height: auto; max-height: 440px; display: block; object-fit: contain;">
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endfor %}
-{% endif %}
-    <!-- Quick Nav Bar for Mobile -->
-    <div class="quick-nav no-print">
-        <a href="#" onclick="scrollToSection(event, 'body')" class="nav-item" title="Đầu trang">🔝</a>
-        <a href="#" onclick="scrollToSection(event, 'personal')" class="nav-item" title="Cá nhân">👤</a>
-        <a href="#" onclick="scrollToSection(event, 'skills')" class="nav-item" title="Kỹ năng">🛠️</a>
-        <a href="#" onclick="scrollToSection(event, 'experience')" class="nav-item" title="Kinh nghiệm">💼</a>
-        <a href="#" onclick="scrollToSection(event, 'documents')" class="nav-item" title="Tài liệu">📄</a>
-    </div>
-
-    <script>
-        function scrollToSection(e, id) {
-            e.preventDefault();
-            const el = id === 'body' ? document.body : document.getElementById(id);
-            if (el) {
-                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        }
-    </script>
     <script id="fct-raw-data" type="application/json">{{raw_data_json}}</script>
 </body>
 </html>
