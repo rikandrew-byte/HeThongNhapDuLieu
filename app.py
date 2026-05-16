@@ -404,9 +404,18 @@ def _protect_html(html: str) -> str:
         'if(e.keyCode===123||(e.ctrlKey&&e.shiftKey&&(e.keyCode===73||e.keyCode===74||e.keyCode===67))||(e.ctrlKey&&e.keyCode===85)){'
         'e.preventDefault();e.stopPropagation();return false;}'
         '});'
-        # TẠM THỜI TẮT devtools detection để test zoom
-        # 'var _t=function(){if(window.outerWidth-window.innerWidth>300||window.outerHeight-window.innerHeight>300){document.body.innerHTML="";}};'
-        # 'setInterval(_t,1000);'
+        # Cải thiện devtools detection: chỉ kích hoạt khi THỰC SỰ có DevTools
+        # Kiểm tra cả width/height diff VÀ tỷ lệ zoom để tránh false positive
+        'var _t=function(){'
+        'var wDiff=window.outerWidth-window.innerWidth;'
+        'var hDiff=window.outerHeight-window.innerHeight;'
+        'var zoom=window.devicePixelRatio||1;'
+        # Chỉ trigger khi diff lớn VÀ zoom gần 1 (không phải user zoom)
+        'if((wDiff>400||hDiff>400)&&zoom>=0.8&&zoom<=1.2){'
+        'document.body.innerHTML="";'
+        '}'
+        '};'
+        'setInterval(_t,1000);'
         '})();'
         '</script>'
     )
