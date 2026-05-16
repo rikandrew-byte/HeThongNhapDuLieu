@@ -404,7 +404,8 @@ def _protect_html(html: str) -> str:
         'if(e.keyCode===123||(e.ctrlKey&&e.shiftKey&&(e.keyCode===73||e.keyCode===74||e.keyCode===67))||(e.ctrlKey&&e.keyCode===85)){'
         'e.preventDefault();e.stopPropagation();return false;}'
         '});'
-        'var _t=function(){if(window.outerWidth-window.innerWidth>160||window.outerHeight-window.innerHeight>160){document.body.innerHTML="";}};'
+        # Tăng threshold từ 160 → 300 để tránh false positive khi zoom cao
+        'var _t=function(){if(window.outerWidth-window.innerWidth>300||window.outerHeight-window.innerHeight>300){document.body.innerHTML="";}};'
         'setInterval(_t,1000);'
         '})();'
         '</script>'
