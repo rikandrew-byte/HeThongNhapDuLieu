@@ -176,13 +176,14 @@
             .sidebar-top { order: 2; width: 100%; background: #f0fdf4; padding: 20px; }
             .sidebar-photo { order: 3; width: 100%; background: #f0fdf4; padding: 0 20px 20px 20px; }
             .sidebar-extra { order: 4; width: 100%; background: #f0fdf4; padding: 0 20px 20px 20px; border-bottom: 1px solid #d1fae5; }
-            .sidebar-notes { order: 9; width: 100%; background: #fff; padding: 20px; border-top: 1px solid #e2e8f0; }
+            .sidebar-notes { order: 8; width: 100%; background: #fff; padding: 20px; border-top: 1px solid #e2e8f0; }
+            .sidebar-npt { order: 9; width: 100%; background: #f8fafc; padding: 15px 20px; border-top: 1px solid #e2e8f0; }
             
             .info-grid { grid-template-cols: 1fr !important; }
         }
         
         /* Đảm bảo thứ tự mặc định cho Desktop */
-        .sidebar-top, .sidebar-photo, .sidebar-extra, .sidebar-notes { order: initial; }
+        .sidebar-top, .sidebar-photo, .sidebar-extra, .sidebar-notes, .sidebar-npt { order: initial; }
         
         @media print {
             html, body { 
@@ -264,19 +265,19 @@
                     {% endif %}
                 </div>
 
-                <div class="sidebar-notes mt-auto bg-white p-4 rounded-xl border border-emerald-100 flex flex-col min-h-[220px] shadow-sm overflow-hidden">
+                <div class="sidebar-notes mt-auto bg-white p-4 rounded-xl border border-emerald-100 flex flex-col min-h-[180px] shadow-sm overflow-hidden">
                     <h2 class="text-[14px] font-black text-emerald-900 border-b border-emerald-100 pb-1 mb-2 uppercase flex justify-between items-center flex-shrink-0">
                         <span>Ghi chú / 備註</span><span class="text-emerald-500">✒</span>
                     </h2>
-                    <div class="text-[11.5px] text-slate-600 leading-relaxed italic font-medium mb-3 overflow-hidden">{{loi_binh_1}}</div>
-                    
-                    {% if f48 %}
-                    <div class="mt-auto pt-2 border-t border-dashed border-emerald-100">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Người phụ trách / 負責人</p>
-                        <p class="text-[13px] font-black text-emerald-700">{{f48}}</p>
-                    </div>
-                    {% endif %}
+                    <div class="text-[11.5px] text-slate-600 leading-relaxed italic font-medium overflow-hidden">{{loi_binh_1}}</div>
                 </div>
+
+                {% if f48 %}
+                <div class="sidebar-npt mt-3 pt-2 border-t border-dashed border-emerald-100">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Người phụ trách / 負責人</p>
+                    <p class="text-[13px] font-black text-emerald-700">{{f48}}</p>
+                </div>
+                {% endif %}
             </div>
 
             <div class="main flex flex-col">
