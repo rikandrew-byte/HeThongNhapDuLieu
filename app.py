@@ -14,7 +14,6 @@ from urllib.parse import quote
 from unicodedata import normalize
 from flask_sqlalchemy import SQLAlchemy
 from flask_basicauth import BasicAuth
-import boto3
 from PIL import Image
 from vietnamese_names_dict import get_vietnamese_name_in_chinese
 
