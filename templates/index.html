@@ -1491,14 +1491,14 @@ async function loadHistory() {
             .history-card-row {
                 background: white !important;
                 border: 1px solid #e2e8f0 !important;
-                border-radius: 16px !important;
-                margin-bottom: 16px !important;
+                border-radius: 12px !important;
+                margin-bottom: 12px !important;
                 padding: 12px !important;
                 position: relative !important;
-                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05) !important;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
             }
             .history-card-row td {
-                padding: 6px 0 !important;
+                padding: 4px 0 !important;
                 border: none !important;
                 display: flex !important;
                 align-items: center !important;
@@ -1506,10 +1506,23 @@ async function loadHistory() {
             }
             .history-card-row td:last-child {
                 display: block !important;
-                margin-top: 10px !important;
-                border-top: 1px dashed #e2e8f0 !important;
-                padding-top: 12px !important;
+                margin-top: 8px !important;
+                border-top: 1px dashed #f1f5f9 !important;
+                padding-top: 10px !important;
+                text-align: left !important;
             }
+
+            /* Thanh cuộn ngang cho Filter trên mobile */
+            .mobile-filter-scroll {
+                display: flex !important;
+                overflow-x: auto !important;
+                white-space: nowrap !important;
+                padding-bottom: 8px !important;
+                gap: 8px !important;
+                -webkit-overflow-scrolling: touch;
+            }
+            .mobile-filter-scroll::-webkit-scrollbar { display: none; }
+            .mobile-filter-scroll .filter-btn { flex-shrink: 0 !important; }
 
             /* Nút overflow "..." trên mobile */
             .mobile-overflow-btn {
@@ -1584,17 +1597,28 @@ async function loadHistory() {
 <div id="historyModal" class="glass-modal" style="display:none; position:fixed; top:3%; left:5%; width:90%; max-height:94%; z-index:9999; overflow-y:auto; border-radius: 20px; font-family:'Inter',sans-serif;">
 
     <!-- Header -->
-    <div style="background:#fff; border-bottom:1px solid #e2e8f0; padding:16px 20px; border-radius:16px 16px 0 0; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:10;">
-        <div style="display:flex; align-items:center; gap:10px;">
-            <span style="font-size:20px;">📁</span>
-                <div style="font-size:16px; font-weight:700; color:#0f172a;">Quản trị Hồ sơ Hệ thống</div>
-                <div style="font-size:12px; color:#64748b;">Version 3.6.0 (Clean &amp; Stable) — <span id="historyTotalCount" style="color:#0f172a; font-weight:600;">0 hồ sơ</span></div>
+    <div style="background:#fff; border-bottom:1px solid #e2e8f0; padding:12px 16px; border-radius:16px 16px 0 0; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:10;">
+        <div style="display:flex; align-items:center; gap:8px; overflow:hidden;">
+            <span style="font-size:18px; flex-shrink:0;">📁</span>
+            <div style="overflow:hidden;">
+                <div style="font-size:14px; font-weight:800; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Quản trị Hồ sơ</div>
+                <div style="font-size:10px; color:#64748b; white-space:nowrap;"><span class="hidden sm:inline">Version 3.6.0 — </span><span id="historyTotalCount" style="color:#0f172a; font-weight:600;">0 hồ sơ</span></div>
+            </div>
         </div>
-        <div style="display:flex; align-items:center; gap:6px;">
-            <button type="button" onclick="loadHistory()" class="btn-action" style="padding:6px 12px; background:#fff; color:#64748b; border:1px solid #e2e8f0; border-radius:10px; cursor:pointer; font-size:12px; font-weight:700;">🔄 Làm mới</button>
+        <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+            <button type="button" onclick="loadHistory()" class="btn-action" title="Làm mới" style="padding:8px; background:#f8fafc; color:#64748b; border:1px solid #e2e8f0; border-radius:10px; cursor:pointer;">
+                <span class="hidden sm:inline">🔄 Làm mới</span>
+                <span class="sm:hidden">🔄</span>
+            </button>
             <input type="file" id="importFileInput" accept=".html,.htm" style="display:none;" onchange="loadFromFile(this)">
-            <button type="button" onclick="document.getElementById('importFileInput').click()" class="btn-action" style="padding:6px 12px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:10px; cursor:pointer; font-size:12px; font-weight:700;">📂 Nạp file</button>
-            <button type="button" onclick="document.getElementById('historyModal').style.display='none'" class="btn-action" style="padding:6px 12px; background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:10px; cursor:pointer; font-size:12px; font-weight:700;">✕ Đóng</button>
+            <button type="button" onclick="document.getElementById('importFileInput').click()" class="btn-action" title="Nạp file" style="padding:8px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:10px; cursor:pointer;">
+                <span class="hidden sm:inline">📂 Nạp file</span>
+                <span class="sm:hidden">📂</span>
+            </button>
+            <button type="button" onclick="document.getElementById('historyModal').style.display='none'" class="btn-action" title="Đóng" style="padding:8px; background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:10px; cursor:pointer;">
+                <span class="hidden sm:inline">✕ Đóng</span>
+                <span class="sm:hidden">✕</span>
+            </button>
         </div>
     </div>
 
@@ -1611,8 +1635,8 @@ async function loadHistory() {
         </div>
         
         <!-- Filter Buttons (Loại mã số) -->
-        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-            <span style="font-size:11px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em; margin-right:4px;">Lọc theo loại:</span>
+        <div class="mobile-filter-scroll" style="display:flex; gap:8px; align-items:center;">
+            <span class="hidden sm:inline" style="font-size:11px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em; margin-right:4px;">Lọc theo loại:</span>
             <button onclick="setFilterPrefix('ALL')" id="filter-ALL" class="filter-btn active">Tất cả</button>
             <button onclick="setFilterPrefix('MD')" id="filter-MD" class="filter-btn">♂️ Nam (MD)</button>
             <button onclick="setFilterPrefix('FD')" id="filter-FD" class="filter-btn">♀️ Nữ (FD)</button>

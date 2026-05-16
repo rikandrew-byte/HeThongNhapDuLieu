@@ -164,10 +164,48 @@
                 max-width: 95vw !important;
             }
             .fct-visual-header { height: 120px; }
-            .section-personal { min-height: 400px; }
-            .section-skills { min-height: 140px; }
-            .section-experience { min-height: 240px; }
+            .section-personal { min-height: auto !important; padding: 15px !important; }
+            .section-skills { min-height: auto !important; padding: 15px !important; }
+            .section-experience { min-height: auto !important; padding: 15px !important; }
+            
+            /* Mobile Layout: Stacked */
+            .content-wrapper { flex-direction: column !important; }
+            .sidebar { 
+                width: 100% !important; 
+                border-right: none !important; 
+                border-bottom: 1px solid #d1fae5; 
+                padding: 20px !important;
+            }
+            .main { width: 100% !important; }
+            .info-grid { grid-template-cols: 1fr !important; } /* Một cột trên mobile cho dễ đọc */
+            
+            /* Quick Nav Bar */
+            .quick-nav {
+                display: flex !important;
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(6, 78, 59, 0.9);
+                backdrop-filter: blur(8px);
+                padding: 10px 20px;
+                border-radius: 999px;
+                gap: 20px;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                z-index: 9999;
+                border: 1px solid rgba(255,255,255,0.1);
+            }
+            .nav-item {
+                color: white;
+                font-size: 20px;
+                text-decoration: none;
+                opacity: 0.8;
+                transition: all 0.2s;
+            }
+            .nav-item:active { transform: scale(1.2); opacity: 1; }
         }
+        
+        .quick-nav { display: none; } /* Mặc định ẩn trên desktop */
         
         @media print {
             html, body { 
@@ -258,7 +296,7 @@
             </div>
 
             <div class="main flex flex-col">
-                <section class="section-personal">
+                <section id="personal" class="section-personal">
                     <div class="section-title">
                         <span>THÔNG TIN CÁ NHÂN</span><span>基本個人信息</span>
                     </div>
@@ -277,14 +315,14 @@
                     </div>
                 </section>
                 
-                <section class="section-skills">
+                <section id="skills" class="section-skills">
                     <div class="section-title">
                         <span>Kỹ năng & Ngoại ngữ</span><span>技能與語言</span>
                     </div>
                     <div class="skill-tag-container px-1">{{KyNangList_HTML}}</div>
                 </section>
 
-                <section class="section-experience">
+                <section id="experience" class="section-experience">
                     <div class="section-title">
                         <span>Kinh nghiệm làm việc</span><span>工作經驗</span>
                     </div>
@@ -303,7 +341,7 @@
 {% if document_images %}
     {% for i in range(0, document_images|length, 2) %}
     {% set batch = document_images[i:i+2] %}
-    <div class="a4-page-dynamic notranslate" style="page-break-before: always; margin-bottom: 20px;">
+    <div id="documents" class="a4-page-dynamic notranslate" style="page-break-before: always; margin-bottom: 20px;">
         <div style="background: linear-gradient(135deg, #065f46 0%, #10b981 100%); padding: 15px 40px; border-bottom: 4px solid #d4af37; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <h2 style="color: #fff; font-size: 14px; font-weight: 900; margin: 0; text-transform: uppercase;">Tài liệu & Giấy tờ / 證明文件</h2>
@@ -319,6 +357,24 @@
     </div>
     {% endfor %}
 {% endif %}
-<script id="fct-raw-data" type="application/json">{{raw_data_json}}</script>
+    <!-- Quick Nav Bar for Mobile -->
+    <div class="quick-nav no-print">
+        <a href="#" onclick="scrollToSection(event, 'body')" class="nav-item" title="Đầu trang">🔝</a>
+        <a href="#" onclick="scrollToSection(event, 'personal')" class="nav-item" title="Cá nhân">👤</a>
+        <a href="#" onclick="scrollToSection(event, 'skills')" class="nav-item" title="Kỹ năng">🛠️</a>
+        <a href="#" onclick="scrollToSection(event, 'experience')" class="nav-item" title="Kinh nghiệm">💼</a>
+        <a href="#" onclick="scrollToSection(event, 'documents')" class="nav-item" title="Tài liệu">📄</a>
+    </div>
+
+    <script>
+        function scrollToSection(e, id) {
+            e.preventDefault();
+            const el = id === 'body' ? document.body : document.getElementById(id);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    </script>
+    <script id="fct-raw-data" type="application/json">{{raw_data_json}}</script>
 </body>
 </html>
