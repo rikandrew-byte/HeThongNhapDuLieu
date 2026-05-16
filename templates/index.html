@@ -73,9 +73,6 @@
             transform: scale(0.95);
         }
 
-        /* Mobile Optimization - Moved to bottom for priority */
-
-        
         /* Filter Button Styles */
         .filter-btn {
             padding: 6px 14px;
@@ -90,6 +87,9 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
         }
         .filter-btn:hover {
             background: #f8fafc;
@@ -102,13 +102,6 @@
             border-color: #2563eb !important;
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4) !important;
             transform: scale(1.05);
-        }
-        
-        /* Optimize touch for mobile filters */
-        .filter-btn {
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
         }
     </style>
 </head>

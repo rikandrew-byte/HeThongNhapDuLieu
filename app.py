@@ -58,18 +58,6 @@ class FormHistory(db.Model):
 with app.app_context():
     try:
         db.create_all()
-        # Vá lỗi thiếu cột is_selected (Chạy trực tiếp cho cả SQLite/Postgres/Xata)
-        try:
-            from sqlalchemy import text
-            # Thử thêm cột, nếu đã có rồi thì SQL sẽ báo lỗi và ta sẽ rollback/bỏ qua
-            db.session.execute(text("ALTER TABLE form_history ADD COLUMN is_selected BOOLEAN DEFAULT FALSE"))
-            db.session.commit()
-            print("✅ Database migration: Column 'is_selected' added.")
-        except Exception as e:
-            db.session.rollback()
-            # Lỗi thường là do cột đã tồn tại, ta im lặng bỏ qua
-            if "already exists" not in str(e).lower() and "duplicate column" not in str(e).lower():
-                print(f"⚠️ Migration notice: {e}")
     except Exception as e:
         print(f"❌ Database initialization error: {e}")
 
@@ -238,66 +226,6 @@ def _init_cache():
 
 _init_cache()
 
-# --- R2 UPLOAD HELPER ---
-def init_r2_client():
-    """Khởi tạo R2 client (Cloudflare)"""
-    try:
-        r2_client = boto3.client(
-            's3',
-            endpoint_url=f"https://{os.environ.get('R2_ACCOUNT_ID')}.r2.cloudflarestorage.com",
-            aws_access_key_id=os.environ.get('R2_ACCESS_KEY'),
-            aws_secret_access_key=os.environ.get('R2_SECRET_KEY'),
-            region_name='auto'
-        )
-        return r2_client
-    except Exception as e:
-        print(f"⚠️ R2 client init failed: {str(e)}")
-        return None
-
-r2_client = init_r2_client()
-
-def upload_to_r2(file_data, filename, folder='documents'):
-    """Upload ảnh lên R2 (tự động compress & resize)"""
-    if not r2_client:
-        return None
-    
-    try:
-        # Resize ảnh để tiết kiệm storage
-        img = Image.open(io.BytesIO(file_data))
-        
-        # Giới hạn kích thước
-        max_size = 1200
-        if img.width > max_size or img.height > max_size:
-            img.thumbnail((max_size, max_size), Image.LANCZOS)
-        
-        # Convert RGBA → RGB nếu cần
-        if img.mode in ('RGBA', 'P'):
-            img = img.convert('RGB')
-        
-        # Compress ảnh
-        buf = io.BytesIO()
-        img.save(buf, format='JPEG', quality=75, optimize=True)
-        buf.seek(0)
-        
-        # Tạo key duy nhất
-        key = f"{folder}/{uuid.uuid4()}_{filename}"
-        
-        # Upload lên R2
-        r2_client.upload_fileobj(
-            buf,
-            os.environ.get('R2_BUCKET_NAME'),
-            key,
-            ExtraArgs={'ContentType': 'image/jpeg'}
-        )
-        
-        # Trả về public URL
-        public_url = f"https://{os.environ.get('R2_PUBLIC_URL')}/{key}"
-        print(f"✅ Uploaded to R2: {public_url}")
-        return public_url
-    except Exception as e:
-        print(f"❌ R2 upload error: {str(e)}")
-        traceback.print_exc()
-        return None
 
 def _fetch_r2_image_as_base64(url: str) -> str:
     """Tải ảnh từ URL R2 về và chuyển thành Base64 để nhúng vào HTML offline.
@@ -384,11 +312,7 @@ def prepare_render_data(raw_data: dict) -> dict:
             data[f'{key}_base64'] = ""
 
     # Xử lý ảnh tài liệu (giấy tờ) để render trang 2
-    # Hỗ trợ cả document_images (mới) và document_urls (cũ)
-    doc_imgs = raw_data.get('document_images', [])
-    if not doc_imgs:
-        doc_imgs = raw_data.get('document_urls', [])
-    data['document_images'] = doc_imgs
+    data['document_images'] = raw_data.get('document_images', [])
 
     return data
 
