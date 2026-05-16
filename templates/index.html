@@ -103,8 +103,6 @@
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4) !important;
             transform: scale(1.05);
         }
-        /* Lớp ẩn hàng có độ ưu tiên cao nhất để thắng !important của Mobile CSS */
-        .history-row-hidden { display: none !important; }
         
         /* Optimize touch for mobile filters */
         .filter-btn {
@@ -848,9 +846,11 @@ async function loadHistory() {
                         </div>
                     </td>
                 `;
-                tbody.appendChild(row);
             });
             updateHistoryCount();
+            
+            // Gọi bộ lọc ngay lập tức để áp dụng filter hiện tại nếu có
+            filterHistory();
         } else {
             tbody.innerHTML = `<tr><td colspan="5" style="color:red; text-align:center; padding: 15px;">Lỗi: ${result.error}</td></tr>`;
         }
@@ -1187,28 +1187,11 @@ async function loadHistory() {
             const rows = tbody.getElementsByTagName('tr');
             const total = rows.length;
             document.getElementById('historyTotalCount').textContent = total + ' hồ sơ';
-            const visible = Array.from(rows).filter(r => !r.classList.contains('history-row-hidden')).length;
+            const visible = Array.from(rows).filter(r => r.style.display !== 'none').length;
             document.getElementById('historyVisibleCount').textContent = `Hiển thị ${visible} / ${total} hồ sơ`;
         }
 
         let currentFilterPrefix = 'ALL';
-
-        // Gắn sự kiện Robust cho các nút lọc (Khởi tạo ngay khi có script)
-        document.addEventListener('DOMContentLoaded', () => {
-            const historyRefreshBtn = document.getElementById('historyRefreshBtn');
-            if (historyRefreshBtn) historyRefreshBtn.addEventListener('click', loadHistory);
-
-            const filterIds = ['ALL', 'MD', 'FD', 'KD', 'OTHER'];
-            filterIds.forEach(prefix => {
-                const btn = document.getElementById(`filter-${prefix}`);
-                if (btn) {
-                    btn.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        setFilterPrefix(prefix);
-                    });
-                }
-            });
-        });
 
         function setFilterPrefix(prefix) {
             currentFilterPrefix = prefix;
@@ -1250,11 +1233,11 @@ async function loadHistory() {
                 // 2. Kiểm tra từ khóa tìm kiếm
                 const searchMatch = terms.length === 0 || terms.some(t => name.includes(t) || maso.toLowerCase().includes(t));
                 
-                // 3. Sử dụng Class để ẩn/hiện thay vì style.display để thắng !important CSS
+                // 3. Sử dụng inline style !important để thắng hoàn toàn mọi CSS responsive
                 if (prefixMatch && searchMatch) {
-                    row.classList.remove('history-row-hidden');
+                    row.style.display = ''; // Khôi phục hiển thị bình thường
                 } else {
-                    row.classList.add('history-row-hidden');
+                    row.style.setProperty('display', 'none', 'important'); // Ép buộc ẩn
                 }
             });
             updateHistoryCount();
@@ -1652,7 +1635,7 @@ async function loadHistory() {
             </div>
         </div>
         <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
-            <button type="button" id="historyRefreshBtn" class="btn-action" title="Làm mới" style="padding:8px; background:#f8fafc; color:#64748b; border:1px solid #e2e8f0; border-radius:10px; cursor:pointer;">
+            <button type="button" id="historyRefreshBtn" onclick="loadHistory()" class="btn-action" title="Làm mới" style="padding:8px; background:#f8fafc; color:#64748b; border:1px solid #e2e8f0; border-radius:10px; cursor:pointer;">
                 <span class="hidden sm:inline">🔄 Làm mới</span>
                 <span class="sm:hidden">🔄</span>
             </button>
@@ -1683,11 +1666,11 @@ async function loadHistory() {
         <!-- Filter Buttons (Loại mã số) -->
         <div class="mobile-filter-scroll" style="display:flex; gap:8px; align-items:center;">
             <span class="hidden sm:inline" style="font-size:11px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em; margin-right:4px;">Lọc theo loại:</span>
-            <button type="button" id="filter-ALL" class="filter-btn active">Tất cả</button>
-            <button type="button" id="filter-MD" class="filter-btn">♂️ Nam (MD)</button>
-            <button type="button" id="filter-FD" class="filter-btn">♀️ Nữ (FD)</button>
-            <button type="button" id="filter-KD" class="filter-btn">🏥 Điều dưỡng (KD)</button>
-            <button type="button" id="filter-OTHER" class="filter-btn">❓ Mã khác</button>
+            <button type="button" id="filter-ALL" onclick="setFilterPrefix('ALL')" class="filter-btn active">Tất cả</button>
+            <button type="button" id="filter-MD" onclick="setFilterPrefix('MD')" class="filter-btn">♂️ Nam (MD)</button>
+            <button type="button" id="filter-FD" onclick="setFilterPrefix('FD')" class="filter-btn">♀️ Nữ (FD)</button>
+            <button type="button" id="filter-KD" onclick="setFilterPrefix('KD')" class="filter-btn">🏥 Điều dưỡng (KD)</button>
+            <button type="button" id="filter-OTHER" onclick="setFilterPrefix('OTHER')" class="filter-btn">❓ Mã khác</button>
         </div>
     </div>
 
