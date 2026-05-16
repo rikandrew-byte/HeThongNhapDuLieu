@@ -1187,6 +1187,23 @@ async function loadHistory() {
 
         let currentFilterPrefix = 'ALL';
 
+        // Gắn sự kiện Robust cho các nút lọc (Khởi tạo ngay khi có script)
+        document.addEventListener('DOMContentLoaded', () => {
+            const historyRefreshBtn = document.getElementById('historyRefreshBtn');
+            if (historyRefreshBtn) historyRefreshBtn.addEventListener('click', loadHistory);
+
+            const filterIds = ['ALL', 'MD', 'FD', 'KD', 'OTHER'];
+            filterIds.forEach(prefix => {
+                const btn = document.getElementById(`filter-${prefix}`);
+                if (btn) {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        setFilterPrefix(prefix);
+                    });
+                }
+            });
+        });
+
         function setFilterPrefix(prefix) {
             currentFilterPrefix = prefix;
             
@@ -1206,18 +1223,19 @@ async function loadHistory() {
         function filterHistory() {
             const raw = document.getElementById('searchInput').value.trim();
             const terms = raw.toLowerCase().split(/[,\s]+/).filter(t => t.length > 0);
-            const rows = document.querySelectorAll('#historyTableBody tr');
+            const tbody = document.getElementById('historyTableBody');
+            if (!tbody) return;
+            const rows = tbody.getElementsByTagName('tr');
             
-            rows.forEach(row => {
-                const name = (row.dataset.name || '').toLowerCase();
-                const maso = (row.dataset.maso || '').toUpperCase().trim();
+            Array.from(rows).forEach(row => {
+                const name = (row.getAttribute('data-name') || '').toLowerCase();
+                const maso = (row.getAttribute('data-maso') || '').toUpperCase().trim();
                 
                 // 1. Kiểm tra prefix mã số
                 let prefixMatch = false;
                 if (currentFilterPrefix === 'ALL') {
                     prefixMatch = true;
                 } else if (currentFilterPrefix === 'OTHER') {
-                    // Không bắt đầu bằng MD, FD, KD (và không trống nếu cần, nhưng ở đây ta tính cả trống là mã khác)
                     prefixMatch = !maso.startsWith('MD') && !maso.startsWith('FD') && !maso.startsWith('KD');
                 } else {
                     prefixMatch = maso.startsWith(currentFilterPrefix);
@@ -1614,16 +1632,16 @@ async function loadHistory() {
 <div id="historyModal" class="glass-modal" style="display:none; position:fixed; top:3%; left:5%; width:90%; max-height:94%; z-index:9999; overflow-y:auto; border-radius: 20px; font-family:'Inter',sans-serif;">
 
     <!-- Header -->
-    <div style="background:#fff; border-bottom:1px solid #e2e8f0; padding:12px 16px; border-radius:16px 16px 0 0; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:10;">
+    <div class="notranslate" style="background:#fff; border-bottom:1px solid #e2e8f0; padding:12px 16px; border-radius:16px 16px 0 0; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100;">
         <div style="display:flex; align-items:center; gap:8px; overflow:hidden;">
             <span style="font-size:18px; flex-shrink:0;">📁</span>
             <div style="overflow:hidden;">
                 <div style="font-size:14px; font-weight:800; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Quản trị Hồ sơ</div>
-                <div style="font-size:10px; color:#64748b; white-space:nowrap;"><span class="hidden sm:inline">Version 3.6.0 — </span><span id="historyTotalCount" style="color:#0f172a; font-weight:600;">0 hồ sơ</span></div>
+                <div style="font-size:10px; color:#64748b; white-space:nowrap;"><span class="hidden sm:inline">Version 3.6.5 — </span><span id="historyTotalCount" style="color:#0f172a; font-weight:600;">0 hồ sơ</span></div>
             </div>
         </div>
         <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
-            <button type="button" onclick="loadHistory()" class="btn-action" title="Làm mới" style="padding:8px; background:#f8fafc; color:#64748b; border:1px solid #e2e8f0; border-radius:10px; cursor:pointer;">
+            <button type="button" id="historyRefreshBtn" class="btn-action" title="Làm mới" style="padding:8px; background:#f8fafc; color:#64748b; border:1px solid #e2e8f0; border-radius:10px; cursor:pointer;">
                 <span class="hidden sm:inline">🔄 Làm mới</span>
                 <span class="sm:hidden">🔄</span>
             </button>
@@ -1639,8 +1657,8 @@ async function loadHistory() {
         </div>
     </div>
 
-    <!-- Search + Filter -->
-    <div style="padding:14px 20px; background:#fff; border-bottom:1px solid #e2e8f0; display:flex; flex-direction:column; gap:12px;">
+    <!-- Search + Filter (STICKY ON MOBILE) -->
+    <div class="notranslate" style="padding:14px 20px; background:#fff; border-bottom:1px solid #e2e8f0; display:flex; flex-direction:column; gap:12px; position:sticky; top:56px; z-index:90; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
         <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
             <div style="position:relative; flex:1; min-width:200px;">
                 <span style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#94a3b8;">🔍</span>
@@ -1654,11 +1672,11 @@ async function loadHistory() {
         <!-- Filter Buttons (Loại mã số) -->
         <div class="mobile-filter-scroll" style="display:flex; gap:8px; align-items:center;">
             <span class="hidden sm:inline" style="font-size:11px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em; margin-right:4px;">Lọc theo loại:</span>
-            <button onclick="setFilterPrefix('ALL')" id="filter-ALL" class="filter-btn active">Tất cả</button>
-            <button onclick="setFilterPrefix('MD')" id="filter-MD" class="filter-btn">♂️ Nam (MD)</button>
-            <button onclick="setFilterPrefix('FD')" id="filter-FD" class="filter-btn">♀️ Nữ (FD)</button>
-            <button onclick="setFilterPrefix('KD')" id="filter-KD" class="filter-btn">🏥 Điều dưỡng (KD)</button>
-            <button onclick="setFilterPrefix('OTHER')" id="filter-OTHER" class="filter-btn">❓ Mã khác</button>
+            <button type="button" id="filter-ALL" class="filter-btn active">Tất cả</button>
+            <button type="button" id="filter-MD" class="filter-btn">♂️ Nam (MD)</button>
+            <button type="button" id="filter-FD" class="filter-btn">♀️ Nữ (FD)</button>
+            <button type="button" id="filter-KD" class="filter-btn">🏥 Điều dưỡng (KD)</button>
+            <button type="button" id="filter-OTHER" class="filter-btn">❓ Mã khác</button>
         </div>
     </div>
 
