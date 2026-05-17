@@ -125,6 +125,82 @@ SKILL_MAPPING = {
     'f43': 'Giúp việc / 幫傭', 'f44': 'Xe cẩu / 吊車', 'f45': 'Cẩu trục / 天車', 'f46': 'Máy xúc / 挖土機'
 }
 
+ZH_TO_VI = {
+    # Học vấn
+    "國中": "Cấp 2",
+    "高中": "Cấp 3",
+    "中專": "Trung cấp",
+    "大專": "Cao đẳng",
+    "大學": "Đại học",
+    "國小": "Cấp 1",
+    
+    # Nơi ở / 63 Tỉnh Thành
+    "萊州": "Lai Châu",
+    "奠邊": "Điện Biên",
+    "山羅": "Sơn La",
+    "和平": "Hòa Bình",
+    "安沛": "Yên Bái",
+    "老街": "Lào Cai",
+    "河江": "Hà Giang",
+    "高平": "Cao Bằng",
+    "北𣴓": "Bắc Kạn",
+    "諒山": "Lạng Sơn",
+    "宣光": "Tuyên Quang",
+    "太原": "Thái Nguyên",
+    "富壽": "Phú Thọ",
+    "北江": "Bắc Giang",
+    "廣寧": "Quảng Ninh",
+    "北寧": "Bắc Ninh",
+    "河南": "Hà Nam",
+    "河內": "Hà Nội",
+    "海陽": "Hải Dương",
+    "海防": "Hải Phòng",
+    "興安": "Hưng Yên",
+    "南定": "Nam Định",
+    "寧平": "Ninh Bình",
+    "太平": "Thái Bình",
+    "永福": "Vĩnh Phúc",
+    "清化": "Thanh Hóa",
+    "乂安": "Nghệ An",
+    "河靜": "Hà Tĩnh",
+    "廣平": "Quảng Bình",
+    "廣治": "Quảng Trị",
+    "承天順化": "Thừa Thiên Huế",
+    "峴港": "Đà Nẵng",
+    "廣南": "Quảng Nam",
+    "廣義": "Quảng Ngãi",
+    "平定": "Bình Định",
+    "富安": "Phú Yên",
+    "慶和": "Khánh Hòa",
+    "寧順": "Ninh Thuận",
+    "平順": "Bình Thuận",
+    "崑嵩": "Kon Tum",
+    "嘉萊": "Gia Lai",
+    "多樂": "Đắk Lắk",
+    "得農": "Đắk Nông",
+    "林同": "Lâm Đồng",
+    "平福": "Bình Phước",
+    "平陽": "Bình Dương",
+    "同奈": "Đồng Nai",
+    "西寧": "Tây Ninh",
+    "巴地頭頓": "Bà Rịa - Vũng Tàu",
+    "胡志明市": "TP Hồ Chí Minh",
+    "隆安": "Long An",
+    "同塔": "Đồng Tháp",
+    "前江": "Tiền Giang",
+    "安江": "An Giang",
+    "檳椥": "Bến Tre",
+    "永隆": "Vĩnh Long",
+    "茶榮": "Trà Vinh",
+    "後江": "Hậu Giang",
+    "堅江": "Kiên Giang",
+    "朔莊": "Sóc Trăng",
+    "薄遼": "Bạc Liêu",
+    "金甌": "Cà Mau",
+    "芹苴": "Cần Thơ",
+}
+
+
 # --- HELPERS ---
 def is_chinese(text: str) -> bool:
     if not text: return False
@@ -740,13 +816,18 @@ def api_export_excel():
                 can_nang = form_data.get('Cannang', '')
                 hoc_van = form_data.get('Hocvan', '')
                 noi_o = form_data.get('Noio', '')
+                
+                # Dịch học lực và nơi ở sang tiếng Việt cho báo cáo Excel
+                hoc_van_vi = ZH_TO_VI.get(hoc_van.strip(), hoc_van) if hoc_van else ''
+                noi_o_vi = ZH_TO_VI.get(noi_o.strip(), noi_o) if noi_o else ''
+                
                 nguoi_pt = form_data.get('f48', '')
                 
-                if hoc_van:
-                    edu_count[hoc_van] = edu_count.get(hoc_van, 0) + 1
+                if hoc_van_vi:
+                    edu_count[hoc_van_vi] = edu_count.get(hoc_van_vi, 0) + 1
                     
-                if noi_o:
-                    noi_o_clean = noi_o.strip()
+                if noi_o_vi:
+                    noi_o_clean = noi_o_vi.strip()
                     if noi_o_clean:
                         location_count[noi_o_clean] = location_count.get(noi_o_clean, 0) + 1
                 
@@ -772,9 +853,10 @@ def api_export_excel():
                         kn.append(" ".join(parts))
                 kinh_nghiem = "\n".join(kn)
                 
+                # Trạng thái
                 trang_thai = '🎯 Trúng tuyển' if getattr(r, 'is_selected', False) else '📝 Gửi form'
                 
-                ws.append([ma_so, ho_ten, ngay_sinh, trang_thai, chieu_cao, can_nang, hoc_van, noi_o, tay_nghe, kinh_nghiem, nguoi_pt])
+                ws.append([ma_so, ho_ten, ngay_sinh, trang_thai, chieu_cao, can_nang, hoc_van_vi, noi_o_vi, tay_nghe, kinh_nghiem, nguoi_pt])
             except Exception as e:
                 print("Error parsing record:", e)
                 pass
@@ -872,8 +954,9 @@ def api_export_excel():
         if edu_count:
             pie = PieChart()
             pie.title = "Phân bổ Trình độ văn hóa"
-            pie.width = 16
+            pie.width = 19
             pie.height = 7.5
+            pie.legend.position = "b" # Đặt chú thích ở dưới cho đẹp và thống nhất
             labels = Reference(ws_stat, min_col=1, min_row=start_row_edu+1, max_row=start_row_edu+len(edu_count))
             data = Reference(ws_stat, min_col=2, min_row=start_row_edu, max_row=start_row_edu+len(edu_count))
             pie.add_data(data, titles_from_data=True)
@@ -892,8 +975,9 @@ def api_export_excel():
         if job_type_count:
             chart_job = PieChart()
             chart_job.title = "Phân bổ Nhóm ngành nghề"
-            chart_job.width = 18
+            chart_job.width = 19
             chart_job.height = 7.5
+            chart_job.legend.position = "b" # Đặt chú thích ở dưới để tránh bị khuất chữ dài
             labels_job = Reference(ws_stat, min_col=1, min_row=start_row_job+1, max_row=start_row_job+len(job_type_count))
             data_job = Reference(ws_stat, min_col=2, min_row=start_row_job, max_row=start_row_job+len(job_type_count))
             chart_job.add_data(data_job, titles_from_data=True)
