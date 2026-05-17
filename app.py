@@ -795,6 +795,10 @@ def api_export_excel():
         # Thêm Sheet Thống Kê
         ws_stat = wb.create_sheet(title="Thống Kê")
         
+        # Thêm thông tin Tổng số
+        ws_stat.append(["TỔNG SỐ ỨNG VIÊN", len(records)])
+        ws_stat.append([]) # Dòng trống
+        
         # Dữ liệu Tay nghề
         ws_stat.append(["Tay nghề", "Số lượng"])
         for skill, count in skills_count.items():
@@ -807,15 +811,16 @@ def api_export_excel():
             chart1.title = "Thống kê Tay nghề (Kỹ năng)"
             chart1.y_axis.title = 'Số lượng ứng viên'
             chart1.x_axis.title = 'Tay nghề'
-            data1 = Reference(ws_stat, min_col=2, min_row=1, max_row=len(skills_count)+1, max_col=2)
-            cats1 = Reference(ws_stat, min_col=1, min_row=2, max_row=len(skills_count)+1)
+            
+            data1 = Reference(ws_stat, min_col=2, min_row=3, max_row=3+len(skills_count), max_col=2)
+            cats1 = Reference(ws_stat, min_col=1, min_row=4, max_row=3+len(skills_count))
             chart1.add_data(data1, titles_from_data=True)
             chart1.set_categories(cats1)
             chart1.shape = 4
             ws_stat.add_chart(chart1, "D2")
             
         # Dữ liệu Trình độ
-        start_row_edu = len(skills_count) + 5
+        start_row_edu = len(skills_count) + 6
         ws_stat.cell(row=start_row_edu, column=1, value="Trình độ văn hóa")
         ws_stat.cell(row=start_row_edu, column=2, value="Số lượng")
         
