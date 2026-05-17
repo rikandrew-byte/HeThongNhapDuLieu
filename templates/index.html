@@ -1130,6 +1130,80 @@ async function loadHistory() {
             setTimeout(() => document.addEventListener('click', closeMenu), 10);
         }
 
+        async function bulkExportExcelHistory(isAll) {
+            let ids = [];
+            if (!isAll) {
+                const checked = [...document.querySelectorAll('.history-row-checkbox:checked')];
+                if (!checked.length) {
+                    alert('Vui lòng chọn ít nhất một hồ sơ để xuất Excel!');
+                    return;
+                }
+                ids = checked.map(cb => parseInt(cb.value));
+            } else {
+                // Xuất tất cả các hàng đang hiển thị (sau khi lọc)
+                const tbody = document.getElementById('historyTableBody');
+                if (!tbody) return;
+                const rows = tbody.getElementsByTagName('tr');
+                const visibleRows = Array.from(rows).filter(r => r.style.display !== 'none');
+                ids = visibleRows.map(r => parseInt(r.getAttribute('data-id'))).filter(id => !isNaN(id));
+                if (!ids.length) {
+                    alert('Không có hồ sơ nào để xuất Excel!');
+                    return;
+                }
+            }
+            
+            try {
+                // Thêm hiệu ứng loading đơn giản (có thể cải thiện sau)
+                const origBtnContent = event.currentTarget.innerHTML;
+                event.currentTarget.innerHTML = "⏳ Đang xuất...";
+                event.currentTarget.disabled = true;
+
+                const res = await fetch('/api/history/export-excel', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ ids })
+                });
+                if (!res.ok) { 
+                    alert('Lỗi khi xuất Excel'); 
+                    event.currentTarget.innerHTML = origBtnContent;
+                    event.currentTarget.disabled = false;
+                    return; 
+                }
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                
+                // Lấy tên file từ header Content-Disposition nếu có, nếu không dùng mặc định
+                const disposition = res.headers.get('Content-Disposition');
+                let filename = 'FCT_UngVien.xlsx';
+                if (disposition && disposition.indexOf('filename=') !== -1) {
+                    const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                    const matches = filenameRegex.exec(disposition);
+                    if (matches != null && matches[1]) { 
+                        filename = matches[1].replace(/['"]/g, '');
+                    }
+                }
+                
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                // Trả lại trạng thái nút
+                event.currentTarget.innerHTML = origBtnContent;
+                event.currentTarget.disabled = false;
+                
+                if (!isAll) clearHistorySelection();
+            } catch (e) { 
+                alert('Lỗi kết nối: ' + e.message); 
+                event.currentTarget.innerHTML = origBtnContent;
+                event.currentTarget.disabled = false;
+            }
+        }
+
         async function bulkDownloadHistory() {
             const checked = [...document.querySelectorAll('.history-row-checkbox:checked')];
             if (!checked.length) return;
@@ -1633,6 +1707,10 @@ async function loadHistory() {
                 <span class="hidden sm:inline">🔄 Làm mới</span>
                 <span class="sm:hidden">🔄</span>
             </button>
+            <button type="button" onclick="bulkExportExcelHistory(true)" class="btn-action" title="Xuất Excel tất cả" style="padding:8px; background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; border-radius:10px; cursor:pointer;">
+                <span class="hidden sm:inline">📊 Xuất Excel</span>
+                <span class="sm:hidden">📊</span>
+            </button>
             <input type="file" id="importFileInput" accept=".html,.htm" style="display:none;" onchange="loadFromFile(this)">
             <button type="button" onclick="document.getElementById('importFileInput').click()" class="btn-action" title="Nạp file" style="padding:8px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:10px; cursor:pointer;">
                 <span class="hidden sm:inline">📂 Nạp file</span>
@@ -1674,6 +1752,7 @@ async function loadHistory() {
         <div style="width:1px; height:16px; background:#cbd5e1;"></div>
         <button onclick="bulkCopyHistoryLinks()" style="padding:6px 12px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600;">📤 Copy link</button>
         <button onclick="bulkDownloadHistory()" style="padding:6px 12px; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600;">📥 Tải hàng loạt (.ZIP)</button>
+        <button onclick="bulkExportExcelHistory(false)" style="padding:6px 12px; background:#dcfce7; color:#16a34a; border:1px solid #86efac; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600;">📊 Xuất Excel Chuyên Nghiệp</button>
         <button onclick="bulkPrintHistory()" style="padding:6px 12px; background:#fdf4ff; color:#c026d3; border:1px solid #fbcfe8; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600;">🖨️ In PDF hàng loạt</button>
         <button onclick="bulkDeleteHistory()" style="padding:6px 12px; background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600;">🗑️ Xóa đã chọn</button>
         <button onclick="clearHistorySelection()" style="padding:6px 12px; background:#f8fafc; color:#475569; border:1px solid #e2e8f0; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600; margin-left:auto;">✕ Bỏ chọn</button>

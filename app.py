@@ -16,6 +16,10 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_basicauth import BasicAuth
 from PIL import Image
 from vietnamese_names_dict import get_vietnamese_name_in_chinese
+import openpyxl
+from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
+from openpyxl.chart import BarChart, PieChart, Reference
+from openpyxl.utils import get_column_letter
 
 load_dotenv()
 
@@ -608,6 +612,170 @@ def api_bulk_download():
         zip_buffer.seek(0)
         return send_file(zip_buffer, mimetype='application/zip', as_attachment=True, download_name='FCT_HoSo_Export.zip')
     except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+SKILL_MAPPING = {
+    'f23': 'Hàn điện', 'f31': 'Tiện', 'f39': 'Nhựa',
+    'f24': 'Hàn argon', 'f32': 'Phay', 'f40': 'Xây dựng',
+    'f25': 'Hàn CO2', 'f33': 'Bào', 'f41': 'Sữa chữa máy',
+    'f26': 'Tig Mig', 'f34': 'CNC', 'f42': 'Điều dưỡng',
+    'f27': 'Đúc', 'f35': 'Đột dập', 'f43': 'Giúp việc',
+    'f28': 'Dệt', 'f36': 'In ấn', 'f44': 'Xe cẩu',
+    'f29': 'May', 'f37': 'Thợ mộc', 'f45': 'Cẩu trục',
+    'f30': 'Xe nâng', 'f38': 'Lái xe tải/khách', 'f46': 'Máy xúc'
+}
+
+@app.route('/api/history/export-excel', methods=['POST'])
+@auth_required
+def api_export_excel():
+    try:
+        data = request.get_json() or {}
+        ids = data.get('ids', [])
+        
+        if ids:
+            records = FormHistory.query.filter(FormHistory.id.in_([int(i) for i in ids])).all()
+        else:
+            records = FormHistory.query.all()
+            
+        if not records:
+            return jsonify({'success': False, 'error': 'No records found'}), 404
+            
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Danh sách ứng viên"
+        
+        headers = ['Mã số', 'Họ tên', 'Ngày sinh', 'Chiều cao (cm)', 'Cân nặng (kg)', 
+                   'Trình độ văn hóa', 'Nơi ở', 'Tay nghề', 'Kinh nghiệm công việc', 'Người phụ trách']
+        ws.append(headers)
+        
+        # Thống kê
+        skills_count = {}
+        edu_count = {}
+        
+        for r in records:
+            try:
+                form_data = json.loads(r.data_json)
+                ma_so = r.ma_so or ''
+                ho_ten = r.ho_ten or ''
+                ngay_sinh = form_data.get('Ngaysinh', '')
+                chieu_cao = form_data.get('Chieucao', '')
+                can_nang = form_data.get('Cannang', '')
+                hoc_van = form_data.get('Hocvan', '')
+                noi_o = form_data.get('Noio', '')
+                nguoi_pt = form_data.get('f48', '')
+                
+                if hoc_van:
+                    edu_count[hoc_van] = edu_count.get(hoc_van, 0) + 1
+                
+                # Tay nghề
+                skills = []
+                for k, v in SKILL_MAPPING.items():
+                    if form_data.get(k):
+                        skills.append(v)
+                        skills_count[v] = skills_count.get(v, 0) + 1
+                tay_nghe = ", ".join(skills)
+                
+                # Kinh nghiệm
+                kn = []
+                for i in range(1, 4):
+                    qg = form_data.get(f'QG{i}', '')
+                    nam = form_data.get(f'N{i}', '')
+                    cv = form_data.get(f'ndcv{i}', '')
+                    if qg or cv:
+                        parts = []
+                        if qg: parts.append(qg)
+                        if nam: parts.append(f"({nam})")
+                        if cv: parts.append(f": {cv}")
+                        kn.append(" ".join(parts))
+                kinh_nghiem = " | ".join(kn)
+                
+                ws.append([ma_so, ho_ten, ngay_sinh, chieu_cao, can_nang, hoc_van, noi_o, tay_nghe, kinh_nghiem, nguoi_pt])
+            except Exception as e:
+                print("Error parsing record:", e)
+                pass
+                
+        # Premium Styling
+        thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
+        header_fill = PatternFill(start_color="1E3A8A", end_color="1E3A8A", fill_type="solid") # FCT Blue
+        header_font = Font(color="FFFFFF", bold=True)
+        zebra_fill = PatternFill(start_color="F3F4F6", end_color="F3F4F6", fill_type="solid") # Gray-100
+        
+        for col_num, cell in enumerate(ws[1], 1):
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+            cell.border = thin_border
+            
+        for row_idx, row in enumerate(ws.iter_rows(min_row=2, max_row=ws.max_row, min_col=1, max_col=10), 2):
+            is_even = (row_idx % 2 == 0)
+            for cell in row:
+                cell.border = thin_border
+                cell.alignment = Alignment(vertical="center", wrap_text=True)
+                if is_even:
+                    cell.fill = zebra_fill
+                    
+        # Auto-fit columns
+        for col in ws.columns:
+            max_length = 0
+            column = col[0].column_letter
+            for cell in col:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = min((max_length + 2), 50) # Max 50
+            ws.column_dimensions[column].width = adjusted_width
+            
+        # Thêm Sheet Thống Kê
+        ws_stat = wb.create_sheet(title="Thống Kê")
+        
+        # Dữ liệu Tay nghề
+        ws_stat.append(["Tay nghề", "Số lượng"])
+        for skill, count in skills_count.items():
+            ws_stat.append([skill, count])
+            
+        if skills_count:
+            chart1 = BarChart()
+            chart1.type = "col"
+            chart1.style = 10
+            chart1.title = "Thống kê Tay nghề (Kỹ năng)"
+            chart1.y_axis.title = 'Số lượng ứng viên'
+            chart1.x_axis.title = 'Tay nghề'
+            data1 = Reference(ws_stat, min_col=2, min_row=1, max_row=len(skills_count)+1, max_col=2)
+            cats1 = Reference(ws_stat, min_col=1, min_row=2, max_row=len(skills_count)+1)
+            chart1.add_data(data1, titles_from_data=True)
+            chart1.set_categories(cats1)
+            chart1.shape = 4
+            ws_stat.add_chart(chart1, "D2")
+            
+        # Dữ liệu Trình độ
+        start_row_edu = len(skills_count) + 5
+        ws_stat.cell(row=start_row_edu, column=1, value="Trình độ văn hóa")
+        ws_stat.cell(row=start_row_edu, column=2, value="Số lượng")
+        
+        for idx, (edu, count) in enumerate(edu_count.items(), 1):
+            ws_stat.cell(row=start_row_edu + idx, column=1, value=edu)
+            ws_stat.cell(row=start_row_edu + idx, column=2, value=count)
+            
+        if edu_count:
+            pie = PieChart()
+            pie.title = "Phân bổ Trình độ văn hóa"
+            labels = Reference(ws_stat, min_col=1, min_row=start_row_edu+1, max_row=start_row_edu+len(edu_count))
+            data = Reference(ws_stat, min_col=2, min_row=start_row_edu, max_row=start_row_edu+len(edu_count))
+            pie.add_data(data, titles_from_data=True)
+            pie.set_categories(labels)
+            ws_stat.add_chart(pie, "M2")
+            
+        excel_buffer = io.BytesIO()
+        wb.save(excel_buffer)
+        excel_buffer.seek(0)
+        
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        return send_file(excel_buffer, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 
+                         as_attachment=True, download_name=f'FCT_UngVien_{timestamp}.xlsx')
+    except Exception as e:
+        print(traceback.format_exc())
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/history/bulk-print', methods=['POST'])
