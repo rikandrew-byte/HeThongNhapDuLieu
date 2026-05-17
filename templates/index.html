@@ -1297,11 +1297,6 @@ async function loadHistory() {
             const yearFilter = document.getElementById('yearFilter');
             const selectedYear = yearFilter ? yearFilter.value : 'ALL';
             
-            const btnHardDelete = document.getElementById('btnHardDeleteYear');
-            if (btnHardDelete) {
-                btnHardDelete.style.display = selectedYear !== 'ALL' ? 'inline-block' : 'none';
-            }
-            
             if (!tbody) return;
             const rows = tbody.getElementsByTagName('tr');
             
@@ -1345,40 +1340,6 @@ async function loadHistory() {
             setFilterPrefix('ALL');
         }
         
-        async function hardDeleteYear() {
-            const yearFilter = document.getElementById('yearFilter');
-            const selectedYear = yearFilter ? yearFilter.value : 'ALL';
-            if (selectedYear === 'ALL') return;
-            
-            if (!confirm(`⚠️ CẢNH BÁO ⚠️\n\nBạn có chắc chắn muốn XÓA VĨNH VIỄN toàn bộ hồ sơ của Năm ${selectedYear} không?\n(Dữ liệu sẽ bị xóa hoàn toàn khỏi hệ thống, bao gồm cả các hồ sơ đã ẩn. KHÔNG THỂ KHÔI PHỤC!)`)) {
-                return;
-            }
-            
-            try {
-                const btn = document.getElementById('btnHardDeleteYear');
-                const origText = btn.innerHTML;
-                btn.innerHTML = '⏳ Đang xóa...';
-                btn.disabled = true;
-                
-                const res = await fetch('/api/history/hard-delete-year', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ year: selectedYear })
-                });
-                const result = await res.json();
-                
-                if (result.success) {
-                    alert(`✅ Đã xóa vĩnh viễn ${result.deleted} hồ sơ của năm ${selectedYear}.`);
-                    loadHistory(); // Tải lại danh sách
-                } else {
-                    alert('Lỗi: ' + result.error);
-                }
-                btn.innerHTML = origText;
-                btn.disabled = false;
-            } catch (e) {
-                alert('Lỗi kết nối: ' + e.message);
-            }
-        }
 
         function calcAge() {
             const birthValue = document.getElementById('birthDate').value;
@@ -1805,7 +1766,6 @@ async function loadHistory() {
                     <option value="2026" selected>Năm 2026</option>
                     <option value="2025">Năm 2025</option>
                 </select>
-                <button type="button" id="btnHardDeleteYear" onclick="hardDeleteYear()" style="display:none; padding:8px 12px; background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:8px; cursor:pointer; font-size:12px; font-weight:600;" title="Chỉ hiện khi chọn 1 năm cụ thể">🗑️ Xóa vĩnh viễn năm này</button>
             </div>
             
             <button onclick="clearHistoryFilters()" style="padding:8px 14px; background:#f8fafc; color:#475569; border:1px solid #e2e8f0; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">✕ Xóa lọc</button>
