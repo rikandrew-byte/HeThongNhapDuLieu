@@ -699,11 +699,22 @@ def api_export_excel():
         # Thống kê
         skills_count = {}
         edu_count = {}
+        type_count = {'Nam (MD)': 0, 'Nữ (FD)': 0, 'Điều dưỡng (KD)': 0, 'Khác': 0}
         
         for r in records:
             try:
                 form_data = json.loads(r.data_json)
                 ma_so = r.ma_so or ''
+                ma_so_upper = ma_so.strip().upper()
+                if ma_so_upper.startswith('MD'):
+                    type_count['Nam (MD)'] += 1
+                elif ma_so_upper.startswith('FD'):
+                    type_count['Nữ (FD)'] += 1
+                elif ma_so_upper.startswith('KD'):
+                    type_count['Điều dưỡng (KD)'] += 1
+                else:
+                    type_count['Khác'] += 1
+                    
                 ho_ten = r.ho_ten or ''
                 ngay_sinh = form_data.get('Ngaysinh', '')
                 chieu_cao = form_data.get('Chieucao', '')
@@ -797,6 +808,10 @@ def api_export_excel():
         
         # Thêm thông tin Tổng số
         ws_stat.append(["TỔNG SỐ ỨNG VIÊN", len(records)])
+        ws_stat.append(["- Nam (MD)", type_count['Nam (MD)']])
+        ws_stat.append(["- Nữ (FD)", type_count['Nữ (FD)']])
+        ws_stat.append(["- Điều dưỡng (KD)", type_count['Điều dưỡng (KD)']])
+        ws_stat.append(["- Khác", type_count['Khác']])
         ws_stat.append([]) # Dòng trống
         
         # Dữ liệu Tay nghề
@@ -812,15 +827,15 @@ def api_export_excel():
             chart1.y_axis.title = 'Số lượng ứng viên'
             chart1.x_axis.title = 'Tay nghề'
             
-            data1 = Reference(ws_stat, min_col=2, min_row=3, max_row=3+len(skills_count), max_col=2)
-            cats1 = Reference(ws_stat, min_col=1, min_row=4, max_row=3+len(skills_count))
+            data1 = Reference(ws_stat, min_col=2, min_row=7, max_row=7+len(skills_count), max_col=2)
+            cats1 = Reference(ws_stat, min_col=1, min_row=8, max_row=7+len(skills_count))
             chart1.add_data(data1, titles_from_data=True)
             chart1.set_categories(cats1)
             chart1.shape = 4
             ws_stat.add_chart(chart1, "D2")
             
         # Dữ liệu Trình độ
-        start_row_edu = len(skills_count) + 6
+        start_row_edu = len(skills_count) + 10
         ws_stat.cell(row=start_row_edu, column=1, value="Trình độ văn hóa")
         ws_stat.cell(row=start_row_edu, column=2, value="Số lượng")
         
