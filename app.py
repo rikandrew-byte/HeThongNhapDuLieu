@@ -57,10 +57,21 @@ class FormHistory(db.Model):
     data_json = db.Column(db.Text)
     ngay_tao = db.Column(db.DateTime, default=datetime.utcnow)
     is_selected = db.Column(db.Boolean, default=False)  # Trúng tuyển
+    is_deleted = db.Column(db.Boolean, default=False)   # Xóa mềm
 
 with app.app_context():
     try:
         db.create_all()
+        # Auto migration for is_deleted
+        try:
+            from sqlalchemy import text
+            if 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI']:
+                db.session.execute(text('ALTER TABLE form_history ADD COLUMN is_deleted BOOLEAN DEFAULT 0'))
+            else:
+                db.session.execute(text('ALTER TABLE form_history ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE'))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
     except Exception as e:
         print(f"❌ Database initialization error: {e}")
 
@@ -539,7 +550,7 @@ def secure_web_view(slug):
 def api_history():
     try:
         # Tối ưu: Chỉ lấy metadata, không lấy data_json nặng nề
-        records = FormHistory.query.order_by(FormHistory.ngay_tao.desc()).limit(100).all()
+        records = FormHistory.query.filter_by(is_deleted=False).order_by(FormHistory.ngay_tao.desc()).limit(100).all()
         vietnam_tz = timezone(timedelta(hours=7))
         data = [{
             'id': r.id, 'ma_so': r.ma_so, 'ho_ten': r.ho_ten,
@@ -572,7 +583,16 @@ def api_bulk_delete_history():
         ids = data.get('ids', [])
         if not ids: return jsonify({'success': False, 'error': 'No IDs'}), 400
         records = FormHistory.query.filter(FormHistory.id.in_([int(i) for i in ids])).all()
-        for r in records: db.session.delete(r)
+        for r in records: 
+            r.is_deleted = True
+            try:
+                if r.data_json:
+                    jd = json.loads(r.data_json)
+                    jd.pop('photo', None)
+                    jd.pop('qr_line', None)
+                    jd.pop('document_images', None)
+                    r.data_json = json.dumps(jd)
+            except: pass
         db.session.commit()
         return jsonify({'success': True, 'deleted': len(records)})
     except Exception as e:
@@ -583,12 +603,36 @@ def api_bulk_delete_history():
 @auth_required
 def api_delete_history(record_id):
     try:
-        record = FormHistory.query.get(record_id)
-        if record:
-            db.session.delete(record)
+        r = FormHistory.query.get(record_id)
+        if r:
+            r.is_deleted = True
+            try:
+                if r.data_json:
+                    jd = json.loads(r.data_json)
+                    jd.pop('photo', None)
+                    jd.pop('qr_line', None)
+                    jd.pop('document_images', None)
+                    r.data_json = json.dumps(jd)
+            except: pass
             db.session.commit()
         return jsonify({'success': True})
     except: return jsonify({'success': False}), 500
+
+@app.route('/api/history/hard-delete-year', methods=['POST'])
+@auth_required
+def api_hard_delete_year():
+    try:
+        data = request.get_json() or {}
+        year_val = data.get('year')
+        if not year_val or str(year_val) == 'ALL': return jsonify({'success': False, 'error': 'Invalid year'}), 400
+        from sqlalchemy import extract
+        records = FormHistory.query.filter(extract('year', FormHistory.ngay_tao) == int(year_val)).all()
+        for r in records: db.session.delete(r)
+        db.session.commit()
+        return jsonify({'success': True, 'deleted': len(records)})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/history/bulk-download', methods=['POST'])
 @auth_required
@@ -631,9 +675,13 @@ def api_export_excel():
     try:
         data = request.get_json() or {}
         ids = data.get('ids', [])
+        year_val = data.get('year')
         
         if ids:
             records = FormHistory.query.filter(FormHistory.id.in_([int(i) for i in ids])).all()
+        elif year_val and str(year_val) != 'ALL':
+            from sqlalchemy import extract
+            records = FormHistory.query.filter(extract('year', FormHistory.ngay_tao) == int(year_val)).all()
         else:
             records = FormHistory.query.all()
             
@@ -644,7 +692,7 @@ def api_export_excel():
         ws = wb.active
         ws.title = "Danh sách ứng viên"
         
-        headers = ['Mã số', 'Họ tên', 'Ngày sinh', 'Chiều cao (cm)', 'Cân nặng (kg)', 
+        headers = ['Mã số', 'Họ tên', 'Ngày sinh', 'Trạng thái', 'Chiều cao (cm)', 'Cân nặng (kg)', 
                    'Trình độ văn hóa', 'Nơi ở', 'Tay nghề', 'Kinh nghiệm công việc', 'Người phụ trách']
         ws.append(headers)
         
@@ -689,7 +737,9 @@ def api_export_excel():
                         kn.append(" ".join(parts))
                 kinh_nghiem = " | ".join(kn)
                 
-                ws.append([ma_so, ho_ten, ngay_sinh, chieu_cao, can_nang, hoc_van, noi_o, tay_nghe, kinh_nghiem, nguoi_pt])
+                trang_thai = '🎯 Trúng tuyển' if getattr(r, 'is_selected', False) else '📝 Gửi form'
+                
+                ws.append([ma_so, ho_ten, ngay_sinh, trang_thai, chieu_cao, can_nang, hoc_van, noi_o, tay_nghe, kinh_nghiem, nguoi_pt])
             except Exception as e:
                 print("Error parsing record:", e)
                 pass
@@ -706,7 +756,7 @@ def api_export_excel():
             cell.alignment = Alignment(horizontal="center", vertical="center")
             cell.border = thin_border
             
-        for row_idx, row in enumerate(ws.iter_rows(min_row=2, max_row=ws.max_row, min_col=1, max_col=10), 2):
+        for row_idx, row in enumerate(ws.iter_rows(min_row=2, max_row=ws.max_row, min_col=1, max_col=11), 2):
             is_even = (row_idx % 2 == 0)
             for cell in row:
                 cell.border = thin_border
@@ -772,8 +822,9 @@ def api_export_excel():
         excel_buffer.seek(0)
         
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename_prefix = f"Nam{year_val}_" if year_val and str(year_val) != 'ALL' else ""
         return send_file(excel_buffer, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 
-                         as_attachment=True, download_name=f'FCT_UngVien_{timestamp}.xlsx')
+                         as_attachment=True, download_name=f'FCT_UngVien_{filename_prefix}{timestamp}.xlsx')
     except Exception as e:
         print(traceback.format_exc())
         return jsonify({'success': False, 'error': str(e)}), 500

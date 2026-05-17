@@ -795,6 +795,8 @@ async function loadHistory() {
                 row.dataset.nameOrig = safeName;
                 row.dataset.masoOrig = safeMaso;
                 row.dataset.id = item.id;
+                row.dataset.date = item.ngay_tao || '';
+                row.setAttribute('data-date', item.ngay_tao || '');
                 row.onmouseover = () => { if (!row.dataset.checked) row.style.background = '#f8fafc'; };
                 row.onmouseout  = () => { if (!row.dataset.checked) row.style.background = ''; };
 
@@ -1158,11 +1160,14 @@ async function loadHistory() {
                 event.currentTarget.innerHTML = "⏳ Đang xuất...";
                 event.currentTarget.disabled = true;
 
+                const yearFilter = document.getElementById('yearFilter');
+                const year = yearFilter ? yearFilter.value : 'ALL';
+                
                 const res = await fetch('/api/history/export-excel', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'same-origin',
-                    body: JSON.stringify({ ids })
+                    body: JSON.stringify({ ids, year })
                 });
                 if (!res.ok) { 
                     alert('Lỗi khi xuất Excel'); 
@@ -1281,12 +1286,22 @@ async function loadHistory() {
             const raw = document.getElementById('searchInput').value.trim();
             const terms = raw.toLowerCase().split(/[,\s]+/).filter(t => t.length > 0);
             const tbody = document.getElementById('historyTableBody');
+            
+            const yearFilter = document.getElementById('yearFilter');
+            const selectedYear = yearFilter ? yearFilter.value : 'ALL';
+            
+            const btnHardDelete = document.getElementById('btnHardDeleteYear');
+            if (btnHardDelete) {
+                btnHardDelete.style.display = selectedYear !== 'ALL' ? 'inline-block' : 'none';
+            }
+            
             if (!tbody) return;
             const rows = tbody.getElementsByTagName('tr');
             
             Array.from(rows).forEach(row => {
                 const name = (row.getAttribute('data-name') || '').toLowerCase();
                 const maso = (row.getAttribute('data-maso') || '').toUpperCase().trim();
+                const dateStr = row.getAttribute('data-date') || ''; // Cần đảm bảo có data-date
                 
                 // 1. Kiểm tra prefix mã số
                 let prefixMatch = false;
@@ -1301,8 +1316,14 @@ async function loadHistory() {
                 // 2. Kiểm tra từ khóa tìm kiếm
                 const searchMatch = terms.length === 0 || terms.some(t => name.includes(t) || maso.toLowerCase().includes(t));
                 
-                // 3. Sử dụng inline style !important để thắng hoàn toàn mọi CSS responsive
-                if (prefixMatch && searchMatch) {
+                // 3. Kiểm tra năm
+                let yearMatch = true;
+                if (selectedYear !== 'ALL') {
+                    yearMatch = dateStr.includes(selectedYear);
+                }
+                
+                // 4. Sử dụng inline style !important để thắng hoàn toàn mọi CSS responsive
+                if (prefixMatch && searchMatch && yearMatch) {
                     row.style.display = ''; // Khôi phục hiển thị bình thường
                 } else {
                     row.style.setProperty('display', 'none', 'important'); // Ép buộc ẩn
@@ -1312,7 +1333,44 @@ async function loadHistory() {
         }
         function clearHistoryFilters() {
             document.getElementById('searchInput').value = '';
+            const yearFilter = document.getElementById('yearFilter');
+            if (yearFilter) yearFilter.value = 'ALL';
             setFilterPrefix('ALL');
+        }
+        
+        async function hardDeleteYear() {
+            const yearFilter = document.getElementById('yearFilter');
+            const selectedYear = yearFilter ? yearFilter.value : 'ALL';
+            if (selectedYear === 'ALL') return;
+            
+            if (!confirm(`⚠️ CẢNH BÁO ⚠️\n\nBạn có chắc chắn muốn XÓA VĨNH VIỄN toàn bộ hồ sơ của Năm ${selectedYear} không?\n(Dữ liệu sẽ bị xóa hoàn toàn khỏi hệ thống, bao gồm cả các hồ sơ đã ẩn. KHÔNG THỂ KHÔI PHỤC!)`)) {
+                return;
+            }
+            
+            try {
+                const btn = document.getElementById('btnHardDeleteYear');
+                const origText = btn.innerHTML;
+                btn.innerHTML = '⏳ Đang xóa...';
+                btn.disabled = true;
+                
+                const res = await fetch('/api/history/hard-delete-year', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ year: selectedYear })
+                });
+                const result = await res.json();
+                
+                if (result.success) {
+                    alert(`✅ Đã xóa vĩnh viễn ${result.deleted} hồ sơ của năm ${selectedYear}.`);
+                    loadHistory(); // Tải lại danh sách
+                } else {
+                    alert('Lỗi: ' + result.error);
+                }
+                btn.innerHTML = origText;
+                btn.disabled = false;
+            } catch (e) {
+                alert('Lỗi kết nối: ' + e.message);
+            }
         }
 
         function calcAge() {
@@ -1732,6 +1790,17 @@ async function loadHistory() {
                     placeholder="Tìm tên, mã số..."
                     style="width:100%; padding:9px 12px 9px 32px; border:1px solid #e2e8f0; border-radius:10px; font-size:13px; font-family:'Inter',sans-serif; box-sizing:border-box; background:#f8fafc; outline:none;">
             </div>
+            
+            <div style="display:flex; align-items:center; gap:8px;">
+                <select id="yearFilter" onchange="filterHistory()" style="padding:8px 12px; border:1px solid #e2e8f0; border-radius:10px; font-size:13px; font-family:'Inter',sans-serif; background:#f8fafc; outline:none; color:#334155; font-weight:600;">
+                    <option value="ALL">Tất cả các năm</option>
+                    <option value="2027">Năm 2027</option>
+                    <option value="2026" selected>Năm 2026</option>
+                    <option value="2025">Năm 2025</option>
+                </select>
+                <button type="button" id="btnHardDeleteYear" onclick="hardDeleteYear()" style="display:none; padding:8px 12px; background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:8px; cursor:pointer; font-size:12px; font-weight:600;" title="Chỉ hiện khi chọn 1 năm cụ thể">🗑️ Xóa vĩnh viễn năm này</button>
+            </div>
+            
             <button onclick="clearHistoryFilters()" style="padding:8px 14px; background:#f8fafc; color:#475569; border:1px solid #e2e8f0; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">✕ Xóa lọc</button>
         </div>
         
