@@ -64,13 +64,18 @@ with app.app_context():
         db.create_all()
         # Auto migration for is_deleted
         try:
-            from sqlalchemy import text
-            if 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI']:
-                db.session.execute(text('ALTER TABLE form_history ADD COLUMN is_deleted BOOLEAN DEFAULT 0'))
-            else:
-                db.session.execute(text('ALTER TABLE form_history ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE'))
-            db.session.commit()
-        except Exception:
+            from sqlalchemy import text, inspect
+            inspector = inspect(db.engine)
+            # Lấy danh sách cột của bảng form_history (có thể viết thường hoặc viết hoa)
+            columns = [c['name'].lower() for c in inspector.get_columns('form_history')]
+            if 'is_deleted' not in columns:
+                if 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI']:
+                    db.session.execute(text('ALTER TABLE form_history ADD COLUMN is_deleted BOOLEAN DEFAULT 0'))
+                else:
+                    db.session.execute(text('ALTER TABLE form_history ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE'))
+                db.session.commit()
+        except Exception as ex:
+            print(f"⚠️ Column migration skipped or failed: {ex}")
             db.session.rollback()
     except Exception as e:
         print(f"❌ Database initialization error: {e}")
