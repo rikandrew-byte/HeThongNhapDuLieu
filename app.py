@@ -704,7 +704,9 @@ def api_export_excel():
         # Thống kê
         skills_count = {}
         edu_count = {}
+        location_count = {}
         type_count = {'Nam (MD)': 0, 'Nữ (FD)': 0, 'Điều dưỡng (KD)': 0, 'Khác': 0}
+        job_type_count = {'Nam công xưởng': 0, 'Nữ công xưởng': 0, 'Giúp việc': 0, 'Khác': 0}
         
         for r in records:
             try:
@@ -720,6 +722,18 @@ def api_export_excel():
                 else:
                     type_count['Khác'] += 1
                     
+                # Phân loại nhóm ngành nghề
+                is_giup_viec = chk(form_data.get('f43')) # f43: Giúp việc
+                if ma_so_upper.startswith('MD'):
+                    job_type_count['Nam công xưởng'] += 1
+                elif ma_so_upper.startswith('FD'):
+                    if is_giup_viec:
+                        job_type_count['Giúp việc'] += 1
+                    else:
+                        job_type_count['Nữ công xưởng'] += 1
+                else:
+                    job_type_count['Khác'] += 1
+                    
                 ho_ten = r.ho_ten or ''
                 ngay_sinh = form_data.get('Ngaysinh', '')
                 chieu_cao = form_data.get('Chieucao', '')
@@ -730,6 +744,11 @@ def api_export_excel():
                 
                 if hoc_van:
                     edu_count[hoc_van] = edu_count.get(hoc_van, 0) + 1
+                    
+                if noi_o:
+                    noi_o_clean = noi_o.strip()
+                    if noi_o_clean:
+                        location_count[noi_o_clean] = location_count.get(noi_o_clean, 0) + 1
                 
                 # Tay nghề
                 skills = []
@@ -831,6 +850,8 @@ def api_export_excel():
             chart1.title = "Thống kê Tay nghề (Kỹ năng)"
             chart1.y_axis.title = 'Số lượng ứng viên'
             chart1.x_axis.title = 'Tay nghề'
+            chart1.width = 18
+            chart1.height = 7.5
             
             data1 = Reference(ws_stat, min_col=2, min_row=7, max_row=7+len(skills_count), max_col=2)
             cats1 = Reference(ws_stat, min_col=1, min_row=8, max_row=7+len(skills_count))
@@ -851,11 +872,98 @@ def api_export_excel():
         if edu_count:
             pie = PieChart()
             pie.title = "Phân bổ Trình độ văn hóa"
+            pie.width = 16
+            pie.height = 7.5
             labels = Reference(ws_stat, min_col=1, min_row=start_row_edu+1, max_row=start_row_edu+len(edu_count))
             data = Reference(ws_stat, min_col=2, min_row=start_row_edu, max_row=start_row_edu+len(edu_count))
             pie.add_data(data, titles_from_data=True)
             pie.set_categories(labels)
             ws_stat.add_chart(pie, "M2")
+            
+        # Dữ liệu Nhóm ngành nghề (Job Type)
+        start_row_job = start_row_edu + len(edu_count) + 3
+        ws_stat.cell(row=start_row_job, column=1, value="Nhóm ngành nghề")
+        ws_stat.cell(row=start_row_job, column=2, value="Số lượng")
+        
+        for idx, (job, count) in enumerate(job_type_count.items(), 1):
+            ws_stat.cell(row=start_row_job + idx, column=1, value=job)
+            ws_stat.cell(row=start_row_job + idx, column=2, value=count)
+            
+        if job_type_count:
+            chart_job = PieChart()
+            chart_job.title = "Phân bổ Nhóm ngành nghề"
+            chart_job.width = 18
+            chart_job.height = 7.5
+            labels_job = Reference(ws_stat, min_col=1, min_row=start_row_job+1, max_row=start_row_job+len(job_type_count))
+            data_job = Reference(ws_stat, min_col=2, min_row=start_row_job, max_row=start_row_job+len(job_type_count))
+            chart_job.add_data(data_job, titles_from_data=True)
+            chart_job.set_categories(labels_job)
+            ws_stat.add_chart(chart_job, "D17")
+            
+        # Dữ liệu Nơi ở / Quê quán (Locations)
+        start_row_loc = start_row_job + len(job_type_count) + 3
+        ws_stat.cell(row=start_row_loc, column=1, value="Nơi ở / Quê quán")
+        ws_stat.cell(row=start_row_loc, column=2, value="Số lượng")
+        
+        sorted_locations = sorted(location_count.items(), key=lambda x: x[1], reverse=True)
+        for idx, (loc, count) in enumerate(sorted_locations, 1):
+            ws_stat.cell(row=start_row_loc + idx, column=1, value=loc)
+            ws_stat.cell(row=start_row_loc + idx, column=2, value=count)
+            
+        if location_count:
+            chart_loc = BarChart()
+            chart_loc.type = "bar" # Horizontal bar chart is much cleaner for many categories
+            chart_loc.style = 10
+            chart_loc.title = "Thống kê theo Nơi ở / Quê quán"
+            chart_loc.x_axis.title = 'Số lượng ứng viên'
+            chart_loc.y_axis.title = 'Nơi ở'
+            chart_loc.width = 16
+            chart_loc.height = 7.5
+            
+            data_loc = Reference(ws_stat, min_col=2, min_row=start_row_loc, max_row=start_row_loc+len(location_count))
+            cats_loc = Reference(ws_stat, min_col=1, min_row=start_row_loc+1, max_row=start_row_loc+len(location_count))
+            chart_loc.add_data(data_loc, titles_from_data=True)
+            chart_loc.set_categories(cats_loc)
+            ws_stat.add_chart(chart_loc, "M17")
+
+        # Định dạng Style Premium cho Sheet Thống Kê
+        thin_gray = Border(left=Side(style='thin', color="E2E8F0"), 
+                           right=Side(style='thin', color="E2E8F0"), 
+                           top=Side(style='thin', color="E2E8F0"), 
+                           bottom=Side(style='thin', color="E2E8F0"))
+        
+        header_rows = {7, start_row_edu, start_row_job, start_row_loc}
+        
+        for r_idx in range(1, ws_stat.max_row + 1):
+            # Tăng chiều cao các hàng dữ liệu cho thoáng đãng
+            ws_stat.row_dimensions[r_idx].height = 20
+            for c_idx in [1, 2]:
+                cell = ws_stat.cell(row=r_idx, column=c_idx)
+                if cell.value is not None:
+                    # Nếu là header của các bảng
+                    if r_idx in header_rows:
+                        cell.font = Font(name="Arial", color="FFFFFF", bold=True, size=10)
+                        cell.fill = PatternFill(start_color="1E3A8A", end_color="1E3A8A", fill_type="solid")
+                        cell.alignment = Alignment(horizontal="center", vertical="center")
+                    # Nếu là các dòng Tổng số ở trên cùng
+                    elif r_idx <= 5:
+                        if r_idx == 1:
+                            cell.font = Font(name="Arial", bold=True, size=11)
+                        else:
+                            cell.font = Font(name="Arial", italic=True, size=10)
+                        cell.alignment = Alignment(horizontal="left", vertical="center")
+                    # Các dòng dữ liệu thường của bảng
+                    else:
+                        cell.font = Font(name="Arial", size=10)
+                        cell.border = thin_gray
+                        if c_idx == 2:
+                            cell.alignment = Alignment(horizontal="center", vertical="center")
+                        else:
+                            cell.alignment = Alignment(horizontal="left", vertical="center")
+
+        # Căn rộng cột tự động cho Sheet Thống kê
+        ws_stat.column_dimensions['A'].width = 25
+        ws_stat.column_dimensions['B'].width = 15
             
         excel_buffer = io.BytesIO()
         wb.save(excel_buffer)
