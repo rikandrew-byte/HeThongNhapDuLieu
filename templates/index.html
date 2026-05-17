@@ -1132,7 +1132,7 @@ async function loadHistory() {
             setTimeout(() => document.addEventListener('click', closeMenu), 10);
         }
 
-        async function bulkExportExcelHistory(isAll) {
+        async function bulkExportExcelHistory(isAll, event) {
             let ids = [];
             if (!isAll) {
                 const checked = [...document.querySelectorAll('.history-row-checkbox:checked')];
@@ -1156,9 +1156,12 @@ async function loadHistory() {
             
             try {
                 // Thêm hiệu ứng loading đơn giản (có thể cải thiện sau)
-                const origBtnContent = event.currentTarget.innerHTML;
-                event.currentTarget.innerHTML = "⏳ Đang xuất...";
-                event.currentTarget.disabled = true;
+                let origBtnContent = '';
+                if (event && event.currentTarget) {
+                    origBtnContent = event.currentTarget.innerHTML;
+                    event.currentTarget.innerHTML = "⏳ Đang xuất...";
+                    event.currentTarget.disabled = true;
+                }
 
                 const yearFilter = document.getElementById('yearFilter');
                 const year = yearFilter ? yearFilter.value : 'ALL';
@@ -1198,14 +1201,18 @@ async function loadHistory() {
                 URL.revokeObjectURL(url);
                 
                 // Trả lại trạng thái nút
-                event.currentTarget.innerHTML = origBtnContent;
-                event.currentTarget.disabled = false;
+                if (event && event.currentTarget) {
+                    event.currentTarget.innerHTML = origBtnContent;
+                    event.currentTarget.disabled = false;
+                }
                 
                 if (!isAll) clearHistorySelection();
             } catch (e) { 
                 alert('Lỗi kết nối: ' + e.message); 
-                event.currentTarget.innerHTML = origBtnContent;
-                event.currentTarget.disabled = false;
+                if (event && event.currentTarget) {
+                    event.currentTarget.innerHTML = origBtnContent;
+                    event.currentTarget.disabled = false;
+                }
             }
         }
 

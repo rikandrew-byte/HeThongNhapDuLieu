@@ -789,6 +789,9 @@ def api_export_excel():
             adjusted_width = min((max_length + 3), 60) # Max 60, thêm padding
             ws.column_dimensions[column].width = adjusted_width
             
+        # Thêm AutoFilter
+        ws.auto_filter.ref = ws.dimensions
+            
         # Thêm Sheet Thống Kê
         ws_stat = wb.create_sheet(title="Thống Kê")
         
