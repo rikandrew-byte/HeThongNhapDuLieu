@@ -879,9 +879,15 @@ def api_export_excel():
             cell.alignment = Alignment(horizontal="center", vertical="center")
             cell.border = thin_border
             
+        selected_row_fill = PatternFill(start_color="D1FAE5", end_color="D1FAE5", fill_type="solid") # Xanh lá pastel (Emerald-100)
+        
         for row_idx, row in enumerate(ws.iter_rows(min_row=2, max_row=ws.max_row, min_col=1, max_col=11), 2):
             is_even = (row_idx % 2 == 0)
             ws.row_dimensions[row_idx].height = 35 # Tăng chiều cao mặc định cho dòng
+            
+            is_selected_row = (row[3].value == '🎯 Trúng tuyển')
+            row_fill = selected_row_fill if is_selected_row else (zebra_fill if is_even else None)
+            
             for cell in row:
                 cell.font = body_font
                 cell.border = thin_border
@@ -890,8 +896,8 @@ def api_export_excel():
                     cell.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
                 else:
                     cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
-                if is_even:
-                    cell.fill = zebra_fill
+                if row_fill:
+                    cell.fill = row_fill
                     
         # Auto-fit columns
         for col in ws.columns:
@@ -1074,8 +1080,8 @@ def api_export_excel():
         if location_count:
             chart_loc = PieChart()
             chart_loc.title = "Phân bổ theo Nơi ở / Quê quán"
-            chart_loc.width = 17
-            chart_loc.height = 7.5
+            chart_loc.width = 24
+            chart_loc.height = 11
             chart_loc.legend.position = "b"
             
             data_loc = Reference(ws_stat, min_col=2, min_row=row_loc, max_row=row_loc+len(location_count))
@@ -1086,7 +1092,7 @@ def api_export_excel():
             chart_loc.dataLabels = DataLabelList()
             chart_loc.dataLabels.showVal = True
             
-            ws_stat.add_chart(chart_loc, "J21")
+            ws_stat.add_chart(chart_loc, f"D{row_loc}")
 
         # 5. Định dạng Style Premium cho Sheet Thống Kê
         thin_gray = Border(left=Side(style='thin', color="E2E8F0"), 
