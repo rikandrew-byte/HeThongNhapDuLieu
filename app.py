@@ -783,7 +783,7 @@ def api_export_excel():
         edu_count = {}
         location_count = {}
         type_count = {'Nam (MD)': 0, 'Nữ (FD)': 0, 'Điều dưỡng (KD)': 0, 'Khác': 0}
-        job_type_count = {'Nam công xưởng': 0, 'Nữ công xưởng': 0, 'Giúp việc': 0, 'Khác': 0}
+        job_type_count = {'Nam công xưởng': 0, 'Nữ công xưởng': 0, 'Giúp việc & Khác': 0, 'Điều dưỡng': 0}
         
         for r in records:
             try:
@@ -803,13 +803,14 @@ def api_export_excel():
                 is_giup_viec = chk(form_data.get('f43')) # f43: Giúp việc
                 if ma_so_upper.startswith('MD'):
                     job_type_count['Nam công xưởng'] += 1
+                elif ma_so_upper.startswith('KD'):
+                    job_type_count['Điều dưỡng'] += 1
+                elif is_giup_viec:
+                    job_type_count['Giúp việc & Khác'] += 1
                 elif ma_so_upper.startswith('FD'):
-                    if is_giup_viec:
-                        job_type_count['Giúp việc'] += 1
-                    else:
-                        job_type_count['Nữ công xưởng'] += 1
+                    job_type_count['Nữ công xưởng'] += 1
                 else:
-                    job_type_count['Khác'] += 1
+                    job_type_count['Giúp việc & Khác'] += 1
                     
                 ho_ten = r.ho_ten or ''
                 ngay_sinh = form_data.get('Ngaysinh', '')
@@ -967,18 +968,48 @@ def api_export_excel():
         ws_stat.row_dimensions[3].height = 20
         ws_stat.row_dimensions[4].height = 20
         
-        # 3. Row 6: Subsection Headers
-        ws_stat.cell(row=6, column=1, value="I. THỐNG KÊ TAY NGHỀ & KỸ NĂNG").font = Font(name="Arial", bold=True, size=11, color="1E3A8A")
-        ws_stat.cell(row=6, column=7, value="II. PHÂN BỔ NHÓM NGÀNH NGHỀ").font = Font(name="Arial", bold=True, size=11, color="1E3A8A")
-        ws_stat.row_dimensions[6].height = 22
+        # 3. Dynamic Tables in Columns A & B
         
-        # 4. Tay nghề Table (A7 & B7)
-        ws_stat.cell(row=7, column=1, value="Tay nghề")
-        ws_stat.cell(row=7, column=2, value="Số lượng")
+        # Subsection I: Tay nghề
+        row_skill = 6
+        ws_stat.cell(row=row_skill - 1, column=1, value="I. THỐNG KÊ TAY NGHỀ & KỸ NĂNG").font = Font(name="Arial", bold=True, size=11, color="1E3A8A")
+        ws_stat.cell(row=row_skill, column=1, value="Tay nghề")
+        ws_stat.cell(row=row_skill, column=2, value="Số lượng")
         for idx, (skill, count) in enumerate(skills_count.items(), 1):
-            ws_stat.cell(row=7 + idx, column=1, value=skill)
-            ws_stat.cell(row=7 + idx, column=2, value=count)
+            ws_stat.cell(row=row_skill + idx, column=1, value=skill)
+            ws_stat.cell(row=row_skill + idx, column=2, value=count)
             
+        # Subsection II: Nhóm ngành nghề
+        row_job = row_skill + len(skills_count) + 3
+        ws_stat.cell(row=row_job - 1, column=1, value="II. PHÂN BỔ NHÓM NGÀNH NGHỀ").font = Font(name="Arial", bold=True, size=11, color="1E3A8A")
+        ws_stat.cell(row=row_job, column=1, value="Nhóm ngành nghề")
+        ws_stat.cell(row=row_job, column=2, value="Số lượng")
+        for idx, (job, count) in enumerate(job_type_count.items(), 1):
+            ws_stat.cell(row=row_job + idx, column=1, value=job)
+            ws_stat.cell(row=row_job + idx, column=2, value=count)
+            
+        # Subsection III: Trình độ văn hóa
+        row_edu = row_job + len(job_type_count) + 3
+        ws_stat.cell(row=row_edu - 1, column=1, value="III. PHÂN BỔ TRÌNH ĐỘ VĂN HÓA").font = Font(name="Arial", bold=True, size=11, color="1E3A8A")
+        ws_stat.cell(row=row_edu, column=1, value="Trình độ văn hóa")
+        ws_stat.cell(row=row_edu, column=2, value="Số lượng")
+        for idx, (edu, count) in enumerate(edu_count.items(), 1):
+            ws_stat.cell(row=row_edu + idx, column=1, value=edu)
+            ws_stat.cell(row=row_edu + idx, column=2, value=count)
+            
+        # Subsection IV: Nơi ở / Quê quán
+        row_loc = row_edu + len(edu_count) + 3
+        ws_stat.cell(row=row_loc - 1, column=1, value="IV. PHÂN BỔ THEO NƠI Ở / QUÊ QUÁN").font = Font(name="Arial", bold=True, size=11, color="1E3A8A")
+        ws_stat.cell(row=row_loc, column=1, value="Nơi ở / Quê quán")
+        ws_stat.cell(row=row_loc, column=2, value="Số lượng")
+        sorted_locations = sorted(location_count.items(), key=lambda x: x[1], reverse=True)
+        for idx, (loc, count) in enumerate(sorted_locations, 1):
+            ws_stat.cell(row=row_loc + idx, column=1, value=loc)
+            ws_stat.cell(row=row_loc + idx, column=2, value=count)
+
+        # 4. Charts in Columns D to N (Never Overlapping with Columns A & B)
+        
+        # Chart 1: Tay nghề (Col BarChart)
         if skills_count:
             chart1 = BarChart()
             chart1.type = "col"
@@ -989,58 +1020,39 @@ def api_export_excel():
             chart1.width = 17
             chart1.height = 7.5
             
-            data1 = Reference(ws_stat, min_col=2, min_row=7, max_row=7+len(skills_count), max_col=2)
-            cats1 = Reference(ws_stat, min_col=1, min_row=8, max_row=7+len(skills_count))
+            data1 = Reference(ws_stat, min_col=2, min_row=row_skill, max_row=row_skill+len(skills_count), max_col=2)
+            cats1 = Reference(ws_stat, min_col=1, min_row=row_skill+1, max_row=row_skill+len(skills_count))
             chart1.add_data(data1, titles_from_data=True)
             chart1.set_categories(cats1)
-            chart1.legend = None # Tắt legend vì chỉ có 1 cột dữ liệu
+            chart1.legend = None
             chart1.shape = 4
             
-            # Show values on bar chart
             if chart1.series:
                 series = chart1.series[0]
                 series.dLbls = DataLabelList()
                 series.dLbls.showVal = True
                 
-            ws_stat.add_chart(chart1, "D7")
+            ws_stat.add_chart(chart1, "D6")
             
-        # 5. Nhóm ngành nghề Table (G7 & H7)
-        ws_stat.cell(row=7, column=7, value="Nhóm ngành nghề")
-        ws_stat.cell(row=7, column=8, value="Số lượng")
-        for idx, (job, count) in enumerate(job_type_count.items(), 1):
-            ws_stat.cell(row=7 + idx, column=7, value=job)
-            ws_stat.cell(row=7 + idx, column=8, value=count)
-            
+        # Chart 2: Nhóm ngành nghề (PieChart)
         if job_type_count:
             chart_job = PieChart()
             chart_job.title = "Phân bổ Nhóm ngành nghề"
             chart_job.width = 17
             chart_job.height = 7.5
-            chart_job.legend.position = "b" # Đặt chú thích ở dưới
+            chart_job.legend.position = "b"
             
-            data_job = Reference(ws_stat, min_col=8, min_row=7, max_row=7+len(job_type_count))
-            labels_job = Reference(ws_stat, min_col=7, min_row=8, max_row=7+len(job_type_count))
+            data_job = Reference(ws_stat, min_col=2, min_row=row_job, max_row=row_job+len(job_type_count))
+            labels_job = Reference(ws_stat, min_col=1, min_row=row_job+1, max_row=row_job+len(job_type_count))
             chart_job.add_data(data_job, titles_from_data=True)
             chart_job.set_categories(labels_job)
             
-            # Show values on pie chart
             chart_job.dataLabels = DataLabelList()
             chart_job.dataLabels.showVal = True
             
-            ws_stat.add_chart(chart_job, "J7")
+            ws_stat.add_chart(chart_job, "J6")
             
-        # 6. Row 24: Subsection Headers
-        ws_stat.cell(row=24, column=1, value="III. PHÂN BỔ TRÌNH ĐỘ VĂN HÓA").font = Font(name="Arial", bold=True, size=11, color="1E3A8A")
-        ws_stat.cell(row=24, column=7, value="IV. PHÂN BỔ THEO NƠI Ở / QUÊ QUÁN").font = Font(name="Arial", bold=True, size=11, color="1E3A8A")
-        ws_stat.row_dimensions[24].height = 22
-        
-        # 7. Trình độ văn hóa Table (A25 & B25)
-        ws_stat.cell(row=25, column=1, value="Trình độ văn hóa")
-        ws_stat.cell(row=25, column=2, value="Số lượng")
-        for idx, (edu, count) in enumerate(edu_count.items(), 1):
-            ws_stat.cell(row=25 + idx, column=1, value=edu)
-            ws_stat.cell(row=25 + idx, column=2, value=count)
-            
+        # Chart 3: Trình độ văn hóa (PieChart)
         if edu_count:
             pie = PieChart()
             pie.title = "Phân bổ Trình độ văn hóa"
@@ -1048,77 +1060,61 @@ def api_export_excel():
             pie.height = 7.5
             pie.legend.position = "b"
             
-            data_edu = Reference(ws_stat, min_col=2, min_row=25, max_row=25+len(edu_count))
-            labels_edu = Reference(ws_stat, min_col=1, min_row=26, max_row=25+len(edu_count))
+            data_edu = Reference(ws_stat, min_col=2, min_row=row_edu, max_row=row_edu+len(edu_count))
+            labels_edu = Reference(ws_stat, min_col=1, min_row=row_edu+1, max_row=row_edu+len(edu_count))
             pie.add_data(data_edu, titles_from_data=True)
             pie.set_categories(labels_edu)
             
-            # Show values on pie chart
             pie.dataLabels = DataLabelList()
             pie.dataLabels.showVal = True
             
-            ws_stat.add_chart(pie, "D25")
+            ws_stat.add_chart(pie, "D21")
             
-        # 8. Nơi ở / Quê quán Table (G25 & H25)
-        ws_stat.cell(row=25, column=7, value="Nơi ở / Quê quán")
-        ws_stat.cell(row=25, column=8, value="Số lượng")
-        
-        sorted_locations = sorted(location_count.items(), key=lambda x: x[1], reverse=True)
-        for idx, (loc, count) in enumerate(sorted_locations, 1):
-            ws_stat.cell(row=25 + idx, column=7, value=loc)
-            ws_stat.cell(row=25 + idx, column=8, value=count)
-            
+        # Chart 4: Nơi ở / Quê quán (PieChart)
         if location_count:
-            chart_loc = BarChart()
-            chart_loc.type = "bar" # Cột ngang
-            chart_loc.style = 10
-            chart_loc.title = "Thống kê theo Nơi ở / Quê quán"
-            chart_loc.x_axis.title = 'Số lượng ứng viên'
-            chart_loc.y_axis.title = 'Nơi ở'
+            chart_loc = PieChart()
+            chart_loc.title = "Phân bổ theo Nơi ở / Quê quán"
             chart_loc.width = 17
             chart_loc.height = 7.5
+            chart_loc.legend.position = "b"
             
-            data_loc = Reference(ws_stat, min_col=8, min_row=25, max_row=25+len(location_count))
-            cats_loc = Reference(ws_stat, min_col=7, min_row=26, max_row=25+len(location_count))
+            data_loc = Reference(ws_stat, min_col=2, min_row=row_loc, max_row=row_loc+len(location_count))
+            cats_loc = Reference(ws_stat, min_col=1, min_row=row_loc+1, max_row=row_loc+len(location_count))
             chart_loc.add_data(data_loc, titles_from_data=True)
             chart_loc.set_categories(cats_loc)
-            chart_loc.legend = None
             
-            # Show values on horizontal bars
-            if chart_loc.series:
-                series_loc = chart_loc.series[0]
-                series_loc.dLbls = DataLabelList()
-                series_loc.dLbls.showVal = True
-                
-            ws_stat.add_chart(chart_loc, "J25")
+            chart_loc.dataLabels = DataLabelList()
+            chart_loc.dataLabels.showVal = True
+            
+            ws_stat.add_chart(chart_loc, "J21")
 
-        # Định dạng Style Premium cho Sheet Thống Kê
+        # 5. Định dạng Style Premium cho Sheet Thống Kê
         thin_gray = Border(left=Side(style='thin', color="E2E8F0"), 
                            right=Side(style='thin', color="E2E8F0"), 
                            top=Side(style='thin', color="E2E8F0"), 
                            bottom=Side(style='thin', color="E2E8F0"))
         
-        header_rows = {7, 25}
+        header_rows = {row_skill, row_job, row_edu, row_loc}
+        section_rows = {row_skill - 1, row_job - 1, row_edu - 1, row_loc - 1}
         
         for r_idx in range(1, ws_stat.max_row + 1):
-            # Chỉ set chiều cao dòng nếu không phải KPI cards hàng 2-4 hay title hàng 1
             if r_idx not in [1, 2, 3, 4]:
-                ws_stat.row_dimensions[r_idx].height = 20
+                if r_idx in section_rows:
+                    ws_stat.row_dimensions[r_idx].height = 25
+                else:
+                    ws_stat.row_dimensions[r_idx].height = 20
                 
-            # Định dạng các cột dữ liệu
-            for c_idx in [1, 2, 7, 8]:
+            for c_idx in [1, 2]:
                 cell = ws_stat.cell(row=r_idx, column=c_idx)
                 if cell.value is not None:
-                    # Nếu là header của các bảng
                     if r_idx in header_rows:
                         cell.font = Font(name="Arial", color="FFFFFF", bold=True, size=10)
                         cell.fill = PatternFill(start_color="1E3A8A", end_color="1E3A8A", fill_type="solid")
                         cell.alignment = Alignment(horizontal="center", vertical="center")
-                    # Nếu là các dòng thường của bảng (dòng 7 trở xuống, trừ dòng header 24, 25)
-                    elif r_idx >= 7 and r_idx != 24:
+                    elif r_idx >= 6 and r_idx not in section_rows:
                         cell.font = Font(name="Arial", size=10)
                         cell.border = thin_gray
-                        if c_idx in [2, 8]:
+                        if c_idx == 2:
                             cell.alignment = Alignment(horizontal="center", vertical="center")
                         else:
                             cell.alignment = Alignment(horizontal="left", vertical="center")
@@ -1126,12 +1122,9 @@ def api_export_excel():
         # Cấu hình kích thước cột cho lưới
         ws_stat.column_dimensions['A'].width = 25
         ws_stat.column_dimensions['B'].width = 12
-        ws_stat.column_dimensions['C'].width = 3  # Khoảng giãn
-        ws_stat.column_dimensions['G'].width = 25
-        ws_stat.column_dimensions['H'].width = 12
-        ws_stat.column_dimensions['I'].width = 3  # Khoảng giãn
+        ws_stat.column_dimensions['C'].width = 3
         
-        for col_let in ['D', 'E', 'F', 'J', 'K', 'L', 'M', 'N']:
+        for col_let in ['D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N']:
             ws_stat.column_dimensions[col_let].width = 12
             
         excel_buffer = io.BytesIO()
