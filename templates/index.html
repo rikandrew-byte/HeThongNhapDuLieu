@@ -1765,7 +1765,7 @@ async function loadHistory() {
                 <span class="hidden sm:inline">🔄 Làm mới</span>
                 <span class="sm:hidden">🔄</span>
             </button>
-            <button type="button" onclick="bulkExportExcelHistory(true)" class="btn-action" title="Xuất Excel tất cả" style="padding:8px; background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; border-radius:10px; cursor:pointer;">
+            <button type="button" onclick="bulkExportExcelHistory(true, event)" class="btn-action" title="Xuất Excel tất cả" style="padding:8px; background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; border-radius:10px; cursor:pointer;">
                 <span class="hidden sm:inline">📊 Xuất Excel</span>
                 <span class="sm:hidden">📊</span>
             </button>
@@ -1821,7 +1821,7 @@ async function loadHistory() {
         <div style="width:1px; height:16px; background:#cbd5e1;"></div>
         <button onclick="bulkCopyHistoryLinks()" style="padding:6px 12px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600;">📤 Copy link</button>
         <button onclick="bulkDownloadHistory()" style="padding:6px 12px; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600;">📥 Tải hàng loạt (.ZIP)</button>
-        <button onclick="bulkExportExcelHistory(false)" style="padding:6px 12px; background:#dcfce7; color:#16a34a; border:1px solid #86efac; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600;">📊 Xuất Excel Chuyên Nghiệp</button>
+        <button onclick="bulkExportExcelHistory(false, event)" style="padding:6px 12px; background:#dcfce7; color:#16a34a; border:1px solid #86efac; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600;">📊 Xuất Excel Chuyên Nghiệp</button>
         <button onclick="bulkPrintHistory()" style="padding:6px 12px; background:#fdf4ff; color:#c026d3; border:1px solid #fbcfe8; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600;">🖨️ In PDF hàng loạt</button>
         <button onclick="bulkDeleteHistory()" style="padding:6px 12px; background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600;">🗑️ Xóa đã chọn</button>
         <button onclick="clearHistorySelection()" style="padding:6px 12px; background:#f8fafc; color:#475569; border:1px solid #e2e8f0; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600; margin-left:auto;">✕ Bỏ chọn</button>

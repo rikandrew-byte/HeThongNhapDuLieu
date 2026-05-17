@@ -735,7 +735,7 @@ def api_export_excel():
                         if nam: parts.append(f"({nam})")
                         if cv: parts.append(f": {cv}")
                         kn.append(" ".join(parts))
-                kinh_nghiem = " | ".join(kn)
+                kinh_nghiem = "\n".join(kn)
                 
                 trang_thai = '🎯 Trúng tuyển' if getattr(r, 'is_selected', False) else '📝 Gửi form'
                 
@@ -747,8 +747,12 @@ def api_export_excel():
         # Premium Styling
         thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
         header_fill = PatternFill(start_color="1E3A8A", end_color="1E3A8A", fill_type="solid") # FCT Blue
-        header_font = Font(color="FFFFFF", bold=True)
-        zebra_fill = PatternFill(start_color="F3F4F6", end_color="F3F4F6", fill_type="solid") # Gray-100
+        header_font = Font(name="Arial", color="FFFFFF", bold=True, size=11)
+        zebra_fill = PatternFill(start_color="F8FAFC", end_color="F8FAFC", fill_type="solid") # Slate-50
+        body_font = Font(name="Arial", size=10)
+        
+        ws.row_dimensions[1].height = 25 # Header height
+        ws.freeze_panes = 'A2'
         
         for col_num, cell in enumerate(ws[1], 1):
             cell.fill = header_fill
@@ -758,9 +762,15 @@ def api_export_excel():
             
         for row_idx, row in enumerate(ws.iter_rows(min_row=2, max_row=ws.max_row, min_col=1, max_col=11), 2):
             is_even = (row_idx % 2 == 0)
+            ws.row_dimensions[row_idx].height = 35 # Tăng chiều cao mặc định cho dòng
             for cell in row:
+                cell.font = body_font
                 cell.border = thin_border
-                cell.alignment = Alignment(vertical="center", wrap_text=True)
+                # Column Kinh nghiệm (cột 10) căn trái, các cột khác căn giữa
+                if cell.column == 10:
+                    cell.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+                else:
+                    cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
                 if is_even:
                     cell.fill = zebra_fill
                     
@@ -770,11 +780,13 @@ def api_export_excel():
             column = col[0].column_letter
             for cell in col:
                 try:
-                    if len(str(cell.value)) > max_length:
-                        max_length = len(str(cell.value))
+                    lines = str(cell.value).split('\n')
+                    for line in lines:
+                        if len(line) > max_length:
+                            max_length = len(line)
                 except:
                     pass
-            adjusted_width = min((max_length + 2), 50) # Max 50
+            adjusted_width = min((max_length + 3), 60) # Max 60, thêm padding
             ws.column_dimensions[column].width = adjusted_width
             
         # Thêm Sheet Thống Kê
