@@ -29,8 +29,8 @@ app.debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
 CORS(app, resources={r"/*": {"origins": ["https://cv.fct.vn", "http://127.0.0.1:5000", "http://localhost:5000"]}})
 app.config['MAX_CONTENT_LENGTH'] = 20 * 1024 * 1024  # 20MB limit
 
-app.config['BASIC_AUTH_USERNAME'] = 'fctvt'
-app.config['BASIC_AUTH_PASSWORD'] = '1503'
+app.config['BASIC_AUTH_USERNAME'] = os.environ.get('ADMIN_USERNAME', 'fctvt')
+app.config['BASIC_AUTH_PASSWORD'] = os.environ.get('ADMIN_PASSWORD', '1503')
 app.config['BASIC_AUTH_FORCE_PROMPT'] = True
 basic_auth = BasicAuth(app)
 
@@ -652,12 +652,26 @@ def secure_web_view(slug):
 @auth_required
 def api_history():
     try:
-        # Tối ưu: Chỉ lấy metadata, không lấy data_json nặng nề
-        records = FormHistory.query.filter_by(is_deleted=False).order_by(FormHistory.ngay_tao.desc()).limit(100).all()
+        from sqlalchemy.orm import load_only
+        # load_only: chỉ SELECT các cột cần thiết, bỏ qua data_json (chứa ảnh base64 nặng hàng MB)
+        records = (
+            FormHistory.query
+            .options(load_only(
+                FormHistory.id,
+                FormHistory.ma_so,
+                FormHistory.ho_ten,
+                FormHistory.ngay_tao,
+                FormHistory.is_selected
+            ))
+            .filter_by(is_deleted=False)
+            .order_by(FormHistory.ngay_tao.desc())
+            .limit(100)
+            .all()
+        )
         vietnam_tz = timezone(timedelta(hours=7))
         data = [{
             'id': r.id, 'ma_so': r.ma_so, 'ho_ten': r.ho_ten,
-            'is_selected': getattr(r, 'is_selected', False),  # Fallback nếu field chưa tồn tại
+            'is_selected': getattr(r, 'is_selected', False),
             'ngay_tao': r.ngay_tao.replace(tzinfo=timezone.utc).astimezone(vietnam_tz).strftime("%d/%m/%Y %H:%M:%S") if r.ngay_tao else ''
         } for r in records]
         return jsonify({'success': True, 'data': data})
