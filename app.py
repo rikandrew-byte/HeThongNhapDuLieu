@@ -48,6 +48,27 @@ if not db_url:
 
 app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Neon PostgreSQL: tránh lỗi SSL connection closed unexpectedly
+# pool_pre_ping: kiểm tra connection còn sống trước mỗi query
+# pool_recycle: tái tạo connection sau 300s để tránh idle timeout
+# pool_size / max_overflow: giới hạn số connection
+if db_url and db_url.startswith("postgresql"):
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_pre_ping': True,
+        'pool_recycle': 300,
+        'pool_size': 5,
+        'max_overflow': 2,
+        'connect_args': {
+            'sslmode': 'require',
+            'connect_timeout': 10,
+            'keepalives': 1,
+            'keepalives_idle': 30,
+            'keepalives_interval': 10,
+            'keepalives_count': 5,
+        }
+    }
+
 db = SQLAlchemy(app)
 
 class FormHistory(db.Model):
