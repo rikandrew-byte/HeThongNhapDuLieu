@@ -550,7 +550,7 @@ def api_submit_only():
         ho_ten = str(data.get('Hoten', '')).strip()
 
         if ma_so and ma_so.upper() != 'CHO_DUYET':
-            existing = FormHistory.query.filter_by(ma_so=ma_so).first()
+            existing = FormHistory.query.filter_by(ma_so=ma_so, is_deleted=False).first()
             if existing and (not record_id or int(record_id) != existing.id):
                 return jsonify({'success': False, 'error': f'Mã số "{ma_so}" đã tồn tại.'}), 400
 
