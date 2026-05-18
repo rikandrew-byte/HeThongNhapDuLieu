@@ -1272,18 +1272,26 @@ def api_bulk_print():
         
         pages_to_append = []
         for html in htmls[1:]:
-            start_idx = html.find('<div class="a4-page notranslate">')
-            if start_idx != -1:
+            # Tìm linh hoạt hơn: class có thể có space thừa hoặc thêm class "has-docs"
+            import re as _re
+            match = _re.search(r'<div[^>]*class="a4-page[^"]*notranslate[^"]*"', html)
+            if match:
+                start_idx = match.start()
+                # Tìm điểm kết thúc: trước script tag
                 end_idx = html.find('<script id="fct-raw-data"', start_idx)
                 if end_idx == -1:
-                    end_idx = html.find('<script>(function(){document.addEventListener', start_idx)
+                    end_idx = html.find('<script>(function()', start_idx)
+                if end_idx == -1:
+                    end_idx = html.find('<script>(function(){', start_idx)
                 if end_idx != -1:
                     pages_to_append.append(html[start_idx:end_idx])
         
         # Insert into base_html
         insert_idx = base_html.find('<script id="fct-raw-data"')
         if insert_idx == -1:
-            insert_idx = base_html.find('<script>(function(){document.addEventListener')
+            insert_idx = base_html.find('<script>(function()')
+        if insert_idx == -1:
+            insert_idx = base_html.find('<script>(function(){')
             
         if insert_idx != -1:
             final_html = base_html[:insert_idx] + ''.join(pages_to_append) + base_html[insert_idx:]
