@@ -1354,6 +1354,23 @@ async function loadHistory() {
             document.getElementById('displayAge').value = age;
         }
 
+        // Mutual exclusion: Hút thuốc <-> Không hút thuốc, Uống rượu <-> Không uống rượu
+        document.addEventListener('DOMContentLoaded', function() {
+            function setupMutualExclusion(nameA, nameB) {
+                const cbA = document.querySelector(`input[name="${nameA}"]`);
+                const cbB = document.querySelector(`input[name="${nameB}"]`);
+                if (!cbA || !cbB) return;
+                cbA.addEventListener('change', function() {
+                    if (this.checked) cbB.checked = false;
+                });
+                cbB.addEventListener('change', function() {
+                    if (this.checked) cbA.checked = false;
+                });
+            }
+            setupMutualExclusion('f03', 'f09'); // Hút thuốc <-> Không hút thuốc
+            setupMutualExclusion('f04', 'f10'); // Uống rượu <-> Không uống rượu
+        });
+
         // 🆕 Kéo thả ảnh tài liệu
         const dropzone = document.getElementById('documentDropzone');
         const fileInput = document.getElementById('documentInput');
