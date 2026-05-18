@@ -191,6 +191,7 @@
 
                     <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Chiều cao (cm)</label><input type="text" name="Chieucao" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
                     <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Cân nặng (kg)</label><input type="text" name="Cannang" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
+                    <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Đơn hàng ứng tuyển</label><input type="text" name="Donhang" placeholder="Ví dụ: ABC, DEF" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
                     
             <div>
             <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nơi ở (63 Tỉnh Thành)</label>
@@ -796,9 +797,22 @@ async function loadHistory() {
                 row.dataset.masoOrig = safeMaso;
                 row.dataset.id = item.id;
                 row.dataset.date = item.ngay_tao || '';
+                row.dataset.job = (item.don_hang || '').toLowerCase();
                 row.setAttribute('data-date', item.ngay_tao || '');
+                row.setAttribute('data-job', (item.don_hang || '').toLowerCase());
                 row.onmouseover = () => { if (!row.dataset.checked) row.style.background = '#f8fafc'; };
                 row.onmouseout  = () => { if (!row.dataset.checked) row.style.background = ''; };
+
+                // Tách các đơn hàng của ứng viên
+                let jobBadgesHtml = '';
+                if (item.don_hang && item.don_hang.trim() !== '') {
+                    const jobs = item.don_hang.split(/[,\s]+/).map(j => j.trim()).filter(j => j.length > 0);
+                    jobs.forEach(job => {
+                        jobBadgesHtml += `<span style="display:inline-block; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; border-radius:6px; padding:2px 6px; font-size:11px; font-weight:700; margin-left:4px; text-transform:uppercase;">${job}</span>`;
+                    });
+                } else {
+                    jobBadgesHtml += `<span style="display:inline-block; color:#ef4444; font-size:11px; font-weight:600; margin-left:4px; font-style:italic;">[Chưa ghép đơn]</span>`;
+                }
 
                 row.innerHTML = `
                     <td style="padding:12px 16px;">
@@ -813,7 +827,10 @@ async function loadHistory() {
                     </td>
                     <td style="padding:12px 8px;">
                         <span class="mobile-label md:hidden">Họ Tên:</span>
-                        <span style="font-weight:700; color:#1e293b; font-size:14px;">${item.ho_ten}</span>
+                        <div style="display:flex; align-items:center; flex-wrap:wrap; gap:4px;">
+                            <span style="font-weight:700; color:#1e293b; font-size:14px;">${item.ho_ten}</span>
+                            ${jobBadgesHtml}
+                        </div>
                     </td>
                     <td style="padding:12px 8px;">
                         <span class="mobile-label md:hidden">Ngày Tạo:</span>
@@ -910,6 +927,12 @@ async function loadHistory() {
                         el.value = data[key];
                     }
                 }
+            }
+
+            // Đảm bảo trường Donhang được nạp đúng
+            const donHangEl = document.getElementsByName('Donhang')[0];
+            if (donHangEl) {
+                donHangEl.value = data['Donhang'] || item.don_hang || '';
             }
             
             // Ảnh: chỉ hiển thị thông báo, KHÔNG đưa base64 vào form để tránh lỗi 413
@@ -1029,6 +1052,156 @@ async function loadHistory() {
         }
 
 
+
+        // ── Quản Lý Đơn Hàng & Copy Link Hàng Loạt ──
+        function toggleJobOrderPanel(forceState) {
+            const panel = document.getElementById('jobOrderPanel');
+            if (!panel) return;
+            const currentState = panel.style.display !== 'none';
+            const show = forceState !== undefined ? forceState : !currentState;
+            
+            panel.style.display = show ? 'block' : 'none';
+            if (show) {
+                renderJobButtons();
+            }
+        }
+
+        function renderJobButtons() {
+            const container = document.getElementById('jobListContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            // Map để nhóm ứng viên theo đơn hàng
+            const jobMap = {};
+            
+            // Lọc tất cả trong currentHistoryData
+            currentHistoryData.forEach(item => {
+                if (item.don_hang && item.don_hang.trim() !== '') {
+                    const jobs = item.don_hang.split(/[,\s]+/).map(j => j.trim().toUpperCase()).filter(j => j.length > 0);
+                    jobs.forEach(job => {
+                        if (!jobMap[job]) {
+                            jobMap[job] = [];
+                        }
+                        jobMap[job].push(item);
+                    });
+                }
+            });
+            
+            const uniqueJobs = Object.keys(jobMap).sort();
+            
+            if (uniqueJobs.length === 0) {
+                container.innerHTML = '<span style="font-size:12px; color:#64748b; font-style:italic; padding:6px 0;">Chưa phát hiện đơn hàng nào. Hãy chỉnh sửa ứng viên để nhập mã đơn hàng của họ trước!</span>';
+                document.getElementById('jobDetailBox').style.display = 'none';
+                return;
+            }
+            
+            uniqueJobs.forEach(job => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'filter-btn';
+                btn.style.padding = '8px 14px';
+                btn.style.fontWeight = '700';
+                btn.style.textTransform = 'uppercase';
+                btn.innerHTML = `💼 ${job} <span style="background:rgba(37,99,235,0.1); color:#2563eb; border-radius:999px; padding:1px 6px; font-size:10px; margin-left:4px;">${jobMap[job].length}</span>`;
+                btn.onclick = () => selectJob(job, jobMap[job], btn);
+                btn.id = `job-btn-${job}`;
+                container.appendChild(btn);
+            });
+        }
+
+        let activeJobApplicants = [];
+        let activeJobCode = '';
+
+        function selectJob(jobCode, applicants, clickedBtn) {
+            activeJobCode = jobCode;
+            activeJobApplicants = applicants;
+            
+            // Highlight nút active
+            const buttons = document.querySelectorAll('#jobListContainer .filter-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+                btn.style.background = '';
+                btn.style.color = '';
+                btn.style.borderColor = '';
+            });
+            
+            if (clickedBtn) {
+                clickedBtn.classList.add('active');
+                clickedBtn.style.background = '#2563eb';
+                clickedBtn.style.color = '#ffffff';
+                clickedBtn.style.borderColor = '#2563eb';
+                const countBadge = clickedBtn.querySelector('span');
+                if (countBadge) {
+                    countBadge.style.background = 'rgba(255,255,255,0.2)';
+                    countBadge.style.color = '#ffffff';
+                }
+            }
+            
+            // Cập nhật title
+            document.getElementById('currentJobTitle').textContent = jobCode;
+            
+            // Cập nhật danh sách ứng viên dạng tag
+            const list = document.getElementById('jobApplicantsList');
+            list.innerHTML = '';
+            applicants.forEach(item => {
+                const slug = (item.ma_so === 'CHO_DUYET' ? `${item.id}/` : '') + item.ma_so + (item.ho_ten ? '_' + sanitizeSlug(item.ho_ten) : '');
+                const url = `${window.location.origin}/cv/${slug}`;
+                const badge = document.createElement('a');
+                badge.href = url;
+                badge.target = '_blank';
+                badge.style.display = 'inline-flex';
+                badge.style.alignItems = 'center';
+                badge.style.background = '#eff6ff';
+                badge.style.color = '#2563eb';
+                badge.style.border = '1px solid #bfdbfe';
+                badge.style.borderRadius = '6px';
+                badge.style.padding = '4px 10px';
+                badge.style.fontSize = '12px';
+                badge.style.fontWeight = '700';
+                badge.style.textDecoration = 'none';
+                badge.innerHTML = `📄 ${item.ma_so} - ${item.ho_ten}`;
+                list.appendChild(badge);
+            });
+            
+            // Render text copy mặc định (không kèm tên)
+            generateJobLinksText(false);
+            
+            // Hiển thị khung chi tiết
+            document.getElementById('jobDetailBox').style.display = 'block';
+        }
+
+        function generateJobLinksText(withNames) {
+            const textarea = document.getElementById('jobLinksTextarea');
+            if (!textarea) return;
+            
+            const lines = activeJobApplicants.map(item => {
+                const slug = (item.ma_so === 'CHO_DUYET' ? `${item.id}/` : '') + item.ma_so + (item.ho_ten ? '_' + sanitizeSlug(item.ho_ten) : '');
+                const url = `${window.location.origin}/cv/${slug}`;
+                if (withNames) {
+                    const cleanName = sanitizeSlug(item.ho_ten).replace(/_/g, ' ');
+                    return `${item.ma_so} - ${cleanName}\n${url}`;
+                } else {
+                    return url;
+                }
+            });
+            
+            textarea.value = lines.join(withNames ? '\n\n' : '\n');
+        }
+
+        function copyJobLinks(withNames) {
+            generateJobLinksText(withNames);
+            const textarea = document.getElementById('jobLinksTextarea');
+            if (!textarea) return;
+            
+            textarea.select();
+            textarea.setSelectionRange(0, 99999);
+            
+            navigator.clipboard.writeText(textarea.value).then(() => {
+                alert(`Đã copy thành công toàn bộ link ứng viên cho đơn hàng ${activeJobCode}!`);
+            }).catch(() => {
+                alert('Không thể tự động copy, vui lòng chọn và copy tay trong ô văn bản phía dưới.');
+            });
+        }
 
         // ── Checkbox bulk ──
         function onHistoryRowCheck() {
@@ -1320,8 +1493,9 @@ async function loadHistory() {
                     prefixMatch = maso.startsWith(currentFilterPrefix);
                 }
                 
-                // 2. Kiểm tra từ khóa tìm kiếm
-                const searchMatch = terms.length === 0 || terms.some(t => name.includes(t) || maso.toLowerCase().includes(t));
+                const job = (row.getAttribute('data-job') || '').toLowerCase();
+                // 2. Kiểm tra từ khóa tìm kiếm (hỗ trợ tìm cả tên, mã số, và đơn hàng)
+                const searchMatch = terms.length === 0 || terms.some(t => name.includes(t) || maso.toLowerCase().includes(t) || job.includes(t));
                 
                 // 3. Kiểm tra năm
                 let yearMatch = true;
@@ -1759,10 +1933,13 @@ async function loadHistory() {
                 <span class="hidden sm:inline">📊 Xuất Excel</span>
                 <span class="sm:hidden">📊</span>
             </button>
-            <input type="file" id="importFileInput" accept=".html,.htm" style="display:none;" onchange="loadFromFile(this)">
             <button type="button" onclick="document.getElementById('importFileInput').click()" class="btn-action" title="Nạp file" style="padding:8px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:10px; cursor:pointer;">
                 <span class="hidden sm:inline">📂 Nạp file</span>
                 <span class="sm:hidden">📂</span>
+            </button>
+            <button type="button" onclick="toggleJobOrderPanel()" class="btn-action" title="Xem theo Đơn hàng" style="padding:8px; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; border-radius:10px; cursor:pointer;">
+                <span class="hidden sm:inline">💼 Xem theo Đơn hàng</span>
+                <span class="sm:hidden">💼</span>
             </button>
             <button type="button" onclick="document.getElementById('historyModal').style.display='none'" class="btn-action" title="Đóng" style="padding:8px; background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:10px; cursor:pointer;">
                 <span class="hidden sm:inline">✕ Đóng</span>
@@ -1801,6 +1978,42 @@ async function loadHistory() {
             <button type="button" id="filter-FD" onclick="setFilterPrefix('FD')" class="filter-btn">♀️ Nữ (FD)</button>
             <button type="button" id="filter-KD" onclick="setFilterPrefix('KD')" class="filter-btn">🏥 Điều dưỡng (KD)</button>
             <button type="button" id="filter-OTHER" onclick="setFilterPrefix('OTHER')" class="filter-btn">❓ Mã khác</button>
+        </div>
+    </div>
+
+    <input type="file" id="importFileInput" accept=".html,.htm" style="display:none;" onchange="loadFromFile(this)">
+
+    <!-- Job Order Quick Copy Panel -->
+    <div id="jobOrderPanel" style="display:none; padding:14px 20px; background:#f8fafc; border-bottom:1px solid #e2e8f0; animation: fadeIn 0.2s ease-out;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div style="font-size:14px; font-weight:800; color:#1e293b; display:flex; align-items:center; gap:6px;">
+                <span>💼</span> Quản Lý Đơn Hàng & Copy Link Nhanh
+            </div>
+            <button type="button" onclick="toggleJobOrderPanel(false)" style="color:#ef4444; font-weight:700; font-size:13px; cursor:pointer; background:none; border:none; outline:none;">✕ Đóng bảng</button>
+        </div>
+        
+        <div id="jobListContainer" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;"></div>
+        
+        <!-- Job Details and Quick Copy Box -->
+        <div id="jobDetailBox" style="display:none; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:12px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px dashed #e2e8f0; padding-bottom:8px; margin-bottom:8px;">
+                <span style="font-size:13px; font-weight:700; color:#2563eb;">Đơn hàng: <span id="currentJobTitle" style="color:#0f172a; text-transform:uppercase;">ABC</span></span>
+                <div style="display:flex; gap:6px;">
+                    <button type="button" onclick="copyJobLinks(false)" style="padding:6px 12px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">📋 Copy nguyên Link</button>
+                    <button type="button" onclick="copyJobLinks(true)" style="padding:6px 12px; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">📋 Copy Tên + Link</button>
+                </div>
+            </div>
+            
+            <div style="grid-template-columns: 1fr; gap:10px; display:grid;">
+                <div style="margin-bottom:8px;">
+                    <label style="display:block; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; margin-bottom:4px;">Danh sách ứng viên ứng tuyển:</label>
+                    <div id="jobApplicantsList" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
+                </div>
+                <div>
+                    <label style="display:block; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; margin-bottom:4px;">Nội dung copy gửi khách:</label>
+                    <textarea id="jobLinksTextarea" readonly style="width:100%; height:100px; font-size:12px; font-family:monospace; padding:8px; border:1px solid #cbd5e1; border-radius:6px; background:#f8fafc; outline:none; box-sizing:border-box; resize:none;"></textarea>
+                </div>
+            </div>
         </div>
     </div>
 

@@ -80,11 +80,12 @@ class FormHistory(db.Model):
     ngay_tao = db.Column(db.DateTime, default=datetime.utcnow)
     is_selected = db.Column(db.Boolean, default=False)  # Trúng tuyển
     is_deleted = db.Column(db.Boolean, default=False)   # Xóa mềm
+    don_hang = db.Column(db.String(255), default='')    # Đơn hàng ứng tuyển (mã đơn)
 
 with app.app_context():
     try:
         db.create_all()
-        # Auto migration for is_deleted
+        # Auto migration for is_deleted and don_hang
         try:
             from sqlalchemy import text, inspect
             inspector = inspect(db.engine)
@@ -95,6 +96,12 @@ with app.app_context():
                     db.session.execute(text('ALTER TABLE form_history ADD COLUMN is_deleted BOOLEAN DEFAULT 0'))
                 else:
                     db.session.execute(text('ALTER TABLE form_history ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE'))
+                db.session.commit()
+            if 'don_hang' not in columns:
+                if 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI']:
+                    db.session.execute(text("ALTER TABLE form_history ADD COLUMN don_hang VARCHAR(255) DEFAULT ''"))
+                else:
+                    db.session.execute(text("ALTER TABLE form_history ADD COLUMN don_hang VARCHAR(255) DEFAULT ''"))
                 db.session.commit()
         except Exception as ex:
             print(f"⚠️ Column migration skipped or failed: {ex}")
@@ -562,11 +569,18 @@ def api_submit_only():
                 if key not in data and old_data.get(key): data[key] = old_data[key]
             record.ma_so = ma_so or 'CHO_DUYET'
             record.ho_ten = ho_ten
+            record.don_hang = str(data.get('Donhang', '')).strip()
             record.data_json = json.dumps(_prepare_data_for_db(data), ensure_ascii=False)
             db.session.commit()
             msg = 'Đã cập nhật.'
         else:
-            record = FormHistory(ma_so=ma_so or 'CHO_DUYET', ho_ten=ho_ten, data_json=json.dumps(_prepare_data_for_db(data), ensure_ascii=False))
+            don_hang = str(data.get('Donhang', '')).strip()
+            record = FormHistory(
+                ma_so=ma_so or 'CHO_DUYET',
+                ho_ten=ho_ten,
+                don_hang=don_hang,
+                data_json=json.dumps(_prepare_data_for_db(data), ensure_ascii=False)
+            )
             db.session.add(record)
             db.session.commit()
             msg = 'Đã nộp form.'
@@ -667,7 +681,8 @@ def api_history():
                 FormHistory.ma_so,
                 FormHistory.ho_ten,
                 FormHistory.ngay_tao,
-                FormHistory.is_selected
+                FormHistory.is_selected,
+                FormHistory.don_hang
             ))
             .filter_by(is_deleted=False)
             .order_by(FormHistory.ngay_tao.desc())
@@ -677,6 +692,7 @@ def api_history():
         vietnam_tz = timezone(timedelta(hours=7))
         data = [{
             'id': r.id, 'ma_so': r.ma_so, 'ho_ten': r.ho_ten,
+            'don_hang': getattr(r, 'don_hang', '') or '',
             'is_selected': getattr(r, 'is_selected', False),
             'ngay_tao': r.ngay_tao.replace(tzinfo=timezone.utc).astimezone(vietnam_tz).strftime("%d/%m/%Y %H:%M:%S") if r.ngay_tao else ''
         } for r in records]
