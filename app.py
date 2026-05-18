@@ -416,6 +416,12 @@ def prepare_render_data(raw_data: dict) -> dict:
     data['ThiLuc'] = " / ".join(vision) if vision else "正常"
     data['f12'] = "Có / 有" if chk(raw_data.get('f12')) else "無"
 
+    # Hút thuốc / Uống rượu
+    hut = "抽菸" if chk(raw_data.get('f03')) else ("不抽菸" if chk(raw_data.get('f09')) else "")
+    ruou = "喝酒" if chk(raw_data.get('f04')) else ("不喝酒" if chk(raw_data.get('f10')) else "")
+    parts = [p for p in [hut, ruou] if p]
+    data['HutRuou'] = " / ".join(parts) if parts else "無"
+
     for key in ('photo', 'qr_line'):
         path = raw_data.get(key, '')
         if isinstance(path, str) and path.startswith('data:image/'):
