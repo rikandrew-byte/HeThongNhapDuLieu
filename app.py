@@ -797,6 +797,161 @@ def api_bulk_download():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/api/history/bulk-assign-job', methods=['POST'])
+@auth_required
+def api_bulk_assign_job():
+    try:
+        data = request.get_json() or {}
+        ids = data.get('ids', [])
+        don_hang = str(data.get('don_hang', '')).strip()
+        if not ids: return jsonify({'success': False, 'error': 'No IDs provided'}), 400
+        
+        records = FormHistory.query.filter(FormHistory.id.in_([int(i) for i in ids])).all()
+        for r in records:
+            r.don_hang = don_hang
+            try:
+                if r.data_json:
+                    jd = json.loads(r.data_json)
+                    jd['Donhang'] = don_hang
+                    r.data_json = json.dumps(jd, ensure_ascii=False)
+            except:
+                pass
+        db.session.commit()
+        return jsonify({'success': True, 'count': len(records)})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/history/assign-job-by-maso', methods=['POST'])
+@auth_required
+def api_assign_job_by_maso():
+    try:
+        data = request.get_json() or {}
+        maso_list = data.get('maso_list', [])
+        don_hang = str(data.get('don_hang', '')).strip()
+        
+        # Chuẩn hóa danh sách mã số và tên đơn hàng mục tiêu
+        clean_masos = [unicodedata.normalize('NFC', str(m).strip().upper()) for m in maso_list if str(m).strip()]
+        target_job = unicodedata.normalize('NFC', don_hang.strip().upper())
+        
+        from sqlalchemy import func
+        import re
+        import json
+        
+        # Nếu Tên đơn hàng trống, ta thực hiện xóa sạch đơn hàng cho các mã số trong list
+        if not target_job:
+            if not clean_masos:
+                return jsonify({'success': False, 'error': 'No candidate codes provided'}), 400
+            records = FormHistory.query.filter(func.upper(FormHistory.ma_so).in_(clean_masos)).all()
+            for r in records:
+                r.don_hang = ""
+                try:
+                    if r.data_json:
+                        jd = json.loads(r.data_json)
+                        jd['Donhang'] = ""
+                        r.data_json = json.dumps(jd, ensure_ascii=False)
+                except:
+                    pass
+            db.session.commit()
+            return jsonify({'success': True, 'count': len(records)})
+            
+        # Tìm tất cả hồ sơ trong database để thực hiện gán mới và gỡ bỏ đồng bộ
+        all_records = FormHistory.query.all()
+        updated_count = 0
+        
+        for r in all_records:
+            r_maso = (r.ma_so or '').strip().upper()
+            if not r_maso:
+                continue
+                
+            donhang_str = (r.don_hang or '').strip()
+            # Tách các đơn hàng hiện tại của ứng viên
+            current_jobs = [j.strip() for j in re.split(r'[,;]+', donhang_str) if j.strip()]
+            current_jobs_upper = [unicodedata.normalize('NFC', j.upper()) for j in current_jobs]
+            
+            in_new_list = unicodedata.normalize('NFC', r_maso) in clean_masos
+            has_job_currently = target_job in current_jobs_upper
+            
+            if in_new_list:
+                # Nếu ứng viên có trong danh sách nhập vào nhưng chưa được gán đơn này, tiến hành gán thêm
+                if not has_job_currently:
+                    current_jobs.append(don_hang)
+                    new_donhang = ", ".join(current_jobs)
+                    r.don_hang = new_donhang
+                    try:
+                        if r.data_json:
+                            jd = json.loads(r.data_json)
+                            jd['Donhang'] = new_donhang
+                            r.data_json = json.dumps(jd, ensure_ascii=False)
+                    except:
+                        pass
+                    updated_count += 1
+            else:
+                # Nếu ứng viên KHÔNG có trong danh sách nhập vào nhưng hiện đang được gán đơn này, tiến hành gỡ bỏ
+                if has_job_currently:
+                    new_jobs = [j for j in current_jobs if unicodedata.normalize('NFC', j.strip().upper()) != target_job]
+                    new_donhang = ", ".join(new_jobs)
+                    r.don_hang = new_donhang
+                    try:
+                        if r.data_json:
+                            jd = json.loads(r.data_json)
+                            jd['Donhang'] = new_donhang
+                            r.data_json = json.dumps(jd, ensure_ascii=False)
+                    except:
+                        pass
+                    updated_count += 1
+                    
+        db.session.commit()
+        return jsonify({'success': True, 'count': updated_count})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/history/remove-job-from-maso', methods=['POST'])
+@auth_required
+def api_remove_job_from_maso():
+    try:
+        data = request.get_json() or {}
+        ma_so = unicodedata.normalize('NFC', str(data.get('ma_so', '')).strip().upper())
+        job_to_remove = unicodedata.normalize('NFC', str(data.get('don_hang', '')).strip().upper())
+        if not ma_so or not job_to_remove:
+            return jsonify({'success': False, 'error': 'Missing parameters'}), 400
+            
+        from sqlalchemy import func
+        records = FormHistory.query.filter(func.upper(FormHistory.ma_so) == ma_so).all()
+        updated_count = 0
+        
+        for r in records:
+            donhang_str = (r.don_hang or '').strip()
+            if not donhang_str:
+                continue
+            
+            # Split and filter
+            import re
+            jobs = [j.strip() for j in re.split(r'[,;]+', donhang_str) if j.strip()]
+            new_jobs = [j for j in jobs if unicodedata.normalize('NFC', j.strip().upper()) != job_to_remove]
+            
+            if len(new_jobs) != len(jobs):
+                new_donhang = ", ".join(new_jobs)
+                r.don_hang = new_donhang
+                try:
+                    if r.data_json:
+                        jd = json.loads(r.data_json)
+                        jd['Donhang'] = new_donhang
+                        r.data_json = json.dumps(jd, ensure_ascii=False)
+                except:
+                    pass
+                updated_count += 1
+                
+        db.session.commit()
+        return jsonify({'success': True, 'count': updated_count})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 SKILL_MAPPING = {
     'f23': 'Hàn điện', 'f31': 'Tiện', 'f39': 'Nhựa',
     'f24': 'Hàn argon', 'f32': 'Phay', 'f40': 'Xây dựng',
