@@ -191,6 +191,7 @@ ZH_TO_VI = {
     "永福": "Vĩnh Phúc",
     "清化": "Thanh Hóa",
     "乂安": "Nghệ An",
+    "藝安": "Nghệ An",
     "河靜": "Hà Tĩnh",
     "廣平": "Quảng Bình",
     "廣治": "Quảng Trị",
@@ -245,29 +246,36 @@ def translate_name(text: str) -> str:
     """Dành riêng cho dịch Họ Tên: Ưu tiên từ điển tên để tránh nhầm với tiếng Anh"""
     if not text or not text.strip() or is_chinese(text): return text
 
+    # Chuẩn hóa Unicode NFC đầu vào để khớp chính xác từ điển nội bộ
+    text_normalized = normalize('NFC', text).strip()
+
     # 1. Thử dịch từ từ điển tên riêng
     # Hàm trả về None nếu có phần nào không tìm thấy → fallback Google Translate
-    dict_result = get_vietnamese_name_in_chinese(text.strip())
+    dict_result = get_vietnamese_name_in_chinese(text_normalized)
     if dict_result is not None:
         return dict_result
 
     # 2. Nếu không có trong từ điển, dùng Google Translate
     try:
-        result = GoogleTranslator(source='vi', target='zh-TW').translate(text.strip())
-        return result if result else text
-    except: return text
+        result = GoogleTranslator(source='vi', target='zh-TW').translate(text_normalized)
+        return result if result else text_normalized
+    except: return text_normalized
 
 def translate_free(text: str) -> str:
     """Dành cho dịch nội dung tự do (công việc, địa chỉ): Ưu tiên thuật ngữ nghề nghiệp"""
     if not text or not text.strip() or is_chinese(text): return text
     
+    # Chuẩn hóa Unicode NFC để tránh lỗi so khớp do khác biệt Unicode encoding (NFC/NFD)
+    text_normalized = normalize('NFC', text)
+    text_lower = text_normalized.strip().lower()
+    
     # 1. Kiểm tra khớp chính xác trong FIXED_TRANS
-    fixed = FIXED_TRANS.get(text.strip().lower())
+    fixed = FIXED_TRANS.get(text_lower)
     if fixed: return fixed
     
     # 2. Xử lý các từ khóa quan trọng TRONG câu (ví dụ: "may" -> "縫紉")
     # Để tránh Google dịch nhầm "may" thành "có lẽ/có thể" (possibly)
-    processed_text = text
+    processed_text = text_normalized
     # Các từ khóa cần bảo vệ (case insensitive)
     protected_terms = {
         'may': '縫紉',
@@ -281,19 +289,32 @@ def translate_free(text: str) -> str:
     }
     
     # Nếu text là một từ đơn nằm trong danh sách bảo vệ, trả về luôn
-    if text.strip().lower() in protected_terms:
-        return protected_terms[text.strip().lower()]
+    if text_lower in protected_terms:
+        return protected_terms[text_lower]
 
     # 3. Dùng Google Translate cho đoạn văn
     try:
         result = GoogleTranslator(source='vi', target='zh-TW').translate(processed_text.strip())
-        # Nếu Google dịch nhầm "may" -> "可能" hoặc "Nghệ An" -> "义安", ta sửa lại
-        if '可能' in result and 'may' in text.lower():
+        
+        # Sửa lại nếu Google dịch nhầm "may" -> "可能"
+        if '可能' in result and 'may' in text_lower:
             result = result.replace('可能', '縫紉')
-        if '义安' in result and 'nghệ an' in text.lower():
-            result = result.replace('义安', '藝安')
-        return result if result else text
-    except: return text
+            
+        # Chuẩn hóa bỏ dấu để kiểm tra Nghệ An chính xác (bao phủ NFC, NFD, không dấu)
+        import unicodedata
+        clean_text = ''.join(c for c in unicodedata.normalize('NFKD', text_normalized).lower() if not unicodedata.combining(c))
+        if 'nghe an' in clean_text:
+            # Thay thế tất cả các dạng dịch sai thường gặp (Giản thể/Phồn thể/乂安) sang 藝安
+            for bad_trans in ('义安', '義安', '乂安'):
+                if bad_trans in result:
+                    result = result.replace(bad_trans, '藝安')
+            # Thay thế cả chuỗi tiếng Việt/tiếng Anh chưa dịch được còn sót lại
+            import re
+            result = re.sub(r'(?i)nghệ\s+an', '藝安', result)
+            result = re.sub(r'(?i)nghe\s+an', '藝安', result)
+                    
+        return result if result else text_normalized
+    except: return text_normalized
 
 def sanitize_filename_master(name):
     if not name: return "UnNamed"
