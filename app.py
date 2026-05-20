@@ -406,6 +406,11 @@ def prepare_render_data(raw_data: dict) -> dict:
         elif f in ['QG1', 'QG2', 'QG3']: data[f] = translate_fixed(val)
         else: data[f] = val
 
+    # Viết hoa tên tiếng Việt ở tầng Python để giữ đầy đủ dấu
+    # (CSS text-transform:uppercase làm mất dấu do lỗi glyph font)
+    if data.get('Hoten'):
+        data['Hoten'] = data['Hoten'].upper()
+
     data['Ngaysinh'] = fmt_date(data['Ngaysinh'])
     if not data['Tuoi'] and raw_data.get('Ngaysinh'): data['Tuoi'] = calc_age(raw_data.get('Ngaysinh'))
 
