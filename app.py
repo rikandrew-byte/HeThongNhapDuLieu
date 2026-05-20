@@ -569,7 +569,10 @@ def api_submit_only():
                 if key not in data and old_data.get(key): data[key] = old_data[key]
             record.ma_so = ma_so or 'CHO_DUYET'
             record.ho_ten = ho_ten
-            record.don_hang = str(data.get('Donhang', '')).strip()
+            if 'Donhang' in data:
+                record.don_hang = str(data.get('Donhang', '')).strip()
+            else:
+                data['Donhang'] = record.don_hang or ''
             record.data_json = json.dumps(_prepare_data_for_db(data), ensure_ascii=False)
             db.session.commit()
             msg = 'Đã cập nhật.'
