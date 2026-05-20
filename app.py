@@ -318,7 +318,9 @@ def translate_free(text: str) -> str:
 
 def sanitize_filename_master(name):
     if not name: return "UnNamed"
-    s = normalize('NFKD', str(name)).encode('ascii', 'ignore').decode('ascii')
+    # Xử lý riêng Đ/đ vì không phân rã được bằng NFKD → bị encode ASCII mất hoàn toàn
+    s = str(name).replace('Đ', 'D').replace('đ', 'd')
+    s = normalize('NFKD', s).encode('ascii', 'ignore').decode('ascii')
     s = re.sub(r'[^\w\s-]', '', s).strip()
     s = re.sub(r'[-\s]+', '_', s)
     return s

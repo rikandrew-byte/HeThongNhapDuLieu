@@ -746,7 +746,10 @@
         // Helper: Tạo slug từ tên (không dấu, bỏ ký tự lạ)
         function sanitizeSlug(name) {
             if (!name) return "UnNamed";
-            return name.normalize('NFD').replace(/[\u0300-\u036f]/g, "")
+            // Bước 1: Xử lý riêng Đ/đ vì không phân rã được bằng NFD
+            return name
+                       .replace(/Đ/g, 'D').replace(/đ/g, 'd')
+                       .normalize('NFD').replace(/[\u0300-\u036f]/g, "")
                        .replace(/[^\w\s-]/gi, '').trim()
                        .replace(/[-\s]+/g, '_');
         }
