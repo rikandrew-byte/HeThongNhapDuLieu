@@ -1176,33 +1176,33 @@ async function loadHistory() {
                 
                 tr.innerHTML = `
                     <td style="padding:12px 16px; font-weight:800; color:#3730a3; text-transform:uppercase; font-size:13px;">${job}</td>
-                    <td style="padding:12px 16px; color:#312e81; font-size:12px; max-width:400px; word-break:break-all;">
-                        <div style="display:flex; flex-wrap:wrap; align-items:center;">
+                    <td style="padding:12px 16px; color:#312e81; font-size:12px;">
+                        <div style="display:flex; flex-wrap:wrap; align-items:center; gap:4px;">
                             ${masoBadgesHtml}
                         </div>
                     </td>
                     <td style="padding:12px 16px; text-align:center; font-weight:700; color:#4f46e5;">
                         <span style="background:rgba(79,70,229,0.08); color:#4f46e5; padding:3px 10px; border-radius:999px; font-size:12px; font-weight:800;">${applicants.length}</span>
                     </td>
-                    <td style="padding:12px 16px; text-align:center; white-space:nowrap;">
-                        <div style="display:inline-flex; gap:6px; justify-content:center; align-items:center; white-space:nowrap;">
+                    <td style="padding:12px 16px; text-align:center;">
+                        <div class="job-action-group" style="display:flex; gap:6px; justify-content:center; align-items:center; flex-wrap:wrap;">
                             <button type="button" onclick="copyJobMasoList('${masoList.replace(/'/g, "\\'")}', this)" 
-                                style="padding:6px 10px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;"
+                                style="padding:6px 10px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:4px;"
                                 onmouseover="this.style.background='#dcfce7'" onmouseout="this.style.background='#f0fdf4'">
                                 <span>📋</span> Copy mã
                             </button>
                             <button type="button" onclick="quickFilterJob('${masoList.replace(/'/g, "\\'")}')" 
-                                style="padding:6px 10px; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;"
+                                style="padding:6px 10px; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:4px;"
                                 onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">
                                 <span>🔍</span> Lọc nhanh
                             </button>
                             <button type="button" onclick="fillQuickJobAssignInputs('${job.replace(/'/g, "\\'")}', '${masoList.replace(/'/g, "\\'")}')" 
-                                style="padding:6px 10px; background:#fff7ed; color:#ea580c; border:1px solid #fed7aa; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;"
+                                style="padding:6px 10px; background:#fff7ed; color:#ea580c; border:1px solid #fed7aa; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:4px;"
                                 onmouseover="this.style.background='#ffedd5'" onmouseout="this.style.background='#fff7ed'">
                                 <span>✍️</span> Sửa
                             </button>
                             <button type="button" onclick="deleteJobOrderEntirely('${job.replace(/'/g, "\\'")}')" 
-                                style="padding:6px 10px; background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;"
+                                style="padding:6px 10px; background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:4px;"
                                 onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'">
                                 <span>🗑️</span> Bỏ
                             </button>
@@ -2121,6 +2121,114 @@ async function loadHistory() {
 
             .history-container { padding: 8px !important; }
             .mobile-label { width: 80px !important; color: #94a3b8 !important; font-weight: 600; font-size: 11px; text-transform: uppercase; flex-shrink: 0; }
+
+            /* ===== TỔNG HỢP ĐƠN HÀNG - Mobile Card Layout ===== */
+
+            /* Panel ngoài: giảm padding để vừa màn hình nhỏ */
+            #jobSummaryPanel { padding: 12px !important; }
+
+            /* Tiêu đề panel: cho phép xuống dòng trên màn hình nhỏ */
+            #jobSummaryPanel > div:first-child {
+                flex-wrap: wrap !important;
+                gap: 8px !important;
+                align-items: center !important;
+            }
+
+            /* Form ghép nhanh: xếp dọc hoàn toàn trên mobile */
+            .quick-job-assign-fields {
+                flex-direction: column !important;
+                gap: 10px !important;
+            }
+            .quick-job-assign-fields > div {
+                min-width: unset !important;
+                width: 100% !important;
+            }
+            /* Nút Ghép ngay: chiếm toàn bộ chiều ngang */
+            .quick-job-assign-fields > button {
+                width: 100% !important;
+                justify-content: center !important;
+                padding: 12px !important;
+                font-size: 14px !important;
+            }
+
+            /* Bảng đơn hàng -> Card layout: tắt max-height và overflow dọc để thẻ dàn đầy */
+            .job-table-wrapper {
+                max-height: none !important;
+                overflow-y: visible !important;
+            }
+
+            /* Biến bảng thành dạng khối */
+            .job-summary-table thead { display: none !important; }
+            .job-summary-table,
+            .job-summary-table tbody,
+            .job-summary-table tr,
+            .job-summary-table td {
+                display: block !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
+            /* Mỗi hàng là một thẻ Card */
+            .job-summary-table tr.job-summary-row {
+                background: #ffffff !important;
+                border: 1px solid #c7d2fe !important;
+                border-radius: 12px !important;
+                margin-bottom: 12px !important;
+                padding: 12px !important;
+                box-shadow: 0 2px 8px rgba(79,70,229,0.06) !important;
+            }
+            .job-summary-table tr.job-summary-row:hover {
+                background: #f5f3ff !important;
+            }
+
+            /* Mỗi ô td: layout hàng ngang với nhãn trước */
+            .job-summary-table td {
+                padding: 5px 0 !important;
+                border: none !important;
+                display: flex !important;
+                align-items: flex-start !important;
+                gap: 8px !important;
+                min-height: 0 !important;
+            }
+
+            /* Thêm nhãn trước mỗi ô bằng data-label (đặt qua JS) hoặc dùng CSS ::before */
+            .job-summary-table td:nth-child(1)::before { content: "Đơn hàng:"; }
+            .job-summary-table td:nth-child(2)::before { content: "Dự tuyển:"; }
+            .job-summary-table td:nth-child(3)::before { content: "Số lượng:"; }
+            .job-summary-table td:nth-child(4)::before { content: "Thao tác:"; }
+            .job-summary-table td::before {
+                min-width: 72px !important;
+                font-size: 10px !important;
+                font-weight: 700 !important;
+                color: #94a3b8 !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.05em !important;
+                padding-top: 3px !important;
+                flex-shrink: 0 !important;
+            }
+
+            /* Cột thao tác: xuống dòng lưới 2x2 */
+            .job-summary-table td:nth-child(4) { align-items: flex-start !important; }
+            .job-action-group {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 6px !important;
+                width: 100% !important;
+            }
+            .job-action-group > button {
+                width: 100% !important;
+                justify-content: center !important;
+                font-size: 11px !important;
+                padding: 8px 4px !important;
+            }
+
+            /* Badge mã số: tự xuống dòng theo cụm, không bẻ gãy chữ cái */
+            .job-maso-badge {
+                word-break: keep-all !important;
+                white-space: nowrap !important;
+                font-size: 11px !important;
+                padding: 2px 6px !important;
+            }
         }
 
         /* Desktop: Ẩn nút "..." và hiện grid actions */
@@ -2254,11 +2362,11 @@ async function loadHistory() {
             </div>
             
             <!-- Đăng ký ghép đơn nhanh -->
-            <div style="background:#ffffff; border:1px solid #c7d2fe; border-radius:14px; padding:16px; margin-bottom:16px; box-shadow:0 4px 14px -2px rgba(99,102,241,0.06);">
+            <div class="quick-job-assign-box" style="background:#ffffff; border:1px solid #c7d2fe; border-radius:14px; padding:16px; margin-bottom:16px; box-shadow:0 4px 14px -2px rgba(99,102,241,0.06);">
                 <div style="font-size:11px; font-weight:800; color:#4f46e5; margin-bottom:12px; text-transform:uppercase; display:flex; align-items:center; gap:6px; letter-spacing:0.05em;">
                     <span style="font-size:14px; color:#4f46e5;">⚡</span> Ghép Đơn Hàng Nhanh Bằng Mã Số
                 </div>
-                <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
+                <div class="quick-job-assign-fields" style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
                     <div style="flex:1; min-width:180px;">
                         <label style="display:block; font-size:11px; font-weight:700; color:#4f46e5; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.02em;">Tên đơn hàng:</label>
                         <input type="text" id="quickJobNameInput" placeholder="Ví dụ: Thác Vỹ, HV" 
@@ -2284,8 +2392,8 @@ async function loadHistory() {
 
             <!-- Bảng danh sách đơn hàng cuộn cuộn nếu có hàng chục đơn hàng -->
             <div style="background:#ffffff; border:1px solid #c7d2fe; border-radius:14px; box-shadow:0 4px 12px -2px rgba(79,70,229,0.03); overflow:hidden;">
-                <div style="max-height:280px; overflow-y:auto; position:relative;">
-                    <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13px; min-width:600px;">
+                <div class="job-table-wrapper" style="max-height:280px; overflow-y:auto; position:relative;">
+                    <table class="job-summary-table" style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;">
                         <thead>
                             <tr style="background:#e0e7ff; border-bottom:1px solid #c7d2fe; position:sticky; top:0; z-index:10; box-shadow:0 1px 0 rgba(0,0,0,0.05);">
                                 <th style="padding:12px 16px; font-weight:800; color:#3730a3; width:200px; text-transform:uppercase; font-size:11px; letter-spacing:0.05em; background:#e0e7ff; position:sticky; top:0; z-index:10;">Đơn hàng</th>
