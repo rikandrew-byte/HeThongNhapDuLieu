@@ -264,7 +264,7 @@ def translate_name(text: str) -> str:
     # 2. Nếu không có trong từ điển, dùng Gemini API hoặc Google Translate
     try:
         if gemini_api_key:
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            model = genai.GenerativeModel('gemini-3.5-flash')
             prompt = f"Dịch tên tiếng Việt sau sang tiếng Trung Phồn Thể một cách tự nhiên nhất (âm Hán Việt nếu có thể), chỉ trả về đúng tên đã dịch, tuyệt đối không giải thích thêm: {text_normalized}"
             response = model.generate_content(prompt)
             result = response.text.strip()
@@ -314,7 +314,7 @@ def translate_free(text: str) -> str:
     # 3. Dùng Gemini API hoặc Google Translate cho đoạn văn
     try:
         if gemini_api_key:
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            model = genai.GenerativeModel('gemini-3.5-flash')
             prompt = f"Bạn là chuyên gia dịch thuật CV xuất khẩu lao động Đài Loan. Hãy dịch đoạn kinh nghiệm làm việc sau sang tiếng Trung Phồn Thể. Yêu cầu: dịch sát nghĩa, chuẩn thuật ngữ nghề nghiệp (cơ khí, điện, xây dựng, nhà máy, dệt may...), giữ nguyên cách dòng và định dạng nếu có. Tuyệt đối KHÔNG kèm theo lời giải thích hay bình luận, chỉ trả về đúng kết quả dịch. Đoạn văn bản cần dịch: '{processed_text.strip()}'"
             response = model.generate_content(prompt)
             result = response.text.strip()
@@ -339,7 +339,13 @@ def translate_free(text: str) -> str:
             result = re.sub(r'(?i)nghe\s+an', '藝安', result)
                     
         return result if result else text_normalized
-    except: return text_normalized
+    except Exception as e:
+        print(f"Free text translation error: {e}")
+        try:
+            # Fallback to Google Translate if Gemini fails
+            return GoogleTranslator(source='vi', target='zh-TW').translate(processed_text.strip()) or text_normalized
+        except:
+            return text_normalized
 
 def sanitize_filename_master(name):
     if not name: return "UnNamed"
