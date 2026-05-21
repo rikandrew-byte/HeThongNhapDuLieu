@@ -1008,10 +1008,10 @@ def api_remove_job_from_maso():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
-SKILL_MAPPING = {
+EXCEL_SKILL_MAPPING = {
     'f23': 'Hàn điện', 'f31': 'Tiện', 'f39': 'Nhựa',
     'f24': 'Hàn argon', 'f32': 'Phay', 'f40': 'Xây dựng',
-    'f25': 'Hàn CO2', 'f33': 'Bào', 'f41': 'Sữa chữa máy',
+    'f25': 'Hàn CO2', 'f33': 'Bào', 'f41': 'Sửa chữa máy',
     'f26': 'Tig Mig', 'f34': 'CNC', 'f42': 'Điều dưỡng',
     'f27': 'Đúc', 'f35': 'Đột dập', 'f43': 'Giúp việc',
     'f28': 'Dệt', 'f36': 'In ấn', 'f44': 'Xe cẩu',
@@ -1103,7 +1103,7 @@ def api_export_excel():
                 
                 # Tay nghề
                 skills = []
-                for k, v in SKILL_MAPPING.items():
+                for k, v in EXCEL_SKILL_MAPPING.items():
                     if form_data.get(k):
                         skills.append(v)
                         skills_count[v] = skills_count.get(v, 0) + 1
