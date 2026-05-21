@@ -21,8 +21,14 @@ from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 from openpyxl.chart import BarChart, PieChart, Reference
 from openpyxl.chart.label import DataLabelList
 from openpyxl.utils import get_column_letter
+import google.generativeai as genai
 
 load_dotenv()
+
+# Configure Gemini
+gemini_api_key = os.environ.get('GEMINI_API_KEY')
+if gemini_api_key:
+    genai.configure(api_key=gemini_api_key)
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 app.debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
@@ -255,11 +261,24 @@ def translate_name(text: str) -> str:
     if dict_result is not None:
         return dict_result
 
-    # 2. Nếu không có trong từ điển, dùng Google Translate
+    # 2. Nếu không có trong từ điển, dùng Gemini API hoặc Google Translate
     try:
-        result = GoogleTranslator(source='vi', target='zh-TW').translate(text_normalized)
-        return result if result else text_normalized
-    except: return text_normalized
+        if gemini_api_key:
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            prompt = f"Dịch tên tiếng Việt sau sang tiếng Trung Phồn Thể một cách tự nhiên nhất (âm Hán Việt nếu có thể), chỉ trả về đúng tên đã dịch, tuyệt đối không giải thích thêm: {text_normalized}"
+            response = model.generate_content(prompt)
+            result = response.text.strip()
+            return result if result else text_normalized
+        else:
+            result = GoogleTranslator(source='vi', target='zh-TW').translate(text_normalized)
+            return result if result else text_normalized
+    except Exception as e:
+        print(f"Name translation error: {e}")
+        try:
+            # Fallback to Google Translate if Gemini fails
+            return GoogleTranslator(source='vi', target='zh-TW').translate(text_normalized) or text_normalized
+        except:
+            return text_normalized
 
 def translate_free(text: str) -> str:
     """Dành cho dịch nội dung tự do (công việc, địa chỉ): Ưu tiên thuật ngữ nghề nghiệp"""
@@ -292,9 +311,15 @@ def translate_free(text: str) -> str:
     if text_lower in protected_terms:
         return protected_terms[text_lower]
 
-    # 3. Dùng Google Translate cho đoạn văn
+    # 3. Dùng Gemini API hoặc Google Translate cho đoạn văn
     try:
-        result = GoogleTranslator(source='vi', target='zh-TW').translate(processed_text.strip())
+        if gemini_api_key:
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            prompt = f"Bạn là chuyên gia dịch thuật CV xuất khẩu lao động Đài Loan. Hãy dịch đoạn kinh nghiệm làm việc sau sang tiếng Trung Phồn Thể. Yêu cầu: dịch sát nghĩa, chuẩn thuật ngữ nghề nghiệp (cơ khí, điện, xây dựng, nhà máy, dệt may...), giữ nguyên cách dòng và định dạng nếu có. Tuyệt đối KHÔNG kèm theo lời giải thích hay bình luận, chỉ trả về đúng kết quả dịch. Đoạn văn bản cần dịch: '{processed_text.strip()}'"
+            response = model.generate_content(prompt)
+            result = response.text.strip()
+        else:
+            result = GoogleTranslator(source='vi', target='zh-TW').translate(processed_text.strip())
         
         # Sửa lại nếu Google dịch nhầm "may" -> "可能"
         if '可能' in result and 'may' in text_lower:
