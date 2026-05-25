@@ -1737,6 +1737,24 @@ async function loadHistory() {
                     row.style.setProperty('display', 'none', 'important'); // Ép buộc ẩn
                 }
             });
+
+            // 5. Reorder rows: if multiple terms (e.g. Quick Filter), sort A-Z. Otherwise, restore original (newest first) order.
+            const rowArray = Array.from(rows);
+            if (terms.length > 1) {
+                rowArray.sort((a, b) => {
+                    const ma = (a.getAttribute('data-maso') || '').toUpperCase().trim();
+                    const mb = (b.getAttribute('data-maso') || '').toUpperCase().trim();
+                    return ma.localeCompare(mb, undefined, { numeric: true, sensitivity: 'base' });
+                });
+            } else {
+                rowArray.sort((a, b) => {
+                    const idA = parseInt(a.dataset.id || '0', 10);
+                    const idB = parseInt(b.dataset.id || '0', 10);
+                    return idB - idA;
+                });
+            }
+            rowArray.forEach(row => tbody.appendChild(row));
+
             updateHistoryCount();
         }
         function clearHistoryFilters() {
