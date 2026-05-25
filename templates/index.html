@@ -1156,7 +1156,9 @@ async function loadHistory() {
             
             sortedJobs.forEach((job, index) => {
                 const applicants = jobMap[job];
-                const masoList = [...new Set(applicants.map(i => i.ma_so).filter(m => m && m !== 'CHO_DUYET'))].join(', ');
+                const masoArray = [...new Set(applicants.map(i => i.ma_so).filter(m => m && m !== 'CHO_DUYET'))];
+                masoArray.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+                const masoList = masoArray.join(', ');
                 
                 let masoBadgesHtml = '';
                 if (masoList && masoList.trim() !== '') {
