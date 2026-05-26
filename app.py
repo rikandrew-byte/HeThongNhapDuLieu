@@ -153,11 +153,12 @@ YELLOW_ALERTS_MAP = {
 
 SKILL_MAPPING = {
     'f23': 'Hàn điện / 電焊', 'f24': 'Hàn Argon / 氬焊', 'f25': 'Hàn CO2 / 氣焊', 'f26': 'Tig/Mig',
-    'f27': 'Đúc / 鑄造', 'f28': 'Dệt / 紡織', 'f29': 'May / 縫紉', 'f30': 'Lái xe nâng / 堆高機',
     'f31': 'Tiện / 車床', 'f32': 'Phay / 銑床', 'f33': 'Bào / 刨床', 'f34': 'CNC',
-    'f35': 'Đột dập / 沖床', 'f36': 'In ấn / 印刷', 'f37': 'Thợ mộc / 木工', 'f38': 'Lái xe tải/khách / 卡車/客司機',
-    'f39': 'Nhựa / 塑膠', 'f40': 'Xây dựng / 營造', 'f41': 'Sửa chữa máy / 機械維修', 'f42': 'Điều dưỡng / 護理工',
-    'f43': 'Giúp việc / 幫傭', 'f44': 'Xe cẩu / 吊車', 'f45': 'Cẩu trục / 天車', 'f46': 'Máy xúc / 挖土機'
+    'f35': 'Đột dập / 沖床', 'f41': 'Sửa chữa máy / 機械維修', 'f49': 'Lắp ráp cơ khí / 機械組裝', 'f27': 'Đúc / 鑄造',
+    'f50': 'Công nhân điện tử / 電子工', 'f39': 'Nhựa / 塑膠', 'f36': 'In ấn / 印刷', 'f28': 'Dệt / 紡織',
+    'f29': 'May / 縫紉', 'f40': 'Xây dựng / 營造', 'f37': 'Thợ mộc / 木工', 'f38': 'Lái xe tải/khách / 卡車/客司機',
+    'f30': 'Lái xe nâng / 堆高機', 'f44': 'Xe cẩu / 吊車', 'f45': 'Cẩu trục / 天車', 'f46': 'Máy xúc / 挖土機',
+    'f42': 'Điều dưỡng / 護理工', 'f43': 'Giúp việc / 幫傭'
 }
 
 ZH_TO_VI = {
@@ -1015,14 +1016,13 @@ def api_remove_job_from_maso():
 
 
 EXCEL_SKILL_MAPPING = {
-    'f23': 'Hàn điện', 'f31': 'Tiện', 'f39': 'Nhựa',
-    'f24': 'Hàn argon', 'f32': 'Phay', 'f40': 'Xây dựng',
-    'f25': 'Hàn CO2', 'f33': 'Bào', 'f41': 'Sửa chữa máy',
-    'f26': 'Tig Mig', 'f34': 'CNC', 'f42': 'Điều dưỡng',
-    'f27': 'Đúc', 'f35': 'Đột dập', 'f43': 'Giúp việc',
-    'f28': 'Dệt', 'f36': 'In ấn', 'f44': 'Xe cẩu',
-    'f29': 'May', 'f37': 'Thợ mộc', 'f45': 'Cẩu trục',
-    'f30': 'Xe nâng', 'f38': 'Lái xe tải/khách', 'f46': 'Máy xúc'
+    'f23': 'Hàn điện', 'f24': 'Hàn argon', 'f25': 'Hàn CO2', 'f26': 'Tig Mig',
+    'f31': 'Tiện', 'f32': 'Phay', 'f33': 'Bào', 'f34': 'CNC',
+    'f35': 'Đột dập', 'f41': 'Sửa chữa máy', 'f49': 'Lắp ráp cơ khí', 'f27': 'Đúc',
+    'f50': 'Công nhân điện tử', 'f39': 'Nhựa', 'f36': 'In ấn', 'f28': 'Dệt',
+    'f29': 'May', 'f40': 'Xây dựng', 'f37': 'Thợ mộc', 'f38': 'Lái xe tải/khách',
+    'f30': 'Xe nâng', 'f44': 'Xe cẩu', 'f45': 'Cẩu trục', 'f46': 'Máy xúc',
+    'f42': 'Điều dưỡng', 'f43': 'Giúp việc'
 }
 
 @app.route('/api/history/export-excel', methods=['POST'])
