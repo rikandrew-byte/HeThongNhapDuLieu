@@ -1273,11 +1273,106 @@ async function loadHistory() {
             }
         }
 
+        function showJobAssignPrompt(count, options) {
+            return new Promise((resolve) => {
+                let oldModal = document.getElementById('jobAssignPromptModal');
+                if (oldModal) oldModal.remove();
+
+                const modal = document.createElement('div');
+                modal.id = 'jobAssignPromptModal';
+                modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:99999; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(2px);';
+                
+                const box = document.createElement('div');
+                box.style.cssText = 'background:white; padding:24px; border-radius:12px; width:400px; max-width:90%; box-shadow:0 10px 25px rgba(0,0,0,0.2); font-family:"Inter",sans-serif; text-align:center;';
+                
+                const title = document.createElement('h3');
+                title.textContent = `Ghép đơn hàng cho ${count} hồ sơ`;
+                title.style.cssText = 'margin-top:0; font-size:18px; color:#1f2937; margin-bottom:8px; font-weight:700;';
+                
+                const subTitle = document.createElement('p');
+                subTitle.textContent = 'Nhập mã đơn mới hoặc chọn từ danh sách đã có:';
+                subTitle.style.cssText = 'font-size:14px; color:#4b5563; margin-bottom:16px;';
+                
+                const inputWrapper = document.createElement('div');
+                inputWrapper.style.position = 'relative';
+
+                const input = document.createElement('input');
+                input.setAttribute('list', 'jobAssignOptionsList');
+                input.type = 'text';
+                input.style.cssText = 'width:100%; padding:10px 14px; border:2px solid #e5e7eb; border-radius:8px; font-size:15px; margin-bottom:20px; box-sizing:border-box; outline:none; transition:border-color 0.2s;';
+                input.placeholder = 'VD: DONHANG_01';
+                input.onfocus = () => input.style.borderColor = '#3b82f6';
+                input.onblur = () => input.style.borderColor = '#e5e7eb';
+                
+                const datalist = document.createElement('datalist');
+                datalist.id = 'jobAssignOptionsList';
+                options.forEach(opt => {
+                    const option = document.createElement('option');
+                    option.value = opt;
+                    datalist.appendChild(option);
+                });
+                
+                const btnContainer = document.createElement('div');
+                btnContainer.style.cssText = 'display:flex; justify-content:center; gap:12px;';
+                
+                const btnCancel = document.createElement('button');
+                btnCancel.textContent = 'Hủy bỏ';
+                btnCancel.style.cssText = 'padding:10px 20px; background:#f3f4f6; color:#4b5563; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-size:14px; transition:background 0.2s;';
+                btnCancel.onmouseover = () => btnCancel.style.background = '#e5e7eb';
+                btnCancel.onmouseout = () => btnCancel.style.background = '#f3f4f6';
+                btnCancel.onclick = () => {
+                    modal.remove();
+                    resolve(null);
+                };
+                
+                const btnOk = document.createElement('button');
+                btnOk.textContent = 'Xác nhận';
+                btnOk.style.cssText = 'padding:10px 20px; background:#2563eb; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-size:14px; transition:background 0.2s;';
+                btnOk.onmouseover = () => btnOk.style.background = '#1d4ed8';
+                btnOk.onmouseout = () => btnOk.style.background = '#2563eb';
+                btnOk.onclick = () => {
+                    const val = input.value;
+                    modal.remove();
+                    resolve(val);
+                };
+                
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') btnOk.click();
+                    if (e.key === 'Escape') btnCancel.click();
+                });
+
+                inputWrapper.appendChild(input);
+                inputWrapper.appendChild(datalist);
+                box.appendChild(title);
+                box.appendChild(subTitle);
+                box.appendChild(inputWrapper);
+                btnContainer.appendChild(btnCancel);
+                btnContainer.appendChild(btnOk);
+                box.appendChild(btnContainer);
+                modal.appendChild(box);
+                document.body.appendChild(modal);
+                
+                input.focus();
+            });
+        }
+
         async function bulkAssignJob() {
             const checked = [...document.querySelectorAll('.history-row-checkbox:checked')];
             if (!checked.length) return;
             
-            const donhang = prompt(`Nhập mã đơn hàng muốn gán cho ${checked.length} ứng viên đã chọn:`);
+            const jobSet = new Set();
+            if (typeof currentHistoryData !== 'undefined') {
+                currentHistoryData.forEach(item => {
+                    const donhangStr = (item.don_hang || '').trim();
+                    if (donhangStr) {
+                        const jobs = donhangStr.split(/[,;]+/).map(j => j.trim()).filter(j => j.length > 0);
+                        jobs.forEach(job => jobSet.add(job.toUpperCase()));
+                    }
+                });
+            }
+            const existingJobs = Array.from(jobSet).sort();
+            
+            const donhang = await showJobAssignPrompt(checked.length, existingJobs);
             if (donhang === null) return;
             
             const cleanDonhang = donhang.trim();
