@@ -749,7 +749,6 @@ def api_history():
             ))
             .filter_by(is_deleted=False)
             .order_by(FormHistory.ngay_tao.desc())
-            .limit(100)
             .all()
         )
         vietnam_tz = timezone(timedelta(hours=7))
