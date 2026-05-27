@@ -868,13 +868,28 @@ def api_bulk_assign_job():
         don_hang = str(data.get('don_hang', '')).strip()
         if not ids: return jsonify({'success': False, 'error': 'No IDs provided'}), 400
         
+        import re, unicodedata
         records = FormHistory.query.filter(FormHistory.id.in_([int(i) for i in ids])).all()
         for r in records:
-            r.don_hang = don_hang
+            current_jobs_str = (r.don_hang or "").strip()
+            new_donhang = don_hang
+            
+            if current_jobs_str:
+                current_jobs = [j.strip() for j in re.split(r'[,;]+', current_jobs_str) if j.strip()]
+                target_upper = unicodedata.normalize('NFC', don_hang.upper())
+                already_has = any(unicodedata.normalize('NFC', j.upper()) == target_upper for j in current_jobs)
+                
+                if not already_has:
+                    current_jobs.append(don_hang)
+                    new_donhang = ", ".join(current_jobs)
+                else:
+                    new_donhang = current_jobs_str # giữ nguyên
+                    
+            r.don_hang = new_donhang
             try:
                 if r.data_json:
                     jd = json.loads(r.data_json)
-                    jd['Donhang'] = don_hang
+                    jd['Donhang'] = new_donhang
                     r.data_json = json.dumps(jd, ensure_ascii=False)
             except:
                 pass

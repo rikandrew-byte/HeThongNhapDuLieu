@@ -1390,29 +1390,39 @@ async function loadHistory() {
                 if (result.success) {
                     ids.forEach(id => {
                         const item = currentHistoryData.find(i => i.id === id);
+                        let finalJobStr = cleanDonhang;
                         if (item) {
-                            item.don_hang = cleanDonhang;
+                            let currentJobsStr = (item.don_hang || '').trim();
+                            if (currentJobsStr) {
+                                let currentJobs = currentJobsStr.split(/[,;]+/).map(j => j.trim()).filter(j => j.length > 0);
+                                let targetUpper = cleanDonhang.toUpperCase();
+                                if (!currentJobs.some(j => j.toUpperCase() === targetUpper)) {
+                                    currentJobs.push(cleanDonhang);
+                                }
+                                finalJobStr = currentJobs.join(', ');
+                            }
+                            item.don_hang = finalJobStr;
                         }
                         
                         const row = document.querySelector(`#historyTableBody tr[data-id="${id}"]`);
                         if (row) {
-                            row.setAttribute('data-job', cleanDonhang.toLowerCase());
-                            row.dataset.job = cleanDonhang.toLowerCase();
+                            row.setAttribute('data-job', finalJobStr.toLowerCase());
+                            row.dataset.job = finalJobStr.toLowerCase();
                             
                             const nameCell = row.cells[2];
                             if (nameCell) {
                                 const container = nameCell.querySelector('div');
                                 if (container) {
                                     let jobBadgesHtml = '';
-                                    if (cleanDonhang !== '') {
-                                        const jobs = cleanDonhang.split(/[,;]+/).map(j => j.trim()).filter(j => j.length > 0);
+                                    if (finalJobStr !== '') {
+                                        const jobs = finalJobStr.split(/[,;]+/).map(j => j.trim()).filter(j => j.length > 0);
                                         jobs.forEach(job => {
                                             jobBadgesHtml += `<span style="display:inline-block; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; border-radius:6px; padding:2px 6px; font-size:11px; font-weight:700; margin-left:4px; text-transform:uppercase;">${job}</span>`;
                                         });
                                     } else {
                                         jobBadgesHtml += `<span style="display:inline-block; color:#ef4444; font-size:11px; font-weight:600; margin-left:4px; font-style:italic;">[Chưa ghép đơn]</span>`;
                                     }
-                                    container.innerHTML = `<span style="font-weight:700; color:#1e293b; font-size:14px;">${item.ho_ten}</span> ${jobBadgesHtml}`;
+                                    container.innerHTML = `<span style="font-weight:700; color:#1e293b; font-size:14px;">${item ? item.ho_ten : ''}</span> ${jobBadgesHtml}`;
                                 }
                             }
                         }
