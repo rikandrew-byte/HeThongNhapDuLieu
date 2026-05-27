@@ -1505,49 +1505,70 @@ def api_bulk_print():
         records = FormHistory.query.filter(FormHistory.id.in_([int(i) for i in ids])).all()
         if not records: return jsonify({'success': False, 'error': 'No records found'}), 404
         
-        # Render all individual HTMLs
-        htmls = []
-        for r in records:
+        # Sắp xếp đúng theo thứ tự ID được gửi lên từ Frontend
+        records_dict = {r.id: r for r in records}
+        sorted_records = [records_dict[int(i)] for i in ids if int(i) in records_dict]
+        if not sorted_records: return jsonify({'success': False, 'error': 'No valid records'}), 404
+
+        from flask import stream_with_context
+        
+        def generate_bulk_stream():
+            # Bước 1: Render file hồ sơ gốc (để lấy phần <head> và các CSS, JS toàn cục)
+            r0 = sorted_records[0]
             try:
-                form_data = json.loads(r.data_json)
-                htmls.append(generate_html_resume(form_data))
-            except: pass
+                form_data = json.loads(r0.data_json)
+                base_html = generate_html_resume(form_data)
+            except Exception as e:
+                yield f"<h1>Lỗi tạo trang đầu tiên: {str(e)}</h1>"
+                return
+                
+            base_html = base_html.replace('page-break-after: avoid !important;', 'page-break-after: always !important;')
             
-        if not htmls: return jsonify({'success': False, 'error': 'Failed to render records'}), 500
-        
-        base_html = htmls[0]
-        base_html = base_html.replace('page-break-after: avoid !important;', 'page-break-after: always !important;')
-        
-        pages_to_append = []
-        for html in htmls[1:]:
-            # Tìm linh hoạt hơn: class có thể có space thừa hoặc thêm class "has-docs"
-            import re as _re
-            match = _re.search(r'<div[^>]*class="a4-page[^"]*notranslate[^"]*"', html)
-            if match:
-                start_idx = match.start()
-                # Tìm điểm kết thúc: trước script tag
-                end_idx = html.find('<script id="fct-raw-data"', start_idx)
-                if end_idx == -1:
-                    end_idx = html.find('<script>(function()', start_idx)
-                if end_idx == -1:
-                    end_idx = html.find('<script>(function(){', start_idx)
-                if end_idx != -1:
-                    pages_to_append.append(html[start_idx:end_idx])
-        
-        # Insert into base_html
-        insert_idx = base_html.find('<script id="fct-raw-data"')
-        if insert_idx == -1:
-            insert_idx = base_html.find('<script>(function()')
-        if insert_idx == -1:
-            insert_idx = base_html.find('<script>(function(){')
+            # Tìm vị trí chèn các file tiếp theo (ngay trước thẻ <script> cuối cùng)
+            insert_idx = base_html.find('<script id="fct-raw-data"')
+            if insert_idx == -1:
+                insert_idx = base_html.find('<script>(function()')
+            if insert_idx == -1:
+                insert_idx = base_html.find('<script>(function(){')
+            if insert_idx == -1:
+                # Fallback: chèn trước body
+                insert_idx = base_html.rfind('</body>')
+                
+            if insert_idx != -1:
+                # Gửi ngay phần đầu của trang (từ <!DOCTYPE> đến trước script)
+                yield base_html[:insert_idx]
+            else:
+                yield base_html
+                return
+                
+            # Bước 2: Streaming từng file hồ sơ tiếp theo mà không lưu toàn bộ vào RAM
+            for r in sorted_records[1:]:
+                try:
+                    form_data = json.loads(r.data_json)
+                    html = generate_html_resume(form_data)
+                    
+                    # Cắt lấy nguyên cụm thẻ <div class="a4-page ...">
+                    start_idx = html.find('<div class="a4-page')
+                    if start_idx != -1:
+                        end_idx = html.find('<script id="fct-raw-data"', start_idx)
+                        if end_idx == -1: end_idx = html.find('<script>(function()', start_idx)
+                        if end_idx == -1: end_idx = html.find('<script>(function(){', start_idx)
+                        if end_idx == -1: end_idx = html.rfind('</body>')
+                            
+                        if end_idx != -1:
+                            # Stream phần thân của resume
+                            yield html[start_idx:end_idx]
+                except Exception as e:
+                    print(f"Error rendering record {r.id} in bulk print:", e)
+                    pass
             
-        if insert_idx != -1:
-            final_html = base_html[:insert_idx] + ''.join(pages_to_append) + base_html[insert_idx:]
-        else:
-            final_html = base_html
+            # Bước 3: Đóng trang với các thẻ script còn lại của trang gốc
+            yield base_html[insert_idx:]
             
-        return Response(final_html, mimetype="text/html", headers={"Content-Type": "text/html; charset=utf-8"})
+        # Trả về Response theo dạng stream để tránh Over-Memory Limit và Timeout
+        return Response(stream_with_context(generate_bulk_stream()), mimetype="text/html", headers={"Content-Type": "text/html; charset=utf-8"})
     except Exception as e:
+        print(traceback.format_exc())
         return jsonify({'success': False, 'error': str(e)}), 500
 
 # ─── TRÚNG TUYỂN: Toggle trạng thái và gửi sang B ───────────────────
