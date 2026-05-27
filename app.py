@@ -1047,6 +1047,29 @@ def api_export_excel():
         ws = wb.active
         ws.title = "Danh sách ứng viên"
         
+        # 1. Main Title
+        ws.merge_cells("A1:K1")
+        title_cell = ws.cell(row=1, column=1, value="BÁO CÁO TỔNG HỢP DANH SÁCH ỨNG VIÊN - FCT HUMAN RESOURCE")
+        title_cell.font = Font(name="Segoe UI", size=16, bold=True, color="FFFFFF")
+        title_cell.fill = PatternFill(start_color="1E3A8A", end_color="1E3A8A", fill_type="solid")
+        title_cell.alignment = Alignment(horizontal="center", vertical="center")
+        ws.row_dimensions[1].height = 35
+
+        # 2. Subtitle
+        ws.merge_cells("A2:K2")
+        from datetime import datetime
+        export_time_str = datetime.now().strftime("%d/%m/%Y %H:%M")
+        subtitle_cell = ws.cell(row=2, column=1, value=f"Thời gian xuất báo cáo: {export_time_str}   |   Tổng số ứng viên: {len(records)} hồ sơ")
+        subtitle_cell.font = Font(name="Segoe UI", size=11, italic=True, color="1E3A8A")
+        subtitle_cell.fill = PatternFill(start_color="EFF6FF", end_color="EFF6FF", fill_type="solid")
+        subtitle_cell.alignment = Alignment(horizontal="center", vertical="center")
+        ws.row_dimensions[2].height = 25
+
+        # Spacer row 3
+        ws.append([""] * 11)
+        ws.row_dimensions[3].height = 10
+
+        # Table headers at Row 4
         headers = ['Mã số', 'Họ tên', 'Ngày sinh', 'Trạng thái', 'Chiều cao (cm)', 'Cân nặng (kg)', 
                    'Trình độ văn hóa', 'Nơi ở', 'Tay nghề', 'Kinh nghiệm công việc', 'Người phụ trách']
         ws.append(headers)
@@ -1137,26 +1160,26 @@ def api_export_excel():
                 pass
                 
         # Premium Styling
-        thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
+        thin_border = Border(left=Side(style='thin', color="CBD5E1"), right=Side(style='thin', color="CBD5E1"), top=Side(style='thin', color="CBD5E1"), bottom=Side(style='thin', color="CBD5E1"))
         header_fill = PatternFill(start_color="1E3A8A", end_color="1E3A8A", fill_type="solid") # FCT Blue
-        header_font = Font(name="Arial", color="FFFFFF", bold=True, size=11)
+        header_font = Font(name="Segoe UI", color="FFFFFF", bold=True, size=11)
         zebra_fill = PatternFill(start_color="F8FAFC", end_color="F8FAFC", fill_type="solid") # Slate-50
-        body_font = Font(name="Arial", size=10)
+        body_font = Font(name="Segoe UI", size=10)
         
-        ws.row_dimensions[1].height = 25 # Header height
-        ws.freeze_panes = 'A2'
+        ws.row_dimensions[4].height = 30 # Header height
+        ws.freeze_panes = 'A5'
         
-        for col_num, cell in enumerate(ws[1], 1):
+        for col_num, cell in enumerate(ws[4], 1):
             cell.fill = header_fill
             cell.font = header_font
-            cell.alignment = Alignment(horizontal="center", vertical="center")
+            cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
             cell.border = thin_border
             
         selected_row_fill = PatternFill(start_color="D1FAE5", end_color="D1FAE5", fill_type="solid") # Xanh lá pastel (Emerald-100)
         
-        for row_idx, row in enumerate(ws.iter_rows(min_row=2, max_row=ws.max_row, min_col=1, max_col=11), 2):
+        for row_idx, row in enumerate(ws.iter_rows(min_row=5, max_row=ws.max_row, min_col=1, max_col=11), 5):
             is_even = (row_idx % 2 == 0)
-            ws.row_dimensions[row_idx].height = 35 # Tăng chiều cao mặc định cho dòng
+            ws.row_dimensions[row_idx].height = 40 # Tăng chiều cao mặc định cho dòng để dễ đọc hơn
             
             is_selected_row = (row[3].value == '🎯 Trúng tuyển')
             row_fill = selected_row_fill if is_selected_row else (zebra_fill if is_even else None)
@@ -1167,28 +1190,21 @@ def api_export_excel():
                 # Column Kinh nghiệm (cột 10) căn trái, các cột khác căn giữa
                 if cell.column == 10:
                     cell.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+                elif cell.column == 9:
+                    cell.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True) # Tay nghề căn trái
                 else:
                     cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+                
                 if row_fill:
                     cell.fill = row_fill
                     
-        # Auto-fit columns
-        for col in ws.columns:
-            max_length = 0
-            column = col[0].column_letter
-            for cell in col:
-                try:
-                    lines = str(cell.value).split('\n')
-                    for line in lines:
-                        if len(line) > max_length:
-                            max_length = len(line)
-                except:
-                    pass
-            adjusted_width = min((max_length + 3), 60) # Max 60, thêm padding
-            ws.column_dimensions[column].width = adjusted_width
+        # Fixed professional column widths
+        col_widths = {'A':15, 'B':26, 'C':15, 'D':20, 'E':16, 'F':16, 'G':20, 'H':20, 'I':32, 'J':55, 'K':22}
+        for col_let, width in col_widths.items():
+            ws.column_dimensions[col_let].width = width
             
         # Thêm AutoFilter
-        ws.auto_filter.ref = ws.dimensions
+        ws.auto_filter.ref = f"A4:K{ws.max_row}"
             
         # Thêm Sheet Thống Kê
         ws_stat = wb.create_sheet(title="Thống Kê")
