@@ -2105,6 +2105,8 @@ async function loadHistory() {
                     // Điền dữ liệu vào form
                     for (const key in data) {
                         if (key.startsWith('__')) continue; // bỏ qua các key nội bộ
+                        if (key === 'Donhang') continue; // KHÔNG nạp lại đơn hàng cũ của ứng viên
+                        
                         const elements = document.getElementsByName(key);
                         if (elements.length > 0) {
                             const el = elements[0];
