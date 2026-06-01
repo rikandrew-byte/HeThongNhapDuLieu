@@ -1151,7 +1151,7 @@ async function loadHistory() {
         }
 
         // Hàm toggle trúng tuyển
-        async function toggleSelected(id, currentState, btn, isFromPassedTab = false) {
+        async function toggleSelected(id, currentState, btn, isFromPassedTab = false, targetJobToRemove = '') {
             const newState = !currentState;
             let don_hang = '';
             
@@ -1176,7 +1176,12 @@ async function loadHistory() {
                 don_hang = selectedJob.trim();
             } else {
                 // Bỏ trúng tuyển
-                if (!confirm(`Bạn có chắc muốn bỏ trúng tuyển ứng viên này?`)) return;
+                if (isFromPassedTab && targetJobToRemove) {
+                    if (!confirm(`Bạn có chắc muốn xóa ứng viên này khỏi đơn hàng "${targetJobToRemove}"?`)) return;
+                    don_hang = targetJobToRemove.trim();
+                } else {
+                    if (!confirm(`Bạn có chắc muốn bỏ trúng tuyển ứng viên này hoàn toàn?`)) return;
+                }
             }
             
             if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
@@ -1354,7 +1359,7 @@ async function loadHistory() {
                         </div>
                         <div style="display: flex; gap: 8px;">
                             <a href="/cv/${item.ma_so === 'CHO_DUYET' ? `${item.id}/` : ''}${item.ma_so}${item.ho_ten ? '_' + sanitizeSlug(item.ho_ten) : ''}" target="_blank" style="padding: 6px 12px; font-size: 11px; font-weight: 700; background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; border-radius: 6px; text-decoration: none; cursor: pointer;">🖨️ Xem/In</a>
-                            <button onclick="toggleSelected(${item.id}, true, this, true)" style="padding: 6px 12px; font-size: 11px; font-weight: 700; background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; border-radius: 6px; cursor: pointer;">❌ Bỏ trúng tuyển</button>
+                            <button onclick="toggleSelected(${item.id}, true, this, true, '${jobName.replace(/'/g, "\\'")}')" style="padding: 6px 12px; font-size: 11px; font-weight: 700; background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; border-radius: 6px; cursor: pointer;">❌ Bỏ trúng tuyển</button>
                         </div>
                     `;
                     list.appendChild(row);

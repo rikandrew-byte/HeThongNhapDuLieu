@@ -1763,7 +1763,6 @@ def api_toggle_selected(record_id):
         # Toggle trạng thái
         new_state = not record.is_selected
         
-        # Nếu bật trúng tuyển và có truyền lên tên đơn hàng
         if new_state and new_donhang:
             import re, unicodedata
             current_jobs_str = (record.don_hang or "").strip()
@@ -1781,19 +1780,45 @@ def api_toggle_selected(record_id):
                     final_donhang = current_jobs_str
             
             record.don_hang = final_donhang
-            try:
-                if record.data_json:
-                    jd = json.loads(record.data_json)
-                    jd['Donhang'] = final_donhang
-                    record.data_json = json.dumps(jd, ensure_ascii=False)
-            except:
-                pass
+            record.is_selected = True
+            
+        elif not new_state and new_donhang:
+            import re, unicodedata
+            current_jobs_str = (record.don_hang or "").strip()
+            if current_jobs_str:
+                current_jobs = [j.strip() for j in re.split(r'[,;]+', current_jobs_str) if j.strip()]
+                target_upper = unicodedata.normalize('NFC', new_donhang.upper())
                 
-        record.is_selected = new_state
+                new_jobs = []
+                for j in current_jobs:
+                    if unicodedata.normalize('NFC', j.upper()) != target_upper:
+                        new_jobs.append(j)
+                        
+                final_donhang = ", ".join(new_jobs)
+                record.don_hang = final_donhang
+                
+                if new_jobs:
+                    record.is_selected = True # Vẫn trúng tuyển đơn khác
+                else:
+                    record.is_selected = False
+            else:
+                record.is_selected = False
+                
+        elif not new_state and not new_donhang:
+            record.is_selected = False
+
+        try:
+            if record.data_json:
+                jd = json.loads(record.data_json)
+                jd['Donhang'] = record.don_hang
+                record.data_json = json.dumps(jd, ensure_ascii=False)
+        except:
+            pass
+
         db.session.commit()
         
         # Nếu trúng tuyển (is_selected = True), gửi dữ liệu sang B
-        if record.is_selected:
+        if record.is_selected and new_state: # Chỉ gửi khi MỚI bật trúng tuyển
             try:
                 form_data = json.loads(record.data_json) if record.data_json else {}
                 
@@ -1843,6 +1868,7 @@ def api_toggle_selected(record_id):
         return jsonify({
             'success': True,
             'is_selected': record.is_selected,
+            'don_hang': record.don_hang,
             'message': 'Đã trúng tuyển' if record.is_selected else 'Đã bỏ trúng tuyển'
         })
     except Exception as e:
