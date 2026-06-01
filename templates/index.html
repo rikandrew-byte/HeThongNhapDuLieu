@@ -1377,6 +1377,8 @@ async function loadHistory() {
             
             const jobMap = {};
             currentHistoryData.forEach(item => {
+                if (item.is_selected) return; // Không hiển thị người đã trúng tuyển ở tab Tổng hợp đơn hàng
+                
                 const donhangStr = (item.don_hang || '').trim();
                 if (donhangStr) {
                     const jobs = donhangStr.split(/[,;]+/).map(j => j.trim()).filter(j => j.length > 0);
