@@ -93,6 +93,40 @@ class Employee(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
 
+def normalize_npt(f48_raw):
+    f48 = str(f48_raw or '').strip()
+    if not f48: return ""
+    if '-' in f48:
+        parts = f48.split('-', 1)
+        emp = parts[0].strip()
+        partner = parts[1].strip().title() if parts[1].strip() else ""
+    else:
+        parts = [p.strip() for p in f48.split()]
+        if len(parts) >= 2:
+            emp = " ".join(parts[:-1])
+            partner = parts[-1].title()
+        else:
+            emp = f48
+            partner = ""
+            
+    if emp.lower() == 'javiko' and not partner:
+        emp, partner = 'Vũ', 'Javiko'
+    elif partner.lower() == 'javiko' and not emp:
+        emp, partner = 'Vũ', 'Javiko'
+    elif (emp + partner).lower() == 'javiko':
+        emp, partner = 'Vũ', 'Javiko'
+        
+    if emp.lower() in ('vũ', 'vu'):
+        emp = 'AT'
+        
+    if emp and partner:
+        return f"{emp} - {partner}"
+    elif emp:
+        return emp
+    elif partner:
+        return partner
+    return ""
+
 with app.app_context():
     try:
         db.create_all()
@@ -173,39 +207,7 @@ with app.app_context():
     except Exception as e:
         print(f"❌ Database initialization error: {e}")
 
-def normalize_npt(f48_raw):
-    f48 = str(f48_raw or '').strip()
-    if not f48: return ""
-    if '-' in f48:
-        parts = f48.split('-', 1)
-        emp = parts[0].strip()
-        partner = parts[1].strip().title() if parts[1].strip() else ""
-    else:
-        parts = [p.strip() for p in f48.split()]
-        if len(parts) >= 2:
-            emp = " ".join(parts[:-1])
-            partner = parts[-1].title()
-        else:
-            emp = f48
-            partner = ""
-            
-    if emp.lower() == 'javiko' and not partner:
-        emp, partner = 'Vũ', 'Javiko'
-    elif partner.lower() == 'javiko' and not emp:
-        emp, partner = 'Vũ', 'Javiko'
-    elif (emp + partner).lower() == 'javiko':
-        emp, partner = 'Vũ', 'Javiko'
-        
-    if emp.lower() in ('vũ', 'vu'):
-        emp = 'AT'
-        
-    if emp and partner:
-        return f"{emp} - {partner}"
-    elif emp:
-        return emp
-    elif partner:
-        return partner
-    return ""
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
