@@ -724,13 +724,16 @@ def api_submit_only():
             record.ho_ten = ho_ten
             
             # Xử lý NPT
-            f48_raw = data.get('f48', '').strip()
-            if not f48_raw:
+            if 'f48_emp' in data or 'f48_partner' in data:
                 emp = data.get('f48_emp', '').strip()
                 partner = data.get('f48_partner', '').strip()
                 if emp and partner: f48_raw = f"{emp} - {partner}"
                 elif emp: f48_raw = emp
                 elif partner: f48_raw = partner
+                else: f48_raw = ""
+                data['f48'] = f48_raw
+            else:
+                f48_raw = data.get('f48', '').strip()
             
             final_npt = normalize_npt(f48_raw)
             data['f48'] = final_npt
@@ -747,13 +750,16 @@ def api_submit_only():
             don_hang = str(data.get('Donhang', '')).strip()
             
             # Xử lý NPT
-            f48_raw = data.get('f48', '').strip()
-            if not f48_raw:
+            if 'f48_emp' in data or 'f48_partner' in data:
                 emp = data.get('f48_emp', '').strip()
                 partner = data.get('f48_partner', '').strip()
                 if emp and partner: f48_raw = f"{emp} - {partner}"
                 elif emp: f48_raw = emp
                 elif partner: f48_raw = partner
+                else: f48_raw = ""
+                data['f48'] = f48_raw
+            else:
+                f48_raw = data.get('f48', '').strip()
                 
             final_npt = normalize_npt(f48_raw)
             data['f48'] = final_npt
