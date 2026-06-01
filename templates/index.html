@@ -2077,8 +2077,8 @@ async function loadHistory() {
                 // NPT Match
                 let nptMatch = true;
                 if (selectedNpt !== 'ALL') {
-                    const empName = nptVal.includes(' - ') ? nptVal.split(' - ')[0] : nptVal;
-                    nptMatch = (empName === selectedNpt);
+                    const empName = nptVal.includes('-') ? nptVal.split('-')[0].trim() : nptVal.trim();
+                    nptMatch = (empName.toLowerCase() === selectedNpt.trim().toLowerCase());
                 }
                 
                 // 4. Sử dụng inline style !important để thắng hoàn toàn mọi CSS responsive
