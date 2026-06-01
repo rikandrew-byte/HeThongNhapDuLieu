@@ -464,8 +464,20 @@
                             class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none">
                     </div>
                     <div class="mt-4">
-                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Người phụ trách</label>
-                        <input type="text" name="f48" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none w-1/2">
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Người phụ trách & Đối tác</label>
+                        <div class="flex gap-4">
+                            <div class="w-1/2">
+                                <label class="block text-[10px] text-slate-500 mb-1">Tên Nhân viên (NPT)</label>
+                                <input type="text" name="f48_emp" list="npt-emp-list" placeholder="Vd: AT, Tâm..." class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none bg-blue-50/30 px-2 rounded-t-md">
+                                <datalist id="npt-emp-list"></datalist>
+                            </div>
+                            <div class="w-1/2">
+                                <label class="block text-[10px] text-slate-500 mb-1">Đối tác / Nguồn</label>
+                                <input type="text" name="f48_partner" list="npt-partner-list" placeholder="Vd: Sơn, Javiko..." class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none bg-blue-50/30 px-2 rounded-t-md">
+                                <datalist id="npt-partner-list"></datalist>
+                            </div>
+                        </div>
+                        <input type="hidden" name="f48">
                     </div>
                 </div>
             </section>
@@ -799,6 +811,35 @@ async function loadHistory() {
                 return;
             }
             
+            // Cập nhật Datalist NPT
+            const emps = new Set();
+            const partners = new Set();
+            result.data.forEach(item => {
+                const npt = item.nguoi_phu_trach;
+                if (npt) {
+                    if (npt.includes(' - ')) {
+                        emps.add(npt.split(' - ')[0]);
+                        partners.add(npt.split(' - ')[1]);
+                    } else {
+                        emps.add(npt);
+                    }
+                }
+            });
+            const empList = document.getElementById('npt-emp-list');
+            if (empList) {
+                empList.innerHTML = Array.from(emps).filter(Boolean).sort().map(e => `<option value="${e}"></option>`).join('');
+            }
+            const partnerList = document.getElementById('npt-partner-list');
+            if (partnerList) {
+                partnerList.innerHTML = Array.from(partners).filter(Boolean).sort().map(p => `<option value="${p}"></option>`).join('');
+            }
+            
+            const nptFilter = document.getElementById('nptFilter');
+            if (nptFilter) {
+                const uniqueNpts = Array.from(new Set(result.data.map(i => i.nguoi_phu_trach).filter(Boolean))).sort();
+                nptFilter.innerHTML = '<option value="ALL">Tất cả NPT</option>' + uniqueNpts.map(n => `<option value="${n}">${n}</option>`).join('');
+            }
+            
             // 3. Quét từng dòng dữ liệu và tạo bảng
             result.data.forEach((item, index) => {
                 const row = document.createElement('tr');
@@ -951,6 +992,22 @@ async function loadHistory() {
             if (donHangEl) {
                 donHangEl.value = data['Donhang'] || item.don_hang || '';
             }
+            
+            // Tách NPT ra 2 ô
+            const f48Val = data['f48'] || item.nguoi_phu_trach || '';
+            const empEl = document.getElementsByName('f48_emp')[0];
+            const partnerEl = document.getElementsByName('f48_partner')[0];
+            if (empEl && partnerEl) {
+                if (f48Val.includes(' - ')) {
+                    const parts = f48Val.split(' - ');
+                    empEl.value = parts[0];
+                    partnerEl.value = parts[1] || '';
+                } else {
+                    empEl.value = f48Val;
+                    partnerEl.value = '';
+                }
+            }
+
             
             // Ảnh: chỉ hiển thị thông báo, KHÔNG đưa base64 vào form để tránh lỗi 413
             // Server sẽ giữ nguyên ảnh cũ trong DB nếu không upload ảnh mới
@@ -1902,6 +1959,9 @@ async function loadHistory() {
             const yearFilter = document.getElementById('yearFilter');
             const selectedYear = yearFilter ? yearFilter.value : 'ALL';
             
+            const nptFilter = document.getElementById('nptFilter');
+            const selectedNpt = nptFilter ? nptFilter.value : 'ALL';
+            
             if (!tbody) return;
             const rows = tbody.getElementsByTagName('tr');
             
@@ -1909,6 +1969,10 @@ async function loadHistory() {
                 const name = (row.getAttribute('data-name') || '').toLowerCase();
                 const maso = (row.getAttribute('data-maso') || '').toUpperCase().trim();
                 const dateStr = row.getAttribute('data-date') || ''; // Cần đảm bảo có data-date
+                
+                const id = parseInt(row.dataset.id);
+                const itemData = currentHistoryData.find(i => i.id === id);
+                const nptVal = itemData && itemData.nguoi_phu_trach ? itemData.nguoi_phu_trach : '';
                 
                 // 1. Kiểm tra prefix mã số
                 let prefixMatch = false;
@@ -1961,6 +2025,8 @@ async function loadHistory() {
             document.getElementById('searchInput').value = '';
             const yearFilter = document.getElementById('yearFilter');
             if (yearFilter) yearFilter.value = 'ALL';
+            const nptFilter = document.getElementById('nptFilter');
+            if (nptFilter) nptFilter.value = 'ALL';
             setFilterPrefix('ALL');
         }
         
@@ -2527,7 +2593,7 @@ async function loadHistory() {
         <!-- Search + Filter (STICKY ON MOBILE) -->
         <div class="notranslate" style="padding:14px 20px; background:#fff; border-bottom:1px solid #e2e8f0; display:flex; flex-direction:column; gap:12px; position:sticky; top:104px; z-index:90; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
             <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-                <div style="position:relative; flex:1; min-width:200px;">
+                <div style="position:relative; flex:1; min-width:180px;">
                     <span style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#94a3b8;">🔍</span>
                     <input type="text" id="searchInput" oninput="filterHistory()"
                         placeholder="Tìm tên, mã số..."
@@ -2535,6 +2601,10 @@ async function loadHistory() {
                 </div>
                 
                 <div style="display:flex; align-items:center; gap:8px;">
+                    <select id="nptFilter" onchange="filterHistory()" style="padding:8px 12px; border:1px solid #e2e8f0; border-radius:10px; font-size:13px; font-family:'Inter',sans-serif; background:#f8fafc; outline:none; color:#334155; font-weight:600; max-width:150px;">
+                        <option value="ALL">Tất cả NPT</option>
+                    </select>
+                    
                     <select id="yearFilter" onchange="filterHistory()" style="padding:8px 12px; border:1px solid #e2e8f0; border-radius:10px; font-size:13px; font-family:'Inter',sans-serif; background:#f8fafc; outline:none; color:#334155; font-weight:600;">
                         <option value="ALL">Tất cả các năm</option>
                         <option value="2027">Năm 2027</option>

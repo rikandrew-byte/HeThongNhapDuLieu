@@ -87,11 +87,12 @@ class FormHistory(db.Model):
     is_selected = db.Column(db.Boolean, default=False)  # Trúng tuyển
     is_deleted = db.Column(db.Boolean, default=False)   # Xóa mềm
     don_hang = db.Column(db.String(255), default='')    # Đơn hàng ứng tuyển (mã đơn)
+    nguoi_phu_trach = db.Column(db.String(100), default='') # Tên Nhân viên - Đối tác
 
 with app.app_context():
     try:
         db.create_all()
-        # Auto migration for is_deleted and don_hang
+        # Auto migration for is_deleted, don_hang, nguoi_phu_trach
         try:
             from sqlalchemy import text, inspect
             inspector = inspect(db.engine)
@@ -109,11 +110,79 @@ with app.app_context():
                 else:
                     db.session.execute(text("ALTER TABLE form_history ADD COLUMN don_hang VARCHAR(255) DEFAULT ''"))
                 db.session.commit()
+            if 'nguoi_phu_trach' not in columns:
+                if 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI']:
+                    db.session.execute(text("ALTER TABLE form_history ADD COLUMN nguoi_phu_trach VARCHAR(100) DEFAULT ''"))
+                else:
+                    db.session.execute(text("ALTER TABLE form_history ADD COLUMN nguoi_phu_trach VARCHAR(100) DEFAULT ''"))
+                db.session.commit()
+                print("Added nguoi_phu_trach column. Running data migration for NPT...")
+                try:
+                    import json
+                    page = 0
+                    per_page = 50
+                    while True:
+                        records = FormHistory.query.order_by(FormHistory.id).limit(per_page).offset(page * per_page).all()
+                        if not records:
+                            break
+                        for r in records:
+                            try:
+                                jd = json.loads(r.data_json) if r.data_json else {}
+                                f48 = (jd.get('f48') or '').strip()
+                                if f48:
+                                    final_npt = normalize_npt(f48)
+                                    if final_npt != f48:
+                                        jd['f48'] = final_npt
+                                    r.nguoi_phu_trach = final_npt
+                                    r.data_json = json.dumps(jd, ensure_ascii=False)
+                            except Exception as parse_ex:
+                                print(f"Error parsing json for record {r.id}: {parse_ex}")
+                        db.session.commit()
+                        page += 1
+                    print("Finished NPT data migration.")
+                except Exception as mig_ex:
+                    print(f"Error during NPT data migration: {mig_ex}")
+                    db.session.rollback()
         except Exception as ex:
             print(f"⚠️ Column migration skipped or failed: {ex}")
             db.session.rollback()
     except Exception as e:
         print(f"❌ Database initialization error: {e}")
+
+def normalize_npt(f48_raw):
+    f48 = str(f48_raw or '').strip()
+    if not f48: return ""
+    if '-' in f48:
+        parts = [p.strip().title() for p in f48.split('-', 1)]
+        emp, partner = parts[0], parts[1]
+    else:
+        parts = [p.strip().title() for p in f48.split()]
+        if len(parts) >= 2:
+            emp = " ".join(parts[:-1])
+            partner = parts[-1]
+        elif len(parts) == 1:
+            emp = parts[0]
+            partner = ""
+        else:
+            emp, partner = "", ""
+            
+    if emp.lower() == 'javiko' and not partner:
+        emp, partner = 'Vũ', 'Javiko'
+    elif partner.lower() == 'javiko' and not emp:
+        emp, partner = 'Vũ', 'Javiko'
+    elif (emp + partner).lower() == 'javiko':
+        emp, partner = 'Vũ', 'Javiko'
+        
+    if emp.lower() in ('vũ', 'vu'):
+        emp = 'AT'
+        
+    if emp and partner:
+        return f"{emp} - {partner}"
+    elif emp:
+        return emp
+    elif partner:
+        return partner
+    return ""
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -629,6 +698,20 @@ def api_submit_only():
                 if key not in data and old_data.get(key): data[key] = old_data[key]
             record.ma_so = ma_so or 'CHO_DUYET'
             record.ho_ten = ho_ten
+            
+            # Xử lý NPT
+            f48_raw = data.get('f48', '').strip()
+            if not f48_raw:
+                emp = data.get('f48_emp', '').strip()
+                partner = data.get('f48_partner', '').strip()
+                if emp and partner: f48_raw = f"{emp} - {partner}"
+                elif emp: f48_raw = emp
+                elif partner: f48_raw = partner
+            
+            final_npt = normalize_npt(f48_raw)
+            data['f48'] = final_npt
+            record.nguoi_phu_trach = final_npt
+
             if 'Donhang' in data:
                 record.don_hang = str(data.get('Donhang', '')).strip()
             else:
@@ -638,10 +721,24 @@ def api_submit_only():
             msg = 'Đã cập nhật.'
         else:
             don_hang = str(data.get('Donhang', '')).strip()
+            
+            # Xử lý NPT
+            f48_raw = data.get('f48', '').strip()
+            if not f48_raw:
+                emp = data.get('f48_emp', '').strip()
+                partner = data.get('f48_partner', '').strip()
+                if emp and partner: f48_raw = f"{emp} - {partner}"
+                elif emp: f48_raw = emp
+                elif partner: f48_raw = partner
+                
+            final_npt = normalize_npt(f48_raw)
+            data['f48'] = final_npt
+            
             record = FormHistory(
                 ma_so=ma_so or 'CHO_DUYET',
                 ho_ten=ho_ten,
                 don_hang=don_hang,
+                nguoi_phu_trach=final_npt,
                 data_json=json.dumps(_prepare_data_for_db(data), ensure_ascii=False)
             )
             db.session.add(record)
@@ -745,7 +842,8 @@ def api_history():
                 FormHistory.ho_ten,
                 FormHistory.ngay_tao,
                 FormHistory.is_selected,
-                FormHistory.don_hang
+                FormHistory.don_hang,
+                FormHistory.nguoi_phu_trach
             ))
             .filter_by(is_deleted=False)
             .order_by(FormHistory.ngay_tao.desc())
@@ -756,6 +854,7 @@ def api_history():
             'id': r.id, 'ma_so': r.ma_so, 'ho_ten': r.ho_ten,
             'don_hang': getattr(r, 'don_hang', '') or '',
             'is_selected': getattr(r, 'is_selected', False),
+            'nguoi_phu_trach': getattr(r, 'nguoi_phu_trach', '') or '',
             'ngay_tao': r.ngay_tao.replace(tzinfo=timezone.utc).astimezone(vietnam_tz).strftime("%d/%m/%Y %H:%M:%S") if r.ngay_tao else ''
         } for r in records]
         return jsonify({'success': True, 'data': data})
