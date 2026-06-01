@@ -1006,6 +1006,17 @@ async function loadHistory() {
             let item = currentHistoryData[index];
             if (!item) return;
 
+            // Show loading overlay
+            let loader = document.getElementById('globalLoader');
+            if (!loader) {
+                loader = document.createElement('div');
+                loader.id = 'globalLoader';
+                loader.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(255,255,255,0.7); z-index:999999; display:flex; flex-direction:column; justify-content:center; align-items:center; backdrop-filter:blur(2px);';
+                loader.innerHTML = '<div style="width:40px; height:40px; border:4px solid #e2e8f0; border-top:4px solid #2563eb; border-radius:50%; animation:spin 1s linear infinite;"></div><div style="margin-top:12px; font-weight:700; color:#1e293b; font-family:\'Inter\',sans-serif;">Đang tải hồ sơ...</div><style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>';
+                document.body.appendChild(loader);
+            }
+            loader.style.display = 'flex';
+
             // Nếu dữ liệu JSON chưa được tải (Lazy Loading), hãy tải ngay bây giờ
             if (!item.data_json) {
                 try {
@@ -1015,13 +1026,16 @@ async function loadHistory() {
                         item.data_json = result.data_json;
                     } else {
                         alert("Không thể tải chi tiết hồ sơ!");
+                        loader.style.display = 'none';
                         return;
                     }
                 } catch (e) {
                     alert("Lỗi kết nối khi tải chi tiết!");
+                    loader.style.display = 'none';
                     return;
                 }
             }
+            loader.style.display = 'none';
             
             const data = item.data_json;
             const form = document.getElementById('resumeForm');
