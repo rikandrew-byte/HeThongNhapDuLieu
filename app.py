@@ -89,6 +89,10 @@ class FormHistory(db.Model):
     don_hang = db.Column(db.String(255), default='')    # Đơn hàng ứng tuyển (mã đơn)
     nguoi_phu_trach = db.Column(db.String(100), default='') # Tên Nhân viên - Đối tác
 
+class Employee(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+
 with app.app_context():
     try:
         db.create_all()
@@ -145,6 +149,26 @@ with app.app_context():
                     db.session.rollback()
         except Exception as ex:
             print(f"⚠️ Column migration skipped or failed: {ex}")
+            db.session.rollback()
+
+        # Ensure Employee table has initial data from FormHistory if empty
+        try:
+            if Employee.query.count() == 0:
+                print("Populating initial Employee list from FormHistory...")
+                unique_npts = db.session.query(FormHistory.nguoi_phu_trach).filter(FormHistory.nguoi_phu_trach != '').distinct().all()
+                emps = set()
+                for row in unique_npts:
+                    val = row[0]
+                    if not val: continue
+                    emp_name = val.split(' - ')[0] if ' - ' in val else val
+                    emps.add(emp_name.strip())
+                for emp_name in sorted(emps):
+                    if emp_name:
+                        db.session.add(Employee(name=emp_name))
+                db.session.commit()
+                print(f"Added {len(emps)} employees.")
+        except Exception as emp_ex:
+            print(f"⚠️ Employee list init failed: {emp_ex}")
             db.session.rollback()
     except Exception as e:
         print(f"❌ Database initialization error: {e}")
@@ -827,6 +851,34 @@ def secure_web_view(slug):
         traceback.print_exc()
         return str(e), 500
 
+
+@app.route('/api/employees', methods=['GET', 'POST', 'DELETE'])
+@auth_required
+def handle_employees():
+    if request.method == 'GET':
+        emps = Employee.query.order_by(Employee.name).all()
+        return jsonify({'success': True, 'data': [e.name for e in emps]})
+    elif request.method == 'POST':
+        data = request.json or {}
+        name = (data.get('name') or '').strip()
+        if not name:
+            return jsonify({'success': False, 'message': 'Tên không hợp lệ'})
+        existing = Employee.query.filter_by(name=name).first()
+        if not existing:
+            db.session.add(Employee(name=name))
+            db.session.commit()
+        return jsonify({'success': True, 'message': 'Đã thêm nhân viên'})
+    elif request.method == 'DELETE':
+        data = request.json or {}
+        name = (data.get('name') or '').strip()
+        if not name:
+            return jsonify({'success': False, 'message': 'Tên không hợp lệ'})
+        emp = Employee.query.filter_by(name=name).first()
+        if emp:
+            db.session.delete(emp)
+            db.session.commit()
+            return jsonify({'success': True, 'message': 'Đã xóa nhân viên'})
+        return jsonify({'success': False, 'message': 'Không tìm thấy nhân viên'})
 
 @app.route('/api/history', methods=['GET'])
 @auth_required

@@ -773,6 +773,36 @@
         // Data lịch sử lưu tạm để load vào form khi xử lý
         let currentHistoryData = [];
 
+        function loadEmployees() {
+            fetch('/api/employees', { credentials: 'same-origin' })
+                .then(r => r.json())
+                .then(result => {
+                    if (result.success) {
+                        const emps = result.data;
+                        const empList = document.getElementById('npt-emp-select');
+                        if (empList) {
+                            const currentValue = empList.value || sessionStorage.getItem('f48_emp_draft');
+                            // Add current draft if not in emps to avoid losing it
+                            if (currentValue && currentValue !== '__NEW__' && currentValue !== '__DELETE__' && !emps.includes(currentValue)) {
+                                emps.push(currentValue);
+                            }
+                            
+                            empList.innerHTML = '<option value="">-- Chọn nhân viên --</option>' + 
+                                                emps.sort().map(e => `<option value="${e}">${e}</option>`).join('') +
+                                                '<option value="__NEW__" class="font-bold text-blue-600">➕ Thêm nhân viên mới...</option>' +
+                                                '<option value="__DELETE__" class="font-bold text-red-600">❌ Quản lý / Xóa nhân viên...</option>';
+                            if (currentValue && currentValue !== '__NEW__' && currentValue !== '__DELETE__') {
+                                empList.value = currentValue;
+                            }
+                        }
+                        const nptFilter = document.getElementById('nptFilter');
+                        if (nptFilter) {
+                            nptFilter.innerHTML = '<option value="ALL">NPT</option>' + emps.sort().map(n => `<option value="${n}">${n}</option>`).join('');
+                        }
+                    }
+                }).catch(e => console.error("Error loading employees:", e));
+        }
+
         // Hàm gọi API lấy lịch sử và hiển thị lên bảng
 async function loadHistory() {
     try {
@@ -813,42 +843,17 @@ async function loadHistory() {
                 return;
             }
             
-            // Cập nhật Datalist NPT
-            const emps = new Set();
+            // Cập nhật Datalist Đối tác
             const partners = new Set();
             result.data.forEach(item => {
                 const npt = item.nguoi_phu_trach;
-                if (npt) {
-                    if (npt.includes(' - ')) {
-                        emps.add(npt.split(' - ')[0]);
-                        partners.add(npt.split(' - ')[1]);
-                    } else {
-                        emps.add(npt);
-                    }
+                if (npt && npt.includes(' - ')) {
+                    partners.add(npt.split(' - ')[1]);
                 }
             });
-            const empList = document.getElementById('npt-emp-select'); // Changed from datalist to select
-            if (empList) {
-                const currentValue = empList.value || sessionStorage.getItem('f48_emp_draft');
-                if (currentValue && currentValue !== '__NEW__') {
-                    emps.add(currentValue);
-                }
-                empList.innerHTML = '<option value="">-- Chọn nhân viên --</option>' + 
-                                    Array.from(emps).filter(Boolean).sort().map(e => `<option value="${e}">${e}</option>`).join('') +
-                                    '<option value="__NEW__" class="font-bold text-blue-600">➕ Thêm nhân viên mới...</option>';
-                if (currentValue && currentValue !== '__NEW__') {
-                    empList.value = currentValue;
-                }
-            }
             const partnerList = document.getElementById('npt-partner-list');
             if (partnerList) {
                 partnerList.innerHTML = Array.from(partners).filter(Boolean).sort().map(p => `<option value="${p}"></option>`).join('');
-            }
-            
-            const nptFilter = document.getElementById('nptFilter');
-            if (nptFilter) {
-                const uniqueNpts = Array.from(emps).filter(Boolean).sort();
-                nptFilter.innerHTML = '<option value="ALL">NPT</option>' + uniqueNpts.map(n => `<option value="${n}">${n}</option>`).join('');
             }
             
             // 3. Quét từng dòng dữ liệu và tạo bảng
@@ -948,15 +953,42 @@ async function loadHistory() {
                 const newEmp = prompt("Nhập tên Nhân viên mới:");
                 if (newEmp && newEmp.trim()) {
                     const val = newEmp.trim();
-                    const opt = document.createElement('option');
-                    opt.value = val;
-                    opt.textContent = val;
-                    select.insertBefore(opt, select.lastElementChild);
-                    select.value = val;
-                    sessionStorage.setItem('f48_emp_draft', val);
+                    fetch('/api/employees', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name: val })
+                    }).then(r => r.json()).then(res => {
+                        if(res.success) {
+                            sessionStorage.setItem('f48_emp_draft', val);
+                            loadEmployees();
+                        } else {
+                            alert(res.message);
+                            select.value = sessionStorage.getItem('f48_emp_draft') || '';
+                        }
+                    });
                 } else {
-                    select.value = '';
-                    sessionStorage.removeItem('f48_emp_draft');
+                    select.value = sessionStorage.getItem('f48_emp_draft') || '';
+                }
+            } else if (select.value === '__DELETE__') {
+                const delEmp = prompt("Nhập CHÍNH XÁC tên Nhân viên bạn muốn XÓA khỏi danh mục:");
+                if (delEmp && delEmp.trim()) {
+                    if(confirm(`Bạn có chắc chắn muốn XÓA VĨNH VIỄN nhân viên "${delEmp.trim()}" khỏi danh mục cố định?`)) {
+                        fetch('/api/employees', {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ name: delEmp.trim() })
+                        }).then(r => r.json()).then(res => {
+                            alert(res.message);
+                            if(sessionStorage.getItem('f48_emp_draft') === delEmp.trim()) {
+                                sessionStorage.removeItem('f48_emp_draft');
+                            }
+                            loadEmployees();
+                        });
+                    } else {
+                        select.value = sessionStorage.getItem('f48_emp_draft') || '';
+                    }
+                } else {
+                    select.value = sessionStorage.getItem('f48_emp_draft') || '';
                 }
             } else {
                 if (select.value) {
@@ -2112,37 +2144,8 @@ async function loadHistory() {
             setupMutualExclusion('f03', 'f09'); // Hút thuốc <-> Không hút thuốc
             setupMutualExclusion('f04', 'f10'); // Uống rượu <-> Không uống rượu
 
-            // Nạp danh sách NPT (Nhân viên) cho form nhập liệu ngay khi load trang
-            fetch('/api/history', { credentials: 'same-origin' })
-                .then(r => r.json())
-                .then(result => {
-                    if (result.success) {
-                        const emps = new Set();
-                        result.data.forEach(item => {
-                            const npt = item.nguoi_phu_trach;
-                            if (npt) {
-                                if (npt.includes(' - ')) {
-                                    emps.add(npt.split(' - ')[0]);
-                                } else {
-                                    emps.add(npt);
-                                }
-                            }
-                        });
-                        const empList = document.getElementById('npt-emp-select');
-                        if (empList) {
-                            const currentValue = empList.value || sessionStorage.getItem('f48_emp_draft');
-                            if (currentValue && currentValue !== '__NEW__') {
-                                emps.add(currentValue);
-                            }
-                            empList.innerHTML = '<option value="">-- Chọn nhân viên --</option>' + 
-                                                Array.from(emps).filter(Boolean).sort().map(e => `<option value="${e}">${e}</option>`).join('') +
-                                                '<option value="__NEW__" class="font-bold text-blue-600">➕ Thêm nhân viên mới...</option>';
-                            if (currentValue && currentValue !== '__NEW__') {
-                                empList.value = currentValue;
-                            }
-                        }
-                    }
-                }).catch(e => console.error("Error loading NPTs on boot:", e));
+            // Nạp danh mục NPT cố định ngay khi load trang
+            loadEmployees();
         });
 
         // 🆕 Kéo thả ảnh tài liệu
