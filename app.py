@@ -1595,12 +1595,43 @@ def api_toggle_selected(record_id):
         if not record:
             return jsonify({'success': False, 'error': 'Not found'}), 404
         
+        data = request.get_json() or {}
+        new_donhang = str(data.get('don_hang', '')).strip()
+        
         # Nếu field is_selected chưa tồn tại, set default = False
         if not hasattr(record, 'is_selected') or record.is_selected is None:
             record.is_selected = False
         
         # Toggle trạng thái
-        record.is_selected = not record.is_selected
+        new_state = not record.is_selected
+        
+        # Nếu bật trúng tuyển và có truyền lên tên đơn hàng
+        if new_state and new_donhang:
+            import re, unicodedata
+            current_jobs_str = (record.don_hang or "").strip()
+            final_donhang = new_donhang
+            
+            if current_jobs_str:
+                current_jobs = [j.strip() for j in re.split(r'[,;]+', current_jobs_str) if j.strip()]
+                target_upper = unicodedata.normalize('NFC', new_donhang.upper())
+                already_has = any(unicodedata.normalize('NFC', j.upper()) == target_upper for j in current_jobs)
+                
+                if not already_has:
+                    current_jobs.append(new_donhang)
+                    final_donhang = ", ".join(current_jobs)
+                else:
+                    final_donhang = current_jobs_str
+            
+            record.don_hang = final_donhang
+            try:
+                if record.data_json:
+                    jd = json.loads(record.data_json)
+                    jd['Donhang'] = final_donhang
+                    record.data_json = json.dumps(jd, ensure_ascii=False)
+            except:
+                pass
+                
+        record.is_selected = new_state
         db.session.commit()
         
         # Nếu trúng tuyển (is_selected = True), gửi dữ liệu sang B

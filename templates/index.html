@@ -1000,57 +1000,59 @@ async function loadHistory() {
         }
 
         // Hàm toggle trúng tuyển
-        async function toggleSelected(id, currentState, btn) {
-            const action = currentState ? 'bỏ trúng tuyển' : 'trúng tuyển';
-            if (!confirm(`Bạn có chắc muốn ${action} ứng viên này?`)) return;
+        async function toggleSelected(id, currentState, btn, isFromPassedTab = false) {
+            const newState = !currentState;
+            let don_hang = '';
+            
+            if (newState) {
+                // Bật trúng tuyển: Hỏi đơn hàng
+                const item = currentHistoryData.find(i => i.id === id);
+                let currentJobsStr = item ? (item.don_hang || '') : '';
+                
+                // Thu thập options gợi ý
+                let existingJobs = new Set();
+                currentHistoryData.forEach(d => {
+                    if(d.don_hang) {
+                        d.don_hang.split(/[,;]+/).forEach(j => {
+                            const trimmed = j.trim();
+                            if(trimmed) existingJobs.add(trimmed);
+                        });
+                    }
+                });
+                
+                let selectedJob = await showJobAssignPrompt(1, Array.from(existingJobs), currentJobsStr);
+                if (selectedJob === null) return; // Hủy
+                don_hang = selectedJob.trim();
+            } else {
+                // Bỏ trúng tuyển
+                if (!confirm(`Bạn có chắc muốn bỏ trúng tuyển ứng viên này?`)) return;
+            }
             
             if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
             
-            // Optimistic update: cập nhật UI ngay lập tức
-            const newState = !currentState;
-            const newText = newState ? '🎯 Trúng tuyển' : '📝 Gửi form';
-            const newBg = newState ? '#dbeafe' : '#f3f4f6';
-            const newColor = newState ? '#0369a1' : '#6b7280';
-            const newBorder = newState ? '#0284c7' : '#d1d5db';
-            
-            if (btn) {
-                btn.textContent = newText;
-                btn.style.background = newBg;
-                btn.style.color = newColor;
-                btn.style.borderColor = newBorder;
-                btn.disabled = false;
-            }
-            
-            // Gọi API async (không chờ)
             try {
                 const response = await fetch(`/api/history/${id}/toggle-selected`, { 
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    credentials: 'same-origin'
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ don_hang: don_hang })
                 });
                 const result = await response.json();
                 if (result.success) {
-                    // Chỉ show message, không reload
-                    console.log(result.message);
-                } else {
-                    // Nếu lỗi, revert UI
-                    alert("Lỗi: " + result.error);
-                    if (btn) { 
-                        btn.textContent = currentState ? '🎯 Trúng tuyển' : '📝 Gửi form';
-                        btn.style.background = currentState ? '#dbeafe' : '#f3f4f6';
-                        btn.style.color = currentState ? '#0369a1' : '#6b7280';
-                        btn.style.borderColor = currentState ? '#0284c7' : '#d1d5db';
+                    // Update dữ liệu và render lại toàn bộ để đồng bộ giữa các tab
+                    const item = currentHistoryData.find(i => i.id === id);
+                    if (item) {
+                        item.is_selected = newState;
+                        // Reload lại lịch sử từ backend để có tên đơn hàng chính xác nhất
+                        await loadHistory();
                     }
+                } else {
+                    alert("Lỗi: " + result.error);
+                    if (btn) { btn.disabled = false; btn.textContent = 'Lỗi'; }
                 }
             } catch (error) {
-                // Nếu lỗi kết nối, revert UI
                 console.error("Lỗi kết nối:", error.message);
-                if (btn) { 
-                    btn.textContent = currentState ? '🎯 Trúng tuyển' : '📝 Gửi form';
-                    btn.style.background = currentState ? '#dbeafe' : '#f3f4f6';
-                    btn.style.color = currentState ? '#0369a1' : '#6b7280';
-                    btn.style.borderColor = currentState ? '#0284c7' : '#d1d5db';
-                }
+                if (btn) { btn.disabled = false; btn.textContent = 'Lỗi'; }
             }
         }
 
@@ -1076,39 +1078,50 @@ async function loadHistory() {
         function switchHistoryTab(tabId) {
             currentActiveHistoryTab = tabId;
             const btnCandidates = document.getElementById('tabBtn-candidates');
+            const btnPassed = document.getElementById('tabBtn-passed');
             const btnJobs = document.getElementById('tabBtn-jobs');
+            
             const contentCandidates = document.getElementById('tabContent-candidates');
+            const contentPassed = document.getElementById('tabContent-passed');
             const contentJobs = document.getElementById('tabContent-jobs');
             
+            // Reset tất cả các nút
+            [btnCandidates, btnPassed, btnJobs].forEach(btn => {
+                if(btn) {
+                    btn.style.borderBottom = '3px solid transparent';
+                    btn.style.color = '#64748b';
+                    btn.style.fontWeight = '600';
+                }
+            });
+            
+            // Ẩn tất cả nội dung
+            if (contentCandidates) contentCandidates.style.display = 'none';
+            if (contentPassed) contentPassed.style.display = 'none';
+            if (contentJobs) contentJobs.style.display = 'none';
+            
+            // Hiển thị tab được chọn
+            let activeBtn;
             if (tabId === 'candidates') {
-                if (btnCandidates) {
-                    btnCandidates.style.borderBottom = '3px solid #2563eb';
-                    btnCandidates.style.color = '#2563eb';
-                    btnCandidates.style.fontWeight = '800';
-                }
-                if (btnJobs) {
-                    btnJobs.style.borderBottom = '3px solid transparent';
-                    btnJobs.style.color = '#64748b';
-                    btnJobs.style.fontWeight = '600';
-                }
+                activeBtn = btnCandidates;
                 if (contentCandidates) contentCandidates.style.display = 'block';
-                if (contentJobs) contentJobs.style.display = 'none';
+            } else if (tabId === 'passed') {
+                activeBtn = btnPassed;
+                if (contentPassed) {
+                    contentPassed.style.display = 'block';
+                    renderPassedTable();
+                }
             } else if (tabId === 'jobs') {
-                if (btnJobs) {
-                    btnJobs.style.borderBottom = '3px solid #2563eb';
-                    btnJobs.style.color = '#2563eb';
-                    btnJobs.style.fontWeight = '800';
-                }
-                if (btnCandidates) {
-                    btnCandidates.style.borderBottom = '3px solid transparent';
-                    btnCandidates.style.color = '#64748b';
-                    btnCandidates.style.fontWeight = '600';
-                }
-                if (contentCandidates) contentCandidates.style.display = 'none';
+                activeBtn = btnJobs;
                 if (contentJobs) {
                     contentJobs.style.display = 'block';
                     renderJobSummaryTable();
                 }
+            }
+            
+            if (activeBtn) {
+                activeBtn.style.borderBottom = '3px solid #2563eb';
+                activeBtn.style.color = '#2563eb';
+                activeBtn.style.fontWeight = '800';
             }
         }
 
@@ -1119,6 +1132,86 @@ async function loadHistory() {
             } else {
                 switchHistoryTab(currentActiveHistoryTab === 'jobs' ? 'candidates' : 'jobs');
             }
+        }
+
+        function renderPassedTable() {
+            const container = document.getElementById('passedSummaryContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            // Lọc ra những người trúng tuyển
+            const passedCandidates = currentHistoryData.filter(item => item.is_selected);
+            
+            if (passedCandidates.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding: 20px; color: #666; background:#fff; border-radius:12px; border:1px solid #e2e8f0;">Chưa có ứng viên nào trúng tuyển.</div>';
+                return;
+            }
+            
+            // Nhóm theo đơn hàng
+            const jobMap = {};
+            passedCandidates.forEach(item => {
+                let donHangStr = (item.don_hang || '').trim();
+                let jobs = donHangStr ? donHangStr.split(/[,;]+/).map(j => j.trim()).filter(j => j.length > 0) : ['CHƯA RÕ ĐƠN HÀNG'];
+                
+                if (jobs.length === 0) jobs = ['CHƯA RÕ ĐƠN HÀNG'];
+                
+                jobs.forEach(job => {
+                    const jobUpper = job.toUpperCase();
+                    if (!jobMap[jobUpper]) jobMap[jobUpper] = [];
+                    jobMap[jobUpper].push(item);
+                });
+            });
+            
+            // Render từng nhóm
+            const sortedJobs = Object.keys(jobMap).sort((a, b) => {
+                if (a === 'CHƯA RÕ ĐƠN HÀNG') return 1;
+                if (b === 'CHƯA RÕ ĐƠN HÀNG') return -1;
+                return a.localeCompare(b);
+            });
+            
+            sortedJobs.forEach(jobName => {
+                const candidates = jobMap[jobName];
+                const isUnknown = jobName === 'CHƯA RÕ ĐƠN HÀNG';
+                
+                const card = document.createElement('div');
+                card.style.cssText = `background: #fff; border-radius: 12px; border: 1px solid ${isUnknown ? '#fca5a5' : '#86efac'}; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow: hidden;`;
+                
+                const header = document.createElement('div');
+                header.style.cssText = `background: ${isUnknown ? '#fef2f2' : '#f0fdf4'}; border-bottom: 1px solid ${isUnknown ? '#fecaca' : '#bbf7d0'}; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;`;
+                header.innerHTML = `
+                    <div style="font-weight: 800; color: ${isUnknown ? '#991b1b' : '#166534'}; font-size: 14px; text-transform: uppercase;">
+                        ${isUnknown ? '⚠️' : '🏆'} ĐƠN HÀNG: ${jobName}
+                    </div>
+                    <div style="background: ${isUnknown ? '#f87171' : '#22c55e'}; color: #fff; font-weight: 800; font-size: 12px; padding: 4px 10px; border-radius: 20px;">
+                        ${candidates.length} NGƯỜI
+                    </div>
+                `;
+                card.appendChild(header);
+                
+                const list = document.createElement('div');
+                list.style.padding = '8px 16px';
+                
+                candidates.forEach((item, index) => {
+                    const row = document.createElement('div');
+                    row.style.cssText = `display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed #e2e8f0;`;
+                    if (index === candidates.length - 1) row.style.borderBottom = 'none';
+                    
+                    row.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span style="font-weight: 700; color: #1e293b; font-size: 14px;">${item.ho_ten}</span>
+                            <span style="background: #f1f5f9; color: #475569; font-size: 11px; padding: 2px 6px; border-radius: 4px; border: 1px solid #cbd5e1;">${item.ma_so}</span>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <a href="/cv/${item.ma_so === 'CHO_DUYET' ? `${item.id}/` : ''}${item.ma_so}${item.ho_ten ? '_' + sanitizeSlug(item.ho_ten) : ''}" target="_blank" style="padding: 6px 12px; font-size: 11px; font-weight: 700; background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; border-radius: 6px; text-decoration: none; cursor: pointer;">🖨️ Xem/In</a>
+                            <button onclick="toggleSelected(${item.id}, true, this, true)" style="padding: 6px 12px; font-size: 11px; font-weight: 700; background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; border-radius: 6px; cursor: pointer;">❌ Bỏ trúng tuyển</button>
+                        </div>
+                    `;
+                    list.appendChild(row);
+                });
+                
+                card.appendChild(list);
+                container.appendChild(card);
+            });
         }
 
         function renderJobSummaryTable() {
@@ -2421,6 +2514,9 @@ async function loadHistory() {
         <button type="button" onclick="switchHistoryTab('candidates')" id="tabBtn-candidates" class="history-tab-btn active" style="padding:12px 18px; font-weight:800; border:none; background:none; cursor:pointer; border-bottom:3px solid #2563eb; color:#2563eb; font-size:13px; transition: all 0.2s; font-family:'Inter',sans-serif; display:flex; align-items:center; gap:6px; outline:none;">
             <span>📁</span> Danh sách hồ sơ
         </button>
+        <button type="button" onclick="switchHistoryTab('passed')" id="tabBtn-passed" class="history-tab-btn" style="padding:12px 18px; font-weight:600; border:none; background:none; cursor:pointer; border-bottom:3px solid transparent; color:#64748b; font-size:13px; transition: all 0.2s; font-family:'Inter',sans-serif; display:flex; align-items:center; gap:6px; outline:none;">
+            <span>🏆</span> Danh sách trúng tuyển
+        </button>
         <button type="button" onclick="switchHistoryTab('jobs')" id="tabBtn-jobs" class="history-tab-btn" style="padding:12px 18px; font-weight:600; border:none; background:none; cursor:pointer; border-bottom:3px solid transparent; color:#64748b; font-size:13px; transition: all 0.2s; font-family:'Inter',sans-serif; display:flex; align-items:center; gap:6px; outline:none;">
             <span>💼</span> Tổng hợp đơn hàng
         </button>
@@ -2491,6 +2587,19 @@ async function loadHistory() {
                 <tbody id="historyTableBody"></tbody>
             </table>
             <div id="historyVisibleCount" style="margin-top:10px; font-size:12px; color:#94a3b8; text-align:right;"></div>
+        </div>
+    </div>
+
+    <!-- Tab 1.5: Passed Candidates Content Area -->
+    <div id="tabContent-passed" style="display: none; padding:16px 20px;">
+        <div id="passedSummaryPanel" style="display:block; padding:18px 24px; background:linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-top:1px solid #bbf7d0; border-bottom:2px solid #86efac; animation: fadeIn 0.2s ease-out; box-shadow:inset 0 4px 10px rgba(0,0,0,0.02); margin-bottom:16px;">
+            <div style="font-size:15px; font-weight:850; color:#166534; display:flex; align-items:center; gap:8px;">
+                <span style="font-size:18px;">🏆</span> Danh sách ứng viên trúng tuyển
+            </div>
+            <p style="font-size:13px; color:#15803d; margin-top:4px;">Các ứng viên đã trúng tuyển được phân loại theo từng đơn hàng cụ thể.</p>
+        </div>
+        <div id="passedSummaryContainer" style="display:flex; flex-direction:column; gap:20px;">
+            <!-- Danh sách trúng tuyển sẽ được render vào đây bằng JS -->
         </div>
     </div>
 
