@@ -177,18 +177,17 @@ def normalize_npt(f48_raw):
     f48 = str(f48_raw or '').strip()
     if not f48: return ""
     if '-' in f48:
-        parts = [p.strip().title() for p in f48.split('-', 1)]
-        emp, partner = parts[0], parts[1]
+        parts = f48.split('-', 1)
+        emp = parts[0].strip()
+        partner = parts[1].strip().title() if parts[1].strip() else ""
     else:
-        parts = [p.strip().title() for p in f48.split()]
+        parts = [p.strip() for p in f48.split()]
         if len(parts) >= 2:
             emp = " ".join(parts[:-1])
-            partner = parts[-1]
-        elif len(parts) == 1:
-            emp = parts[0]
-            partner = ""
+            partner = parts[-1].title()
         else:
-            emp, partner = "", ""
+            emp = f48
+            partner = ""
             
     if emp.lower() == 'javiko' and not partner:
         emp, partner = 'Vũ', 'Javiko'
