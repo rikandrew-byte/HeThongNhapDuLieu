@@ -468,8 +468,10 @@
                         <div class="flex gap-4">
                             <div class="w-1/2">
                                 <label class="block text-[10px] text-slate-500 mb-1">Tên Nhân viên (NPT)</label>
-                                <input type="text" name="f48_emp" list="npt-emp-list" placeholder="Vd: AT, Tâm..." class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none bg-blue-50/30 px-2 rounded-t-md">
-                                <datalist id="npt-emp-list"></datalist>
+                                <select name="f48_emp" id="npt-emp-select" class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none bg-blue-50/30 px-2 rounded-t-md" onchange="handleEmpSelectChange(this)">
+                                    <option value="">-- Chọn nhân viên --</option>
+                                    <option value="__NEW__" class="font-bold text-blue-600">➕ Thêm nhân viên mới...</option>
+                                </select>
                             </div>
                             <div class="w-1/2">
                                 <label class="block text-[10px] text-slate-500 mb-1">Đối tác / Nguồn</label>
@@ -825,9 +827,11 @@ async function loadHistory() {
                     }
                 }
             });
-            const empList = document.getElementById('npt-emp-list');
+            const empList = document.getElementById('npt-emp-select'); // Changed from datalist to select
             if (empList) {
-                empList.innerHTML = Array.from(emps).filter(Boolean).sort().map(e => `<option value="${e}"></option>`).join('');
+                empList.innerHTML = '<option value="">-- Chọn nhân viên --</option>' + 
+                                    Array.from(emps).filter(Boolean).sort().map(e => `<option value="${e}">${e}</option>`).join('') +
+                                    '<option value="__NEW__" class="font-bold text-blue-600">➕ Thêm nhân viên mới...</option>';
             }
             const partnerList = document.getElementById('npt-partner-list');
             if (partnerList) {
@@ -836,7 +840,7 @@ async function loadHistory() {
             
             const nptFilter = document.getElementById('nptFilter');
             if (nptFilter) {
-                const uniqueNpts = Array.from(new Set(result.data.map(i => i.nguoi_phu_trach).filter(Boolean))).sort();
+                const uniqueNpts = Array.from(emps).filter(Boolean).sort();
                 nptFilter.innerHTML = '<option value="ALL">Tất cả NPT</option>' + uniqueNpts.map(n => `<option value="${n}">${n}</option>`).join('');
             }
             
@@ -931,6 +935,22 @@ async function loadHistory() {
     }
 }
 
+        function handleEmpSelectChange(select) {
+            if (select.value === '__NEW__') {
+                const newEmp = prompt("Nhập tên Nhân viên mới:");
+                if (newEmp && newEmp.trim()) {
+                    const val = newEmp.trim();
+                    const opt = document.createElement('option');
+                    opt.value = val;
+                    opt.textContent = val;
+                    select.insertBefore(opt, select.lastElementChild);
+                    select.value = val;
+                } else {
+                    select.value = '';
+                }
+            }
+        }
+
         async function restoreData(index) {
             let item = currentHistoryData[index];
             if (!item) return;
@@ -998,14 +1018,23 @@ async function loadHistory() {
             const empEl = document.getElementsByName('f48_emp')[0];
             const partnerEl = document.getElementsByName('f48_partner')[0];
             if (empEl && partnerEl) {
+                let empName = f48Val;
+                let partnerName = '';
                 if (f48Val.includes(' - ')) {
                     const parts = f48Val.split(' - ');
-                    empEl.value = parts[0];
-                    partnerEl.value = parts[1] || '';
-                } else {
-                    empEl.value = f48Val;
-                    partnerEl.value = '';
+                    empName = parts[0];
+                    partnerName = parts[1] || '';
                 }
+                
+                // Add option if it doesn't exist
+                if (empName && !Array.from(empEl.options).some(opt => opt.value === empName)) {
+                    const opt = document.createElement('option');
+                    opt.value = empName;
+                    opt.textContent = empName;
+                    empEl.insertBefore(opt, empEl.lastElementChild);
+                }
+                empEl.value = empName;
+                partnerEl.value = partnerName;
             }
 
             
@@ -1994,8 +2023,15 @@ async function loadHistory() {
                     yearMatch = dateStr.includes(selectedYear);
                 }
                 
+                // NPT Match
+                let nptMatch = true;
+                if (selectedNpt !== 'ALL') {
+                    const empName = nptVal.includes(' - ') ? nptVal.split(' - ')[0] : nptVal;
+                    nptMatch = (empName === selectedNpt);
+                }
+                
                 // 4. Sử dụng inline style !important để thắng hoàn toàn mọi CSS responsive
-                if (prefixMatch && searchMatch && yearMatch) {
+                if (prefixMatch && searchMatch && yearMatch && nptMatch) {
                     row.style.display = ''; // Khôi phục hiển thị bình thường
                 } else {
                     row.style.setProperty('display', 'none', 'important'); // Ép buộc ẩn
