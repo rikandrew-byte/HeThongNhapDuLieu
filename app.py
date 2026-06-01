@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 from urllib.parse import quote
 from unicodedata import normalize
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func, text, inspect
 from flask_basicauth import BasicAuth
 from PIL import Image
 from vietnamese_names_dict import get_vietnamese_name_in_chinese
@@ -132,9 +133,8 @@ with app.app_context():
         db.create_all()
         # Auto migration for is_deleted, don_hang, nguoi_phu_trach
         try:
-            from sqlalchemy import text, inspect
             inspector = inspect(db.engine)
-            # Lấy danh sách cột của bảng form_history (có thể viết thường hoặc viết hoa)
+            # Lấy danh sách cột của bảng form_history
             columns = [c['name'].lower() for c in inspector.get_columns('form_history')]
             if 'is_deleted' not in columns:
                 if 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI']:
@@ -471,7 +471,6 @@ def get_base64_image(path, max_size=None, quality=80):
     if not os.path.exists(path): return ""
     try:
         if max_size:
-            from PIL import Image
             img = Image.open(path)
             img.thumbnail((max_size, max_size), Image.LANCZOS)
             if img.mode in ("RGBA", "P"): img = img.convert("RGB")
@@ -655,7 +654,6 @@ def generate_html_resume(form_data: dict, template_name='fct_template_v6.18.html
 def _resize_image_for_db(data_uri: str, max_px: int = 1200, quality: int = 85) -> str:
     if not data_uri or not data_uri.startswith('data:image/'): return data_uri
     try:
-        from PIL import Image
         header, encoded = data_uri.split(',', 1)
         img_bytes = base64.b64decode(encoded)
         img = Image.open(io.BytesIO(img_bytes))
@@ -1026,7 +1024,6 @@ def api_bulk_assign_job():
         don_hang = str(data.get('don_hang', '')).strip()
         if not ids: return jsonify({'success': False, 'error': 'No IDs provided'}), 400
         
-        import re, unicodedata
         records = FormHistory.query.filter(FormHistory.id.in_([int(i) for i in ids])).all()
         for r in records:
             current_jobs_str = (r.don_hang or "").strip()
@@ -1069,10 +1066,6 @@ def api_assign_job_by_maso():
         # Chuẩn hóa danh sách mã số và tên đơn hàng mục tiêu
         clean_masos = [unicodedata.normalize('NFC', str(m).strip().upper()) for m in maso_list if str(m).strip()]
         target_job = unicodedata.normalize('NFC', don_hang.strip().upper())
-        
-        from sqlalchemy import func
-        import re
-        import json
         
         # Nếu Tên đơn hàng trống, ta thực hiện xóa sạch đơn hàng cho các mã số trong list
         if not target_job:
@@ -1154,7 +1147,6 @@ def api_remove_job_from_maso():
         if not ma_so or not job_to_remove:
             return jsonify({'success': False, 'error': 'Missing parameters'}), 400
             
-        from sqlalchemy import func
         records = FormHistory.query.filter(func.upper(FormHistory.ma_so) == ma_so).all()
         updated_count = 0
         
@@ -1163,8 +1155,6 @@ def api_remove_job_from_maso():
             if not donhang_str:
                 continue
             
-            # Split and filter
-            import re
             jobs = [j.strip() for j in re.split(r'[,;]+', donhang_str) if j.strip()]
             new_jobs = [j for j in jobs if unicodedata.normalize('NFC', j.strip().upper()) != job_to_remove]
             
@@ -1208,8 +1198,7 @@ def api_export_excel():
         if ids:
             records = FormHistory.query.filter(FormHistory.id.in_([int(i) for i in ids])).all()
         elif year_val and str(year_val) != 'ALL':
-            from sqlalchemy import extract
-            records = FormHistory.query.filter(extract('year', FormHistory.ngay_tao) == int(year_val)).all()
+            records = FormHistory.query.filter(func.extract('year', FormHistory.ngay_tao) == int(year_val)).all()
         else:
             records = FormHistory.query.all()
             
@@ -1764,7 +1753,6 @@ def api_toggle_selected(record_id):
         new_state = not record.is_selected
         
         if new_state and new_donhang:
-            import re, unicodedata
             current_jobs_str = (record.don_hang or "").strip()
             final_donhang = new_donhang
             
@@ -1783,7 +1771,6 @@ def api_toggle_selected(record_id):
             record.is_selected = True
             
         elif not new_state and new_donhang:
-            import re, unicodedata
             current_jobs_str = (record.don_hang or "").strip()
             if current_jobs_str:
                 current_jobs = [j.strip() for j in re.split(r'[,;]+', current_jobs_str) if j.strip()]

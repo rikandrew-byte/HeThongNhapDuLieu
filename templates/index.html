@@ -873,8 +873,7 @@ async function loadHistory() {
                 row.dataset.id = item.id;
                 row.dataset.date = item.ngay_tao || '';
                 row.dataset.job = (item.don_hang || '').toLowerCase();
-                row.setAttribute('data-date', item.ngay_tao || '');
-                row.setAttribute('data-job', (item.don_hang || '').toLowerCase());
+                row.dataset.npt = (item.nguoi_phu_trach || '').toLowerCase();
                 row.onmouseover = () => { if (!row.dataset.checked) row.style.background = '#f8fafc'; };
                 row.onmouseout  = () => { if (!row.dataset.checked) row.style.background = ''; };
 
@@ -1120,7 +1119,6 @@ async function loadHistory() {
             }
 
             calcAge();
-            document.getElementById('historyModal').style.display = 'none';
         }
 
         // Hàm xử lý xóa lịch sử
@@ -1195,13 +1193,14 @@ async function loadHistory() {
                 });
                 const result = await response.json();
                 if (result.success) {
-                    // Update dữ liệu và render lại toàn bộ để đồng bộ giữa các tab
+                    // Cập nhật local cache từ kết quả API (không cần reload toàn bộ từ network)
                     const item = currentHistoryData.find(i => i.id === id);
                     if (item) {
-                        item.is_selected = newState;
-                        // Reload lại lịch sử từ backend để có tên đơn hàng chính xác nhất
-                        await loadHistory();
+                        item.is_selected = result.is_selected;
+                        if (result.don_hang !== undefined) item.don_hang = result.don_hang;
                     }
+                    // Tải lại để đồng bộ hiển thị các tab
+                    await loadHistory();
                 } else {
                     alert("Lỗi: " + result.error);
                     if (btn) { btn.disabled = false; btn.textContent = 'Lỗi'; }
@@ -1281,14 +1280,6 @@ async function loadHistory() {
             }
         }
 
-        // Tương thích ngược với các nút gọi cũ
-        function toggleJobSummaryPanel(forceState) {
-            if (forceState === false) {
-                switchHistoryTab('candidates');
-            } else {
-                switchHistoryTab(currentActiveHistoryTab === 'jobs' ? 'candidates' : 'jobs');
-            }
-        }
 
         function renderPassedTable() {
             const container = document.getElementById('passedSummaryContainer');
@@ -1524,7 +1515,7 @@ async function loadHistory() {
             }
         }
 
-        function showJobAssignPrompt(count, options) {
+        function showJobAssignPrompt(count, options, prefillValue = '') {
             return new Promise((resolve) => {
                 let oldModal = document.getElementById('jobAssignPromptModal');
                 if (oldModal) oldModal.remove();
@@ -1552,6 +1543,7 @@ async function loadHistory() {
                 input.type = 'text';
                 input.style.cssText = 'width:100%; padding:10px 14px; border:2px solid #e5e7eb; border-radius:8px; font-size:15px; margin-bottom:20px; box-sizing:border-box; outline:none; transition:border-color 0.2s;';
                 input.placeholder = 'VD: DONHANG_01';
+                if (prefillValue) input.value = prefillValue;
                 input.onfocus = () => input.style.borderColor = '#3b82f6';
                 input.onblur = () => input.style.borderColor = '#e5e7eb';
                 
@@ -1690,7 +1682,7 @@ async function loadHistory() {
                     alert('Lỗi: ' + result.error);
                 }
             } catch (e) {
-                console.error(e);
+                console.error('bulkAssignJob error:', e);
                 alert('Lỗi kết nối máy chủ.');
             }
         }
@@ -1743,7 +1735,7 @@ async function loadHistory() {
                     alert('Lỗi: ' + result.error);
                 }
             } catch (e) {
-                console.error(e);
+                console.error('submitQuickJobAssign error:', e);
                 alert('Lỗi kết nối máy chủ.');
             }
         }
@@ -1767,7 +1759,7 @@ async function loadHistory() {
                     alert('Lỗi: ' + result.error);
                 }
             } catch (e) {
-                console.error(e);
+                console.error('deleteJobOrderEntirely error:', e);
                 alert('Lỗi kết nối máy chủ.');
             }
         }
@@ -2069,11 +2061,8 @@ async function loadHistory() {
             Array.from(rows).forEach(row => {
                 const name = (row.getAttribute('data-name') || '').toLowerCase();
                 const maso = (row.getAttribute('data-maso') || '').toUpperCase().trim();
-                const dateStr = row.getAttribute('data-date') || ''; // Cần đảm bảo có data-date
-                
-                const id = parseInt(row.dataset.id);
-                const itemData = currentHistoryData.find(i => i.id === id);
-                const nptVal = itemData && itemData.nguoi_phu_trach ? itemData.nguoi_phu_trach : '';
+                const dateStr = row.getAttribute('data-date') || '';
+                const nptVal = row.getAttribute('data-npt') || '';
                 
                 // 1. Kiểm tra prefix mã số
                 let prefixMatch = false;
@@ -2095,11 +2084,11 @@ async function loadHistory() {
                     yearMatch = dateStr.includes(selectedYear);
                 }
                 
-                // NPT Match
+                // 4. Kiểm tra NPT (dùng data-npt lưu sẵn, không cần find() trên mảng)
                 let nptMatch = true;
                 if (selectedNpt !== 'ALL') {
                     const empName = nptVal.includes('-') ? nptVal.split('-')[0].trim() : nptVal.trim();
-                    nptMatch = (empName.toLowerCase() === selectedNpt.trim().toLowerCase());
+                    nptMatch = (empName === selectedNpt.trim().toLowerCase());
                 }
                 
                 // 4. Sử dụng inline style !important để thắng hoàn toàn mọi CSS responsive
@@ -2172,51 +2161,7 @@ async function loadHistory() {
             loadEmployees();
         });
 
-        // 🆕 Kéo thả ảnh tài liệu
-        const dropzone = document.getElementById('documentDropzone');
-        const fileInput = document.getElementById('documentInput');
-        const preview = document.getElementById('documentPreview');
 
-        if (dropzone && fileInput) {
-            dropzone.addEventListener('click', () => fileInput.click());
-
-            dropzone.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                dropzone.style.borderColor = '#a855f7';
-                dropzone.style.backgroundColor = '#faf5ff';
-            });
-
-            dropzone.addEventListener('dragleave', () => {
-                dropzone.style.borderColor = '#d8b4fe';
-                dropzone.style.backgroundColor = '#faf5ff';
-            });
-
-            dropzone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                fileInput.files = e.dataTransfer.files;
-                displayDocumentPreview();
-            });
-
-            fileInput.addEventListener('change', displayDocumentPreview);
-        }
-
-        function displayDocumentPreview() {
-            if (!preview || !fileInput) return;
-            preview.innerHTML = '';
-            const files = fileInput.files;
-            
-            for (let file of files) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.className = 'w-full h-24 object-cover rounded border border-gray-200 hover:opacity-80 cursor-pointer';
-                    img.onclick = () => window.open(e.target.result, '_blank');
-                    preview.appendChild(img);
-                };
-                reader.readAsDataURL(file);
-            }
-        }
 
         async function handleSubmit(mode = 'html') {
             const form = document.getElementById('resumeForm');
@@ -2227,8 +2172,7 @@ async function loadHistory() {
             const originalText = btnText ? btnText.innerText : "Xem & In";
             if (btnText) btnText.innerText = "ĐANG XỬ LÝ...";
             if (btnUpdateText) btnUpdateText.innerText = "ĐANG XỬ LÝ...";
-            const loadingEl = document.getElementById('loading');
-            if (loadingEl) loadingEl.style.display = 'inline-block';
+            if (loading) loading.style.display = 'inline-block';
 
             const formData = new FormData();
             const plainData = {};
@@ -2245,8 +2189,8 @@ async function loadHistory() {
             // Kiểm tra tối thiểu
             if (!plainData['Hoten']) {
                 alert("Vui lòng nhập Họ tên ứng viên!");
-                btnText.innerText = originalText;
-                loading.classList.add('hidden');
+                if (btnText) btnText.innerText = originalText;
+                if (loading) loading.style.display = 'none';
                 return;
             }
 
@@ -2315,8 +2259,7 @@ async function loadHistory() {
             } finally {
                 if (btnText) btnText.innerText = originalText;
                 if (btnUpdateText) btnUpdateText.innerText = "Cập nhật";
-                const loadingEl = document.getElementById('loading');
-                if (loadingEl) loadingEl.style.display = 'none';
+                if (loading) loading.style.display = 'none';
             }
         }
 
