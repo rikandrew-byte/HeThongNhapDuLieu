@@ -5,45 +5,442 @@
     <meta name="google" content="notranslate">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ Thống Nhập Liệu DAS V3.0</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; } /* Ép toàn bộ web dùng font Inter */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        /* ═══════════════════════════════════════════════════════════
+           FCT HR SYSTEM — PREMIUM DARK-SIDEBAR DESIGN SYSTEM v3.0
+           ═══════════════════════════════════════════════════════════ */
 
-        /* Premium History Modal Styles */
-        .glass-modal {
-            background: rgba(250, 250, 250, 0.98) !important;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.3) !important;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+        /* ── Keyframe Animations ── */
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(24px) scale(0.98); }
+            to   { opacity: 1; transform: translateY(0)   scale(1); }
         }
-        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+        @keyframes sidebarGlow {
+            0%  { opacity: 0.5; }
+            50% { opacity: 1;   }
+            100%{ opacity: 0.5; }
+        }
+        @keyframes spin {
+            0%   { transform: rotate(0deg);   }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ── Base ── */
+        body {
+            font-family: 'Inter', 'Outfit', sans-serif;
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #c7d2fe; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6366f1; }
+
+        /* ── Premium Sidebar ── */
+        .premium-sidebar {
+            background: linear-gradient(160deg, #1e1b4b 0%, #0f172a 55%, #0c1a2e 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .premium-sidebar::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 3px;
+            background: linear-gradient(to bottom, #6366f1 0%, #0ea5e9 100%);
+            z-index: 10;
+            animation: sidebarGlow 4s ease-in-out infinite;
+        }
+        .premium-sidebar::after {
+            content: '';
+            position: absolute;
+            top: -60px; right: -60px;
+            width: 220px; height: 220px;
+            background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .sidebar-logo-text {
+            font-family: 'Outfit', 'Inter', sans-serif;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #fff;
+        }
+        .sidebar-logo-accent { color: #818cf8; }
+        .sidebar-desc {
+            color: #94a3b8;
+            font-size: 13px;
+            line-height: 1.6;
+            font-weight: 400;
+        }
+        .sidebar-version {
+            color: #475569;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+        .sidebar-divider {
+            border: none;
+            border-top: 1px solid rgba(255,255,255,0.07);
+            margin: 0;
+        }
+        .sidebar-crafted {
+            color: #475569;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        .sidebar-author-name {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            color: #94a3b8;
+            font-size: 15px;
+            letter-spacing: 0.01em;
+        }
+
+        /* ── Main Content Area ── */
+        .main-content-area {
+            background: #f1f5f9;
+        }
+
+        /* ── Premium CTA Button (Xem Lịch Sử) ── */
+        .btn-cta-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #0ea5e9 100%);
+            color: #fff;
+            font-family: 'Outfit', 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            padding: 12px 28px;
+            border-radius: 999px;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 20px rgba(99,102,241,0.4), 0 2px 6px rgba(14,165,233,0.25);
+            transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+            letter-spacing: 0.01em;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-cta-primary::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, #818cf8 0%, #38bdf8 100%);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .btn-cta-primary:hover::before { opacity: 1; }
+        .btn-cta-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 28px rgba(99,102,241,0.55), 0 4px 12px rgba(14,165,233,0.35);
+        }
+        .btn-cta-primary:active { transform: translateY(0); }
+        .btn-cta-primary span { position: relative; z-index: 1; }
+
+        /* ── Section Headings ── */
+        .section-heading {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 1.5rem;
+        }
+        .section-heading-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px; height: 30px;
+            background: linear-gradient(135deg, #6366f1, #0ea5e9);
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 13px;
+            border-radius: 8px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(99,102,241,0.35);
+        }
+        .section-heading-text {
+            font-family: 'Outfit', 'Inter', sans-serif;
+            font-size: 17px;
+            font-weight: 700;
+            color: #1e293b;
+            letter-spacing: -0.01em;
+        }
+        .section-heading-bar {
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, rgba(99,102,241,0.2), transparent);
+        }
+
+        /* ── Form Cards ── */
+        .form-card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.04);
+            border: 1px solid rgba(226,232,240,0.8);
+        }
+
+        /* ── Glass Bottom Bar ── */
+        .glass-bottom-bar {
+            background: rgba(15,23,42,0.95) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            border-top: 1px solid rgba(99,102,241,0.25) !important;
+            box-shadow: 0 -4px 24px rgba(0,0,0,0.25) !important;
+        }
+        .btn-bar {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 11px 22px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+            white-space: nowrap;
+        }
+        .btn-bar:hover {
+            transform: translateY(-2px);
+        }
+        .btn-bar:active { transform: translateY(0); }
+        .btn-bar-ghost {
+            background: rgba(255,255,255,0.08);
+            color: #94a3b8;
+            border-color: rgba(255,255,255,0.12);
+        }
+        .btn-bar-ghost:hover {
+            background: rgba(255,255,255,0.14);
+            color: #e2e8f0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .btn-bar-primary {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: #fff;
+            border-color: rgba(99,102,241,0.5);
+            box-shadow: 0 4px 14px rgba(99,102,241,0.4);
+        }
+        .btn-bar-primary:hover {
+            box-shadow: 0 6px 20px rgba(99,102,241,0.6);
+        }
+        .btn-bar-blue {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            color: #fff;
+            border-color: rgba(14,165,233,0.4);
+            box-shadow: 0 4px 14px rgba(14,165,233,0.35);
+        }
+        .btn-bar-blue:hover {
+            box-shadow: 0 6px 20px rgba(14,165,233,0.55);
+        }
+        .btn-bar-danger {
+            background: rgba(239,68,68,0.15);
+            color: #fca5a5;
+            border-color: rgba(239,68,68,0.3);
+        }
+        .btn-bar-danger:hover {
+            background: rgba(239,68,68,0.25);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(239,68,68,0.35);
+        }
+
+        /* ── Premium Modal ── */
+        .glass-modal {
+            background: #fff !important;
+            border: none !important;
+            box-shadow: 0 32px 80px rgba(0,0,0,0.28), 0 8px 24px rgba(0,0,0,0.12) !important;
+            animation: slideInUp 0.3s cubic-bezier(0.4,0,0.2,1);
+        }
+        .modal-header-dark {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border-bottom: 1px solid rgba(99,102,241,0.3);
+            border-radius: 20px 20px 0 0;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .modal-header-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 15px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.01em;
+        }
+        .modal-header-sub {
+            font-size: 10px;
+            color: #64748b;
+        }
+        .modal-header-badge {
+            color: #a5b4fc;
+            font-weight: 700;
+        }
+        .modal-header-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 7px 14px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+            border: 1px solid;
+        }
+        .modal-header-btn:hover { transform: translateY(-1px); }
+        .modal-header-btn-ghost {
+            background: rgba(255,255,255,0.08);
+            color: #94a3b8;
+            border-color: rgba(255,255,255,0.15);
+        }
+        .modal-header-btn-ghost:hover {
+            background: rgba(255,255,255,0.16);
+            color: #e2e8f0;
+        }
+        .modal-header-btn-green {
+            background: rgba(16,185,129,0.15);
+            color: #6ee7b7;
+            border-color: rgba(16,185,129,0.3);
+        }
+        .modal-header-btn-green:hover {
+            background: rgba(16,185,129,0.25);
+            color: #a7f3d0;
+        }
+        .modal-header-btn-red {
+            background: rgba(239,68,68,0.15);
+            color: #fca5a5;
+            border-color: rgba(239,68,68,0.3);
+        }
+        .modal-header-btn-red:hover {
+            background: rgba(239,68,68,0.28);
+            color: #fff;
+        }
+
+        /* ── Tab Bar ── */
+        .modal-tab-bar {
+            display: flex;
+            background: #0f172a;
+            padding: 8px 16px 0;
+            gap: 4px;
+            position: sticky;
+            top: 57px;
+            z-index: 98;
+            border-bottom: 1px solid rgba(99,102,241,0.2);
+        }
+        .modal-tab-btn {
+            padding: 10px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            color: #64748b;
+            font-family: 'Inter', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            outline: none;
+            transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+            border-radius: 8px 8px 0 0;
+            margin-bottom: -1px;
+        }
+        .modal-tab-btn:hover {
+            color: #a5b4fc;
+            background: rgba(99,102,241,0.1);
+        }
+        .modal-tab-btn.active-tab {
+            color: #a5b4fc;
+            border-bottom-color: #6366f1;
+            font-weight: 800;
+            background: rgba(99,102,241,0.08);
+        }
+
+        /* ── Search/Filter Bar ── */
+        .modal-search-bar {
+            padding: 14px 20px;
+            background: #fff;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: sticky;
+            top: 104px;
+            z-index: 90;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+        }
+
+        /* ── History Table ── */
         .history-card-row {
-            transition: all 0.2s ease;
+            transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
             border-bottom: 1px solid #f1f5f9 !important;
         }
         .history-card-row:hover {
-            background: #f8fafc !important;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            background: rgba(99,102,241,0.04) !important;
         }
-        
+
+        /* ── Bulk Bar ── */
+        .modal-bulk-bar {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
+            border-bottom: 1px solid rgba(99,102,241,0.25);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .bulk-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.18s cubic-bezier(0.4,0,0.2,1);
+            white-space: nowrap;
+        }
+        .bulk-btn:hover { transform: translateY(-1px); }
+        .bulk-btn-indigo { background: rgba(99,102,241,0.15); color: #a5b4fc; border-color: rgba(99,102,241,0.3); }
+        .bulk-btn-indigo:hover { background: rgba(99,102,241,0.28); color: #c7d2fe; }
+        .bulk-btn-teal { background: rgba(20,184,166,0.15); color: #5eead4; border-color: rgba(20,184,166,0.3); }
+        .bulk-btn-teal:hover { background: rgba(20,184,166,0.28); color: #99f6e4; }
+        .bulk-btn-green { background: rgba(16,185,129,0.15); color: #6ee7b7; border-color: rgba(16,185,129,0.3); }
+        .bulk-btn-green:hover { background: rgba(16,185,129,0.28); color: #a7f3d0; }
+        .bulk-btn-purple { background: rgba(168,85,247,0.15); color: #d8b4fe; border-color: rgba(168,85,247,0.3); }
+        .bulk-btn-purple:hover { background: rgba(168,85,247,0.28); color: #e9d5ff; }
+        .bulk-btn-red { background: rgba(239,68,68,0.15); color: #fca5a5; border-color: rgba(239,68,68,0.3); }
+        .bulk-btn-red:hover { background: rgba(239,68,68,0.28); color: #fff; }
+        .bulk-btn-ghost { background: rgba(255,255,255,0.06); color: #64748b; border-color: rgba(255,255,255,0.1); }
+        .bulk-btn-ghost:hover { background: rgba(255,255,255,0.12); color: #94a3b8; }
+
+        /* ── Action Buttons in Table ── */
         .badge-maso {
-            background: #eff6ff;
-            color: #2563eb;
+            background: #eef2ff;
+            color: #4f46e5;
             padding: 4px 10px;
             border-radius: 6px;
             font-weight: 800;
             font-size: 12px;
-            border: 1px solid #dbeafe;
+            border: 1px solid #c7d2fe;
             display: inline-block;
         }
-
         .btn-action {
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
@@ -52,38 +449,36 @@
             align-items: center;
             justify-content: center;
             white-space: nowrap;
-            gap: 6px;
-            padding: 8px 16px;
-            border-radius: 10px;
-            font-size: 13px;
+            gap: 5px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 12px;
             border: 1px solid transparent;
+            font-family: 'Inter', sans-serif;
         }
         .btn-approve { background: #dcfce7; color: #16a34a; border-color: #86efac; }
-        .btn-edit { background: #fffbeb; color: #d97706; border-color: #fde68a; }
-        .btn-selected { background: #dbeafe; color: #0369a1; border-color: #0284c7; }
-        .btn-normal { background: #f3f4f6; color: #6b7280; border-color: #d1d5db; }
-        .btn-view { background: #eff6ff; color: #2563eb; border-color: #bfdbfe; text-decoration: none; }
-
-        .btn-copy { background: #f0fdf4; color: #16a34a; border-color: #bbf7d0; }
-        .btn-delete { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
-
+        .btn-edit    { background: #fef3c7; color: #d97706; border-color: #fcd34d; }
+        .btn-selected{ background: #dbeafe; color: #0369a1; border-color: #93c5fd; }
+        .btn-normal  { background: #f1f5f9; color: #64748b; border-color: #cbd5e1; }
+        .btn-view    { background: #eef2ff; color: #4f46e5; border-color: #c7d2fe; text-decoration: none; }
+        .btn-copy    { background: #f0fdfa; color: #0d9488; border-color: #99f6e4; }
+        .btn-delete  { background: #fef2f2; color: #ef4444; border-color: #fecaca; }
         .btn-action:hover {
-            transform: scale(1.05);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
             filter: brightness(1.05);
         }
-        .btn-action:active {
-            transform: scale(0.95);
-        }
+        .btn-action:active { transform: translateY(0); }
 
-        /* Filter Button Styles */
+        /* ── Filter Buttons ── */
         .filter-btn {
             padding: 6px 14px;
-            border-radius: 10px;
+            border-radius: 999px;
             font-size: 12px;
             font-weight: 700;
             cursor: pointer;
             border: 1px solid #e2e8f0;
-            background: #fff;
+            background: #f8fafc;
             color: #64748b;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             display: inline-flex;
@@ -94,61 +489,62 @@
             user-select: none;
         }
         .filter-btn:hover {
-            background: #f8fafc;
-            border-color: #cbd5e1;
+            background: #fff;
+            border-color: #6366f1;
+            color: #4f46e5;
             transform: translateY(-1px);
         }
         .filter-btn.active {
-            background: #2563eb !important;
+            background: linear-gradient(135deg, #6366f1, #4f46e5) !important;
             color: #fff !important;
-            border-color: #2563eb !important;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4) !important;
-            transform: scale(1.05);
+            border-color: transparent !important;
+            box-shadow: 0 4px 14px rgba(99,102,241,0.45) !important;
         }
     </style>
 </head>
-<body class="flex flex-col lg:flex-row h-screen overflow-hidden bg-white text-slate-800">
+<body class="flex flex-col lg:flex-row h-screen overflow-hidden text-slate-800">
 
-    <div class="w-full lg:w-1/3 bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 p-4 lg:p-8 lg:p-12 flex flex-row lg:flex-col justify-between items-center lg:items-start border-b lg:border-r border-gray-200 shadow-md z-10 relative flex-shrink-0">
-        <div class="absolute top-0 left-0 w-full h-1 lg:h-1.5 bg-blue-600"></div>
+    <div class="premium-sidebar w-full lg:w-1/3 p-4 lg:p-8 flex flex-row lg:flex-col justify-between items-center lg:items-start z-10 flex-shrink-0">
         
-        <div class="flex flex-row items-center gap-3 lg:flex-col lg:items-start lg:gap-0">
-            <img src="{{ url_for('static', filename='LogoFCT.png') }}" alt="FCT Logo" class="w-10 lg:w-28 lg:mb-8 drop-shadow-md" onerror="this.src='https://via.placeholder.com/150?text=Logo+FCT'">
+        <div class="flex flex-row items-center gap-3 lg:flex-col lg:items-start lg:gap-0" style="position:relative; z-index:2;">
+            <img src="{{ url_for('static', filename='LogoFCT.png') }}" alt="FCT Logo" class="w-10 lg:w-24 lg:mb-6 drop-shadow-lg" onerror="this.src='https://via.placeholder.com/150?text=Logo+FCT'" style="filter: drop-shadow(0 4px 12px rgba(99,102,241,0.4));">
             
             <div>
-                <h1 class="block lg:hidden text-lg font-extrabold text-slate-800 tracking-tight leading-none">
-                    HỆ THỐNG <span class="text-blue-600">NHẬP LIỆU</span>
+                <h1 class="block lg:hidden sidebar-logo-text text-lg leading-none">
+                    <span class="sidebar-logo-accent">FCT</span> HR SYSTEM
                 </h1>
                 
-                <h1 class="hidden lg:block text-4xl lg:text-5xl font-extrabold text-slate-800 tracking-tighter leading-tight mb-4">
-                    HỆ THỐNG<br><span class="text-blue-600">NHẬP LIỆU</span>
+                <h1 class="hidden lg:block sidebar-logo-text leading-tight mb-3" style="font-size:clamp(2rem,4vw,3.2rem);">
+                    <span class="sidebar-logo-accent">FCT</span><br>HR SYSTEM
                 </h1>
                 
-                <p class="hidden lg:block text-slate-500 text-sm lg:text-base font-medium leading-relaxed">Tự động hóa quy trình xuất hồ sơ ứng viên nhanh chóng, chuẩn xác và chuyên nghiệp.</p>
+                <p class="hidden lg:block sidebar-desc leading-relaxed">Tự động hóa quy trình xuất hồ sơ ứng viên nhanh chóng, chuẩn xác và chuyên nghiệp.</p>
             </div>
         </div>
 
         <div class="block lg:hidden flex-shrink-0 pl-2">
-            <img src="{{ url_for('static', filename='eagle_logo.png') }}" alt="Eagle Logo" class="w-16 h-12 object-contain drop-shadow-sm">
+            <img src="{{ url_for('static', filename='eagle_logo.png') }}" alt="Eagle Logo" class="w-16 h-12 object-contain" style="filter: brightness(0) invert(1) opacity(0.4);">
         </div>
 
-        <div class="hidden lg:block mt-10 border-t border-gray-200 pt-6 w-full">
+        <div class="hidden lg:block w-full" style="position:relative; z-index:2; margin-top: auto;">
+            <hr class="sidebar-divider mb-5">
             <div class="flex items-center gap-2 mb-1">
-                <p class="text-[10px] text-slate-400 tracking-widest font-bold uppercase">Crafted by</p>
-                <div class="w-18 h-12 flex items-center justify-center flex-shrink-0">
-                    <img src="{{ url_for('static', filename='eagle_logo.png') }}" alt="Andrew Tseng Logo" class="w-full h-full object-contain drop-shadow-sm">
+                <span class="sidebar-crafted">Crafted by</span>
+                <div class="w-14 h-10 flex items-center justify-center flex-shrink-0">
+                    <img src="{{ url_for('static', filename='eagle_logo.png') }}" alt="Andrew Tseng Logo" class="w-full h-full object-contain" style="filter: brightness(0) invert(1) opacity(0.35);">
                 </div>
             </div>
-            <p class="text-xl font-bold text-slate-800 tracking-wide">Andrew Tseng</p>
+            <div class="sidebar-author-name mb-4">Andrew Tseng</div>
+            <div class="sidebar-version">v3.0 &nbsp;·&nbsp; DAS System</div>
         </div>
     </div>
 
-    <div class="w-full lg:w-2/3 h-full overflow-y-auto relative bg-[#FAFAFA] px-4 py-6 lg:px-16 lg:py-12">
+    <div class="w-full lg:w-2/3 h-full overflow-y-auto relative main-content-area px-4 py-6 lg:px-16 lg:py-12">
         
         <!-- Nút Mở bảng Lịch Sử -->
         <div class="flex justify-end mb-6 max-w-4xl mx-auto gap-3">
-            <button type="button" onclick="loadHistory()" class="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-2.5 px-5 rounded-lg shadow-md transition-all flex items-center gap-2 text-sm">
-                🕒 Xem Lịch Sử / Quản lý Hồ Sơ
+            <button type="button" onclick="loadHistory()" class="btn-cta-primary">
+                <span>🕒</span><span>Xem Lịch Sử / Quản lý Hồ Sơ</span>
             </button>
         </div>
 
@@ -160,9 +556,11 @@
             <input type="hidden" id="photoBase64" value="">
             <input type="hidden" id="qrBase64" value="">
             <section>
-                <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
-                    <span class="w-2 h-6 bg-blue-600 rounded-full"></span> 1. Thông tin cá nhân
-                </h2>
+                <div class="section-heading">
+                    <span class="section-heading-badge">1</span>
+                    <span class="section-heading-text">Thông tin cá nhân</span>
+                    <span class="section-heading-bar"></span>
+                </div>
                 <div class="grid grid-cols-2 gap-6 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Mã số</label><input type="text" name="Maso" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
                     <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Họ tên (Tiếng Việt)</label><input type="text" name="Hoten" onblur="translateName(this.value)" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
@@ -299,9 +697,11 @@
             </section>
 
             <section class="hidden">
-                <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
-                    <span class="w-2 h-6 bg-blue-600 rounded-full"></span> 2. Gia đình
-                </h2>
+                <div class="section-heading">
+                    <span class="section-heading-badge">2</span>
+                    <span class="section-heading-text">Gia đình</span>
+                    <span class="section-heading-bar"></span>
+                </div>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     <div class="col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tên Bố</label><input type="text" name="HotenBo" class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none"></div>
                     <div class="col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tuổi Bố</label><input type="text" name="TB" class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-blue-600 focus:outline-none"></div>
@@ -319,9 +719,11 @@
             </section>
 
             <section>
-                <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
-                    <span class="w-2 h-6 bg-blue-600 rounded-full"></span> 2. Sức khỏe & Thói quen
-                </h2>
+                <div class="section-heading">
+                    <span class="section-heading-badge">2</span>
+                    <span class="section-heading-text">Sức khỏe &amp; Thói quen</span>
+                    <span class="section-heading-bar"></span>
+                </div>
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 grid grid-cols-2 md:grid-cols-4 gap-y-4 gap-x-2 text-sm">
                     <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f01" class="w-4 h-4 text-blue-600"> Thuận tay phải</label>
                     <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" name="f07" class="w-4 h-4 text-blue-600"> Thuận tay trái</label>
@@ -349,9 +751,11 @@
             </section>
 
             <section>
-                <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
-                    <span class="w-2 h-6 bg-blue-600 rounded-full"></span> 3. Kỹ năng
-                </h2>
+                <div class="section-heading">
+                    <span class="section-heading-badge">3</span>
+                    <span class="section-heading-text">Kỹ năng</span>
+                    <span class="section-heading-bar"></span>
+                </div>
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 grid grid-cols-2 md:grid-cols-4 gap-y-4 gap-x-2 text-sm">
                     <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f23" class="w-4 h-4 text-blue-600"> Hàn điện</label>
                     <label class="flex items-center gap-2 cursor-pointer text-blue-700 font-medium"><input type="checkbox" name="f24" class="w-4 h-4 text-blue-600"> Hàn argon</label>
@@ -383,9 +787,11 @@
             </section>
 
             <section>
-                <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
-                    <span class="w-2 h-6 bg-blue-600 rounded-full"></span> 4. Kinh nghiệm làm việc & Đánh giá
-                </h2>
+                <div class="section-heading">
+                    <span class="section-heading-badge">4</span>
+                    <span class="section-heading-text">Kinh nghiệm làm việc &amp; Đánh giá</span>
+                    <span class="section-heading-bar"></span>
+                </div>
                 <div class="space-y-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     
                     <div class="grid grid-cols-4 gap-4 pb-4 border-b border-gray-100">
@@ -485,11 +891,12 @@
                 </div>
             </section>
 
-            <!-- Section 5: Tài liệu & Giấy tờ -->
             <section>
-                <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
-                    <span class="w-2 h-6 bg-purple-600 rounded-full"></span> 5. Tài liệu &amp; Giấy tờ
-                </h2>
+                <div class="section-heading">
+                    <span class="section-heading-badge" style="background:linear-gradient(135deg,#7c3aed,#6366f1);">5</span>
+                    <span class="section-heading-text">Tài liệu &amp; Giấy tờ</span>
+                    <span class="section-heading-bar" style="background:linear-gradient(to right, rgba(124,58,237,0.2), transparent);"></span>
+                </div>
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     <label class="block text-xs font-bold text-slate-400 uppercase mb-3">
                         📄 Scan giấy tờ, bằng cấp, chứng chỉ...
@@ -508,12 +915,13 @@
         </form>
 
         <!-- ===== THANH NÚT THAO TÁC - INLINE STYLES (không bị Tailwind ghi đè) ===== -->
-        <div style="border-top:1px solid #e2e8f0; padding:14px 20px; padding-bottom:max(18px, env(safe-area-inset-bottom, 18px)); background:#ffffff; position:sticky; bottom:0; left:0; width:100%; box-sizing:border-box; z-index:1000; box-shadow:0 -4px 16px rgba(0,0,0,0.08);">
+        <div class="glass-bottom-bar" style="padding:14px 20px; padding-bottom:max(18px, env(safe-area-inset-bottom, 18px)); position:sticky; bottom:0; left:0; width:100%; box-sizing:border-box; z-index:1000;">
             <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap; max-width:800px; margin:0 auto;">
 
                 <!-- Hủy (chỉ hiện khi đang sửa) -->
                 <button type="button" id="btnCancelEdit" onclick="cancelEdit()"
-                    style="display:none; align-items:center; gap:6px; padding:11px 22px; border-radius:12px; font-weight:700; font-size:13px; font-family:'Inter',sans-serif; cursor:pointer; background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0; transition:all 0.2s;">
+                    class="btn-bar btn-bar-danger"
+                    style="display:none; align-items:center;">
                     ✕ Hủy
                 </button>
 
@@ -2600,29 +3008,28 @@ async function loadHistory() {
 <div id="historyModal" class="glass-modal" style="display:none; position:fixed; top:1%; left:5%; width:90%; max-height:98%; z-index:9999; overflow-y:auto; border-radius: 20px; font-family:'Inter',sans-serif;">
 
     <!-- Header -->
-    <div class="notranslate" style="background:#fff; border-bottom:1px solid #e2e8f0; padding:12px 16px; border-radius:16px 16px 0 0; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100;">
-        <div style="display:flex; align-items:center; gap:8px; overflow:hidden;">
-            <span style="font-size:18px; flex-shrink:0;">📁</span>
+    <div class="modal-header-dark notranslate">
+        <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
+            <div style="width:36px; height:36px; background:linear-gradient(135deg,#6366f1,#0ea5e9); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">📁</div>
             <div style="overflow:hidden;">
-                <div style="font-size:14px; font-weight:800; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Quản trị Hồ sơ</div>
-                <div style="font-size:10px; color:#64748b; white-space:nowrap;"><span class="hidden sm:inline">Version 3.6.5 — </span><span id="historyTotalCount" style="color:#0f172a; font-weight:600;">0 hồ sơ</span></div>
+                <div class="modal-header-title" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Quản lý Hồ Sơ — <span class="sidebar-logo-accent">FCT</span> HR</div>
+                <div class="modal-header-sub" style="white-space:nowrap;"><span class="hidden sm:inline">Version 3.6.5 — </span><span id="historyTotalCount" class="modal-header-badge">0 hồ sơ</span></div>
             </div>
         </div>
         <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
-            <button type="button" id="historyRefreshBtn" onclick="loadHistory()" class="btn-action" title="Làm mới" style="padding:8px; background:#f8fafc; color:#64748b; border:1px solid #e2e8f0; border-radius:10px; cursor:pointer;">
+            <button type="button" id="historyRefreshBtn" onclick="loadHistory()" class="modal-header-btn modal-header-btn-ghost" title="Làm mới">
                 <span class="hidden sm:inline">🔄 Làm mới</span>
                 <span class="sm:hidden">🔄</span>
             </button>
-            <button type="button" onclick="bulkExportExcelHistory(true, event)" class="btn-action" title="Xuất Excel tất cả" style="padding:8px; background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; border-radius:10px; cursor:pointer;">
+            <button type="button" onclick="bulkExportExcelHistory(true, event)" class="modal-header-btn modal-header-btn-green" title="Xuất Excel tất cả">
                 <span class="hidden sm:inline">📊 Xuất Excel</span>
                 <span class="sm:hidden">📊</span>
             </button>
-            <button type="button" onclick="document.getElementById('importFileInput').click()" class="btn-action" title="Nạp file" style="padding:8px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:10px; cursor:pointer;">
+            <button type="button" onclick="document.getElementById('importFileInput').click()" class="modal-header-btn modal-header-btn-green" title="Nạp file">
                 <span class="hidden sm:inline">📂 Nạp file</span>
                 <span class="sm:hidden">📂</span>
             </button>
-
-            <button type="button" onclick="document.getElementById('historyModal').style.display='none'" class="btn-action" title="Đóng" style="padding:8px; background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:10px; cursor:pointer;">
+            <button type="button" onclick="document.getElementById('historyModal').style.display='none'" class="modal-header-btn modal-header-btn-red" title="Đóng">
                 <span class="hidden sm:inline">✕ Đóng</span>
                 <span class="sm:hidden">✕</span>
             </button>
@@ -2630,14 +3037,14 @@ async function loadHistory() {
     </div>
 
     <!-- Tabs Navigation -->
-    <div class="notranslate" style="display:flex; border-bottom:1px solid #e2e8f0; background:#f8fafc; padding:0 16px; position:sticky; top:57px; z-index:98; gap:8px;">
-        <button type="button" onclick="switchHistoryTab('candidates')" id="tabBtn-candidates" class="history-tab-btn active" style="padding:12px 18px; font-weight:800; border:none; background:none; cursor:pointer; border-bottom:3px solid #2563eb; color:#2563eb; font-size:13px; transition: all 0.2s; font-family:'Inter',sans-serif; display:flex; align-items:center; gap:6px; outline:none;">
+    <div class="modal-tab-bar notranslate">
+        <button type="button" onclick="switchHistoryTab('candidates')" id="tabBtn-candidates" class="modal-tab-btn active-tab">
             <span>📁</span> Danh sách hồ sơ
         </button>
-        <button type="button" onclick="switchHistoryTab('passed')" id="tabBtn-passed" class="history-tab-btn" style="padding:12px 18px; font-weight:600; border:none; background:none; cursor:pointer; border-bottom:3px solid transparent; color:#64748b; font-size:13px; transition: all 0.2s; font-family:'Inter',sans-serif; display:flex; align-items:center; gap:6px; outline:none;">
+        <button type="button" onclick="switchHistoryTab('passed')" id="tabBtn-passed" class="modal-tab-btn">
             <span>🏆</span> Danh sách trúng tuyển
         </button>
-        <button type="button" onclick="switchHistoryTab('jobs')" id="tabBtn-jobs" class="history-tab-btn" style="padding:12px 18px; font-weight:600; border:none; background:none; cursor:pointer; border-bottom:3px solid transparent; color:#64748b; font-size:13px; transition: all 0.2s; font-family:'Inter',sans-serif; display:flex; align-items:center; gap:6px; outline:none;">
+        <button type="button" onclick="switchHistoryTab('jobs')" id="tabBtn-jobs" class="modal-tab-btn">
             <span>💼</span> Tổng hợp đơn hàng
         </button>
     </div>
@@ -2645,17 +3052,18 @@ async function loadHistory() {
     <!-- Tab 1: Candidates Content Area -->
     <div id="tabContent-candidates" style="display: block;">
         <!-- Search + Filter (STICKY ON MOBILE) -->
-        <div class="notranslate" style="padding:14px 20px; background:#fff; border-bottom:1px solid #e2e8f0; display:flex; flex-direction:column; gap:12px; position:sticky; top:104px; z-index:90; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
+        <div class="modal-search-bar notranslate">
             <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
                 <div style="position:relative; flex:1; min-width:180px;">
-                    <span style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#94a3b8;">🔍</span>
+                    <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#6366f1; font-size:14px;">🔍</span>
                     <input type="text" id="searchInput" oninput="filterHistory()"
                         placeholder="Tìm tên, mã số..."
-                        style="width:100%; padding:9px 12px 9px 32px; border:1px solid #e2e8f0; border-radius:10px; font-size:13px; font-family:'Inter',sans-serif; box-sizing:border-box; background:#f8fafc; outline:none;">
+                        style="width:100%; padding:10px 14px 10px 36px; border:1.5px solid #e2e8f0; border-radius:12px; font-size:13px; font-family:'Inter',sans-serif; box-sizing:border-box; background:#f8fafc; outline:none; transition:border-color 0.2s, box-shadow 0.2s;"
+                        onfocus="this.style.borderColor='#6366f1'; this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';">
                 </div>
                 
                 <div style="display:flex; align-items:center; gap:8px;">
-                    <select id="yearFilter" onchange="filterHistory()" style="padding:8px 12px; border:1px solid #e2e8f0; border-radius:10px; font-size:13px; font-family:'Inter',sans-serif; background:#f8fafc; outline:none; color:#334155; font-weight:600;">
+                    <select id="yearFilter" onchange="filterHistory()" style="padding:9px 12px; border:1.5px solid #e2e8f0; border-radius:12px; font-size:13px; font-family:'Inter',sans-serif; background:#f8fafc; outline:none; color:#334155; font-weight:600; cursor:pointer;">
                         <option value="ALL">Tất cả các năm</option>
                         <option value="2027">Năm 2027</option>
                         <option value="2026" selected>Năm 2026</option>
@@ -2663,14 +3071,14 @@ async function loadHistory() {
                     </select>
                 </div>
                 
-                <button onclick="clearHistoryFilters()" style="padding:8px 14px; background:#f8fafc; color:#475569; border:1px solid #e2e8f0; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">✕ Xóa lọc</button>
+                <button onclick="clearHistoryFilters()" style="padding:9px 16px; background:#f1f5f9; color:#475569; border:1.5px solid #e2e8f0; border-radius:12px; cursor:pointer; font-size:13px; font-weight:600; transition:all 0.2s;" onmouseover="this.style.background='#e2e8f0';" onmouseout="this.style.background='#f1f5f9';">✕ Xóa lọc</button>
             </div>
             
             <!-- Filter Buttons (Loại mã số) -->
             <div class="mobile-filter-scroll" style="display:flex; gap:8px; align-items:center;">
-                <span class="hidden sm:inline" style="font-size:11px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em; margin-right:4px;">Lọc theo loại:</span>
+                <span class="hidden sm:inline" style="font-size:10px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.08em; margin-right:4px;">Lọc:</span>
                 
-                <select id="nptFilter" onchange="filterHistory()" style="padding:4px 10px; border:1px solid #e2e8f0; border-radius:6px; font-size:11px; font-family:'Inter',sans-serif; background:#f8fafc; outline:none; color:#334155; font-weight:700; max-width:110px; cursor:pointer;">
+                <select id="nptFilter" onchange="filterHistory()" style="padding:5px 10px; border:1px solid #e2e8f0; border-radius:999px; font-size:11px; font-family:'Inter',sans-serif; background:#f8fafc; outline:none; color:#334155; font-weight:700; max-width:110px; cursor:pointer;">
                     <option value="ALL">NPT</option>
                 </select>
 
@@ -2683,35 +3091,35 @@ async function loadHistory() {
         </div>
 
         <!-- Bulk toolbar (ẩn khi chưa chọn) -->
-        <div id="historyBulkBar" style="display:none; padding:10px 20px; background:#eff6ff; border-bottom:1px solid #bfdbfe; align-items:center; gap:12px; flex-wrap:wrap;">
-            <span style="font-size:13px; font-weight:600; color:#2563eb;">Đã chọn: <span id="historySelectedCount" style="background:#2563eb; color:#fff; border-radius:999px; padding:1px 8px; font-size:11px;">0</span></span>
-            <div style="width:1px; height:16px; background:#cbd5e1;"></div>
-            <button onclick="bulkAssignJob()" style="padding:6px 12px; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600;">💼 Ghép đơn hàng</button>
-            <button onclick="bulkCopyHistoryLinks()" style="padding:6px 12px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600;">📤 Copy link</button>
-            <button onclick="bulkDownloadHistory()" style="padding:6px 12px; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600;">📥 Tải hàng loạt (.ZIP)</button>
-            <button onclick="bulkExportExcelHistory(false, event)" style="padding:6px 12px; background:#dcfce7; color:#16a34a; border:1px solid #86efac; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600;">📊 Xuất Excel</button>
-            <button onclick="bulkPrintHistory()" style="padding:6px 12px; background:#fdf4ff; color:#c026d3; border:1px solid #fbcfe8; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600;">🖨️ In PDF hàng loạt</button>
-            <button onclick="bulkDeleteHistory()" style="padding:6px 12px; background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600;">🗑️ Xóa đã chọn</button>
-            <button onclick="clearHistorySelection()" style="padding:6px 12px; background:#f8fafc; color:#475569; border:1px solid #e2e8f0; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600; margin-left:auto;">✕ Bỏ chọn</button>
+        <div id="historyBulkBar" class="modal-bulk-bar" style="display:none;">
+            <span style="font-size:13px; font-weight:700; color:#a5b4fc;">Đã chọn: <span id="historySelectedCount" style="background:#6366f1; color:#fff; border-radius:999px; padding:2px 9px; font-size:11px; font-weight:800;">0</span></span>
+            <div style="width:1px; height:16px; background:rgba(255,255,255,0.1);"></div>
+            <button onclick="bulkAssignJob()" class="bulk-btn bulk-btn-indigo">💼 Ghép đơn hàng</button>
+            <button onclick="bulkCopyHistoryLinks()" class="bulk-btn bulk-btn-teal">📤 Copy link</button>
+            <button onclick="bulkDownloadHistory()" class="bulk-btn bulk-btn-indigo">📥 Tải (.ZIP)</button>
+            <button onclick="bulkExportExcelHistory(false, event)" class="bulk-btn bulk-btn-green">📊 Xuất Excel</button>
+            <button onclick="bulkPrintHistory()" class="bulk-btn bulk-btn-purple">🖨️ In PDF hàng loạt</button>
+            <button onclick="bulkDeleteHistory()" class="bulk-btn bulk-btn-red">🗑️ Xóa đã chọn</button>
+            <button onclick="clearHistorySelection()" class="bulk-btn bulk-btn-ghost" style="margin-left:auto;">✕ Bỏ chọn</button>
         </div>
 
         <!-- Table -->
         <div class="history-container" style="padding:16px 20px;">
             <table class="history-table" style="width:100%; border-collapse:collapse; background:transparent;">
                 <thead>
-                    <tr style="background:#f8fafc; border-bottom:1px solid #e2e8f0;">
+                    <tr style="background:#f8fafc; border-bottom:2px solid #e2e8f0;">
                         <th style="padding:10px 12px; width:36px;">
-                            <input type="checkbox" id="historySelectAll" onchange="toggleHistorySelectAll(this)" style="accent-color:#2563eb; width:15px; height:15px; cursor:pointer;">
+                            <input type="checkbox" id="historySelectAll" onchange="toggleHistorySelectAll(this)" style="accent-color:#6366f1; width:15px; height:15px; cursor:pointer;">
                         </th>
-                        <th style="padding:10px 8px; text-align:left; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#94a3b8; width:120px;">Mã Số</th>
-                        <th style="padding:10px 8px; text-align:left; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#94a3b8; min-width:150px; max-width:320px;">Họ Tên</th>
-                        <th style="padding:10px 8px; text-align:left; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#94a3b8; width:120px;">Thời Gian Tạo</th>
-                        <th style="padding:10px 8px; text-align:center; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#94a3b8;">Thao Tác</th>
+                        <th style="padding:10px 8px; text-align:left; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8; width:120px;">Mã Số</th>
+                        <th style="padding:10px 8px; text-align:left; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8; min-width:150px; max-width:320px;">Họ Tên</th>
+                        <th style="padding:10px 8px; text-align:left; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8; width:120px;">Thời Gian Tạo</th>
+                        <th style="padding:10px 8px; text-align:center; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8;">Thao Tác</th>
                     </tr>
                 </thead>
                 <tbody id="historyTableBody"></tbody>
             </table>
-            <div id="historyVisibleCount" style="margin-top:10px; font-size:12px; color:#94a3b8; text-align:right;"></div>
+            <div id="historyVisibleCount" style="margin-top:10px; font-size:11px; color:#94a3b8; text-align:right; font-weight:600;"></div>
         </div>
     </div>
 
