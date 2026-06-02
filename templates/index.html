@@ -598,6 +598,11 @@
         .btn-save-action:active {
             transform: translateY(0) scale(1) !important;
         }
+
+        /* Hide bottom bar when history dashboard is open */
+        body:has(#historyModal:not([style*="display: none"]):not([style*="display:none"])) .glass-bottom-bar {
+            display: none !important;
+        }
     </style>
 </head>
 <body class="flex flex-col lg:flex-row h-screen overflow-hidden text-slate-800" onload="loadHistory()">
