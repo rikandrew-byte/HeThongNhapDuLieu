@@ -3312,6 +3312,139 @@ async function loadHistory() {
             .mobile-overflow-btn { display: none !important; }
             .mobile-action-menu { display: none !important; }
             .action-grid { display: flex !important; flex-wrap: nowrap; gap: 6px; justify-content: center; }
+
+            /* ── Overhaul Candidates list into beautiful grid cards ── */
+            .history-table thead {
+                display: none !important;
+            }
+            .history-table tbody {
+                display: grid !important;
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important;
+                gap: 20px !important;
+                padding: 20px 0 !important;
+            }
+            .history-table tr {
+                display: flex !important;
+                flex-direction: column !important;
+                background: #ffffff !important;
+                border: 1px solid #e2e8f0 !important;
+                border-radius: 16px !important;
+                padding: 20px !important;
+                box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03) !important;
+                transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                position: relative !important;
+                min-height: 200px;
+                justify-content: space-between;
+            }
+            .history-table tr:hover {
+                transform: translateY(-3px) !important;
+                border-color: #6366f1 !important;
+                box-shadow: 0 12px 30px rgba(99, 102, 241, 0.08) !important;
+            }
+            .history-table td {
+                display: block !important;
+                padding: 4px 0 !important;
+                border: none !important;
+            }
+            /* Checkbox */
+            .history-table tr td:nth-child(1) {
+                position: absolute !important;
+                top: 20px;
+                right: 20px;
+            }
+            /* Maso badge */
+            .history-table tr td:nth-child(2) {
+                margin-bottom: 8px !important;
+            }
+            /* Candidate name */
+            .history-table tr td:nth-child(3) {
+                font-family: 'Outfit', sans-serif !important;
+                font-size: 17px !important;
+                font-weight: 700 !important;
+                color: #0f172a !important;
+                line-height: 1.4 !important;
+                margin-bottom: 4px !important;
+            }
+            /* Created time */
+            .history-table tr td:nth-child(4) {
+                font-size: 12px !important;
+                color: #64748b !important;
+                margin-bottom: 16px !important;
+            }
+            /* Actions group */
+            .history-table tr td:nth-child(5) {
+                margin-top: auto !important;
+                border-top: 1px dashed #f1f5f9 !important;
+                padding-top: 16px !important;
+            }
+
+            /* ── Overhaul Jobs Summary into beautiful grid cards ── */
+            .job-summary-table thead {
+                display: none !important;
+            }
+            .job-summary-table tbody {
+                display: grid !important;
+                grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)) !important;
+                gap: 20px !important;
+                padding: 20px 0 !important;
+            }
+            .job-summary-table tr {
+                display: flex !important;
+                flex-direction: column !important;
+                background: #ffffff !important;
+                border: 1px solid #e2e8f0 !important;
+                border-radius: 16px !important;
+                padding: 20px !important;
+                box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03) !important;
+                transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                position: relative !important;
+                min-height: 220px;
+                justify-content: space-between;
+            }
+            .job-summary-table tr:hover {
+                transform: translateY(-3px) !important;
+                border-color: #6366f1 !important;
+                box-shadow: 0 12px 30px rgba(99, 102, 241, 0.08) !important;
+            }
+            .job-summary-table td {
+                display: block !important;
+                padding: 4px 0 !important;
+                border: none !important;
+            }
+            /* Job name */
+            .job-summary-table tr td:nth-child(1) {
+                font-family: 'Outfit', sans-serif !important;
+                font-size: 16px !important;
+                font-weight: 800 !important;
+                color: #312e81 !important;
+                text-transform: uppercase !important;
+                border-bottom: 2px solid #f1f5f9 !important;
+                padding-bottom: 10px !important;
+                margin-bottom: 12px !important;
+            }
+            /* Maso list container */
+            .job-summary-table tr td:nth-child(2) {
+                min-height: 80px !important;
+                margin-bottom: 12px !important;
+            }
+            /* Count quantity */
+            .job-summary-table tr td:nth-child(3) {
+                font-size: 13px !important;
+                font-weight: 700 !important;
+                color: #4f46e5 !important;
+                margin-bottom: 12px !important;
+            }
+            .job-summary-table tr td:nth-child(3)::before {
+                content: "Số lượng ứng tuyển: " !important;
+                color: #94a3b8 !important;
+                font-weight: 600 !important;
+            }
+            /* Actions block */
+            .job-summary-table tr td:nth-child(4) {
+                margin-top: auto !important;
+                border-top: 1px dashed #f1f5f9 !important;
+                padding-top: 16px !important;
+            }
         }
     </style>
 
