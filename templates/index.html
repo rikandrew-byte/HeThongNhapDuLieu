@@ -500,6 +500,92 @@
             border-color: transparent !important;
             box-shadow: 0 4px 14px rgba(99,102,241,0.45) !important;
         }
+
+        /* ═══════════════════════════════════════════════════════════
+           APP SHELL & LAYOUT OVERHAUL
+           ═══════════════════════════════════════════════════════════ */
+        
+        @media (min-width: 1024px) {
+            .premium-sidebar {
+                width: 320px !important;
+                height: 100vh !important;
+                position: fixed !important;
+                top: 0; left: 0; bottom: 0;
+            }
+            
+            #historyModal {
+                margin-left: 320px !important;
+                width: calc(100% - 320px) !important;
+                height: 100vh !important;
+                max-height: 100vh !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                position: fixed !important;
+                top: 0 !important; left: 0 !important;
+                z-index: 10 !important;
+                display: flex !important;
+                flex-direction: column;
+                background: #f8fafc !important;
+                transition: opacity 0.3s ease, filter 0.3s ease, transform 0.3s ease !important;
+            }
+
+            #historyModal[style*="display: none"],
+            #historyModal[style*="display:none"] {
+                opacity: 0.35 !important;
+                filter: blur(5px) grayscale(50%);
+                pointer-events: none !important;
+                transform: scale(0.995);
+            }
+
+            .main-content-area {
+                position: fixed !important;
+                top: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                width: calc(100% - 320px) !important;
+                max-width: 900px !important;
+                height: 100vh !important;
+                background: #ffffff !important;
+                box-shadow: -10px 0 50px rgba(15, 23, 42, 0.12) !important;
+                z-index: 1000 !important;
+                transform: translateX(100%);
+                transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+                border-left: 1px solid rgba(226, 232, 240, 0.8) !important;
+                padding-bottom: 80px !important;
+            }
+
+            #historyModal[style*="display: none"] ~ .main-content-area,
+            #historyModal[style*="display:none"] ~ .main-content-area {
+                transform: translateX(0) !important;
+            }
+
+            /* Backdrop when form is active */
+            #historyModal[style*="display: none"]::after,
+            #historyModal[style*="display:none"]::after {
+                content: '';
+                position: fixed;
+                top: 0; left: 320px; right: 0; bottom: 0;
+                background: rgba(15, 23, 42, 0.2);
+                backdrop-filter: blur(2px);
+                z-index: 999;
+                pointer-events: auto;
+                animation: fadeIn 0.3s ease;
+            }
+        }
+
+        @media (max-width: 1023px) {
+            #historyModal {
+                position: fixed !important;
+                top: 0 !important; left: 0 !important;
+                width: 100vw !important;
+                height: 100vh !important;
+                z-index: 9999 !important;
+            }
+            #historyModal[style*="display: none"],
+            #historyModal[style*="display:none"] {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body class="flex flex-col lg:flex-row h-screen overflow-hidden text-slate-800">
@@ -537,6 +623,204 @@
             <div class="sidebar-author-name mb-4">Andrew Tseng</div>
             <div class="sidebar-version">v3.0 &nbsp;·&nbsp; DAS System</div>
         </div>
+    </div>
+
+    <!-- Bảng Popup (Modal) hiển thị lịch sử (Mặc định ẩn) -->
+    <div id="historyModal" class="glass-modal" style="display:none; position:fixed; top:1%; left:5%; width:90%; max-height:98%; z-index:9999; overflow-y:auto; border-radius: 20px; font-family:'Inter',sans-serif;">
+
+        <!-- Header -->
+        <div class="modal-header-dark notranslate">
+            <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
+                <div style="width:36px; height:36px; background:linear-gradient(135deg,#6366f1,#0ea5e9); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">📁</div>
+                <div style="overflow:hidden;">
+                    <div class="modal-header-title" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Quản lý Hồ Sơ — <span class="sidebar-logo-accent">FCT</span> HR</div>
+                    <div class="modal-header-sub" style="white-space:nowrap;"><span class="hidden sm:inline">Version 3.6.5 — </span><span id="historyTotalCount" class="modal-header-badge">0 hồ sơ</span></div>
+                </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+                <button type="button" onclick="document.getElementById('historyModal').style.display='none'" class="modal-header-btn modal-header-btn-ghost" style="background:rgba(99,102,241,0.15); color:#a5b4fc; border-color:rgba(99,102,241,0.3);" title="Nhập hồ sơ mới">
+                    <span>➕ Nhập Hồ Sơ Mới</span>
+                </button>
+                <button type="button" id="historyRefreshBtn" onclick="loadHistory()" class="modal-header-btn modal-header-btn-ghost" title="Làm mới">
+                    <span class="hidden sm:inline">🔄 Làm mới</span>
+                    <span class="sm:hidden">🔄</span>
+                </button>
+                <button type="button" onclick="bulkExportExcelHistory(true, event)" class="modal-header-btn modal-header-btn-green" title="Xuất Excel tất cả">
+                    <span class="hidden sm:inline">📊 Xuất Excel</span>
+                    <span class="sm:hidden">📊</span>
+                </button>
+                <button type="button" onclick="document.getElementById('importFileInput').click()" class="modal-header-btn modal-header-btn-green" title="Nạp file">
+                    <span class="hidden sm:inline">📂 Nạp file</span>
+                    <span class="sm:hidden">📂</span>
+                </button>
+                <button type="button" onclick="document.getElementById('historyModal').style.display='none'" class="modal-header-btn modal-header-btn-red" title="Đóng">
+                    <span class="hidden sm:inline">✕ Đóng</span>
+                    <span class="sm:hidden">✕</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="modal-tab-bar notranslate">
+            <button type="button" onclick="switchHistoryTab('candidates')" id="tabBtn-candidates" class="modal-tab-btn active-tab">
+                <span>📁</span> Danh sách hồ sơ
+            </button>
+            <button type="button" onclick="switchHistoryTab('passed')" id="tabBtn-passed" class="modal-tab-btn">
+                <span>🏆</span> Danh sách trúng tuyển
+            </button>
+            <button type="button" onclick="switchHistoryTab('jobs')" id="tabBtn-jobs" class="modal-tab-btn">
+                <span>💼</span> Tổng hợp đơn hàng
+            </button>
+        </div>
+
+        <!-- Tab 1: Candidates Content Area -->
+        <div id="tabContent-candidates" style="display: block;">
+            <!-- Search + Filter (STICKY ON MOBILE) -->
+            <div class="modal-search-bar notranslate">
+                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                    <div style="position:relative; flex:1; min-width:180px;">
+                        <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#6366f1; font-size:14px;">🔍</span>
+                        <input type="text" id="searchInput" oninput="filterHistory()"
+                            placeholder="Tìm tên, mã số..."
+                            style="width:100%; padding:10px 14px 10px 36px; border:1.5px solid #e2e8f0; border-radius:12px; font-size:13px; font-family:'Inter',sans-serif; box-sizing:border-box; background:#f8fafc; outline:none; transition:border-color 0.2s, box-shadow 0.2s;"
+                            onfocus="this.style.borderColor='#6366f1'; this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';">
+                    </div>
+                    
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <select id="yearFilter" onchange="filterHistory()" style="padding:9px 12px; border:1.5px solid #e2e8f0; border-radius:12px; font-size:13px; font-family:'Inter',sans-serif; background:#f8fafc; outline:none; color:#334155; font-weight:600; cursor:pointer;">
+                            <option value="ALL">Tất cả các năm</option>
+                            <option value="2027">Năm 2027</option>
+                            <option value="2026" selected>Năm 2026</option>
+                            <option value="2025">Năm 2025</option>
+                        </select>
+                    </div>
+                    
+                    <button onclick="clearHistoryFilters()" style="padding:9px 16px; background:#f1f5f9; color:#475569; border:1.5px solid #e2e8f0; border-radius:12px; cursor:pointer; font-size:13px; font-weight:600; transition:all 0.2s;" onmouseover="this.style.background='#e2e8f0';" onmouseout="this.style.background='#f1f5f9';">✕ Xóa lọc</button>
+                </div>
+                
+                <!-- Filter Buttons (Loại mã số) -->
+                <div class="mobile-filter-scroll" style="display:flex; gap:8px; align-items:center;">
+                    <span class="hidden sm:inline" style="font-size:10px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.08em; margin-right:4px;">Lọc:</span>
+                    
+                    <select id="nptFilter" onchange="filterHistory()" style="padding:5px 10px; border:1px solid #e2e8f0; border-radius:999px; font-size:11px; font-family:'Inter',sans-serif; background:#f8fafc; outline:none; color:#334155; font-weight:700; max-width:110px; cursor:pointer;">
+                        <option value="ALL">NPT</option>
+                    </select>
+
+                    <button type="button" id="filter-ALL" onclick="setFilterPrefix('ALL')" class="filter-btn active">Tất cả</button>
+                    <button type="button" id="filter-MD" onclick="setFilterPrefix('MD')" class="filter-btn">♂️ Nam (MD)</button>
+                    <button type="button" id="filter-FD" onclick="setFilterPrefix('FD')" class="filter-btn">♀️ Nữ (FD)</button>
+                    <button type="button" id="filter-KD" onclick="setFilterPrefix('KD')" class="filter-btn">🏥 Điều dưỡng (KD)</button>
+                    <button type="button" id="filter-OTHER" onclick="setFilterPrefix('OTHER')" class="filter-btn">❓ Mã khác</button>
+                </div>
+            </div>
+
+            <!-- Bulk toolbar (ẩn khi chưa chọn) -->
+            <div id="historyBulkBar" class="modal-bulk-bar" style="display:none;">
+                <span style="font-size:13px; font-weight:700; color:#a5b4fc;">Đã chọn: <span id="historySelectedCount" style="background:#6366f1; color:#fff; border-radius:999px; padding:2px 9px; font-size:11px; font-weight:800;">0</span></span>
+                <div style="width:1px; height:16px; background:rgba(255,255,255,0.1);"></div>
+                <button onclick="bulkAssignJob()" class="bulk-btn bulk-btn-indigo">💼 Ghép đơn hàng</button>
+                <button onclick="bulkCopyHistoryLinks()" class="bulk-btn bulk-btn-teal">📤 Copy link</button>
+                <button onclick="bulkDownloadHistory()" class="bulk-btn bulk-btn-indigo">📥 Tải (.ZIP)</button>
+                <button onclick="bulkExportExcelHistory(false, event)" class="bulk-btn bulk-btn-green">📊 Xuất Excel</button>
+                <button onclick="bulkPrintHistory()" class="bulk-btn bulk-btn-purple">🖨️ In PDF hàng loạt</button>
+                <button onclick="bulkDeleteHistory()" class="bulk-btn bulk-btn-red">🗑️ Xóa đã chọn</button>
+                <button onclick="clearHistorySelection()" class="bulk-btn bulk-btn-ghost" style="margin-left:auto;">✕ Bỏ chọn</button>
+            </div>
+
+            <!-- Table -->
+            <div class="history-container" style="padding:16px 20px;">
+                <table class="history-table" style="width:100%; border-collapse:collapse; background:transparent;">
+                    <thead>
+                        <tr style="background:#f8fafc; border-bottom:2px solid #e2e8f0;">
+                            <th style="padding:10px 12px; width:36px;">
+                                <input type="checkbox" id="historySelectAll" onchange="toggleHistorySelectAll(this)" style="accent-color:#6366f1; width:15px; height:15px; cursor:pointer;">
+                            </th>
+                            <th style="padding:10px 8px; text-align:left; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8; width:120px;">Mã Số</th>
+                            <th style="padding:10px 8px; text-align:left; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8; min-width:150px; max-width:320px;">Họ Tên</th>
+                            <th style="padding:10px 8px; text-align:left; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8; width:120px;">Thời Gian Tạo</th>
+                            <th style="padding:10px 8px; text-align:center; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8;">Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody"></tbody>
+                </table>
+                <div id="historyVisibleCount" style="margin-top:10px; font-size:11px; color:#94a3b8; text-align:right; font-weight:600;"></div>
+            </div>
+        </div>
+
+        <!-- Tab 1.5: Passed Candidates Content Area -->
+        <div id="tabContent-passed" style="display: none; padding:16px 20px;">
+            <div id="passedSummaryPanel" style="display:block; padding:18px 24px; background:linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-top:1px solid #bbf7d0; border-bottom:2px solid #86efac; animation: fadeIn 0.2s ease-out; box-shadow:inset 0 4px 10px rgba(0,0,0,0.02); margin-bottom:16px;">
+                <div style="font-size:15px; font-weight:850; color:#166534; display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:18px;">🏆</span> Danh sách ứng viên trúng tuyển
+                </div>
+                <p style="font-size:13px; color:#15803d; margin-top:4px;">Các ứng viên đã trúng tuyển được phân loại theo từng đơn hàng cụ thể.</p>
+            </div>
+            <div id="passedSummaryContainer" style="display:flex; flex-direction:column; gap:20px;">
+                <!-- Danh sách trúng tuyển sẽ được render vào đây bằng JS -->
+            </div>
+        </div>
+
+        <!-- Tab 2: Jobs Content Area -->
+        <div id="tabContent-jobs" style="display: none;">
+            <!-- Bảng Tổng Hợp Đơn Hàng & Mã Số Ứng Viên -->
+            <div id="jobSummaryPanel" style="display:block; padding:18px 24px; background:linear-gradient(135deg, #f5f3ff 0%, #eff6ff 100%); border-top:1px solid #c7d2fe; border-bottom:2px solid #cbd5e1; animation: fadeIn 0.2s ease-out; box-shadow:inset 0 4px 10px rgba(0,0,0,0.02);">
+                <div style="margin-bottom:12px;">
+                    <div style="font-size:15px; font-weight:850; color:#3730a3; display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:18px;">💼</span> Bảng Tổng Hợp Đơn Hàng & Mã Số Ứng Viên
+                    </div>
+                </div>
+                
+                <!-- Đăng ký ghép đơn nhanh -->
+                <div class="quick-job-assign-box" style="background:#ffffff; border:1px solid #c7d2fe; border-radius:14px; padding:16px; margin-bottom:16px; box-shadow:0 4px 14px -2px rgba(99,102,241,0.06);">
+                    <div style="font-size:11px; font-weight:800; color:#4f46e5; margin-bottom:12px; text-transform:uppercase; display:flex; align-items:center; gap:6px; letter-spacing:0.05em;">
+                        <span style="font-size:14px; color:#4f46e5;">⚡</span> Ghép Đơn Hàng Nhanh Bằng Mã Số
+                    </div>
+                    <div class="quick-job-assign-fields" style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
+                        <div style="flex:1; min-width:180px;">
+                            <label style="display:block; font-size:11px; font-weight:700; color:#4f46e5; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.02em;">Tên đơn hàng:</label>
+                            <input type="text" id="quickJobNameInput" placeholder="Ví dụ: Thác Vỹ, HV" 
+                                style="width:100%; padding:10px 12px; border:1px solid #c7d2fe; border-radius:8px; font-size:13px; outline:none; box-sizing:border-box; background:#fbfbfe; font-family:'Inter',sans-serif; font-weight:750; color:#0f172a; transition: all 0.15s;"
+                                onfocus="this.style.borderColor='#4f46e5'; this.style.background='#ffffff'; this.style.boxShadow='0 0 0 3px rgba(79,70,229,0.15)';" 
+                                onblur="this.style.borderColor='#c7d2fe'; this.style.background='#fbfbfe'; this.style.boxShadow='none';">
+                        </div>
+                        <div style="flex:2; min-width:280px;">
+                            <label style="display:block; font-size:11px; font-weight:700; color:#4f46e5; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.02em;">Danh sách dự tuyển:</label>
+                            <input type="text" id="quickJobMasoInput" placeholder="Ví dụ: FD3996, FD3999, FD4000..." 
+                                style="width:100%; padding:10px 12px; border:1px solid #c7d2fe; border-radius:8px; font-size:13px; outline:none; box-sizing:border-box; background:#fbfbfe; font-family:monospace; font-weight:600; color:#0f172a; transition: all 0.15s;"
+                                onfocus="this.style.borderColor='#4f46e5'; this.style.background='#ffffff'; this.style.boxShadow='0 0 0 3px rgba(79,70,229,0.15)';" 
+                                onblur="this.style.borderColor='#c7d2fe'; this.style.background='#fbfbfe'; this.style.boxShadow='none';">
+                        </div>
+                        <button type="button" onclick="submitQuickJobAssign()" 
+                            style="padding:10px 22px; background:#4f46e5; color:#ffffff; border:none; border-radius:8px; font-size:13px; font-weight:800; cursor:pointer; transition:all 0.18s; white-space:nowrap; box-shadow:0 4px 6px -1px rgba(79,70,229,0.2); display:flex; align-items:center; gap:6px;"
+                            onmouseover="this.style.background='#3730a3'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(79,70,229,0.3)';"
+                            onmouseout="this.style.background='#4f46e5'; this.style.transform='none'; this.style.boxShadow='0 4px 6px -1px rgba(79,70,229,0.2)';">
+                            <span>⚡ Ghép ngay</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Bảng danh sách đơn hàng cuộn cuộn nếu có hàng chục đơn hàng -->
+                <div style="background:#ffffff; border:1px solid #c7d2fe; border-radius:14px; box-shadow:0 4px 12px -2px rgba(79,70,229,0.03); overflow:hidden;">
+                    <div class="job-table-wrapper" style="max-height:280px; overflow-y:auto; position:relative;">
+                        <table class="job-summary-table" style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;">
+                            <thead>
+                                <tr style="background:#e0e7ff; border-bottom:1px solid #c7d2fe; position:sticky; top:0; z-index:10; box-shadow:0 1px 0 rgba(0,0,0,0.05);">
+                                    <th style="padding:12px 16px; font-weight:800; color:#3730a3; width:200px; text-transform:uppercase; font-size:11px; letter-spacing:0.05em; background:#e0e7ff; position:sticky; top:0; z-index:10;">Đơn hàng</th>
+                                    <th style="padding:12px 16px; font-weight:800; color:#3730a3; text-transform:uppercase; font-size:11px; letter-spacing:0.05em; background:#e0e7ff; position:sticky; top:0; z-index:10;">Danh sách dự tuyển</th>
+                                    <th style="padding:12px 16px; font-weight:800; color:#3730a3; width:120px; text-align:center; text-transform:uppercase; font-size:11px; letter-spacing:0.05em; white-space:nowrap; background:#e0e7ff; position:sticky; top:0; z-index:10;">Số lượng</th>
+                                    <th style="padding:12px 16px; font-weight:800; color:#3730a3; width:280px; text-align:center; text-transform:uppercase; font-size:11px; letter-spacing:0.05em; background:#e0e7ff; position:sticky; top:0; z-index:10;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="jobSummaryTableBody">
+                                <!-- Sẽ render động qua Javascript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <input type="file" id="importFileInput" accept=".html,.htm" style="display:none;" onchange="loadFromFile(this)">
     </div>
 
     <div class="w-full lg:w-2/3 h-full overflow-y-auto relative main-content-area px-4 py-6 lg:px-16 lg:py-12">
@@ -3003,201 +3287,6 @@ async function loadHistory() {
             .action-grid { display: flex !important; flex-wrap: nowrap; gap: 6px; justify-content: center; }
         }
     </style>
-
-<!-- Bảng Popup (Modal) hiển thị lịch sử (Mặc định ẩn) -->
-<div id="historyModal" class="glass-modal" style="display:none; position:fixed; top:1%; left:5%; width:90%; max-height:98%; z-index:9999; overflow-y:auto; border-radius: 20px; font-family:'Inter',sans-serif;">
-
-    <!-- Header -->
-    <div class="modal-header-dark notranslate">
-        <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
-            <div style="width:36px; height:36px; background:linear-gradient(135deg,#6366f1,#0ea5e9); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">📁</div>
-            <div style="overflow:hidden;">
-                <div class="modal-header-title" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Quản lý Hồ Sơ — <span class="sidebar-logo-accent">FCT</span> HR</div>
-                <div class="modal-header-sub" style="white-space:nowrap;"><span class="hidden sm:inline">Version 3.6.5 — </span><span id="historyTotalCount" class="modal-header-badge">0 hồ sơ</span></div>
-            </div>
-        </div>
-        <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
-            <button type="button" id="historyRefreshBtn" onclick="loadHistory()" class="modal-header-btn modal-header-btn-ghost" title="Làm mới">
-                <span class="hidden sm:inline">🔄 Làm mới</span>
-                <span class="sm:hidden">🔄</span>
-            </button>
-            <button type="button" onclick="bulkExportExcelHistory(true, event)" class="modal-header-btn modal-header-btn-green" title="Xuất Excel tất cả">
-                <span class="hidden sm:inline">📊 Xuất Excel</span>
-                <span class="sm:hidden">📊</span>
-            </button>
-            <button type="button" onclick="document.getElementById('importFileInput').click()" class="modal-header-btn modal-header-btn-green" title="Nạp file">
-                <span class="hidden sm:inline">📂 Nạp file</span>
-                <span class="sm:hidden">📂</span>
-            </button>
-            <button type="button" onclick="document.getElementById('historyModal').style.display='none'" class="modal-header-btn modal-header-btn-red" title="Đóng">
-                <span class="hidden sm:inline">✕ Đóng</span>
-                <span class="sm:hidden">✕</span>
-            </button>
-        </div>
-    </div>
-
-    <!-- Tabs Navigation -->
-    <div class="modal-tab-bar notranslate">
-        <button type="button" onclick="switchHistoryTab('candidates')" id="tabBtn-candidates" class="modal-tab-btn active-tab">
-            <span>📁</span> Danh sách hồ sơ
-        </button>
-        <button type="button" onclick="switchHistoryTab('passed')" id="tabBtn-passed" class="modal-tab-btn">
-            <span>🏆</span> Danh sách trúng tuyển
-        </button>
-        <button type="button" onclick="switchHistoryTab('jobs')" id="tabBtn-jobs" class="modal-tab-btn">
-            <span>💼</span> Tổng hợp đơn hàng
-        </button>
-    </div>
-
-    <!-- Tab 1: Candidates Content Area -->
-    <div id="tabContent-candidates" style="display: block;">
-        <!-- Search + Filter (STICKY ON MOBILE) -->
-        <div class="modal-search-bar notranslate">
-            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-                <div style="position:relative; flex:1; min-width:180px;">
-                    <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#6366f1; font-size:14px;">🔍</span>
-                    <input type="text" id="searchInput" oninput="filterHistory()"
-                        placeholder="Tìm tên, mã số..."
-                        style="width:100%; padding:10px 14px 10px 36px; border:1.5px solid #e2e8f0; border-radius:12px; font-size:13px; font-family:'Inter',sans-serif; box-sizing:border-box; background:#f8fafc; outline:none; transition:border-color 0.2s, box-shadow 0.2s;"
-                        onfocus="this.style.borderColor='#6366f1'; this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';">
-                </div>
-                
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <select id="yearFilter" onchange="filterHistory()" style="padding:9px 12px; border:1.5px solid #e2e8f0; border-radius:12px; font-size:13px; font-family:'Inter',sans-serif; background:#f8fafc; outline:none; color:#334155; font-weight:600; cursor:pointer;">
-                        <option value="ALL">Tất cả các năm</option>
-                        <option value="2027">Năm 2027</option>
-                        <option value="2026" selected>Năm 2026</option>
-                        <option value="2025">Năm 2025</option>
-                    </select>
-                </div>
-                
-                <button onclick="clearHistoryFilters()" style="padding:9px 16px; background:#f1f5f9; color:#475569; border:1.5px solid #e2e8f0; border-radius:12px; cursor:pointer; font-size:13px; font-weight:600; transition:all 0.2s;" onmouseover="this.style.background='#e2e8f0';" onmouseout="this.style.background='#f1f5f9';">✕ Xóa lọc</button>
-            </div>
-            
-            <!-- Filter Buttons (Loại mã số) -->
-            <div class="mobile-filter-scroll" style="display:flex; gap:8px; align-items:center;">
-                <span class="hidden sm:inline" style="font-size:10px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.08em; margin-right:4px;">Lọc:</span>
-                
-                <select id="nptFilter" onchange="filterHistory()" style="padding:5px 10px; border:1px solid #e2e8f0; border-radius:999px; font-size:11px; font-family:'Inter',sans-serif; background:#f8fafc; outline:none; color:#334155; font-weight:700; max-width:110px; cursor:pointer;">
-                    <option value="ALL">NPT</option>
-                </select>
-
-                <button type="button" id="filter-ALL" onclick="setFilterPrefix('ALL')" class="filter-btn active">Tất cả</button>
-                <button type="button" id="filter-MD" onclick="setFilterPrefix('MD')" class="filter-btn">♂️ Nam (MD)</button>
-                <button type="button" id="filter-FD" onclick="setFilterPrefix('FD')" class="filter-btn">♀️ Nữ (FD)</button>
-                <button type="button" id="filter-KD" onclick="setFilterPrefix('KD')" class="filter-btn">🏥 Điều dưỡng (KD)</button>
-                <button type="button" id="filter-OTHER" onclick="setFilterPrefix('OTHER')" class="filter-btn">❓ Mã khác</button>
-            </div>
-        </div>
-
-        <!-- Bulk toolbar (ẩn khi chưa chọn) -->
-        <div id="historyBulkBar" class="modal-bulk-bar" style="display:none;">
-            <span style="font-size:13px; font-weight:700; color:#a5b4fc;">Đã chọn: <span id="historySelectedCount" style="background:#6366f1; color:#fff; border-radius:999px; padding:2px 9px; font-size:11px; font-weight:800;">0</span></span>
-            <div style="width:1px; height:16px; background:rgba(255,255,255,0.1);"></div>
-            <button onclick="bulkAssignJob()" class="bulk-btn bulk-btn-indigo">💼 Ghép đơn hàng</button>
-            <button onclick="bulkCopyHistoryLinks()" class="bulk-btn bulk-btn-teal">📤 Copy link</button>
-            <button onclick="bulkDownloadHistory()" class="bulk-btn bulk-btn-indigo">📥 Tải (.ZIP)</button>
-            <button onclick="bulkExportExcelHistory(false, event)" class="bulk-btn bulk-btn-green">📊 Xuất Excel</button>
-            <button onclick="bulkPrintHistory()" class="bulk-btn bulk-btn-purple">🖨️ In PDF hàng loạt</button>
-            <button onclick="bulkDeleteHistory()" class="bulk-btn bulk-btn-red">🗑️ Xóa đã chọn</button>
-            <button onclick="clearHistorySelection()" class="bulk-btn bulk-btn-ghost" style="margin-left:auto;">✕ Bỏ chọn</button>
-        </div>
-
-        <!-- Table -->
-        <div class="history-container" style="padding:16px 20px;">
-            <table class="history-table" style="width:100%; border-collapse:collapse; background:transparent;">
-                <thead>
-                    <tr style="background:#f8fafc; border-bottom:2px solid #e2e8f0;">
-                        <th style="padding:10px 12px; width:36px;">
-                            <input type="checkbox" id="historySelectAll" onchange="toggleHistorySelectAll(this)" style="accent-color:#6366f1; width:15px; height:15px; cursor:pointer;">
-                        </th>
-                        <th style="padding:10px 8px; text-align:left; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8; width:120px;">Mã Số</th>
-                        <th style="padding:10px 8px; text-align:left; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8; min-width:150px; max-width:320px;">Họ Tên</th>
-                        <th style="padding:10px 8px; text-align:left; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8; width:120px;">Thời Gian Tạo</th>
-                        <th style="padding:10px 8px; text-align:center; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8;">Thao Tác</th>
-                    </tr>
-                </thead>
-                <tbody id="historyTableBody"></tbody>
-            </table>
-            <div id="historyVisibleCount" style="margin-top:10px; font-size:11px; color:#94a3b8; text-align:right; font-weight:600;"></div>
-        </div>
-    </div>
-
-    <!-- Tab 1.5: Passed Candidates Content Area -->
-    <div id="tabContent-passed" style="display: none; padding:16px 20px;">
-        <div id="passedSummaryPanel" style="display:block; padding:18px 24px; background:linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-top:1px solid #bbf7d0; border-bottom:2px solid #86efac; animation: fadeIn 0.2s ease-out; box-shadow:inset 0 4px 10px rgba(0,0,0,0.02); margin-bottom:16px;">
-            <div style="font-size:15px; font-weight:850; color:#166534; display:flex; align-items:center; gap:8px;">
-                <span style="font-size:18px;">🏆</span> Danh sách ứng viên trúng tuyển
-            </div>
-            <p style="font-size:13px; color:#15803d; margin-top:4px;">Các ứng viên đã trúng tuyển được phân loại theo từng đơn hàng cụ thể.</p>
-        </div>
-        <div id="passedSummaryContainer" style="display:flex; flex-direction:column; gap:20px;">
-            <!-- Danh sách trúng tuyển sẽ được render vào đây bằng JS -->
-        </div>
-    </div>
-
-    <!-- Tab 2: Jobs Content Area -->
-    <div id="tabContent-jobs" style="display: none;">
-        <!-- Bảng Tổng Hợp Đơn Hàng & Mã Số Ứng Viên -->
-        <div id="jobSummaryPanel" style="display:block; padding:18px 24px; background:linear-gradient(135deg, #f5f3ff 0%, #eff6ff 100%); border-top:1px solid #c7d2fe; border-bottom:2px solid #cbd5e1; animation: fadeIn 0.2s ease-out; box-shadow:inset 0 4px 10px rgba(0,0,0,0.02);">
-            <div style="margin-bottom:12px;">
-                <div style="font-size:15px; font-weight:850; color:#3730a3; display:flex; align-items:center; gap:8px;">
-                    <span style="font-size:18px;">💼</span> Bảng Tổng Hợp Đơn Hàng & Mã Số Ứng Viên
-                </div>
-            </div>
-            
-            <!-- Đăng ký ghép đơn nhanh -->
-            <div class="quick-job-assign-box" style="background:#ffffff; border:1px solid #c7d2fe; border-radius:14px; padding:16px; margin-bottom:16px; box-shadow:0 4px 14px -2px rgba(99,102,241,0.06);">
-                <div style="font-size:11px; font-weight:800; color:#4f46e5; margin-bottom:12px; text-transform:uppercase; display:flex; align-items:center; gap:6px; letter-spacing:0.05em;">
-                    <span style="font-size:14px; color:#4f46e5;">⚡</span> Ghép Đơn Hàng Nhanh Bằng Mã Số
-                </div>
-                <div class="quick-job-assign-fields" style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
-                    <div style="flex:1; min-width:180px;">
-                        <label style="display:block; font-size:11px; font-weight:700; color:#4f46e5; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.02em;">Tên đơn hàng:</label>
-                        <input type="text" id="quickJobNameInput" placeholder="Ví dụ: Thác Vỹ, HV" 
-                            style="width:100%; padding:10px 12px; border:1px solid #c7d2fe; border-radius:8px; font-size:13px; outline:none; box-sizing:border-box; background:#fbfbfe; font-family:'Inter',sans-serif; font-weight:750; color:#0f172a; transition: all 0.15s;"
-                            onfocus="this.style.borderColor='#4f46e5'; this.style.background='#ffffff'; this.style.boxShadow='0 0 0 3px rgba(79,70,229,0.15)';" 
-                            onblur="this.style.borderColor='#c7d2fe'; this.style.background='#fbfbfe'; this.style.boxShadow='none';">
-                    </div>
-                    <div style="flex:2; min-width:280px;">
-                        <label style="display:block; font-size:11px; font-weight:700; color:#4f46e5; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.02em;">Danh sách dự tuyển:</label>
-                        <input type="text" id="quickJobMasoInput" placeholder="Ví dụ: FD3996, FD3999, FD4000..." 
-                            style="width:100%; padding:10px 12px; border:1px solid #c7d2fe; border-radius:8px; font-size:13px; outline:none; box-sizing:border-box; background:#fbfbfe; font-family:monospace; font-weight:600; color:#0f172a; transition: all 0.15s;"
-                            onfocus="this.style.borderColor='#4f46e5'; this.style.background='#ffffff'; this.style.boxShadow='0 0 0 3px rgba(79,70,229,0.15)';" 
-                            onblur="this.style.borderColor='#c7d2fe'; this.style.background='#fbfbfe'; this.style.boxShadow='none';">
-                    </div>
-                    <button type="button" onclick="submitQuickJobAssign()" 
-                        style="padding:10px 22px; background:#4f46e5; color:#ffffff; border:none; border-radius:8px; font-size:13px; font-weight:800; cursor:pointer; transition:all 0.18s; white-space:nowrap; box-shadow:0 4px 6px -1px rgba(79,70,229,0.2); display:flex; align-items:center; gap:6px;"
-                        onmouseover="this.style.background='#3730a3'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(79,70,229,0.3)';"
-                        onmouseout="this.style.background='#4f46e5'; this.style.transform='none'; this.style.boxShadow='0 4px 6px -1px rgba(79,70,229,0.2)';">
-                        <span>⚡ Ghép ngay</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Bảng danh sách đơn hàng cuộn cuộn nếu có hàng chục đơn hàng -->
-            <div style="background:#ffffff; border:1px solid #c7d2fe; border-radius:14px; box-shadow:0 4px 12px -2px rgba(79,70,229,0.03); overflow:hidden;">
-                <div class="job-table-wrapper" style="max-height:280px; overflow-y:auto; position:relative;">
-                    <table class="job-summary-table" style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;">
-                        <thead>
-                            <tr style="background:#e0e7ff; border-bottom:1px solid #c7d2fe; position:sticky; top:0; z-index:10; box-shadow:0 1px 0 rgba(0,0,0,0.05);">
-                                <th style="padding:12px 16px; font-weight:800; color:#3730a3; width:200px; text-transform:uppercase; font-size:11px; letter-spacing:0.05em; background:#e0e7ff; position:sticky; top:0; z-index:10;">Đơn hàng</th>
-                                <th style="padding:12px 16px; font-weight:800; color:#3730a3; text-transform:uppercase; font-size:11px; letter-spacing:0.05em; background:#e0e7ff; position:sticky; top:0; z-index:10;">Danh sách dự tuyển</th>
-                                <th style="padding:12px 16px; font-weight:800; color:#3730a3; width:120px; text-align:center; text-transform:uppercase; font-size:11px; letter-spacing:0.05em; white-space:nowrap; background:#e0e7ff; position:sticky; top:0; z-index:10;">Số lượng</th>
-                                <th style="padding:12px 16px; font-weight:800; color:#3730a3; width:280px; text-align:center; text-transform:uppercase; font-size:11px; letter-spacing:0.05em; background:#e0e7ff; position:sticky; top:0; z-index:10;">Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody id="jobSummaryTableBody">
-                            <!-- Sẽ render động qua Javascript -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <input type="file" id="importFileInput" accept=".html,.htm" style="display:none;" onchange="loadFromFile(this)">
-</div>
 
 </body>
 </html>
