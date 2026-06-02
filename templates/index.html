@@ -502,89 +502,66 @@
         }
 
         /* ═══════════════════════════════════════════════════════════
-           APP SHELL & LAYOUT OVERHAUL
+           PREMIUM DIALOG MODAL LAYOUT & BUTTON CONTROLS
            ═══════════════════════════════════════════════════════════ */
         
-        @media (min-width: 1024px) {
-            .premium-sidebar {
-                width: 320px !important;
-                height: 100vh !important;
-                position: fixed !important;
-                top: 0; left: 0; bottom: 0;
-            }
-            
-            #historyModal {
-                margin-left: 320px !important;
-                width: calc(100% - 320px) !important;
-                height: 100vh !important;
-                max-height: 100vh !important;
-                border-radius: 0 !important;
-                box-shadow: none !important;
-                position: fixed !important;
-                top: 0 !important; left: 0 !important;
-                z-index: 10 !important;
-                display: flex !important;
-                flex-direction: column;
-                background: #f8fafc !important;
-                transition: opacity 0.3s ease, filter 0.3s ease, transform 0.3s ease !important;
-            }
-
-            #historyModal[style*="display: none"],
-            #historyModal[style*="display:none"] {
-                opacity: 0.35 !important;
-                filter: blur(5px) grayscale(50%);
-                pointer-events: none !important;
-                transform: scale(0.995);
-            }
-
-            .main-content-area {
-                position: fixed !important;
-                top: 0 !important;
-                right: 0 !important;
-                bottom: 0 !important;
-                width: calc(100% - 320px) !important;
-                max-width: 900px !important;
-                height: 100vh !important;
-                background: #ffffff !important;
-                box-shadow: -10px 0 50px rgba(15, 23, 42, 0.12) !important;
-                z-index: 1000 !important;
-                transform: translateX(100%);
-                transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
-                border-left: 1px solid rgba(226, 232, 240, 0.8) !important;
-                padding-bottom: 80px !important;
-            }
-
-            #historyModal[style*="display: none"] ~ .main-content-area,
-            #historyModal[style*="display:none"] ~ .main-content-area {
-                transform: translateX(0) !important;
-            }
-
-            /* Backdrop when form is active */
-            #historyModal[style*="display: none"]::after,
-            #historyModal[style*="display:none"]::after {
-                content: '';
-                position: fixed;
-                top: 0; left: 320px; right: 0; bottom: 0;
-                background: rgba(15, 23, 42, 0.2);
-                backdrop-filter: blur(2px);
-                z-index: 999;
-                pointer-events: auto;
-                animation: fadeIn 0.3s ease;
-            }
+        /* Dim overlay behind modal when historyModal is open */
+        body:has(#historyModal:not([style*="display: none"]):not([style*="display:none"]))::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(8px);
+            z-index: 9998;
+            animation: fadeIn 0.25s ease-out;
         }
 
-        @media (max-width: 1023px) {
-            #historyModal {
-                position: fixed !important;
-                top: 0 !important; left: 0 !important;
-                width: 100vw !important;
-                height: 100vh !important;
-                z-index: 9999 !important;
-            }
-            #historyModal[style*="display: none"],
-            #historyModal[style*="display:none"] {
-                display: none !important;
-            }
+        #historyModal {
+            position: fixed !important;
+            top: 5% !important;
+            left: 5% !important;
+            width: 90% !important;
+            height: 90% !important;
+            max-height: 90% !important;
+            border-radius: 20px !important;
+            z-index: 9999 !important;
+            background: rgba(255, 255, 255, 0.98) !important;
+            backdrop-filter: blur(20px) !important;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+            border: 1px solid rgba(255, 255, 255, 0.4) !important;
+            animation: slideInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+
+        /* Hide Tải HTML and Xem & In by default (on new forms) */
+        .btn-word-action,
+        .btn-print-action {
+            display: none !important;
+        }
+
+        /* Show them when in edit mode (i.e. when Cancel button is displayed) */
+        #btnCancelEdit:not([style*="display: none"]):not([style*="display:none"]) ~ .btn-word-action,
+        #btnCancelEdit:not([style*="display: none"]):not([style*="display:none"]) ~ .btn-print-action {
+            display: inline-flex !important;
+        }
+
+        /* Premium style for Lưu Form button when it is the sole action */
+        .btn-save-action {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+            color: white !important;
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4) !important;
+            border: none !important;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            padding: 12px 32px !important;
+            border-radius: 999px !important;
+            font-size: 14px !important;
+            font-weight: 800 !important;
+        }
+        .btn-save-action:hover {
+            transform: translateY(-2px) scale(1.03) !important;
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.55) !important;
+        }
+        .btn-save-action:active {
+            transform: translateY(0) scale(1) !important;
         }
     </style>
 </head>
@@ -1198,7 +1175,7 @@
             </section>
         </form>
 
-        <!-- ===== THANH NÚT THAO TÁC - INLINE STYLES (không bị Tailwind ghi đè) ===== -->
+        <!-- ===== THANH NÚT THAO TÁC ===== -->
         <div class="glass-bottom-bar" style="padding:14px 20px; padding-bottom:max(18px, env(safe-area-inset-bottom, 18px)); position:sticky; bottom:0; left:0; width:100%; box-sizing:border-box; z-index:1000;">
             <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap; max-width:800px; margin:0 auto;">
 
@@ -1211,25 +1188,29 @@
 
                 <!-- Cập nhật (chỉ hiện khi đang sửa) -->
                 <button type="button" id="btnUpdateOnly" onclick="handleSubmit('save')"
+                    class="btn-update-action"
                     style="display:none; align-items:center; gap:6px; padding:11px 22px; border-radius:12px; font-weight:700; font-size:13px; font-family:'Inter',sans-serif; cursor:pointer; background:#2563eb; color:white; border:none; box-shadow:0 4px 10px rgba(37,99,235,0.35); transition:all 0.2s;">
                     💾 <span id="btnUpdateText">Cập nhật</span>
                 </button>
 
                 <!-- Tải HTML -->
                 <button type="button" onclick="handleSubmit('word')"
-                    style="display:flex; align-items:center; gap:6px; padding:11px 22px; border-radius:12px; font-weight:700; font-size:13px; font-family:'Inter',sans-serif; cursor:pointer; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; transition:all 0.2s;">
+                    class="btn-bar btn-bar-ghost btn-word-action"
+                    style="display:flex; align-items:center;">
                     📄 Tải HTML
                 </button>
 
                 <!-- Lưu Form -->
                 <button type="button" onclick="handleSubmit('save_only')"
-                    style="display:flex; align-items:center; gap:6px; padding:11px 22px; border-radius:12px; font-weight:700; font-size:13px; font-family:'Inter',sans-serif; cursor:pointer; background:#1e40af; color:white; border:none; box-shadow:0 4px 10px rgba(30,64,175,0.35); transition:all 0.2s;">
+                    class="btn-save-action"
+                    style="display:flex; align-items:center;">
                     💾 Lưu Form
                 </button>
 
                 <!-- Xem & In -->
                 <button type="button" onclick="handleSubmit('html')"
-                    style="display:flex; align-items:center; gap:6px; padding:11px 22px; border-radius:12px; font-weight:700; font-size:13px; font-family:'Inter',sans-serif; cursor:pointer; background:#2563eb; color:white; border:none; box-shadow:0 4px 10px rgba(37,99,235,0.35); transition:all 0.2s;">
+                    class="btn-bar btn-bar-blue btn-print-action"
+                    style="display:flex; align-items:center; gap:6px;">
                     <span id="btnText">🖨️ Xem &amp; In</span>
                     <div id="loading" style="display:none; width:14px; height:14px; border:2px solid rgba(255,255,255,0.4); border-top-color:white; border-radius:50%;"></div>
                 </button>
