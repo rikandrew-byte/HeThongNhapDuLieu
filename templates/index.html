@@ -604,13 +604,42 @@
 
     <div class="premium-sidebar w-full lg:w-1/3 p-4 lg:p-6 flex flex-row lg:flex-col justify-between items-center lg:items-start z-10 flex-shrink-0">
         
-        <div class="flex flex-row items-center gap-3" style="position:relative; z-index:2;">
-            <img src="{{ url_for('static', filename='LogoFCT.png') }}" alt="FCT Logo" class="w-10 lg:w-12 drop-shadow-md" onerror="this.src='https://via.placeholder.com/150?text=Logo+FCT'" style="filter: drop-shadow(0 4px 8px rgba(79,70,229,0.15));">
-            <div>
-                <h1 class="sidebar-logo-text text-lg lg:text-xl font-extrabold leading-tight">
-                    <span class="sidebar-logo-accent">FCT</span> HR SYSTEM
-                </h1>
-                <p class="hidden lg:block sidebar-desc text-xs mt-1 text-slate-500">Tự động hóa xuất hồ sơ ứng viên chuyên nghiệp.</p>
+        <div class="w-full flex flex-col gap-6">
+            <div class="flex flex-row items-center gap-3" style="position:relative; z-index:2;">
+                <img src="{{ url_for('static', filename='LogoFCT.png') }}" alt="FCT Logo" class="w-10 lg:w-12 drop-shadow-md" onerror="this.src='https://via.placeholder.com/150?text=Logo+FCT'" style="filter: drop-shadow(0 4px 8px rgba(79,70,229,0.15));">
+                <div>
+                    <h1 class="sidebar-logo-text text-lg lg:text-xl font-extrabold leading-tight">
+                        <span class="sidebar-logo-accent">FCT</span> HR SYSTEM
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Thống kê hệ thống -->
+            <div class="hidden lg:block w-full" style="position:relative; z-index:2;">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Thống kê hệ thống</p>
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between p-3 bg-white border border-slate-100 rounded-xl shadow-sm">
+                        <div class="flex items-center gap-2">
+                            <span class="text-base">📁</span>
+                            <span class="text-xs font-semibold text-slate-600">Tổng số hồ sơ</span>
+                        </div>
+                        <span id="sidebarTotalCount" class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">0</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-white border border-slate-100 rounded-xl shadow-sm">
+                        <div class="flex items-center gap-2">
+                            <span class="text-base">🏆</span>
+                            <span class="text-xs font-semibold text-slate-600">Đã trúng tuyển</span>
+                        </div>
+                        <span id="sidebarPassedCount" class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">0</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-white border border-slate-100 rounded-xl shadow-sm">
+                        <div class="flex items-center gap-2">
+                            <span class="text-base">💼</span>
+                            <span class="text-xs font-semibold text-slate-600">Đơn hàng hiện tại</span>
+                        </div>
+                        <span id="sidebarJobsCount" class="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">0</span>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1538,6 +1567,23 @@ async function loadHistory() {
 
         if (result.success) {
             currentHistoryData = result.data;
+            
+            // Cập nhật thống kê Sidebar
+            const sidebarTotal = document.getElementById('sidebarTotalCount');
+            const sidebarPassed = document.getElementById('sidebarPassedCount');
+            const sidebarJobs = document.getElementById('sidebarJobsCount');
+            if (sidebarTotal) sidebarTotal.innerText = result.data.length;
+            if (sidebarPassed) sidebarPassed.innerText = result.data.filter(item => item.is_selected).length;
+            if (sidebarJobs) {
+                const uniqueJobs = new Set();
+                result.data.forEach(item => {
+                    if (item.don_hang) {
+                        item.don_hang.split(/[,;]+/).map(j => j.trim()).filter(j => j.length > 0).forEach(j => uniqueJobs.add(j));
+                    }
+                });
+                sidebarJobs.innerText = uniqueJobs.size;
+            }
+
             tbody.innerHTML = ''; // Xóa dòng "Đang tải"
             
             // Cập nhật bảng tổng hợp đơn hàng nếu tab Jobs đang mở
@@ -3335,6 +3381,7 @@ async function loadHistory() {
                 padding: 14px 16px !important;
                 border-bottom: 2px solid #e2e8f0 !important;
                 background: #f8fafc !important;
+                white-space: nowrap !important;
             }
             .history-table td {
                 display: table-cell !important;
@@ -3360,6 +3407,7 @@ async function loadHistory() {
             }
             .history-table td:nth-child(4) {
                 color: #64748b !important;
+                white-space: nowrap !important;
             }
             .history-table td:nth-child(5) {
                 text-align: center !important;
