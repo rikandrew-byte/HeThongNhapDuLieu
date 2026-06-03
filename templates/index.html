@@ -43,25 +43,20 @@
 
         /* ── Premium Sidebar ── */
         .premium-sidebar {
-            background: linear-gradient(160deg, #1e1b4b 0%, #0f172a 55%, #0c1a2e 100%);
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
             position: relative;
             overflow: hidden;
+            border-right: 1px solid #e2e8f0;
         }
         .premium-sidebar::before {
-            content: '';
-            position: absolute;
-            left: 0; top: 0; bottom: 0;
-            width: 3px;
-            background: linear-gradient(to bottom, #6366f1 0%, #0ea5e9 100%);
-            z-index: 10;
-            animation: sidebarGlow 4s ease-in-out infinite;
+            display: none !important;
         }
         .premium-sidebar::after {
             content: '';
             position: absolute;
             top: -60px; right: -60px;
             width: 220px; height: 220px;
-            background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(99,102,241,0.06) 0%, transparent 70%);
             border-radius: 50%;
             pointer-events: none;
         }
@@ -69,17 +64,17 @@
             font-family: 'Outfit', 'Inter', sans-serif;
             font-weight: 800;
             letter-spacing: -0.02em;
-            color: #fff;
+            color: #0f172a;
         }
-        .sidebar-logo-accent { color: #818cf8; }
+        .sidebar-logo-accent { color: #4f46e5; }
         .sidebar-desc {
-            color: #94a3b8;
+            color: #475569;
             font-size: 13px;
             line-height: 1.6;
             font-weight: 400;
         }
         .sidebar-version {
-            color: #475569;
+            color: #94a3b8;
             font-size: 10px;
             font-weight: 700;
             letter-spacing: 0.12em;
@@ -87,11 +82,11 @@
         }
         .sidebar-divider {
             border: none;
-            border-top: 1px solid rgba(255,255,255,0.07);
+            border-top: 1px solid #e2e8f0;
             margin: 0;
         }
         .sidebar-crafted {
-            color: #475569;
+            color: #94a3b8;
             font-size: 10px;
             font-weight: 700;
             letter-spacing: 0.1em;
@@ -100,7 +95,7 @@
         .sidebar-author-name {
             font-family: 'Outfit', sans-serif;
             font-weight: 700;
-            color: #94a3b8;
+            color: #334155;
             font-size: 15px;
             letter-spacing: 0.01em;
         }
@@ -507,15 +502,15 @@
         
         @media (min-width: 1024px) {
             .premium-sidebar {
-                width: 320px !important;
+                width: 33.333333% !important;
                 height: 100vh !important;
                 position: fixed !important;
                 top: 0; left: 0; bottom: 0;
             }
             
             #historyModal {
-                margin-left: 320px !important;
-                width: calc(100% - 320px) !important;
+                margin-left: 33.333333% !important;
+                width: 66.666667% !important;
                 height: 100vh !important;
                 max-height: 100vh !important;
                 border-radius: 0 !important;
@@ -536,8 +531,8 @@
             }
 
             .main-content-area {
-                margin-left: 320px !important;
-                width: calc(100% - 320px) !important;
+                margin-left: 33.333333% !important;
+                width: 66.666667% !important;
                 height: 100vh !important;
                 background: #ffffff !important;
                 padding-bottom: 80px !important;
@@ -626,7 +621,7 @@
         </div>
 
         <div class="block lg:hidden flex-shrink-0 pl-2">
-            <img src="{{ url_for('static', filename='eagle_logo.png') }}" alt="Eagle Logo" class="w-16 h-12 object-contain" style="filter: brightness(0) invert(1) opacity(0.4);">
+            <img src="{{ url_for('static', filename='eagle_logo.png') }}" alt="Eagle Logo" class="w-16 h-12 object-contain">
         </div>
 
         <div class="hidden lg:block w-full" style="position:relative; z-index:2; margin-top: auto;">
@@ -634,7 +629,7 @@
             <div class="flex items-center gap-2 mb-1">
                 <span class="sidebar-crafted">Crafted by</span>
                 <div class="w-14 h-10 flex items-center justify-center flex-shrink-0">
-                    <img src="{{ url_for('static', filename='eagle_logo.png') }}" alt="Andrew Tseng Logo" class="w-full h-full object-contain" style="filter: brightness(0) invert(1) opacity(0.35);">
+                    <img src="{{ url_for('static', filename='eagle_logo.png') }}" alt="Andrew Tseng Logo" class="w-full h-full object-contain">
                 </div>
             </div>
             <div class="sidebar-author-name mb-4">Andrew Tseng</div>
