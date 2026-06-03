@@ -602,42 +602,43 @@
 </head>
 <body class="flex flex-col lg:flex-row h-screen overflow-hidden text-slate-800" onload="loadHistory()">
 
-    <div class="premium-sidebar w-full lg:w-1/3 p-4 lg:p-6 flex flex-row lg:flex-col justify-between items-center lg:items-start z-10 flex-shrink-0">
+    <div class="premium-sidebar w-full lg:w-1/3 flex flex-row lg:flex-col justify-between items-center lg:items-start z-10 flex-shrink-0" style="padding: 34px;">
         
-        <div class="w-full flex flex-col gap-6">
-            <div class="flex flex-row items-center gap-3" style="position:relative; z-index:2;">
-                <img src="{{ url_for('static', filename='LogoFCT.png') }}" alt="FCT Logo" class="w-10 lg:w-12 drop-shadow-md" onerror="this.src='https://via.placeholder.com/150?text=Logo+FCT'" style="filter: drop-shadow(0 4px 8px rgba(79,70,229,0.15));">
+        <div class="w-full flex flex-col items-center">
+            <!-- Center Logo & Title with Golden Ratio spacing -->
+            <div class="flex flex-col items-center text-center" style="margin-top: 13px; gap: 21px;">
+                <img src="{{ url_for('static', filename='LogoFCT.png') }}" alt="FCT Logo" onerror="this.src='https://via.placeholder.com/150?text=Logo+FCT'" style="width: 89px; height: 89px; object-fit: contain; filter: drop-shadow(0 8px 16px rgba(79,70,229,0.12));">
                 <div>
-                    <h1 class="sidebar-logo-text text-lg lg:text-xl font-extrabold leading-tight">
+                    <h1 class="sidebar-logo-text font-extrabold" style="font-size: 21px; line-height: 1.3; letter-spacing: -0.01em;">
                         <span class="sidebar-logo-accent">FCT</span> HR SYSTEM
                     </h1>
                 </div>
             </div>
 
-            <!-- Thống kê hệ thống -->
-            <div class="hidden lg:block w-full" style="position:relative; z-index:2;">
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Thống kê hệ thống</p>
-                <div class="space-y-2">
-                    <div class="flex items-center justify-between p-3 bg-white border border-slate-100 rounded-xl shadow-sm">
+            <!-- Thống kê hệ thống - Pushed down using Golden Ratio (89px) margin -->
+            <div class="hidden lg:block w-full" style="margin-top: 89px; position:relative; z-index:2;">
+                <p class="font-bold text-slate-400 uppercase tracking-widest" style="font-size: 10px; margin-bottom: 13px;">Thống kê hệ thống</p>
+                <div style="display: flex; flex-direction: column; gap: 13px;">
+                    <div class="flex items-center justify-between bg-white border border-slate-100 rounded-xl shadow-sm" style="padding: 13px;">
                         <div class="flex items-center gap-2">
-                            <span class="text-base">📁</span>
-                            <span class="text-xs font-semibold text-slate-600">Tổng số hồ sơ</span>
+                            <span style="font-size: 16px;">📁</span>
+                            <span class="font-semibold text-slate-600" style="font-size: 13px;">Tổng số hồ sơ</span>
                         </div>
-                        <span id="sidebarTotalCount" class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">0</span>
+                        <span id="sidebarTotalCount" class="font-bold text-indigo-600 bg-indigo-50 rounded-full" style="font-size: 13px; padding: 3px 8px;">0</span>
                     </div>
-                    <div class="flex items-center justify-between p-3 bg-white border border-slate-100 rounded-xl shadow-sm">
+                    <div class="flex items-center justify-between bg-white border border-slate-100 rounded-xl shadow-sm" style="padding: 13px;">
                         <div class="flex items-center gap-2">
-                            <span class="text-base">🏆</span>
-                            <span class="text-xs font-semibold text-slate-600">Đã trúng tuyển</span>
+                            <span style="font-size: 16px;">🏆</span>
+                            <span class="font-semibold text-slate-600" style="font-size: 13px;">Đã trúng tuyển</span>
                         </div>
-                        <span id="sidebarPassedCount" class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">0</span>
+                        <span id="sidebarPassedCount" class="font-bold text-emerald-600 bg-emerald-50 rounded-full" style="font-size: 13px; padding: 3px 8px;">0</span>
                     </div>
-                    <div class="flex items-center justify-between p-3 bg-white border border-slate-100 rounded-xl shadow-sm">
+                    <div class="flex items-center justify-between bg-white border border-slate-100 rounded-xl shadow-sm" style="padding: 13px;">
                         <div class="flex items-center gap-2">
-                            <span class="text-base">💼</span>
-                            <span class="text-xs font-semibold text-slate-600">Đơn hàng hiện tại</span>
+                            <span style="font-size: 16px;">💼</span>
+                            <span class="font-semibold text-slate-600" style="font-size: 13px;">Đơn hàng hiện tại</span>
                         </div>
-                        <span id="sidebarJobsCount" class="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">0</span>
+                        <span id="sidebarJobsCount" class="font-bold text-amber-600 bg-amber-50 rounded-full" style="font-size: 13px; padding: 3px 8px;">0</span>
                     </div>
                 </div>
             </div>
@@ -665,10 +666,14 @@
         <!-- Header -->
         <div class="modal-header-dark notranslate">
             <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
-                <div style="width:36px; height:36px; background:linear-gradient(135deg,#6366f1,#0ea5e9); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">📁</div>
+                <div style="width:38px; height:38px; background:#eef2ff; border: 1px solid #c7d2fe; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+                    </svg>
+                </div>
                 <div style="overflow:hidden;">
                     <div class="modal-header-title" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Quản lý Hồ Sơ — <span class="sidebar-logo-accent">FCT</span> HR</div>
-                    <div class="modal-header-sub" style="white-space:nowrap;"><span class="hidden sm:inline">Version 3.6.5 — </span><span id="historyTotalCount" class="modal-header-badge">0 hồ sơ</span></div>
+                    <div class="modal-header-sub" style="white-space:nowrap;"><span id="historyTotalCount" class="modal-header-badge">0 hồ sơ</span></div>
                 </div>
             </div>
             <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
