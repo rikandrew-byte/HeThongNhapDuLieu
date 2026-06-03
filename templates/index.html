@@ -725,6 +725,13 @@
                             onfocus="this.style.borderColor='#6366f1'; this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';">
                     </div>
                     
+                    <div style="display:flex; align-items:center; gap:8px; background:#f8fafc; padding:10px 14px; border-radius:12px; border:1.5px solid #e2e8f0;">
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:13px; color:#475569; user-select:none; font-weight:600; white-space:nowrap; margin:0;">
+                            <input type="checkbox" id="searchInDocCheck" onchange="filterHistory()" style="width:16px; height:16px; cursor:pointer; accent-color:#6366f1; border-radius:4px; margin:0; vertical-align:middle;">
+                            Tìm sâu trong hồ sơ (Tay nghề...)
+                        </label>
+                    </div>
+                    
                     <div style="display:flex; align-items:center; gap:8px;">
                         <select id="yearFilter" onchange="filterHistory()" style="padding:9px 12px; border:1.5px solid #e2e8f0; border-radius:12px; font-size:13px; font-family:'Inter',sans-serif; background:#f8fafc; outline:none; color:#334155; font-weight:600; cursor:pointer;">
                             <option value="ALL">Tất cả các năm</option>
@@ -1703,6 +1710,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 tbody.appendChild(row);
             });
             updateHistoryCount();
+            window.lastHistorySearchQuery = searchQuery;
             
             // Gọi bộ lọc ngay lập tức để áp dụng filter hiện tại nếu có
             filterHistory(true);
@@ -2869,16 +2877,27 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 }
             });
 
+            const searchInDocCheck = document.getElementById('searchInDocCheck');
+            const searchInDoc = searchInDocCheck ? searchInDocCheck.checked : false;
+
             if (!skipBackendSearch) {
                 clearTimeout(searchTimeout);
-                if (raw.length >= 2) {
-                    searchTimeout = setTimeout(() => {
-                        loadHistory(raw, true);
-                    }, 450);
-                } else if (raw.length === 0) {
-                    searchTimeout = setTimeout(() => {
-                        loadHistory('', true);
-                    }, 250);
+                if (searchInDoc) {
+                    if (raw.length >= 2) {
+                        searchTimeout = setTimeout(() => {
+                            loadHistory(raw, true);
+                        }, 450);
+                    } else if (raw.length === 0) {
+                        searchTimeout = setTimeout(() => {
+                            loadHistory('', true);
+                        }, 250);
+                    }
+                } else {
+                    if (window.lastHistorySearchQuery) {
+                        searchTimeout = setTimeout(() => {
+                            loadHistory('', true);
+                        }, 200);
+                    }
                 }
             }
 
