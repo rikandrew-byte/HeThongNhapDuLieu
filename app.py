@@ -895,13 +895,19 @@ def api_history():
         
         query = FormHistory.query.filter_by(is_deleted=False)
         if q:
-            dialect = db.engine.dialect.name
-            if dialect == 'sqlite':
-                # SQLite
-                query = query.filter(func.json_remove(FormHistory.data_json, '$.photo', '$.qr_line', '$.document_images', '$.signature').ilike(f'%{q}%'))
-            else:
-                # PostgreSQL (default in production)
-                query = query.filter(text("(data_json::jsonb - 'photo' - 'qr_line' - 'document_images' - 'signature')::text ILIKE :q").bindparams(q=f'%{q}%'))
+            keywords = [k.strip() for k in q.split(',') if k.strip()]
+            if keywords:
+                from sqlalchemy import or_
+                dialect = db.engine.dialect.name
+                conditions = []
+                for idx, kw in enumerate(keywords):
+                    if dialect == 'sqlite':
+                        conditions.append(func.json_remove(FormHistory.data_json, '$.photo', '$.qr_line', '$.document_images', '$.signature').ilike(f'%{kw}%'))
+                    else:
+                        param_name = f"kw_{idx}"
+                        conditions.append(text(f"(data_json::jsonb - 'photo' - 'qr_line' - 'document_images' - 'signature')::text ILIKE :{param_name}").bindparams(**{param_name: f'%{kw}%'}))
+                if conditions:
+                    query = query.filter(or_(*conditions))
             
         records = (
             query
