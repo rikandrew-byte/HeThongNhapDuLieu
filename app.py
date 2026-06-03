@@ -895,7 +895,13 @@ def api_history():
         
         query = FormHistory.query.filter_by(is_deleted=False)
         if q:
-            query = query.filter(FormHistory.data_json.ilike(f'%{q}%'))
+            dialect = db.engine.dialect.name
+            if dialect == 'sqlite':
+                # SQLite
+                query = query.filter(func.json_remove(FormHistory.data_json, '$.photo', '$.qr_line', '$.document_images', '$.signature').ilike(f'%{q}%'))
+            else:
+                # PostgreSQL (default in production)
+                query = query.filter(text("(data_json::jsonb - 'photo' - 'qr_line' - 'document_images' - 'signature')::text ILIKE :q").bindparams(q=f'%{q}%'))
             
         records = (
             query
