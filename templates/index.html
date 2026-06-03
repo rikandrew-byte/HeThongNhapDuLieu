@@ -1826,6 +1826,12 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             document.getElementById('dropzoneText').classList.remove('hidden');
             document.getElementById('clearPhotoBtn').classList.add('hidden');
             document.getElementById('clearQrBtn').classList.add('hidden');
+            
+            // Đặt lại tài liệu cũ
+            const docInput = document.getElementById('documentInput');
+            if (docInput) docInput.value = '';
+            const docPreview = document.getElementById('documentPreview');
+            if (docPreview) docPreview.innerHTML = '';
 
             // Ghi nhớ ID để UPDATE thay vì INSERT mới
             document.getElementById('editingRecordId').value = item.id;
@@ -1888,6 +1894,24 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             }
             if (data['qr_line'] && data['qr_line'] !== '__HAS_IMAGE__') {
                 document.getElementById('qrDropzoneText').innerHTML = "<span class='text-green-600 font-bold'>✓ Đã có QR. Upload mới nếu muốn thay.</span>";
+            }
+            
+            // Phục hồi tài liệu & giấy tờ (nếu có)
+            if (data.document_images && Array.isArray(data.document_images) && data.document_images.length > 0) {
+                const dt = new DataTransfer();
+                for (let i = 0; i < data.document_images.length; i++) {
+                    const b64 = data.document_images[i];
+                    if (b64 && b64.startsWith('data:image/')) {
+                        const fileObj = await base64ToFile(b64, `tai_lieu_${i}.jpg`);
+                        if (fileObj) {
+                            dt.items.add(fileObj);
+                        }
+                    }
+                }
+                if (docInput) {
+                    docInput.files = dt.files;
+                    displayDocumentPreview();
+                }
             }
             
             // Xóa mã số nếu là CHO_DUYET để Admin nhập mã mới
@@ -3091,6 +3115,23 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             }
         }
 
+        async function base64ToFile(dataurl, filename) {
+            try {
+                const arr = dataurl.split(',');
+                const mime = arr[0].match(/:(.*?);/)[1];
+                const bstr = atob(arr[1]);
+                let n = bstr.length;
+                const u8arr = new Uint8Array(n);
+                while (n--) {
+                    u8arr[n] = bstr.charCodeAt(n);
+                }
+                return new File([u8arr], filename, { type: mime });
+            } catch (e) {
+                console.error("Lỗi convert base64 sang File:", e);
+                return null;
+            }
+        }
+
         function cancelEdit() {
             document.getElementById('editingRecordId').value = '';
             document.getElementById('btnUpdateOnly').style.display = 'none';
@@ -3111,6 +3152,12 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             
             document.getElementById('clearPhotoBtn').classList.add('hidden');
             document.getElementById('clearQrBtn').classList.add('hidden');
+
+            // Xóa tài liệu Preview & files
+            const docInput = document.getElementById('documentInput');
+            if (docInput) docInput.value = '';
+            const docPreview = document.getElementById('documentPreview');
+            if (docPreview) docPreview.innerHTML = '';
         }
 
         // === NẠP DỮ LIỆU TỪ FILE HTML ĐÃ TẢI VỀ ===
