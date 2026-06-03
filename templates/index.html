@@ -725,6 +725,14 @@
                             onfocus="this.style.borderColor='#6366f1'; this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';">
                     </div>
                     
+                    <input type="checkbox" id="searchInDocCheck" style="display:none;">
+                    <button type="button" id="searchInDocBtn" onclick="toggleSearchInDoc()" 
+                        style="padding:10px 16px; border:1.5px solid #e2e8f0; border-radius:12px; font-size:13px; font-family:'Inter',sans-serif; background:#f8fafc; color:#64748b; font-weight:700; cursor:pointer; transition:all 0.2s; display:inline-flex; align-items:center; gap:6px; height:41px; box-sizing:border-box;"
+                        onmouseover="if(!document.getElementById('searchInDocCheck').checked) { this.style.background='#fff'; this.style.borderColor='#6366f1'; this.style.color='#4f46e5'; }"
+                        onmouseout="if(!document.getElementById('searchInDocCheck').checked) { this.style.background='#f8fafc'; this.style.borderColor='#e2e8f0'; this.style.color='#64748b'; }">
+                        <span>🛠️</span> Tìm theo Tay Nghề
+                    </button>
+                    
                     <div style="display:flex; align-items:center; gap:8px;">
                         <select id="yearFilter" onchange="filterHistory()" style="padding:9px 12px; border:1.5px solid #e2e8f0; border-radius:12px; font-size:13px; font-family:'Inter',sans-serif; background:#f8fafc; outline:none; color:#334155; font-weight:600; cursor:pointer;">
                             <option value="ALL">Tất cả các năm</option>
@@ -1546,21 +1554,28 @@
         }
 
         // Hàm gọi API lấy lịch sử và hiển thị lên bảng
-async function loadHistory() {
+async function loadHistory(searchQuery = '', skipUIInit = false) {
     try {
         // 1. Mở popup và hiện chữ đang tải
-        document.getElementById('historyModal').style.display = 'block';
-        
-        if (typeof currentActiveHistoryTab === 'undefined') {
-            currentActiveHistoryTab = 'candidates';
+        if (!skipUIInit) {
+            document.getElementById('historyModal').style.display = 'block';
+            
+            if (typeof currentActiveHistoryTab === 'undefined') {
+                currentActiveHistoryTab = 'candidates';
+            }
+            switchHistoryTab(currentActiveHistoryTab);
         }
-        switchHistoryTab(currentActiveHistoryTab);
 
         const tbody = document.getElementById('historyTableBody');
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 15px;">Đang tải dữ liệu lịch sử... ⏳</td></tr>';
+        if (skipUIInit) {
+            tbody.style.opacity = '0.6';
+        } else {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 15px;">Đang tải dữ liệu lịch sử... ⏳</td></tr>';
+        }
 
         // 2. Gọi API đến backend
-        const response = await fetch('/api/history', { credentials: 'same-origin' });
+        const url = searchQuery ? `/api/history?q=${encodeURIComponent(searchQuery)}` : '/api/history';
+        const response = await fetch(url, { credentials: 'same-origin' });
         
         // Bắt lỗi nếu API chưa tồn tại (chưa restart server) hoặc bị chặn
         if (!response.ok) {
@@ -1696,11 +1711,17 @@ async function loadHistory() {
                 tbody.appendChild(row);
             });
             updateHistoryCount();
+            window.lastHistorySearchQuery = searchQuery;
             
             // Gọi bộ lọc ngay lập tức để áp dụng filter hiện tại nếu có
-            filterHistory();
+            filterHistory(true);
+            
+            if (skipUIInit && tbody) {
+                tbody.style.opacity = '1';
+            }
         } else {
             tbody.innerHTML = `<tr><td colspan="5" style="color:red; text-align:center; padding: 15px;">Lỗi: ${result.error}</td></tr>`;
+            if (skipUIInit && tbody) tbody.style.opacity = '1';
         }
     } catch (error) {
         console.error("Lỗi khi tải lịch sử:", error);
@@ -2801,8 +2822,8 @@ async function loadHistory() {
             filterHistory();
         }
 
-        // Hàm lọc lịch sử theo tên/mã số (hỗ trợ nhiều mã cách nhau bằng dấu phẩy)
-        function filterHistory() {
+        let searchTimeout = null;
+        function filterHistory(skipBackendSearch = false) {
             const raw = document.getElementById('searchInput').value.trim();
             const terms = raw.toLowerCase().split(/[,\s]+/).filter(t => t.length > 0);
             const tbody = document.getElementById('historyTableBody');
@@ -2850,12 +2871,52 @@ async function loadHistory() {
                 }
                 
                 // 4. Sử dụng inline style !important để thắng hoàn toàn mọi CSS responsive
-                if (prefixMatch && searchMatch && yearMatch && nptMatch) {
+                if (prefixMatch && (searchMatch || skipBackendSearch) && yearMatch && nptMatch) {
                     row.style.display = ''; // Khôi phục hiển thị bình thường
                 } else {
                     row.style.setProperty('display', 'none', 'important'); // Ép buộc ẩn
                 }
             });
+
+            const searchInDocCheck = document.getElementById('searchInDocCheck');
+            const searchInDoc = searchInDocCheck ? searchInDocCheck.checked : false;
+            
+            // Đồng bộ giao diện nút bấm
+            const searchInDocBtn = document.getElementById('searchInDocBtn');
+            if (searchInDocBtn && searchInDocCheck) {
+                if (searchInDocCheck.checked) {
+                    searchInDocBtn.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
+                    searchInDocBtn.style.color = '#fff';
+                    searchInDocBtn.style.borderColor = 'transparent';
+                    searchInDocBtn.style.boxShadow = '0 4px 12px rgba(99,102,241,0.25)';
+                } else {
+                    searchInDocBtn.style.background = '#f8fafc';
+                    searchInDocBtn.style.color = '#64748b';
+                    searchInDocBtn.style.borderColor = '#e2e8f0';
+                    searchInDocBtn.style.boxShadow = 'none';
+                }
+            }
+
+            if (!skipBackendSearch) {
+                clearTimeout(searchTimeout);
+                if (searchInDoc) {
+                    if (raw.length >= 2) {
+                        searchTimeout = setTimeout(() => {
+                            loadHistory(raw, true);
+                        }, 450);
+                    } else if (raw.length === 0) {
+                        searchTimeout = setTimeout(() => {
+                            loadHistory('', true);
+                        }, 250);
+                    }
+                } else {
+                    if (window.lastHistorySearchQuery) {
+                        searchTimeout = setTimeout(() => {
+                            loadHistory('', true);
+                        }, 200);
+                    }
+                }
+            }
 
             // 5. Reorder rows: if multiple terms (e.g. Quick Filter), sort A-Z. Otherwise, restore original (newest first) order.
             const rowArray = Array.from(rows);
@@ -2876,12 +2937,21 @@ async function loadHistory() {
 
             updateHistoryCount();
         }
+        function toggleSearchInDoc() {
+            const check = document.getElementById('searchInDocCheck');
+            if (check) {
+                check.checked = !check.checked;
+                filterHistory();
+            }
+        }
         function clearHistoryFilters() {
             document.getElementById('searchInput').value = '';
             const yearFilter = document.getElementById('yearFilter');
             if (yearFilter) yearFilter.value = 'ALL';
             const nptFilter = document.getElementById('nptFilter');
             if (nptFilter) nptFilter.value = 'ALL';
+            const searchInDocCheck = document.getElementById('searchInDocCheck');
+            if (searchInDocCheck) searchInDocCheck.checked = false;
             setFilterPrefix('ALL');
         }
         

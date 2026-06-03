@@ -891,8 +891,26 @@ def api_history():
     try:
         from sqlalchemy.orm import load_only
         # load_only: chỉ SELECT các cột cần thiết, bỏ qua data_json (chứa ảnh base64 nặng hàng MB)
+        q = request.args.get('q', '').strip()
+        
+        query = FormHistory.query.filter_by(is_deleted=False)
+        if q:
+            keywords = [k.strip() for k in q.split(',') if k.strip()]
+            if keywords:
+                from sqlalchemy import or_
+                dialect = db.engine.dialect.name
+                conditions = []
+                for idx, kw in enumerate(keywords):
+                    if dialect == 'sqlite':
+                        conditions.append(func.json_remove(FormHistory.data_json, '$.photo', '$.qr_line', '$.document_images', '$.signature').ilike(f'%{kw}%'))
+                    else:
+                        param_name = f"kw_{idx}"
+                        conditions.append(text(f"(data_json::jsonb - 'photo' - 'qr_line' - 'document_images' - 'signature')::text ILIKE :{param_name}").bindparams(**{param_name: f'%{kw}%'}))
+                if conditions:
+                    query = query.filter(or_(*conditions))
+            
         records = (
-            FormHistory.query
+            query
             .options(load_only(
                 FormHistory.id,
                 FormHistory.ma_so,
@@ -902,7 +920,6 @@ def api_history():
                 FormHistory.don_hang,
                 FormHistory.nguoi_phu_trach
             ))
-            .filter_by(is_deleted=False)
             .order_by(FormHistory.ngay_tao.desc())
             .all()
         )
