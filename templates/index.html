@@ -1546,21 +1546,28 @@
         }
 
         // Hàm gọi API lấy lịch sử và hiển thị lên bảng
-async function loadHistory() {
+async function loadHistory(searchQuery = '', skipUIInit = false) {
     try {
         // 1. Mở popup và hiện chữ đang tải
-        document.getElementById('historyModal').style.display = 'block';
-        
-        if (typeof currentActiveHistoryTab === 'undefined') {
-            currentActiveHistoryTab = 'candidates';
+        if (!skipUIInit) {
+            document.getElementById('historyModal').style.display = 'block';
+            
+            if (typeof currentActiveHistoryTab === 'undefined') {
+                currentActiveHistoryTab = 'candidates';
+            }
+            switchHistoryTab(currentActiveHistoryTab);
         }
-        switchHistoryTab(currentActiveHistoryTab);
 
         const tbody = document.getElementById('historyTableBody');
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 15px;">Đang tải dữ liệu lịch sử... ⏳</td></tr>';
+        if (skipUIInit) {
+            tbody.style.opacity = '0.6';
+        } else {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 15px;">Đang tải dữ liệu lịch sử... ⏳</td></tr>';
+        }
 
         // 2. Gọi API đến backend
-        const response = await fetch('/api/history', { credentials: 'same-origin' });
+        const url = searchQuery ? `/api/history?q=${encodeURIComponent(searchQuery)}` : '/api/history';
+        const response = await fetch(url, { credentials: 'same-origin' });
         
         // Bắt lỗi nếu API chưa tồn tại (chưa restart server) hoặc bị chặn
         if (!response.ok) {
@@ -1698,9 +1705,14 @@ async function loadHistory() {
             updateHistoryCount();
             
             // Gọi bộ lọc ngay lập tức để áp dụng filter hiện tại nếu có
-            filterHistory();
+            filterHistory(true);
+            
+            if (skipUIInit && tbody) {
+                tbody.style.opacity = '1';
+            }
         } else {
             tbody.innerHTML = `<tr><td colspan="5" style="color:red; text-align:center; padding: 15px;">Lỗi: ${result.error}</td></tr>`;
+            if (skipUIInit && tbody) tbody.style.opacity = '1';
         }
     } catch (error) {
         console.error("Lỗi khi tải lịch sử:", error);
@@ -2801,8 +2813,8 @@ async function loadHistory() {
             filterHistory();
         }
 
-        // Hàm lọc lịch sử theo tên/mã số (hỗ trợ nhiều mã cách nhau bằng dấu phẩy)
-        function filterHistory() {
+        let searchTimeout = null;
+        function filterHistory(skipBackendSearch = false) {
             const raw = document.getElementById('searchInput').value.trim();
             const terms = raw.toLowerCase().split(/[,\s]+/).filter(t => t.length > 0);
             const tbody = document.getElementById('historyTableBody');
@@ -2850,12 +2862,25 @@ async function loadHistory() {
                 }
                 
                 // 4. Sử dụng inline style !important để thắng hoàn toàn mọi CSS responsive
-                if (prefixMatch && searchMatch && yearMatch && nptMatch) {
+                if (prefixMatch && (searchMatch || skipBackendSearch) && yearMatch && nptMatch) {
                     row.style.display = ''; // Khôi phục hiển thị bình thường
                 } else {
                     row.style.setProperty('display', 'none', 'important'); // Ép buộc ẩn
                 }
             });
+
+            if (!skipBackendSearch) {
+                clearTimeout(searchTimeout);
+                if (raw.length >= 2) {
+                    searchTimeout = setTimeout(() => {
+                        loadHistory(raw, true);
+                    }, 450);
+                } else if (raw.length === 0) {
+                    searchTimeout = setTimeout(() => {
+                        loadHistory('', true);
+                    }, 250);
+                }
+            }
 
             // 5. Reorder rows: if multiple terms (e.g. Quick Filter), sort A-Z. Otherwise, restore original (newest first) order.
             const rowArray = Array.from(rows);

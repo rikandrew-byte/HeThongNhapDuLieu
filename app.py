@@ -891,8 +891,14 @@ def api_history():
     try:
         from sqlalchemy.orm import load_only
         # load_only: chỉ SELECT các cột cần thiết, bỏ qua data_json (chứa ảnh base64 nặng hàng MB)
+        q = request.args.get('q', '').strip()
+        
+        query = FormHistory.query.filter_by(is_deleted=False)
+        if q:
+            query = query.filter(FormHistory.data_json.ilike(f'%{q}%'))
+            
         records = (
-            FormHistory.query
+            query
             .options(load_only(
                 FormHistory.id,
                 FormHistory.ma_so,
@@ -902,7 +908,6 @@ def api_history():
                 FormHistory.don_hang,
                 FormHistory.nguoi_phu_trach
             ))
-            .filter_by(is_deleted=False)
             .order_by(FormHistory.ngay_tao.desc())
             .all()
         )
