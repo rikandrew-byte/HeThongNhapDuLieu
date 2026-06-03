@@ -725,12 +725,13 @@
                             onfocus="this.style.borderColor='#6366f1'; this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';">
                     </div>
                     
-                    <div style="display:flex; align-items:center; gap:8px; background:#f8fafc; padding:10px 14px; border-radius:12px; border:1.5px solid #e2e8f0;">
-                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:13px; color:#475569; user-select:none; font-weight:600; white-space:nowrap; margin:0;">
-                            <input type="checkbox" id="searchInDocCheck" onchange="filterHistory()" style="width:16px; height:16px; cursor:pointer; accent-color:#6366f1; border-radius:4px; margin:0; vertical-align:middle;">
-                            Tìm sâu trong hồ sơ (Tay nghề...)
-                        </label>
-                    </div>
+                    <input type="checkbox" id="searchInDocCheck" style="display:none;">
+                    <button type="button" id="searchInDocBtn" onclick="toggleSearchInDoc()" 
+                        style="padding:10px 16px; border:1.5px solid #e2e8f0; border-radius:12px; font-size:13px; font-family:'Inter',sans-serif; background:#f8fafc; color:#64748b; font-weight:700; cursor:pointer; transition:all 0.2s; display:inline-flex; align-items:center; gap:6px; height:41px; box-sizing:border-box;"
+                        onmouseover="if(!document.getElementById('searchInDocCheck').checked) { this.style.background='#fff'; this.style.borderColor='#6366f1'; this.style.color='#4f46e5'; }"
+                        onmouseout="if(!document.getElementById('searchInDocCheck').checked) { this.style.background='#f8fafc'; this.style.borderColor='#e2e8f0'; this.style.color='#64748b'; }">
+                        <span>🧠</span> Tìm sâu (Tay nghề...)
+                    </button>
                     
                     <div style="display:flex; align-items:center; gap:8px;">
                         <select id="yearFilter" onchange="filterHistory()" style="padding:9px 12px; border:1.5px solid #e2e8f0; border-radius:12px; font-size:13px; font-family:'Inter',sans-serif; background:#f8fafc; outline:none; color:#334155; font-weight:600; cursor:pointer;">
@@ -2879,6 +2880,22 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
 
             const searchInDocCheck = document.getElementById('searchInDocCheck');
             const searchInDoc = searchInDocCheck ? searchInDocCheck.checked : false;
+            
+            // Đồng bộ giao diện nút bấm
+            const searchInDocBtn = document.getElementById('searchInDocBtn');
+            if (searchInDocBtn && searchInDocCheck) {
+                if (searchInDocCheck.checked) {
+                    searchInDocBtn.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
+                    searchInDocBtn.style.color = '#fff';
+                    searchInDocBtn.style.borderColor = 'transparent';
+                    searchInDocBtn.style.boxShadow = '0 4px 12px rgba(99,102,241,0.25)';
+                } else {
+                    searchInDocBtn.style.background = '#f8fafc';
+                    searchInDocBtn.style.color = '#64748b';
+                    searchInDocBtn.style.borderColor = '#e2e8f0';
+                    searchInDocBtn.style.boxShadow = 'none';
+                }
+            }
 
             if (!skipBackendSearch) {
                 clearTimeout(searchTimeout);
@@ -2920,12 +2937,21 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
 
             updateHistoryCount();
         }
+        function toggleSearchInDoc() {
+            const check = document.getElementById('searchInDocCheck');
+            if (check) {
+                check.checked = !check.checked;
+                filterHistory();
+            }
+        }
         function clearHistoryFilters() {
             document.getElementById('searchInput').value = '';
             const yearFilter = document.getElementById('yearFilter');
             if (yearFilter) yearFilter.value = 'ALL';
             const nptFilter = document.getElementById('nptFilter');
             if (nptFilter) nptFilter.value = 'ALL';
+            const searchInDocCheck = document.getElementById('searchInDocCheck');
+            if (searchInDocCheck) searchInDocCheck.checked = false;
             setFilterPrefix('ALL');
         }
         
