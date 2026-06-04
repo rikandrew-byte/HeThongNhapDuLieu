@@ -849,10 +849,10 @@
                         <table class="job-summary-table" style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;">
                             <thead>
                                 <tr style="background:#e0e7ff; border-bottom:1px solid #c7d2fe; position:sticky; top:0; z-index:10; box-shadow:0 1px 0 rgba(0,0,0,0.05);">
-                                    <th style="padding:12px 16px; font-weight:800; color:#3730a3; width:200px; text-transform:uppercase; font-size:11px; letter-spacing:0.05em; background:#e0e7ff; position:sticky; top:0; z-index:10;">Đơn hàng</th>
+                                    <th style="padding:12px 16px; font-weight:800; color:#3730a3; white-space:nowrap; width:1%; text-transform:uppercase; font-size:11px; letter-spacing:0.05em; background:#e0e7ff; position:sticky; top:0; z-index:10;">Đơn hàng</th>
                                     <th style="padding:12px 16px; font-weight:800; color:#3730a3; text-transform:uppercase; font-size:11px; letter-spacing:0.05em; background:#e0e7ff; position:sticky; top:0; z-index:10;">Danh sách dự tuyển</th>
-                                    <th style="padding:12px 16px; font-weight:800; color:#3730a3; width:120px; text-align:center; text-transform:uppercase; font-size:11px; letter-spacing:0.05em; white-space:nowrap; background:#e0e7ff; position:sticky; top:0; z-index:10;">Số lượng</th>
-                                    <th style="padding:12px 16px; font-weight:800; color:#3730a3; width:280px; text-align:center; text-transform:uppercase; font-size:11px; letter-spacing:0.05em; background:#e0e7ff; position:sticky; top:0; z-index:10;">Thao tác</th>
+                                    <th style="padding:12px 16px; font-weight:800; color:#3730a3; white-space:nowrap; width:1%; text-align:center; text-transform:uppercase; font-size:11px; letter-spacing:0.05em; background:#e0e7ff; position:sticky; top:0; z-index:10;">Số lượng</th>
+                                    <th style="padding:12px 16px; font-weight:800; color:#3730a3; white-space:nowrap; width:1%; text-align:center; text-transform:uppercase; font-size:11px; letter-spacing:0.05em; background:#e0e7ff; position:sticky; top:0; z-index:10;">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody id="jobSummaryTableBody">
@@ -2207,14 +2207,9 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 let masoBadgesHtml = '';
                 if (masoList && masoList.trim() !== '') {
                     const codes = masoList.split(',').map(c => c.trim()).filter(c => c.length > 0);
-                    // Nhóm mỗi 8 mã số vào 1 hàng
-                    const rows = [];
-                    for (let i = 0; i < codes.length; i += 8) rows.push(codes.slice(i, i + 8));
-                    masoBadgesHtml = rows.map(row =>
-                        `<div style="display:flex; flex-wrap:nowrap; gap:4px; margin-bottom:4px;">` +
-                        row.map(code => `<span class="job-maso-badge" style="display:inline-flex; align-items:center; background:#eef2ff; border:1px solid #c7d2fe; border-radius:6px; padding:3px 8px; font-size:12px; font-weight:700; color:#312e81; font-family:monospace; white-space:nowrap;">${code}</span>`).join('') +
-                        `</div>`
-                    ).join('');
+                    masoBadgesHtml = `<div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:4px;">` +
+                        codes.map(code => `<span class="job-maso-badge" style="display:inline-flex; align-items:center; background:#eef2ff; border:1px solid #c7d2fe; border-radius:6px; padding:3px 8px; font-size:12px; font-weight:700; color:#312e81; font-family:monospace; white-space:nowrap;">${code}</span>`).join('') +
+                        `</div>`;
                 } else {
                     masoBadgesHtml = '<span style="color:#ef4444; font-style:italic;">Chỉ có mã Chờ duyệt</span>';
                 }
@@ -2227,7 +2222,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 tr.onmouseout = () => { tr.style.background = index % 2 === 0 ? '#ffffff' : '#f5f7ff'; };
                 
                 tr.innerHTML = `
-                    <td style="padding:12px 16px; font-weight:800; color:#3730a3; text-transform:uppercase; font-size:13px;">${job}</td>
+                    <td style="padding:12px 16px; font-weight:800; color:#3730a3; text-transform:uppercase; font-size:13px; white-space:nowrap;">${job}</td>
                     <td style="padding:12px 16px; color:#312e81; font-size:12px;">
                         <div style="display:flex; flex-wrap:wrap; align-items:center; gap:4px;">
                             ${masoBadgesHtml}
@@ -2236,7 +2231,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                     <td style="padding:12px 16px; text-align:center; font-weight:700; color:#4f46e5;">
                         <span style="background:rgba(79,70,229,0.08); color:#4f46e5; padding:3px 10px; border-radius:999px; font-size:12px; font-weight:800;">${applicants.length}</span>
                     </td>
-                    <td style="padding:12px 16px; text-align:center;">
+                    <td style="padding:12px 16px; text-align:center; white-space:nowrap;">
                         <div class="job-action-group" style="display:flex; gap:6px; justify-content:center; align-items:center; flex-wrap:nowrap; white-space:nowrap;">
                             <button type="button" onclick="copyJobMasoList('${masoList.replace(/'/g, "\\'")}', this)" 
                                 style="padding:6px 10px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:4px;"
