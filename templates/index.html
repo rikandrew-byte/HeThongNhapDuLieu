@@ -466,6 +466,129 @@
         }
         .btn-action:active { transform: translateY(0); }
 
+        /* ── Passed Candidates View Button Styles ── */
+        .btn-passed-view {
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+            border-radius: 6px;
+            text-decoration: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+        .btn-passed-remove {
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            background: #fef2f2;
+            color: #ef4444;
+            border: 1px solid #fecaca;
+            border-radius: 6px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+        @media (max-width: 640px) {
+            .btn-passed-view, .btn-passed-remove {
+                padding: 6px 8px !important;
+                font-size: 10px !important;
+            }
+        }
+
+        /* ── Search and Filter Responsive Grid ── */
+        .history-filter-grid {
+            display: grid;
+            grid-template-columns: 2fr 1.2fr 1fr 1fr;
+            gap: 10px;
+            align-items: center;
+            width: 100%;
+        }
+        .filter-item-search {
+            position: relative;
+        }
+        .filter-item-search span {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6366f1;
+            font-size: 14px;
+        }
+        .filter-item-search input {
+            width: 100%;
+            padding: 10px 14px 10px 36px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 13px;
+            outline: none;
+            background: #f8fafc;
+            box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .filter-item-search input:focus {
+            border-color: #6366f1 !important;
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.12) !important;
+        }
+        .filter-item-type select, .filter-item-year select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            background: #f8fafc;
+            outline: none;
+            cursor: pointer;
+            height: 41px;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        .filter-item-type select:hover, .filter-item-year select:hover {
+            border-color: #6366f1 !important;
+        }
+        .filter-item-clear button {
+            width: 100%;
+            height: 41px;
+            background: #f1f5f9;
+            color: #475569;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            box-sizing: border-box;
+            transition: all 0.2s;
+        }
+        .filter-item-clear button:hover {
+            background: #e2e8f0;
+        }
+        @media (max-width: 768px) {
+            .history-filter-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .filter-item-search {
+                grid-column: span 2;
+            }
+            .filter-item-type {
+                grid-column: span 2;
+            }
+            .filter-item-year {
+                grid-column: span 1;
+            }
+            .filter-item-clear {
+                grid-column: span 1;
+            }
+        }
+
         /* ── Filter Buttons ── */
         .filter-btn {
             padding: 6px 14px;
@@ -717,30 +840,29 @@
         <div id="tabContent-candidates" style="display: block;">
             <!-- Search + Filter (STICKY ON MOBILE) -->
             <div class="modal-search-bar notranslate">
-                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-                    <div style="position:relative; flex:1; min-width:180px;">
-                        <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#6366f1; font-size:14px;">🔍</span>
-                        <input type="text" id="searchInput" oninput="filterHistory()"
-                            placeholder="Tìm tên, mã số..."
-                            style="width:100%; padding:10px 14px 10px 36px; border:1.5px solid #e2e8f0; border-radius:12px; font-size:13px; font-family:'Inter',sans-serif; box-sizing:border-box; background:#f8fafc; outline:none; transition:border-color 0.2s, box-shadow 0.2s;"
-                            onfocus="this.style.borderColor='#6366f1'; this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.12)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';">
+                <div class="history-filter-grid">
+                    <div class="filter-item-search">
+                        <span>🔍</span>
+                        <input type="text" id="searchInput" oninput="filterHistory()" placeholder="Tìm tên, mã số...">
                     </div>
-                    <select id="searchType" onchange="filterHistory()" style="padding:10px 16px; border:1.5px solid #e2e8f0; border-radius:12px; font-size:13px; font-family:'Inter',sans-serif; background:#f8fafc; outline:none; color:#334155; font-weight:600; cursor:pointer; height:41px; box-sizing:border-box; transition:all 0.2s;" onmouseover="this.style.borderColor='#6366f1';" onmouseout="this.style.borderColor='#e2e8f0';">
-                        <option value="name_code">Tìm theo Tên/Mã số</option>
-                        <option value="skill">Tìm theo Tay nghề</option>
-                        <option value="exp">Tìm theo Kinh nghiệm</option>
-                    </select>
-                    
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <select id="yearFilter" onchange="filterHistory()" style="padding:9px 12px; border:1.5px solid #e2e8f0; border-radius:12px; font-size:13px; font-family:'Inter',sans-serif; background:#f8fafc; outline:none; color:#334155; font-weight:600; cursor:pointer;">
+                    <div class="filter-item-type">
+                        <select id="searchType" onchange="filterHistory()">
+                            <option value="name_code">Tìm theo Tên/Mã số</option>
+                            <option value="skill">Tìm theo Tay nghề</option>
+                            <option value="exp">Tìm theo Kinh nghiệm</option>
+                        </select>
+                    </div>
+                    <div class="filter-item-year">
+                        <select id="yearFilter" onchange="filterHistory()">
                             <option value="ALL">Tất cả các năm</option>
                             <option value="2027">Năm 2027</option>
                             <option value="2026" selected>Năm 2026</option>
                             <option value="2025">Năm 2025</option>
                         </select>
                     </div>
-                    
-                    <button onclick="clearHistoryFilters()" style="padding:9px 16px; background:#f1f5f9; color:#475569; border:1.5px solid #e2e8f0; border-radius:12px; cursor:pointer; font-size:13px; font-weight:600; transition:all 0.2s;" onmouseover="this.style.background='#e2e8f0';" onmouseout="this.style.background='#f1f5f9';">✕ Xóa lọc</button>
+                    <div class="filter-item-clear">
+                        <button onclick="clearHistoryFilters()">✕ Xóa lọc</button>
+                    </div>
                 </div>
                 
                 <!-- Filter Buttons (Loại mã số) -->
@@ -2139,17 +2261,17 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 
                 candidates.forEach((item, index) => {
                     const row = document.createElement('div');
-                    row.style.cssText = `display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed #e2e8f0;`;
+                    row.style.cssText = `display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed #e2e8f0; gap: 8px;`;
                     if (index === candidates.length - 1) row.style.borderBottom = 'none';
                     
                     row.innerHTML = `
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <span style="font-weight: 700; color: #1e293b; font-size: 14px;">${item.ho_ten}</span>
-                            <span style="background: #f1f5f9; color: #475569; font-size: 11px; padding: 2px 6px; border-radius: 4px; border: 1px solid #cbd5e1;">${item.ma_so}</span>
+                        <div style="display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1;">
+                            <span style="font-weight: 700; color: #1e293b; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${item.ho_ten}">${item.ho_ten}</span>
+                            <span style="background: #f1f5f9; color: #475569; font-size: 11px; padding: 2px 6px; border-radius: 4px; border: 1px solid #cbd5e1; flex-shrink: 0;">${item.ma_so}</span>
                         </div>
-                        <div style="display: flex; gap: 8px;">
-                            <a href="/cv/${item.ma_so === 'CHO_DUYET' ? `${item.id}/` : ''}${item.ma_so}${item.ho_ten ? '_' + sanitizeSlug(item.ho_ten) : ''}" target="_blank" style="padding: 6px 12px; font-size: 11px; font-weight: 700; background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; border-radius: 6px; text-decoration: none; cursor: pointer;">🖨️ Xem/In</a>
-                            <button onclick="toggleSelected(${item.id}, true, this, true, '${jobName.replace(/'/g, "\\'")}')" style="padding: 6px 12px; font-size: 11px; font-weight: 700; background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; border-radius: 6px; cursor: pointer;">❌ Bỏ trúng tuyển</button>
+                        <div style="display: flex; gap: 6px; flex-shrink: 0;">
+                            <a href="/cv/${item.ma_so === 'CHO_DUYET' ? `${item.id}/` : ''}${item.ma_so}${item.ho_ten ? '_' + sanitizeSlug(item.ho_ten) : ''}" target="_blank" class="btn-passed-view">🖨️ <span class="hidden sm:inline">Xem/In</span><span class="sm:hidden">Xem</span></a>
+                            <button onclick="toggleSelected(${item.id}, true, this, true, '${jobName.replace(/'/g, "\\'")}')" class="btn-passed-remove">❌ <span class="hidden sm:inline">Bỏ trúng tuyển</span><span class="sm:hidden">Bỏ</span></button>
                         </div>
                     `;
                     list.appendChild(row);
