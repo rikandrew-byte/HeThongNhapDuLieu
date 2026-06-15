@@ -1018,18 +1018,34 @@ def api_bulk_download():
         records = FormHistory.query.filter(FormHistory.id.in_([int(i) for i in ids])).all()
         if not records: return jsonify({'success': False, 'error': 'No records found'}), 404
         
+        import concurrent.futures
+        
+        def process_record(r):
+            try:
+                form_data = json.loads(r.data_json) if r.data_json else {}
+                html_content = generate_html_resume(form_data)
+                filename = f"{r.ma_so}_{sanitize_filename_master(r.ho_ten)}.html"
+                return filename, html_content
+            except Exception as ex:
+                import traceback
+                print(f"Error processing record {r.id}:")
+                traceback.print_exc()
+                return None, None
+
         zip_buffer = io.BytesIO()
         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
-            for r in records:
-                try:
-                    form_data = json.loads(r.data_json)
-                    html_content = generate_html_resume(form_data)
-                    filename = f"{r.ma_so}_{sanitize_filename_master(r.ho_ten)}.html"
-                    zf.writestr(filename, html_content)
-                except: pass
+            with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
+                futures = {executor.submit(process_record, r): r for r in records}
+                for future in concurrent.futures.as_completed(futures):
+                    filename, html_content = future.result()
+                    if filename and html_content:
+                        zf.writestr(filename, html_content.encode('utf-8'))
+                        
         zip_buffer.seek(0)
         return send_file(zip_buffer, mimetype='application/zip', as_attachment=True, download_name='FCT_HoSo_Export.zip')
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/history/bulk-assign-job', methods=['POST'])
