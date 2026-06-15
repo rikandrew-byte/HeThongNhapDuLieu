@@ -582,9 +582,13 @@ def prepare_render_data(raw_data: dict) -> dict:
     parts = [p for p in [hut, ruou] if p]
     data['HutRuou'] = " / ".join(parts) if parts else "無"
 
+    skip_images = raw_data.get('__skip_images__', False)
     for key in ('photo', 'qr_line'):
         path = raw_data.get(key, '')
-        if isinstance(path, str) and path.startswith('data:image/'):
+        if skip_images:
+            # Bỏ qua tải ảnh (dùng khi export ZIP hàng loạt để tránh timeout)
+            data[f'{key}_base64'] = ""
+        elif isinstance(path, str) and path.startswith('data:image/'):
             # Đã là Base64 (upload từ Local hoặc cũ) → dùng luôn
             data[f'{key}_base64'] = path
         elif isinstance(path, str) and path.startswith('http'):
@@ -628,8 +632,11 @@ def _protect_html(html: str) -> str:
     )
     return html.replace('</body>', anti_devtools + '</body>')
 
-def generate_html_resume(form_data: dict, template_name='fct_template_v6.18.html') -> str:
-    processed_data = prepare_render_data(form_data)
+def generate_html_resume(form_data: dict, template_name='fct_template_v6.18.html', skip_images: bool = False) -> str:
+    render_data = dict(form_data)
+    if skip_images:
+        render_data['__skip_images__'] = True
+    processed_data = prepare_render_data(render_data)
     processed_data['logo_base64'] = _LOGO_B64_CACHE or get_base64_image(os.path.join(BASE_DIR, 'static', 'logo.png'))
     processed_data['bg_base64']   = _BG_B64_CACHE   or get_base64_image(os.path.join(BASE_DIR, 'static', 'fct_bg.png'), max_size=400, quality=75)
     
@@ -1023,7 +1030,8 @@ def api_bulk_download():
             for r in records:
                 try:
                     form_data = json.loads(r.data_json) if r.data_json else {}
-                    html_content = generate_html_resume(form_data)
+                    # skip_images=True: bỏ qua tải ảnh từ R2 để tránh timeout Render
+                    html_content = generate_html_resume(form_data, skip_images=True)
                     filename = f"{r.ma_so}_{sanitize_filename_master(r.ho_ten)}.html"
                     zf.writestr(filename, html_content.encode('utf-8'))
                 except Exception as ex:
