@@ -1,0 +1,17 @@
+Line 2: <html lang="vi">
+Line 7: <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
+Line 31: transform: translateY(-1px);
+Line 97: transform: translateY(-1px);
+Line 165: <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Họ tên (Tiếng Việt)</label><input type="text" name="Hoten" onblur="translateName(this.value)" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
+Line 725: // Hàm tự động dịch tên sang tiếng Trung
+Line 726: async function translateName(text) {
+Line 729: const response = await fetch('/api/translate', {
+Line 736: if (result.success && result.translated) {
+Line 737: document.querySelector('input[name="TentiengTrung"]').value = result.translated;
+Line 740: console.error("Lỗi khi dịch tên:", error);
+Line 2020: from { opacity: 0; transform: translateY(-8px); }
+Line 2021: to   { opacity: 1; transform: translateY(0); }
+Line 2060: <div class="notranslate" style="background:#fff; border-bottom:1px solid #e2e8f0; padding:12px 16px; border-radius:16px 16px 0 0; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100;">
+Line 2093: <div class="notranslate" style="padding:14px 20px; background:#fff; border-bottom:1px solid #e2e8f0; display:flex; flex-direction:column; gap:12px; position:sticky; top:56px; z-index:90; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
+Line 2096: <span style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#94a3b8;">🔍</span>
+Line 2158: onmouseover="this.style.background='#1d4ed8'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(37,99,235,0.3)';"

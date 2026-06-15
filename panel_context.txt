@@ -1,0 +1,96 @@
+Lines 2114 to 2208:
+2114:         
+2115:         <!-- Filter Buttons (Loại mã số) -->
+2116:         <div class="mobile-filter-scroll" style="display:flex; gap:8px; align-items:center;">
+2117:             <span class="hidden sm:inline" style="font-size:11px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em; margin-right:4px;">Lọc theo loại:</span>
+2118:             <button type="button" id="filter-ALL" onclick="setFilterPrefix('ALL')" class="filter-btn active">Tất cả</button>
+2119:             <button type="button" id="filter-MD" onclick="setFilterPrefix('MD')" class="filter-btn">♂️ Nam (MD)</button>
+2120:             <button type="button" id="filter-FD" onclick="setFilterPrefix('FD')" class="filter-btn">♀️ Nữ (FD)</button>
+2121:             <button type="button" id="filter-KD" onclick="setFilterPrefix('KD')" class="filter-btn">🏥 Điều dưỡng (KD)</button>
+2122:             <button type="button" id="filter-OTHER" onclick="setFilterPrefix('OTHER')" class="filter-btn">❓ Mã khác</button>
+2123:         </div>
+2124:     </div>
+2125: 
+2126:     <input type="file" id="importFileInput" accept=".html,.htm" style="display:none;" onchange="loadFromFile(this)">
+2127: 
+2128:     <!-- Bảng Tổng Hợp Đơn Hàng & Mã Số Ứng Viên -->
+2129:     <div id="jobSummaryPanel" style="display:none; padding:16px 20px; background:#f8fafc; border-bottom:1px solid #e2e8f0; animation: fadeIn 0.2s ease-out;">
+2130:         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+2131:             <div style="font-size:15px; font-weight:850; color:#0f172a; display:flex; align-items:center; gap:8px;">
+2132:                 <span style="font-size:18px;">💼</span> Bảng Tổng Hợp Đơn Hàng & Mã Số Ứng Viên
+2133:             </div>
+2134:             <button type="button" onclick="toggleJobSummaryPanel(false)" style="color:#ef4444; font-weight:700; font-size:13px; cursor:pointer; background:none; border:none; outline:none; transition: opacity 0.15s;" onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1">✕ Đóng bảng</button>
+2135:         </div>
+2136:         
+2137:         <!-- Đăng ký ghép đơn nhanh -->
+2138:         <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:16px; margin-bottom:16px; box-shadow:0 4px 12px -2px rgba(15,23,42,0.04);">
+2139:             <div style="font-size:11px; font-weight:800; color:#475569; margin-bottom:12px; text-transform:uppercase; display:flex; align-items:center; gap:6px; letter-spacing:0.05em;">
+2140:                 <span style="font-size:14px; color:#2563eb;">⚡</span> Ghép Đơn Hàng Nhanh Bằng Mã Số
+2141:             </div>
+2142:             <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
+2143:                 <div style="flex:1; min-width:180px;">
+2144:                     <label style="display:block; font-size:11px; font-weight:700; color:#64748b; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.02em;">Tên đơn hàng:</label>
+2145:                     <input type="text" id="quickJobNameInput" placeholder="Ví dụ: Thác Vỹ, HV" 
+2146:                         style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; outline:none; box-sizing:border-box; background:#f8fafc; font-family:'Inter',sans-serif; font-weight:750; color:#0f172a; transition: all 0.15s;"
+2147:                         onfocus="this.style.borderColor='#2563eb'; this.style.background='#ffffff'; this.style.boxShadow='0 0 0 3px rgba(37,99,235,0.1)';" 
+2148:                         onblur="this.style.borderColor='#cbd5e1'; this.style.background='#f8fafc'; this.style.boxShadow='none';">
+2149:                 </div>
+2150:                 <div style="flex:2; min-width:280px;">
+2151:                     <label style="display:block; font-size:11px; font-weight:700; color:#64748b; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.02em;">Danh sách dự tuyển:</label>
+2152:                     <input type="text" id="quickJobMasoInput" placeholder="Ví dụ: FD3996, FD3999, FD4000..." 
+2153:                         style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; outline:none; box-sizing:border-box; background:#f8fafc; font-family:monospace; font-weight:600; color:#0f172a; transition: all 0.15s;"
+2154:                         onfocus="this.style.borderColor='#2563eb'; this.style.background='#ffffff'; this.style.boxShadow='0 0 0 3px rgba(37,99,235,0.1)';" 
+2155:                         onblur="this.style.borderColor='#cbd5e1'; this.style.background='#f8fafc'; this.style.boxShadow='none';">
+2156:                 </div>
+2157:                 <button type="button" onclick="submitQuickJobAssign()" 
+2158:                     style="padding:10px 22px; background:#2563eb; color:#ffffff; border:none; border-radius:8px; font-size:13px; font-weight:800; cursor:pointer; transition:all 0.18s; white-space:nowrap; box-shadow:0 4px 6px -1px rgba(37,99,235,0.2); display:flex; align-items:center; gap:6px;"
+2159:                     onmouseover="this.style.background='#1d4ed8'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(37,99,235,0.3)';"
+2160:                     onmouseout="this.style.background='#2563eb'; this.style.transform='none'; this.style.boxShadow='0 4px 6px -1px rgba(37,99,235,0.2)';">
+2161:                     <span>⚡ Ghép ngay</span>
+2162:                 </button>
+2163:             </div>
+2164:         </div>
+2165: 
+2166:         <!-- Bảng danh sách đơn hàng cuộn cuộn nếu có hàng chục đơn hàng -->
+2167:         <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; box-shadow:0 4px 12px -2px rgba(15,23,42,0.03); overflow:hidden;">
+2168:             <div style="max-height:280px; overflow-y:auto; position:relative;">
+2169:                 <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13px; min-width:600px;">
+2170:                     <thead>
+2171:                         <tr style="background:#f1f5f9; border-bottom:1px solid #e2e8f0; position:sticky; top:0; z-index:10; box-shadow:0 1px 0 rgba(0,0,0,0.05);">
+2172:                             <th style="padding:12px 16px; font-weight:800; color:#475569; width:200px; text-transform:uppercase; font-size:11px; letter-spacing:0.05em; background:#f1f5f9; position:sticky; top:0; z-index:10;">Đơn hàng</th>
+2173:                             <th style="padding:12px 16px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.05em; background:#f1f5f9; position:sticky; top:0; z-index:10;">Danh sách dự tuyển</th>
+2174:                             <th style="padding:12px 16px; font-weight:800; color:#475569; width:90px; text-align:center; text-transform:uppercase; font-size:11px; letter-spacing:0.05em; background:#f1f5f9; position:sticky; top:0; z-index:10;">Số lượng</th>
+2175:                             <th style="padding:12px 16px; font-weight:800; color:#475569; width:280px; text-align:center; text-transform:uppercase; font-size:11px; letter-spacing:0.05em; background:#f1f5f9; position:sticky; top:0; z-index:10;">Thao tác</th>
+2176:                         </tr>
+2177:                     </thead>
+2178:                     <tbody id="jobSummaryTableBody">
+2179:                         <!-- Sẽ render động qua Javascript -->
+2180:                     </tbody>
+2181:                 </table>
+2182:             </div>
+2183:         </div>
+2184:     </div>
+2185: 
+2186:     <!-- Bulk toolbar (ẩn khi chưa chọn) -->
+2187:     <div id="historyBulkBar" style="display:none; padding:10px 20px; background:#eff6ff; border-bottom:1px solid #bfdbfe; align-items:center; gap:12px; flex-wrap:wrap;">
+2188:         <span style="font-size:13px; font-weight:600; color:#2563eb;">Đã chọn: <span id="historySelectedCount" style="background:#2563eb; color:#fff; border-radius:999px; padding:1px 8px; font-size:11px;">0</span></span>
+2189:         <div style="width:1px; height:16px; background:#cbd5e1;"></div>
+2190:         <button onclick="bulkAssignJob()" style="padding:6px 12px; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600;">💼 Ghép đơn hàng</button>
+2191:         <button onclick="bulkCopyHistoryLinks()" style="padding:6px 12px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600;">📤 Copy link</button>
+2192:         <button onclick="bulkDownloadHistory()" style="padding:6px 12px; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600;">📥 Tải hàng loạt (.ZIP)</button>
+2193:         <button onclick="bulkExportExcelHistory(false, event)" style="padding:6px 12px; background:#dcfce7; color:#16a34a; border:1px solid #86efac; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600;">📊 Xuất Excel</button>
+2194:         <button onclick="bulkPrintHistory()" style="padding:6px 12px; background:#fdf4ff; color:#c026d3; border:1px solid #fbcfe8; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600;">🖨️ In PDF hàng loạt</button>
+2195:         <button onclick="bulkDeleteHistory()" style="padding:6px 12px; background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600;">🗑️ Xóa đã chọn</button>
+2196:         <button onclick="clearHistorySelection()" style="padding:6px 12px; background:#f8fafc; color:#475569; border:1px solid #e2e8f0; border-radius:7px; cursor:pointer; font-size:12px; font-weight:600; margin-left:auto;">✕ Bỏ chọn</button>
+2197:     </div>
+2198: 
+2199:     <!-- Table -->
+2200:     <div class="history-container" style="padding:16px 20px;">
+2201:         <table class="history-table" style="width:100%; border-collapse:collapse; background:transparent;">
+2202:             <thead>
+2203:                 <tr style="background:#f8fafc; border-bottom:1px solid #e2e8f0;">
+2204:                     <th style="padding:10px 12px; width:36px;">
+2205:                         <input type="checkbox" id="historySelectAll" onchange="toggleHistorySelectAll(this)" style="accent-color:#2563eb; width:15px; height:15px; cursor:pointer;">
+2206:                     </th>
+2207:                     <th style="padding:10px 8px; text-align:left; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#94a3b8;">Mã Số</th>
+2208:                     <th style="padding:10px 8px; text-align:left; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#94a3b8;">Họ Tên</th>

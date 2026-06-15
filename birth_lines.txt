@@ -1,0 +1,18 @@
+
+--- FILE: d:\Software\FCT Human Resource\FCT Human Resource\FCT-HeThongLamForm (DataBase)\HeThongLamForm\templates\index.html ---
+Line 167:                     <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Ngày sinh</label><input type="date" name="Ngaysinh" id="birthDate" onchange="calcAge()" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
+Line 1665:             const birthValue = document.getElementById('birthDate').value;
+Line 1666:             if (!birthValue) return;
+Line 1667:             const birthDate = new Date(birthValue);
+Line 1669:             let age = today.getFullYear() - birthDate.getFullYear();
+Line 1670:             const monthDiff = today.getMonth() - birthDate.getMonth();
+Line 1671:             if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+
+--- FILE: d:\Software\FCT Human Resource\FCT Human Resource\FCT-HeThongLamForm (DataBase)\HeThongLamForm\templates\user_form.html ---
+Line 98:                             type="date" name="Ngaysinh" id="birthDate" onchange="calcAge()"
+Line 630:             const birthValue = document.getElementById('birthDate').value;
+Line 631:             if (!birthValue) return;
+Line 632:             const birthDate = new Date(birthValue);
+Line 634:             let age = today.getFullYear() - birthDate.getFullYear();
+Line 635:             const monthDiff = today.getMonth() - birthDate.getMonth();
+Line 636:             if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
