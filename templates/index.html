@@ -1696,7 +1696,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                         <div class="action-grid hidden lg:flex">
                             ${item.ma_so === 'CHO_DUYET' ? `<button onclick="restoreData(${index})" class="btn-action btn-approve">✅ Duyệt</button>` : ''}
                             <button onclick="restoreData(${index})" class="btn-action btn-edit">✍️ Sửa</button>
-                            <button onclick="toggleSelected(${item.id}, ${item.is_selected ? 'true' : 'false'}, this)" class="btn-action ${item.is_selected ? 'btn-selected' : 'btn-normal'}">${item.is_selected ? '🎯 Trúng tuyển' : '📝 Gửi form'}</button>
+                            <button onclick="toggleSelected(${item.id}, ${item.is_selected ? 'true' : 'false'}, this)" class="btn-action ${item.is_selected ? 'btn-selected' : 'btn-normal'}">${item.is_selected ? '🎯 Trúng tuyển' : '📝 Chưa trúng'}</button>
                             <a href="/cv/${item.ma_so === 'CHO_DUYET' ? `${item.id}/` : ''}${item.ma_so}${item.ho_ten ? '_' + sanitizeSlug(item.ho_ten) : ''}" target="_blank" class="btn-action btn-view">🖨️ Xem & In</a>
 
                             <button onclick="copyHistoryLink(${item.id}, '${item.ma_so}', '${item.ho_ten.replace(/'/g, "\\'")}', this)" class="btn-action btn-copy">📤 Copy link</button>
