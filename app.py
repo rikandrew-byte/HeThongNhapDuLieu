@@ -485,15 +485,15 @@ def get_base64_image(path, max_size=None, quality=80):
 # --- CACHE ---
 _LOGO_B64_CACHE = None
 _BG_B64_CACHE   = None
-_TEMPLATE_CACHE = None
+_TEMPLATE_OBJ_CACHE = None
 
 def _init_cache():
-    global _LOGO_B64_CACHE, _BG_B64_CACHE, _TEMPLATE_CACHE
+    global _LOGO_B64_CACHE, _BG_B64_CACHE, _TEMPLATE_OBJ_CACHE
     _LOGO_B64_CACHE = get_base64_image(os.path.join(BASE_DIR, 'static', 'logo.png'))
     _BG_B64_CACHE   = get_base64_image(os.path.join(BASE_DIR, 'static', 'fct_bg.png'), max_size=400, quality=75)
     try:
         with open(os.path.join(BASE_DIR, 'templates', 'fct_template_v6.18.html'), 'r', encoding='utf-8') as f:
-            _TEMPLATE_CACHE = f.read()
+            _TEMPLATE_OBJ_CACHE = Template(f.read())
     except: pass
 
 _init_cache()
@@ -599,7 +599,7 @@ def prepare_render_data(raw_data: dict) -> dict:
             data[f'{key}_base64'] = ""
 
     # Xử lý ảnh tài liệu (giấy tờ) để render trang 2
-    data['document_images'] = raw_data.get('document_images', [])
+    data['document_images'] = [] if skip_images else raw_data.get('document_images', [])
 
     return data
 
@@ -650,7 +650,8 @@ def generate_html_resume(form_data: dict, template_name='fct_template_v6.18.html
     # Dùng placeholder để _protect_html không phá hủy JSON
     processed_data['raw_data_json'] = '___FCT_RAW_PLACEHOLDER___'
     
-    if _TEMPLATE_CACHE: template = Template(_TEMPLATE_CACHE)
+    if _TEMPLATE_OBJ_CACHE and template_name == 'fct_template_v6.18.html':
+        template = _TEMPLATE_OBJ_CACHE
     else:
         with open(os.path.join(BASE_DIR, 'templates', template_name), 'r', encoding='utf-8') as f:
             template = Template(f.read())

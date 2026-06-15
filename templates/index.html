@@ -2763,7 +2763,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             if (!checked.length) return;
             const ids = checked.map(cb => parseInt(cb.value));
 
-            const BATCH_SIZE = 50;
+            const BATCH_SIZE = 30;
             const batches = [];
             for (let i = 0; i < ids.length; i += BATCH_SIZE) {
                 batches.push(ids.slice(i, i + BATCH_SIZE));
@@ -2810,7 +2810,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             if (btn) { btn.innerHTML = origText; btn.disabled = false; }
             if (successCount > 0) {
                 clearHistorySelection();
-                if (batches.length > 1) alert(`✅ Đã tải xong ${successCount}/${batches.length} batch (mỗi batch tối đa 50 hồ sơ).`);
+                if (batches.length > 1) alert(`✅ Đã tải xong ${successCount}/${batches.length} batch (mỗi batch tối đa 30 hồ sơ).`);
             }
         }
 
