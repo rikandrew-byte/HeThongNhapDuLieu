@@ -1017,37 +1017,21 @@ def api_bulk_download():
         if not ids: return jsonify({'success': False, 'error': 'No IDs'}), 400
         records = FormHistory.query.filter(FormHistory.id.in_([int(i) for i in ids])).all()
         if not records: return jsonify({'success': False, 'error': 'No records found'}), 404
-        
-        import concurrent.futures
-        
-        def process_record(r_dict):
-            try:
-                form_data = json.loads(r_dict['data_json']) if r_dict['data_json'] else {}
-                html_content = generate_html_resume(form_data)
-                filename = f"{r_dict['ma_so']}_{sanitize_filename_master(r_dict['ho_ten'])}.html"
-                return filename, html_content
-            except Exception as ex:
-                import traceback
-                print(f"Error processing record {r_dict['id']}:")
-                traceback.print_exc()
-                return None, None
-
-        record_dicts = [{
-            'id': r.id,
-            'ma_so': r.ma_so,
-            'ho_ten': r.ho_ten,
-            'data_json': r.data_json
-        } for r in records]
 
         zip_buffer = io.BytesIO()
         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
-            with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
-                futures = {executor.submit(process_record, r_dict): r_dict for r_dict in record_dicts}
-                for future in concurrent.futures.as_completed(futures):
-                    filename, html_content = future.result()
-                    if filename and html_content:
-                        zf.writestr(filename, html_content.encode('utf-8'))
-                        
+            for r in records:
+                try:
+                    form_data = json.loads(r.data_json) if r.data_json else {}
+                    html_content = generate_html_resume(form_data)
+                    filename = f"{r.ma_so}_{sanitize_filename_master(r.ho_ten)}.html"
+                    zf.writestr(filename, html_content.encode('utf-8'))
+                except Exception as ex:
+                    import traceback
+                    print(f"[ZIP] Skipping record {r.id} due to error:")
+                    traceback.print_exc()
+                    continue
+
         zip_buffer.seek(0)
         return send_file(zip_buffer, mimetype='application/zip', as_attachment=True, download_name='FCT_HoSo_Export.zip')
     except Exception as e:
