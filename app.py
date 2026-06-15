@@ -586,8 +586,11 @@ def prepare_render_data(raw_data: dict) -> dict:
     for key in ('photo', 'qr_line'):
         path = raw_data.get(key, '')
         if skip_images:
-            # Bỏ qua tải ảnh (dùng khi export ZIP hàng loạt để tránh timeout)
-            data[f'{key}_base64'] = ""
+            # Giữ nguyên đường dẫn (URL R2 hoặc Base64 sẵn có) để trình duyệt tự tải
+            if isinstance(path, str) and (path.startswith('http') or path.startswith('data:image/')):
+                data[f'{key}_base64'] = path
+            else:
+                data[f'{key}_base64'] = ""
         elif isinstance(path, str) and path.startswith('data:image/'):
             # Đã là Base64 (upload từ Local hoặc cũ) → dùng luôn
             data[f'{key}_base64'] = path
@@ -599,7 +602,7 @@ def prepare_render_data(raw_data: dict) -> dict:
             data[f'{key}_base64'] = ""
 
     # Xử lý ảnh tài liệu (giấy tờ) để render trang 2
-    data['document_images'] = [] if skip_images else raw_data.get('document_images', [])
+    data['document_images'] = raw_data.get('document_images', [])
 
     return data
 
@@ -1031,8 +1034,33 @@ def api_bulk_download():
             for r in records:
                 try:
                     form_data = json.loads(r.data_json) if r.data_json else {}
-                    # skip_images=True: bỏ qua tải ảnh từ R2 để tránh timeout Render
-                    html_content = generate_html_resume(form_data, skip_images=True)
+                    
+                    # 1. Trích xuất các ảnh tài liệu (Base64) ra thành file ảnh riêng biệt trong file ZIP
+                    doc_images_raw = form_data.get('document_images', [])
+                    rel_doc_filenames = []
+                    for idx, img_data in enumerate(doc_images_raw):
+                        if isinstance(img_data, str) and img_data.startswith('data:image/'):
+                            try:
+                                header, encoded = img_data.split(',', 1)
+                                file_bytes = base64.b64decode(encoded)
+                                ext = 'png'
+                                if 'image/' in header:
+                                    ext = header.split(';')[0].split('/')[-1]
+                                    if ext == 'jpeg': ext = 'jpg'
+                                img_filename = f"{r.ma_so}_{sanitize_filename_master(r.ho_ten)}_tailieu_{idx}.{ext}"
+                                zf.writestr(img_filename, file_bytes)
+                                rel_doc_filenames.append(img_filename)
+                            except Exception as ex_img:
+                                print(f"[ZIP] Lỗi trích xuất ảnh tài liệu {idx} cho {r.id}: {ex_img}")
+                        elif isinstance(img_data, str) and img_data.startswith('http'):
+                            rel_doc_filenames.append(img_data)
+                            
+                    # 2. Thay thế list Base64 bằng list tên file ảnh tương đối
+                    render_form_data = dict(form_data)
+                    render_form_data['document_images'] = rel_doc_filenames
+
+                    # skip_images=True: vẫn hiển thị ảnh chân dung/QR bằng URL trực tiếp, không fetch R2
+                    html_content = generate_html_resume(render_form_data, skip_images=True)
                     filename = f"{r.ma_so}_{sanitize_filename_master(r.ho_ten)}.html"
                     zf.writestr(filename, html_content.encode('utf-8'))
                 except Exception as ex:
