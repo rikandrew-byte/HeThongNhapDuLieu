@@ -767,8 +767,8 @@
                 <button onclick="bulkDownloadHistory()" class="bulk-btn bulk-btn-indigo">📥 Tải (.ZIP)</button>
                 <button onclick="bulkExportExcelHistory(false, event)" class="bulk-btn bulk-btn-green">📊 Xuất Excel</button>
                 <button onclick="bulkPrintHistory()" class="bulk-btn bulk-btn-purple">🖨️ In PDF hàng loạt</button>
-                <button onclick="bulkDeleteHistory()" class="bulk-btn bulk-btn-red">🗑️ Xóa đã chọn</button>
-                <button onclick="clearHistorySelection()" class="bulk-btn bulk-btn-ghost" style="margin-left:auto;">✕ Bỏ chọn</button>
+                <button onclick="clearHistorySelection()" class="bulk-btn bulk-btn-ghost">✕ Bỏ chọn</button>
+                <button onclick="bulkDeleteHistory()" class="bulk-btn bulk-btn-red" style="margin-left:auto;">🗑️ Xóa hồ sơ</button>
             </div>
 
             <!-- Table -->
@@ -2612,7 +2612,11 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
         async function bulkDeleteHistory() {
             const checked = [...document.querySelectorAll('.history-row-checkbox:checked')];
             if (!checked.length) return;
-            if (!confirm(`Xóa ${checked.length} hồ sơ đã chọn? Hành động không thể hoàn tác!`)) return;
+            const confirmText = prompt(`Bạn đang yêu cầu XÓA ${checked.length} hồ sơ. Hành động này KHÔNG THỂ HOÀN TÁC!\n\nVui lòng gõ chữ "XOA" (viết hoa) vào ô bên dưới để xác nhận:`);
+            if (confirmText !== 'XOA') {
+                if (confirmText !== null) alert('Xác nhận không hợp lệ, đã hủy thao tác xóa.');
+                return;
+            }
             const ids = checked.map(cb => parseInt(cb.value));
             try {
                 const res = await fetch('/api/history/bulk-delete', {
