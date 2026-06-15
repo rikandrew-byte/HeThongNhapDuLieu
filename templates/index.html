@@ -7,6 +7,7 @@
     <title>Hệ Thống Nhập Liệu DAS V3.0</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         /* ═══════════════════════════════════════════════════════════
            FCT HR SYSTEM — PREMIUM DARK-SIDEBAR DESIGN SYSTEM v3.0
@@ -2763,55 +2764,78 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             if (!checked.length) return;
             const ids = checked.map(cb => parseInt(cb.value));
 
-            const BATCH_SIZE = 30;
-            const batches = [];
-            for (let i = 0; i < ids.length; i += BATCH_SIZE) {
-                batches.push(ids.slice(i, i + BATCH_SIZE));
-            }
-
             const btn = document.querySelector('[onclick="bulkDownloadHistory()"]');
             const origText = btn ? btn.innerHTML : '';
-            if (btn) { btn.disabled = true; btn.innerHTML = `⏳ Đang tải (0/${batches.length})...`; }
+            if (btn) { btn.disabled = true; btn.innerHTML = `⏳ Đang kết nối...`; }
 
+            const zip = new JSZip();
             let successCount = 0;
-            for (let b = 0; b < batches.length; b++) {
-                if (btn) btn.innerHTML = `⏳ Đang tải (${b+1}/${batches.length})...`;
-                try {
-                    const res = await fetch('/api/history/bulk-download', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        credentials: 'same-origin',
-                        body: JSON.stringify({ ids: batches[b] })
-                    });
-                    if (!res.ok) {
-                        const errText = await res.text();
-                        console.error(`Batch ${b+1} lỗi:`, errText);
-                        alert(`Lỗi khi tải batch ${b+1}/${batches.length}. Kiểm tra console để biết chi tiết.`);
-                        continue;
+            const CONCURRENCY = 5; // Tải song song 5 hồ sơ cùng lúc để tối ưu thời gian tải
+            
+            for (let i = 0; i < ids.length; i += CONCURRENCY) {
+                const chunk = ids.slice(i, i + CONCURRENCY);
+                const promises = chunk.map(async (id) => {
+                    try {
+                        const res = await fetch(`/api/history/${id}/zip-pack`, {
+                            method: 'GET',
+                            credentials: 'same-origin'
+                        });
+                        if (!res.ok) {
+                            console.error(`Lỗi tải dữ liệu cho ID ${id}: HTTP ${res.status}`);
+                            return;
+                        }
+                        const pack = await res.json();
+                        if (pack.success) {
+                            // Thêm file HTML của ứng viên vào file ZIP
+                            zip.file(pack.html_filename, pack.html_content);
+                            // Thêm các file ảnh tài liệu tương ứng vào file ZIP
+                            if (pack.images && pack.images.length > 0) {
+                                pack.images.forEach(img => {
+                                    zip.file(img.filename, img.base64, { base64: true });
+                                });
+                            }
+                            successCount++;
+                            if (btn) {
+                                btn.innerHTML = `⏳ Đang tải (${successCount}/${ids.length})...`;
+                            }
+                        } else {
+                            console.error(`Lỗi tải pack cho ID ${id}:`, pack.error);
+                        }
+                    } catch (err) {
+                        console.error(`Lỗi kết nối khi tải ID ${id}:`, err);
                     }
-                    const blob = await res.blob();
-                    const url = URL.createObjectURL(blob);
+                });
+
+                await Promise.all(promises);
+                // Trễ nhẹ giữa các đợt tải song song để không làm quá tải Render
+                if (i + CONCURRENCY < ids.length) {
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                }
+            }
+
+            if (successCount > 0) {
+                if (btn) btn.innerHTML = `⚙️ Đang nén ZIP...`;
+                try {
+                    const content = await zip.generateAsync({ type: 'blob' });
+                    const url = URL.createObjectURL(content);
                     const a = document.createElement('a');
                     a.href = url;
-                    const suffix = batches.length > 1 ? `_phan${b+1}` : '';
-                    a.download = `FCT_HoSo_Export${suffix}.zip`;
+                    const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+                    a.download = `FCT_HoSo_Export_${dateStr}.zip`;
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
                     URL.revokeObjectURL(url);
-                    successCount++;
-                    // Chờ 1 giây giữa các batch để trình duyệt kịp xử lý download
-                    if (b < batches.length - 1) await new Promise(r => setTimeout(r, 1000));
-                } catch (e) {
-                    alert(`Lỗi kết nối batch ${b+1}: ${e.message}`);
+                    clearHistorySelection();
+                    alert(`✅ Đã tải và đóng gói thành công ${successCount}/${ids.length} hồ sơ!`);
+                } catch (zipErr) {
+                    alert('Lỗi tạo file ZIP ở trình duyệt: ' + zipErr.message);
                 }
+            } else {
+                alert('Không tải được hồ sơ nào. Vui lòng kiểm tra lại kết nối mạng.');
             }
 
             if (btn) { btn.innerHTML = origText; btn.disabled = false; }
-            if (successCount > 0) {
-                clearHistorySelection();
-                if (batches.length > 1) alert(`✅ Đã tải xong ${successCount}/${batches.length} batch (mỗi batch tối đa 30 hồ sơ).`);
-            }
         }
 
         async function bulkPrintHistory() {

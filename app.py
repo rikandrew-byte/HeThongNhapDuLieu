@@ -1019,58 +1019,53 @@ def api_hard_delete_year():
         db.session.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
 
-@app.route('/api/history/bulk-download', methods=['POST'])
+@app.route('/api/history/<int:record_id>/zip-pack', methods=['GET'])
 @auth_required
-def api_bulk_download():
+def api_history_zip_pack(record_id):
     try:
-        data = request.get_json() or {}
-        ids = data.get('ids', [])
-        if not ids: return jsonify({'success': False, 'error': 'No IDs'}), 400
-        records = FormHistory.query.filter(FormHistory.id.in_([int(i) for i in ids])).all()
-        if not records: return jsonify({'success': False, 'error': 'No records found'}), 404
-
-        zip_buffer = io.BytesIO()
-        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
-            for r in records:
+        r = FormHistory.query.get(record_id)
+        if not r: return jsonify({'success': False, 'error': 'Record not found'}), 404
+        
+        form_data = json.loads(r.data_json) if r.data_json else {}
+        
+        # 1. Trích xuất các ảnh tài liệu (Base64) ra để đóng gói
+        doc_images_raw = form_data.get('document_images', [])
+        rel_doc_filenames = []
+        images_pack = []
+        
+        for idx, img_data in enumerate(doc_images_raw):
+            if isinstance(img_data, str) and img_data.startswith('data:image/'):
                 try:
-                    form_data = json.loads(r.data_json) if r.data_json else {}
-                    
-                    # 1. Trích xuất các ảnh tài liệu (Base64) ra thành file ảnh riêng biệt trong file ZIP
-                    doc_images_raw = form_data.get('document_images', [])
-                    rel_doc_filenames = []
-                    for idx, img_data in enumerate(doc_images_raw):
-                        if isinstance(img_data, str) and img_data.startswith('data:image/'):
-                            try:
-                                header, encoded = img_data.split(',', 1)
-                                file_bytes = base64.b64decode(encoded)
-                                ext = 'png'
-                                if 'image/' in header:
-                                    ext = header.split(';')[0].split('/')[-1]
-                                    if ext == 'jpeg': ext = 'jpg'
-                                img_filename = f"{r.ma_so}_{sanitize_filename_master(r.ho_ten)}_tailieu_{idx}.{ext}"
-                                zf.writestr(img_filename, file_bytes)
-                                rel_doc_filenames.append(img_filename)
-                            except Exception as ex_img:
-                                print(f"[ZIP] Lỗi trích xuất ảnh tài liệu {idx} cho {r.id}: {ex_img}")
-                        elif isinstance(img_data, str) and img_data.startswith('http'):
-                            rel_doc_filenames.append(img_data)
-                            
-                    # 2. Thay thế list Base64 bằng list tên file ảnh tương đối
-                    render_form_data = dict(form_data)
-                    render_form_data['document_images'] = rel_doc_filenames
+                    header, encoded = img_data.split(',', 1)
+                    ext = 'png'
+                    if 'image/' in header:
+                        ext = header.split(';')[0].split('/')[-1]
+                        if ext == 'jpeg': ext = 'jpg'
+                    img_filename = f"{r.ma_so}_{sanitize_filename_master(r.ho_ten)}_tailieu_{idx}.{ext}"
+                    images_pack.append({
+                        'filename': img_filename,
+                        'base64': encoded
+                    })
+                    rel_doc_filenames.append(img_filename)
+                except Exception as ex_img:
+                    print(f"[ZIP Pack] Lỗi trích xuất ảnh tài liệu {idx} cho {r.id}: {ex_img}")
+            elif isinstance(img_data, str) and img_data.startswith('http'):
+                rel_doc_filenames.append(img_data)
+                
+        # 2. Thay thế list Base64 bằng list tên file ảnh tương đối
+        render_form_data = dict(form_data)
+        render_form_data['document_images'] = rel_doc_filenames
 
-                    # skip_images=True: vẫn hiển thị ảnh chân dung/QR bằng URL trực tiếp, không fetch R2
-                    html_content = generate_html_resume(render_form_data, skip_images=True)
-                    filename = f"{r.ma_so}_{sanitize_filename_master(r.ho_ten)}.html"
-                    zf.writestr(filename, html_content.encode('utf-8'))
-                except Exception as ex:
-                    import traceback
-                    print(f"[ZIP] Skipping record {r.id} due to error:")
-                    traceback.print_exc()
-                    continue
-
-        zip_buffer.seek(0)
-        return send_file(zip_buffer, mimetype='application/zip', as_attachment=True, download_name='FCT_HoSo_Export.zip')
+        # skip_images=True: vẫn hiển thị ảnh chân dung/QR bằng URL trực tiếp, không fetch R2
+        html_content = generate_html_resume(render_form_data, skip_images=True)
+        html_filename = f"{r.ma_so}_{sanitize_filename_master(r.ho_ten)}.html"
+        
+        return jsonify({
+            'success': True,
+            'html_filename': html_filename,
+            'html_content': html_content,
+            'images': images_pack
+        })
     except Exception as e:
         import traceback
         traceback.print_exc()
