@@ -89,6 +89,7 @@ class FormHistory(db.Model):
     is_deleted = db.Column(db.Boolean, default=False)   # Xóa mềm
     don_hang = db.Column(db.String(255), default='')    # Đơn hàng ứng tuyển (mã đơn)
     nguoi_phu_trach = db.Column(db.String(100), default='') # Tên Nhân viên - Đối tác
+    selected_job = db.Column(db.String(255), default='')    # Đơn hàng trúng tuyển chính thức
 
 class Employee(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -181,6 +182,12 @@ with app.app_context():
                 except Exception as mig_ex:
                     print(f"Error during NPT data migration: {mig_ex}")
                     db.session.rollback()
+            if 'selected_job' not in columns:
+                if 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI']:
+                    db.session.execute(text("ALTER TABLE form_history ADD COLUMN selected_job VARCHAR(255) DEFAULT ''"))
+                else:
+                    db.session.execute(text("ALTER TABLE form_history ADD COLUMN selected_job VARCHAR(255) DEFAULT ''"))
+                db.session.commit()
         except Exception as ex:
             print(f"⚠️ Column migration skipped or failed: {ex}")
             db.session.rollback()
@@ -929,7 +936,8 @@ def api_history():
                 FormHistory.ngay_tao,
                 FormHistory.is_selected,
                 FormHistory.don_hang,
-                FormHistory.nguoi_phu_trach
+                FormHistory.nguoi_phu_trach,
+                FormHistory.selected_job
             ))
             .order_by(FormHistory.ngay_tao.desc())
             .all()
@@ -939,6 +947,7 @@ def api_history():
             'id': r.id, 'ma_so': r.ma_so, 'ho_ten': r.ho_ten,
             'don_hang': getattr(r, 'don_hang', '') or '',
             'is_selected': getattr(r, 'is_selected', False),
+            'selected_job': getattr(r, 'selected_job', '') or '',
             'nguoi_phu_trach': getattr(r, 'nguoi_phu_trach', '') or '',
             'ngay_tao': r.ngay_tao.replace(tzinfo=timezone.utc).astimezone(vietnam_tz).strftime("%d/%m/%Y %H:%M:%S") if r.ngay_tao else ''
         } for r in records]
@@ -1825,6 +1834,7 @@ def api_toggle_selected(record_id):
             
             record.don_hang = final_donhang
             record.is_selected = True
+            record.selected_job = new_donhang
             
         elif not new_state and new_donhang:
             current_jobs_str = (record.don_hang or "").strip()
@@ -1842,13 +1852,19 @@ def api_toggle_selected(record_id):
                 
                 if new_jobs:
                     record.is_selected = True # Vẫn trúng tuyển đơn khác
+                    current_sel_upper = unicodedata.normalize('NFC', (record.selected_job or '').strip().upper())
+                    if current_sel_upper == target_upper:
+                        record.selected_job = new_jobs[0]
                 else:
                     record.is_selected = False
+                    record.selected_job = ""
             else:
                 record.is_selected = False
+                record.selected_job = ""
                 
         elif not new_state and not new_donhang:
             record.is_selected = False
+            record.selected_job = ""
 
         try:
             if record.data_json:
@@ -1912,6 +1928,7 @@ def api_toggle_selected(record_id):
             'success': True,
             'is_selected': record.is_selected,
             'don_hang': record.don_hang,
+            'selected_job': record.selected_job or '',
             'message': 'Đã trúng tuyển' if record.is_selected else 'Đã bỏ trúng tuyển'
         })
     except Exception as e:

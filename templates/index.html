@@ -31,6 +31,38 @@
             0%   { transform: rotate(0deg);   }
             100% { transform: rotate(360deg); }
         }
+        @keyframes pulse-warning {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .job-maso-badge-warning {
+            display: inline-flex;
+            align-items: center;
+            background: #fef2f2 !important;
+            border: 1px solid #fca5a5 !important;
+            color: #b91c1c !important;
+            border-radius: 6px;
+            padding: 3px 8px;
+            font-size: 12px;
+            font-weight: 700;
+            font-family: monospace;
+            white-space: nowrap;
+            animation: pulse-warning 2s infinite;
+        }
+        .job-maso-badge-success {
+            display: inline-flex;
+            align-items: center;
+            background: #ecfdf5 !important;
+            border: 1px solid #a7f3d0 !important;
+            color: #047857 !important;
+            border-radius: 6px;
+            padding: 3px 8px;
+            font-size: 12px;
+            font-weight: 700;
+            font-family: monospace;
+            white-space: nowrap;
+        }
 
         /* ── Base ── */
         body {
@@ -2287,10 +2319,16 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             if (!tbody) return;
             tbody.innerHTML = '';
             
+            // Build selected candidates map (ma_so -> selected_job)
+            const selectedCandidatesMap = new Map();
+            currentHistoryData.forEach(item => {
+                if (item.is_selected && item.ma_so && item.ma_so !== 'CHO_DUYET') {
+                    selectedCandidatesMap.set(item.ma_so.toUpperCase().trim(), (item.selected_job || '').toUpperCase().trim());
+                }
+            });
+            
             const jobMap = {};
             currentHistoryData.forEach(item => {
-                if (item.is_selected) return; // Không hiển thị người đã trúng tuyển ở tab Tổng hợp đơn hàng
-                
                 const donhangStr = (item.don_hang || '').trim();
                 if (donhangStr) {
                     const jobs = donhangStr.split(/[,;]+/).map(j => j.trim()).filter(j => j.length > 0);
@@ -2329,7 +2367,21 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 if (masoList && masoList.trim() !== '') {
                     const codes = masoList.split(',').map(c => c.trim()).filter(c => c.length > 0);
                     masoBadgesHtml = `<div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:4px;">` +
-                        codes.map(code => `<span class="job-maso-badge" style="display:inline-flex; align-items:center; background:#eef2ff; border:1px solid #c7d2fe; border-radius:6px; padding:3px 8px; font-size:12px; font-weight:700; color:#312e81; font-family:monospace; white-space:nowrap;">${code}</span>`).join('') +
+                        codes.map(code => {
+                            const codeUpper = code.toUpperCase();
+                            if (selectedCandidatesMap.has(codeUpper)) {
+                                const selJobUpper = selectedCandidatesMap.get(codeUpper);
+                                if (selJobUpper === job.toUpperCase()) {
+                                    return `<span class="job-maso-badge-success" title="Đã trúng tuyển đơn hàng này">🏆 ${code}</span>`;
+                                } else {
+                                    const origItem = currentHistoryData.find(i => i.ma_so && i.ma_so.toUpperCase() === codeUpper && i.is_selected);
+                                    const selJobDisplay = origItem ? (origItem.selected_job || selJobUpper) : selJobUpper;
+                                    return `<span class="job-maso-badge-warning" title="Cảnh báo: Đã trúng tuyển đơn hàng: ${selJobDisplay}">⚠️ ${code}</span>`;
+                                }
+                            } else {
+                                return `<span class="job-maso-badge" style="display:inline-flex; align-items:center; background:#eef2ff; border:1px solid #c7d2fe; border-radius:6px; padding:3px 8px; font-size:12px; font-weight:700; color:#312e81; font-family:monospace; white-space:nowrap;">${code}</span>`;
+                            }
+                        }).join('') +
                         `</div>`;
                 } else {
                     masoBadgesHtml = '<span style="color:#ef4444; font-style:italic;">Chỉ có mã Chờ duyệt</span>';
