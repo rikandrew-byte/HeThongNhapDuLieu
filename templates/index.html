@@ -2252,10 +2252,13 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             passedCandidates.forEach(item => {
                 // Chỉ dùng selected_job — là đơn hàng mà người dùng đã bấm "Trúng tuyển" thực sự
                 const selJob = (item.selected_job || '').trim();
-                const jobKey = selJob ? selJob.toUpperCase() : 'CHƯА RÕ ĐƠN HÀNG';
+                // Lấy đơn đầu tiên nếu selected_job có nhiều đơn (dữ liệu cũ — phòng ngừa)
+                const firstSelJob = selJob.split(/[,;]+/)[0].trim();
+                const jobKey = firstSelJob ? firstSelJob.toUpperCase() : 'CHƯA RÕ ĐƠN HÀNG';
                 if (!jobMap[jobKey]) jobMap[jobKey] = [];
                 jobMap[jobKey].push(item);
             });
+
             
             // Render từng nhóm
             const sortedJobs = Object.keys(jobMap).sort((a, b) => {
@@ -2369,13 +2372,18 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                             const codeUpper = code.toUpperCase();
                             if (selectedCandidatesMap.has(codeUpper)) {
                                 const selJobUpper = selectedCandidatesMap.get(codeUpper);
-                                // So sánh trực tiếp: selected_job luôn là 1 tên đơn duy nhất
-                                if (selJobUpper && selJobUpper === job.toUpperCase()) {
+                                // Split để xử lý dữ liệu cũ có nhiều đơn trong selected_job
+                                const selJobs = selJobUpper
+                                    ? selJobUpper.split(/[,;]+/).map(j => j.trim()).filter(j => j)
+                                    : [];
+                                if (selJobs.length > 0 && selJobs.some(sj => sj === job.toUpperCase())) {
                                     return `<span class="job-maso-badge-success" title="Đã trúng tuyển đơn hàng này">🏆 ${code}</span>`;
-                                } else if (selJobUpper) {
+                                } else if (selJobs.length > 0) {
                                     const origItem = currentHistoryData.find(i => i.ma_so && i.ma_so.toUpperCase() === codeUpper && i.is_selected);
                                     const selJobDisplay = origItem ? (origItem.selected_job || '') : selJobUpper;
-                                    return `<span class="job-maso-badge-warning" title="Cảnh báo: Đã trúng tuyển đơn hàng: ${selJobDisplay}">⚠️ ${code}</span>`;
+                                    // Hiển thị chỉ đơn đầu tiên nếu là chuỗi nhiều đơn (dữ liệu cũ)
+                                    const displayClean = selJobDisplay.split(/[,;]+/)[0].trim() || selJobDisplay;
+                                    return `<span class="job-maso-badge-warning" title="Cảnh báo: Đã trúng tuyển đơn hàng: ${displayClean}">⚠️ ${code}</span>`;
                                 } else {
                                     // Trúng tuyển nhưng chưa xác định đơn nào → hiển thị như cảnh báo nhạt
                                     return `<span class="job-maso-badge-warning" title="Đã trúng tuyển nhưng chưa xác định đơn cụ thể">❓ ${code}</span>`;

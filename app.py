@@ -204,6 +204,19 @@ with app.app_context():
                             # Nếu có nhiều hơn 1 đơn, không thể biết đơn nào là đơn trúng tuyển → để trống
                     db.session.commit()
                     print("Data migration for selected_job completed.")
+
+                # Fix dữ liệu xấu: selected_job chứa nhiều đơn (chuỗi có dấu phẩy) → chỉ giữ đơn đầu tiên
+                multi_job_sel = FormHistory.query.filter(
+                    FormHistory.is_selected == True,
+                    FormHistory.selected_job.like('%,%')
+                ).all()
+                if multi_job_sel:
+                    print(f"Found {len(multi_job_sel)} records with multi-job selected_job. Fixing (keep first job only)...")
+                    for r in multi_job_sel:
+                        first_job = _re.split(r'[,;]+', r.selected_job)[0].strip()
+                        r.selected_job = first_job
+                    db.session.commit()
+                    print("Multi-job selected_job cleanup completed.")
             except Exception as db_ex:
                 print(f"Error checking/migrating selected_job data: {db_ex}")
                 db.session.rollback()
@@ -1856,6 +1869,7 @@ def api_toggle_selected(record_id):
             record.selected_job = new_donhang
             
         elif not new_state and new_donhang:
+            # Bỏ trúng tuyển: luôn xóa trạng thái trúng tuyển, không tự chuyển sang đơn khác
             current_jobs_str = (record.don_hang or "").strip()
             if current_jobs_str:
                 current_jobs = [j.strip() for j in re.split(r'[,;]+', current_jobs_str) if j.strip()]
@@ -1868,18 +1882,11 @@ def api_toggle_selected(record_id):
                         
                 final_donhang = ", ".join(new_jobs)
                 record.don_hang = final_donhang
-                
-                if new_jobs:
-                    record.is_selected = True # Vẫn trúng tuyển đơn khác
-                    current_sel_upper = unicodedata.normalize('NFC', (record.selected_job or '').strip().upper())
-                    if current_sel_upper == target_upper:
-                        record.selected_job = new_jobs[0]
-                else:
-                    record.is_selected = False
-                    record.selected_job = ""
-            else:
-                record.is_selected = False
-                record.selected_job = ""
+            
+            # Luôn xóa trạng thái trúng tuyển khi bỏ trúng tuyển
+            # (không tự chuyển is_selected=True cho đơn còn lại)
+            record.is_selected = False
+            record.selected_job = ""
                 
         elif not new_state and not new_donhang:
             record.is_selected = False
