@@ -2247,19 +2247,14 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 return;
             }
             
-            // Nhóm theo đơn hàng
+            // Nhóm theo đơn hàng TRÚNG TUYỂN (selected_job), không phải toàn bộ don_hang
             const jobMap = {};
             passedCandidates.forEach(item => {
-                let donHangStr = (item.don_hang || '').trim();
-                let jobs = donHangStr ? donHangStr.split(/[,;]+/).map(j => j.trim()).filter(j => j.length > 0) : ['CHƯA RÕ ĐƠN HÀNG'];
-                
-                if (jobs.length === 0) jobs = ['CHƯA RÕ ĐƠN HÀNG'];
-                
-                jobs.forEach(job => {
-                    const jobUpper = job.toUpperCase();
-                    if (!jobMap[jobUpper]) jobMap[jobUpper] = [];
-                    jobMap[jobUpper].push(item);
-                });
+                // Chỉ dùng selected_job — là đơn hàng mà người dùng đã bấm "Trúng tuyển" thực sự
+                const selJob = (item.selected_job || '').trim();
+                const jobKey = selJob ? selJob.toUpperCase() : 'CHƯА RÕ ĐƠN HÀNG';
+                if (!jobMap[jobKey]) jobMap[jobKey] = [];
+                jobMap[jobKey].push(item);
             });
             
             // Render từng nhóm
@@ -2320,10 +2315,12 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             tbody.innerHTML = '';
             
             // Build selected candidates map (ma_so -> selected_job)
+            // selected_job luôn là một chuỗi đơn (single job), không phải danh sách
             const selectedCandidatesMap = new Map();
             currentHistoryData.forEach(item => {
                 if (item.is_selected && item.ma_so && item.ma_so !== 'CHO_DUYET') {
-                    const selJob = (item.selected_job || item.don_hang || '').trim();
+                    // Chỉ lấy selected_job (không fallback về don_hang nữa vì don_hang có thể có nhiều đơn)
+                    const selJob = (item.selected_job || '').trim();
                     selectedCandidatesMap.set(item.ma_so.toUpperCase().trim(), selJob.toUpperCase());
                 }
             });
@@ -2372,13 +2369,16 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                             const codeUpper = code.toUpperCase();
                             if (selectedCandidatesMap.has(codeUpper)) {
                                 const selJobUpper = selectedCandidatesMap.get(codeUpper);
-                                const isSelForThisJob = selJobUpper.split(/[,;]+/).map(j => j.trim()).includes(job.toUpperCase());
-                                if (isSelForThisJob) {
+                                // So sánh trực tiếp: selected_job luôn là 1 tên đơn duy nhất
+                                if (selJobUpper && selJobUpper === job.toUpperCase()) {
                                     return `<span class="job-maso-badge-success" title="Đã trúng tuyển đơn hàng này">🏆 ${code}</span>`;
-                                } else {
+                                } else if (selJobUpper) {
                                     const origItem = currentHistoryData.find(i => i.ma_so && i.ma_so.toUpperCase() === codeUpper && i.is_selected);
-                                    const selJobDisplay = origItem ? (origItem.selected_job || origItem.don_hang || selJobUpper) : selJobUpper;
+                                    const selJobDisplay = origItem ? (origItem.selected_job || '') : selJobUpper;
                                     return `<span class="job-maso-badge-warning" title="Cảnh báo: Đã trúng tuyển đơn hàng: ${selJobDisplay}">⚠️ ${code}</span>`;
+                                } else {
+                                    // Trúng tuyển nhưng chưa xác định đơn nào → hiển thị như cảnh báo nhạt
+                                    return `<span class="job-maso-badge-warning" title="Đã trúng tuyển nhưng chưa xác định đơn cụ thể">❓ ${code}</span>`;
                                 }
                             } else {
                                 return `<span class="job-maso-badge" style="display:inline-flex; align-items:center; background:#eef2ff; border:1px solid #c7d2fe; border-radius:6px; padding:3px 8px; font-size:12px; font-weight:700; color:#312e81; font-family:monospace; white-space:nowrap;">${code}</span>`;

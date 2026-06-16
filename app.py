@@ -189,14 +189,19 @@ with app.app_context():
                     db.session.execute(text("ALTER TABLE form_history ADD COLUMN selected_job VARCHAR(255) DEFAULT ''"))
                 db.session.commit()
             
-            # Data migration for selected_job: copy don_hang to selected_job for existing selected records
+            # Data migration for selected_job: chỉ lấy đơn hàng duy nhất nếu don_hang chỉ có 1 đơn
+            # Không copy nguyên chuỗi don_hang vì có thể chứa nhiều đơn hàng
             try:
+                import re as _re
                 empty_sel_records = FormHistory.query.filter_by(is_selected=True).filter((FormHistory.selected_job == '') | (FormHistory.selected_job == None)).all()
                 if empty_sel_records:
-                    print(f"Found {len(empty_sel_records)} selected records with empty selected_job. Migrating...")
+                    print(f"Found {len(empty_sel_records)} selected records with empty selected_job. Migrating (single-job only)...")
                     for r in empty_sel_records:
                         if r.don_hang:
-                            r.selected_job = r.don_hang.strip()
+                            jobs = [j.strip() for j in _re.split(r'[,;]+', r.don_hang) if j.strip()]
+                            if len(jobs) == 1:
+                                r.selected_job = jobs[0]
+                            # Nếu có nhiều hơn 1 đơn, không thể biết đơn nào là đơn trúng tuyển → để trống
                     db.session.commit()
                     print("Data migration for selected_job completed.")
             except Exception as db_ex:
