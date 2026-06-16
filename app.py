@@ -188,6 +188,20 @@ with app.app_context():
                 else:
                     db.session.execute(text("ALTER TABLE form_history ADD COLUMN selected_job VARCHAR(255) DEFAULT ''"))
                 db.session.commit()
+            
+            # Data migration for selected_job: copy don_hang to selected_job for existing selected records
+            try:
+                empty_sel_records = FormHistory.query.filter_by(is_selected=True).filter((FormHistory.selected_job == '') | (FormHistory.selected_job == None)).all()
+                if empty_sel_records:
+                    print(f"Found {len(empty_sel_records)} selected records with empty selected_job. Migrating...")
+                    for r in empty_sel_records:
+                        if r.don_hang:
+                            r.selected_job = r.don_hang.strip()
+                    db.session.commit()
+                    print("Data migration for selected_job completed.")
+            except Exception as db_ex:
+                print(f"Error checking/migrating selected_job data: {db_ex}")
+                db.session.rollback()
         except Exception as ex:
             print(f"⚠️ Column migration skipped or failed: {ex}")
             db.session.rollback()

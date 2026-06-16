@@ -2323,7 +2323,8 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             const selectedCandidatesMap = new Map();
             currentHistoryData.forEach(item => {
                 if (item.is_selected && item.ma_so && item.ma_so !== 'CHO_DUYET') {
-                    selectedCandidatesMap.set(item.ma_so.toUpperCase().trim(), (item.selected_job || '').toUpperCase().trim());
+                    const selJob = (item.selected_job || item.don_hang || '').trim();
+                    selectedCandidatesMap.set(item.ma_so.toUpperCase().trim(), selJob.toUpperCase());
                 }
             });
             
@@ -2371,11 +2372,12 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                             const codeUpper = code.toUpperCase();
                             if (selectedCandidatesMap.has(codeUpper)) {
                                 const selJobUpper = selectedCandidatesMap.get(codeUpper);
-                                if (selJobUpper === job.toUpperCase()) {
+                                const isSelForThisJob = selJobUpper.split(/[,;]+/).map(j => j.trim()).includes(job.toUpperCase());
+                                if (isSelForThisJob) {
                                     return `<span class="job-maso-badge-success" title="Đã trúng tuyển đơn hàng này">🏆 ${code}</span>`;
                                 } else {
                                     const origItem = currentHistoryData.find(i => i.ma_so && i.ma_so.toUpperCase() === codeUpper && i.is_selected);
-                                    const selJobDisplay = origItem ? (origItem.selected_job || selJobUpper) : selJobUpper;
+                                    const selJobDisplay = origItem ? (origItem.selected_job || origItem.don_hang || selJobUpper) : selJobUpper;
                                     return `<span class="job-maso-badge-warning" title="Cảnh báo: Đã trúng tuyển đơn hàng: ${selJobDisplay}">⚠️ ${code}</span>`;
                                 }
                             } else {
