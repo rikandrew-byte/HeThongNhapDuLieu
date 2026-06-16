@@ -2110,6 +2110,9 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 // Bật trúng tuyển: Hỏi đơn hàng
                 const item = currentHistoryData.find(i => i.id === id);
                 let currentJobsStr = item ? (item.don_hang || '') : '';
+                if (currentJobsStr) {
+                    currentJobsStr = currentJobsStr.split(/[,;]+/)[0].trim();
+                }
                 
                 // Thu thập options gợi ý
                 let existingJobs = new Set();

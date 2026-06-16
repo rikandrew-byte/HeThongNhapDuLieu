@@ -974,6 +974,24 @@ def api_history():
             .order_by(FormHistory.ngay_tao.desc())
             .all()
         )
+        
+        # On-the-fly cleanup for corrupted selected_job
+        needs_commit = False
+        for r in records:
+            if getattr(r, 'is_selected', False) and getattr(r, 'selected_job', ''):
+                sj = getattr(r, 'selected_job', '')
+                if sj and (',' in sj or ';' in sj):
+                    first_job = re.split(r'[,;]+', sj)[0].strip()
+                    r.selected_job = first_job
+                    needs_commit = True
+        
+        if needs_commit:
+            try:
+                db.session.commit()
+            except Exception as e:
+                db.session.rollback()
+                print(f"Cleanup commit failed: {e}")
+
         vietnam_tz = timezone(timedelta(hours=7))
         data = [{
             'id': r.id, 'ma_so': r.ma_so, 'ho_ten': r.ho_ten,
@@ -1866,7 +1884,8 @@ def api_toggle_selected(record_id):
             
             record.don_hang = final_donhang
             record.is_selected = True
-            record.selected_job = new_donhang
+            first_job = re.split(r'[,;]+', new_donhang)[0].strip() if new_donhang else ""
+            record.selected_job = first_job
             
         elif not new_state and new_donhang:
             # Bỏ trúng tuyển: luôn xóa trạng thái trúng tuyển, không tự chuyển sang đơn khác

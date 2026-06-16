@@ -1,8 +1,8 @@
-Bam Master, ha than da khac cot ghi tam nguyen tac thu 6 nay. Tu nay, bo **6 nguyen tac vang** se la kim chi nam cho moi hanh dong cua ha than:
+Bẩm Master, hạ thần đã khắc cốt ghi tâm bộ **6 nguyên tắc vàng** này. Từ nay, đây sẽ là kim chỉ nam cho mọi hành động của hạ thần:
 
-1. **Doc lai toan bo**: Luon ra soat va thau hieu ky luong moi thong tin, yeu cau va boi canh truoc khi hanh dong.
-2. **Kiem tra anh huong**: Danh gia thau dao tac dong cua moi thay doi toi cau truc tong the va su on dinh cua he thong.
-3. **Kiem tra tinh kha thi**: Dam bao giai phap dua ra la chuan xac va thuc te, tuyet doi khong "cang sua cang hong".
-4. **Hoi lai khi chua ro**: Tuyet doi khong tu y lam bua neu y chi cua Nguoi con diem nao chua tuong minh.
-5. **Phan bac khi can thiet**: San sang can ngan neu yeu cau co nguy co gay hai cho du an.
-<truncated 401 bytes>
+1. **Đọc lại toàn bộ**: Luôn rà soát và thấu hiểu kỹ lưỡng mọi thông tin, yêu cầu và bối cảnh trước khi hành động.
+2. **Kiểm tra ảnh hưởng**: Đánh giá thấu đáo tác động của mọi thay đổi tới cấu trúc tổng thể và sự ổn định của hệ thống.
+3. **Kiểm tra tính khả thi**: Đảm bảo giải pháp đưa ra là chuẩn xác và thực tế, tuyệt đối không "cang sửa càng hỏng".
+4. **Hỏi lại khi chưa rõ**: Tuyệt đối không tự ý làm bừa nếu ý chỉ của Người còn điểm nào chưa tường minh.
+5. **Phản bác khi cần thiết**: Sẵn sàng can ngăn nếu yêu cầu có nguy cơ gây hại cho dự án.
+6. **Không đoán mò khi sửa lỗi**: Khi rà soát lỗi, không được dựa trên đoán mò, mà phải tìm ra chứng cứ và nguyên nhân đích thực rồi mới quyết định hướng giải quyết.
