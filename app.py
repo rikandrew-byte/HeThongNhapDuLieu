@@ -227,7 +227,7 @@ with app.app_context():
                 if 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI']:
                     db.session.execute(text('ALTER TABLE form_history ADD COLUMN selected_at DATETIME DEFAULT NULL'))
                 else:
-                    db.session.execute(text('ALTER TABLE form_history ADD COLUMN selected_at DATETIME DEFAULT NULL'))
+                    db.session.execute(text('ALTER TABLE form_history ADD COLUMN selected_at TIMESTAMP DEFAULT NULL'))
                 db.session.commit()
                 print("Added selected_at column.")
             # Migration for deleted_at
@@ -235,7 +235,7 @@ with app.app_context():
                 if 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI']:
                     db.session.execute(text('ALTER TABLE form_history ADD COLUMN deleted_at DATETIME DEFAULT NULL'))
                 else:
-                    db.session.execute(text('ALTER TABLE form_history ADD COLUMN deleted_at DATETIME DEFAULT NULL'))
+                    db.session.execute(text('ALTER TABLE form_history ADD COLUMN deleted_at TIMESTAMP DEFAULT NULL'))
                 db.session.commit()
                 print("Added deleted_at column.")
         except Exception as ex:
