@@ -888,8 +888,17 @@ def api_submit_only():
 def api_translate():
     try:
         data = request.get_json() or {}
-        # Sử dụng translate_name cho API này vì nó thường được gọi cho ô Họ Tên
-        return jsonify({'success': True, 'translated': translate_name(data.get('text', ''))})
+        text = data.get('text', '').strip()
+        trans_type = data.get('type', 'name')  # 'name' hoặc 'free'
+        if not text:
+            return jsonify({'success': True, 'translated': ''})
+        # 'free': dịch nội dung tự do (công việc, lời bình, năm kinh nghiệm...)
+        # 'name': dịch Họ Tên (ưu tiên từ điển tên riêng tiếng Việt)
+        if trans_type == 'free':
+            translated = translate_free(text)
+        else:
+            translated = translate_name(text)
+        return jsonify({'success': True, 'translated': translated})
     except: return jsonify({'success': False}), 500
 
 @app.route('/api/download-cv/<maso>', methods=['GET'])
