@@ -1,16 +1,364 @@
- 💻 [Máy tính của Ngài] 
-      (Nơi viết code và chỉnh sửa)
-             │
-             │ (Lệnh: git push)
-             ▼
- 🐙 [GitHub] ────────────────────────┐
-   (Kho Lưu Trữ Mã Nguồn)            │ (Tự động kéo code mới nhất)
-                                     │
-                                     ▼
- 🤖 [UptimeRobot] ════(Gõ cửa)══▶ 🌐 [Render.com] ◀══(Nhân viên truy cập)══ 👨‍💼 [Người dùng]
-   (Lính gác chống ngủ gật)          (Máy chủ vận hành Web & API)           (Nhập liệu, tải Word)
-                                     │
-                                     │ (Đọc / Ghi lịch sử form)
-                                     ▼
-                                  🐘 [Neon.tech]
-                                (Cơ sở dữ liệu PostgreSQL)
+╔══════════════════════════════════════════════════════════════════════════════════════════════╗
+║           DOCUMENT AUTOMATION SYSTEM (DAS) — V3.0  |  Design Map                           ║
+║           Phiên bản: Jun 2025  |  Người vận hành: FCT Vietnam                              ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 1. KIẾN TRÚC TRIỂN KHAI (Deployment Architecture)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  💻 [Máy tính lập trình viên]
+       (Viết code, chỉnh sửa)
+              │
+              │  git push
+              ▼
+  🐙 [GitHub — rikandrew-byte/HeThongNhapDuLieu]
+       (Kho lưu trữ mã nguồn)
+              │
+              │  Auto-deploy khi có commit mới vào branch main
+              ▼
+  🌐 [Render.com — he-thong-lam-form-andrew]      ◀─── 👨‍💼 Nhân viên hành chính / nhập liệu
+       Python 3.10 | Gunicorn WSGI                         (Truy cập qua trình duyệt)
+       plan: free (tắt sau 15 phút không dùng)
+              │
+              ├──────────────────────────────────────────────────────┐
+              │  Đọc/Ghi dữ liệu hồ sơ                              │  Tải ảnh chân dung / QR
+              ▼                                                      ▼
+  🐘 [Neon.tech — PostgreSQL]                        ☁️  [Cloudflare R2]
+       Cơ sở dữ liệu chính                                (Lưu trữ ảnh — nếu dùng URL)
+       Bảng: form_history, employee                       Hàm: _fetch_r2_image_as_base64()
+       SSL required | pool_pre_ping=True                  (Chỉ dùng khi render offline HTML)
+       Pool: size=5, recycle=300s
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 2. KIẾN TRÚC ỨNG DỤNG (Application Architecture)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ┌─────────────────────────────────────────────────────────────────────────────────┐
+  │  FRONTEND (Trình duyệt)                                                        │
+  │                                                                                 │
+  │  templates/index.html          (Admin Dashboard — xác thực Basic Auth)         │
+  │  templates/user_form.html      (Form công khai cho ứng viên tự nhập)           │
+  │  templates/fct_template_v6.18.html  (Template Jinja2 render CV tiếng Trung)    │
+  └───────────────────────────┬─────────────────────────────────────────────────────┘
+                              │  HTTP/AJAX (fetch API, credentials: same-origin)
+  ┌───────────────────────────▼─────────────────────────────────────────────────────┐
+  │  BACKEND — Flask / Python (app.py)                                              │
+  │                                                                                 │
+  │  Auth:         Flask-BasicAuth (ADMIN_USERNAME / ADMIN_PASSWORD)                │
+  │  ORM:          Flask-SQLAlchemy → Neon PostgreSQL                               │
+  │  Image:        Pillow (PIL) — resize, compress ảnh trước khi lưu DB            │
+  │  Excel Export: openpyxl (BarChart, PieChart, styles)                            │
+  │  Zip Pack:     zipfile — đóng gói CV + ảnh giấy tờ                             │
+  └─────────────────────────────────────────────────────────────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 3. MÔ HÌNH DỮ LIỆU (Data Model)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ┌─── Bảng: form_history ──────────────────────────────────────────────────────────┐
+  │  id             INTEGER  PRIMARY KEY                                            │
+  │  ma_so          VARCHAR(50)    — Mã số ứng viên (hoặc 'CHO_DUYET')             │
+  │  ho_ten         VARCHAR(100)   — Họ tên tiếng Việt                             │
+  │  ten_file       VARCHAR(255)   — (legacy, không dùng tích cực)                 │
+  │  data_json      TEXT           — Toàn bộ dữ liệu form dạng JSON string         │
+  │                                  Ảnh chân dung/QR/tài liệu: Base64 hoặc URL R2 │
+  │                                  Nội dung tự do: tiếng Trung (sau translateField)│
+  │  ngay_tao       DATETIME       — Ngày tạo hồ sơ                                │
+  │  is_selected    BOOLEAN        — Đánh dấu trúng tuyển                          │
+  │  is_deleted     BOOLEAN        — Xóa mềm (soft delete)                         │
+  │  don_hang       VARCHAR(255)   — Đơn hàng ứng tuyển (có thể nhiều đơn)        │
+  │  nguoi_phu_trach VARCHAR(100)  — Nhân viên FCT - Đối tác                       │
+  │  selected_job   VARCHAR(255)   — Đơn hàng trúng tuyển chính thức (1 đơn)      │
+  └─────────────────────────────────────────────────────────────────────────────────┘
+
+  ┌─── Bảng: employee ──────────────────────────────────────────────────────────────┐
+  │  id    INTEGER  PRIMARY KEY                                                     │
+  │  name  VARCHAR(100)  UNIQUE  — Tên nhân viên FCT (dùng cho dropdown NPT)       │
+  └─────────────────────────────────────────────────────────────────────────────────┘
+
+  Auto-migration khi khởi động: tự động ALTER TABLE nếu thiếu cột mới
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 4. LUỒNG NHẬP LIỆU & LƯU TRỮ (Data Entry Flow)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [Nhân viên nhập liệu]
+       │
+       ├─ Gõ Họ Tên (onblur) ──────────────▶ translateName()  ──▶ /api/translate?type=name
+       │                                      [từ điển tên Việt → Trung]           │
+       │                                      [Gemini 3.5 Flash nếu không có]      │
+       │                                      [Google Translate làm fallback]       │
+       │                                      ◀── kết quả ghi vào ô TentiengTrung ─┘
+       │
+       ├─ Gõ Công việc / Lời bình (onblur) ▶ translateField() ─▶ /api/translate?type=free
+       │  (ndcv1-3, N1-3, loi_binh_1)         [FIXED_TRANS dict → thuật ngữ nghề]  │
+       │                                      [Gemini 3.5 Flash nếu không có]      │
+       │                                      [Google Translate làm fallback]       │
+       │                                      ◀── kết quả ghi đè vào chính ô đó ───┘
+       │                                      [is_chinese() guard: bỏ qua nếu đã tiếng Trung]
+       │
+       ├─ Chọn Nơi ở / Quốc gia ──────────▶ Giá trị option value đã là tiếng Trung
+       │  (Noio, QG1-3)                       (FIXED_TRANS lookup khi render CV)
+       │
+       ├─ Upload ảnh chân dung / QR ────────▶ resize → Base64 → lưu trong data_json
+       │  (Photo, QR)
+       │
+       └─ Upload ảnh tài liệu giấy tờ ─────▶ currentDocumentImages[] (JS array)
+          (drag-drop, paste, file picker)      resizeToBase64() → push vào mảng
+          (không qua base64ToFile nữa)         lưu trong data_json.document_images[]
+
+  [Nhấn Lưu] ──▶ POST /api/submit-only
+       │   _process_form_data() — đọc JSON từ body
+       │   _resize_image_for_db() — nén ảnh (photo: 1200px, tài liệu: 900px q60)
+       │   _prepare_data_for_db() — resize toàn bộ ảnh
+       │   INSERT / UPDATE form_history.data_json
+       └── Response: {success, id, ma_so, msg}
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 5. LUỒNG RENDER CV (CV Generation Pipeline)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [form_data từ DB]
+       │
+       ▼  generate_html_resume(form_data, template_name, skip_images)
+       │
+       ▼  prepare_render_data(raw_data)
+       │   ├─ Dịch cố định: Honnhan, Hocvan     → FIXED_TRANS dict (0ms)
+       │   ├─ Dịch cố định: QG1-3               → translate_fixed() (0ms)
+       │   ├─ Dịch tự do:   ndcv1-3, N1-3, ...  → translate_free()
+       │   │   └─ is_chinese() guard: nếu đã tiếng Trung → trả về ngay (0ms)
+       │   │      ← HỒ SƠ MỚI: dữ liệu đã tiếng Trung → KHÔNG gọi API
+       │   │      ← HỒ SƠ CŨ: dữ liệu tiếng Việt → ThreadPoolExecutor(4 workers)
+       │   ├─ Xử lý ảnh photo/qr:
+       │   │   ├─ Base64 → dùng trực tiếp
+       │   │   └─ URL R2  → _fetch_r2_image_as_base64() (chỉ khi render offline)
+       │   ├─ Tính Yellow Alerts (f01-f22 checkboxes)
+       │   ├─ Tính KyNangList_HTML (skill tags)
+       │   └─ Tính TayThuan, ThiLuc, HutRuou
+       │
+       ▼  _protect_html(html)
+       │   ├─ Minify: xóa comment, gộp khoảng trắng
+       │   └─ Anti-DevTools script (chặn F12, Ctrl+Shift+I, Ctrl+U)
+       │
+       ▼  Template Jinja2 render (fct_template_v6.18.html)
+       │   └─ Nhúng raw_data_json vào <script id="fct-raw-data"> để reload
+       │
+       ▼  [HTML String] → Response / File / Stream
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 6. API ENDPOINTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [Trang / View]
+  GET  /                          → user_form.html (Form công khai ứng viên)
+  GET  /fct-1503                  → index.html (Admin Dashboard, cần xác thực)
+  GET  /cv/<path:slug>            → secure_web_view() — Xem CV trực tuyến (in PDF)
+  GET  /resume-<id>.html          → api_preview() — Xem CV nội bộ
+
+  [Form & Dữ liệu]
+  POST /api/submit-only           → Lưu hồ sơ mới / Cập nhật hồ sơ cũ
+  POST /api/translate             → Dịch text (type=name|free)
+  GET  /api/history               → Danh sách hồ sơ (lazy: không trả data_json)
+  GET  /api/history/<id>/data     → Lấy data_json đầy đủ của 1 hồ sơ (lazy load)
+  GET  /api/health                → Health check
+
+  [Xuất file]
+  GET  /api/download-cv/<maso>    → Tải file HTML offline (nhúng Base64 đầy đủ)
+  GET  /api/history/<id>/zip-pack → Đóng gói CV + ảnh giấy tờ thành JSON để FE tạo ZIP
+  POST /api/history/bulk-print    → In hàng loạt — Streaming HTML ghép nhiều CV
+
+  [Quản lý hồ sơ]
+  DELETE /api/history/<id>            → Xóa mềm (is_deleted=True)
+  POST   /api/history/bulk-delete     → Xóa mềm hàng loạt
+  POST   /api/history/hard-delete-year → Xóa cứng theo năm
+  POST   /api/history/<id>/toggle-selected  → Đánh dấu Trúng tuyển + gán đơn hàng
+  POST   /api/history/bulk-assign-job       → Gán đơn hàng hàng loạt
+  POST   /api/history/assign-job-by-maso    → Gán đơn hàng theo mã số
+  POST   /api/history/remove-job-from-maso  → Xóa đơn hàng khỏi ứng viên
+  POST   /api/history/export-excel          → Xuất Excel thống kê (BarChart + PieChart)
+
+  [Nhân viên]
+  GET/POST/DELETE /api/employees  → Quản lý danh sách nhân viên FCT (dropdown NPT)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 7. LUỒNG DỊCH THUẬT (Translation Pipeline)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Chiến lược: "Dịch tại Frontend khi nhập liệu → Lưu tiếng Trung vào DB"
+  → Khi in CV: is_chinese() guard đảm bảo KHÔNG gọi API lần nào nữa
+
+  translate_name(text)                     — cho ô Họ Tên
+  ├─ is_chinese() → trả về nguyên          (nếu đã Trung)
+  ├─ get_vietnamese_name_in_chinese()      (từ điển nội bộ vietnamese_names_dict.py)
+  ├─ Gemini 3.5 Flash API                  (nếu có GEMINI_API_KEY)
+  └─ GoogleTranslator vi→zh-TW             (fallback cuối cùng)
+
+  translate_free(text)                     — cho ô Công việc, Lời bình, Năm
+  ├─ is_chinese() → trả về nguyên          (guard chính — hồ sơ mới = 0ms)
+  ├─ FIXED_TRANS dict (khớp chính xác)    (thuật ngữ nghề nghiệp cố định)
+  ├─ SKILL_KEYWORDS (thay thế trong câu)  (may→縫紉, hàn→焊接, v.v.)
+  ├─ Gemini 3.5 Flash API                  (nếu có GEMINI_API_KEY)
+  └─ GoogleTranslator vi→zh-TW             (fallback cuối cùng)
+
+  translate_fixed(text)                   — cho Quốc gia QG1-3
+  └─ FIXED_TRANS dict (lookup đơn giản)
+
+  [Dịch song song khi render hồ sơ cũ]
+  ThreadPoolExecutor(max_workers=4) — dịch đồng thời tối đa 4 trường
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 8. LUỒNG XỬ LÝ ẢNH (Image Handling)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [Upload từ nhân viên]  →  resizeToBase64() [JS, Frontend]
+                              └─ 900px, quality 0.6 (tài liệu giấy tờ)
+
+  [Lưu vào DB]           →  _resize_image_for_db() [Python, Backend]
+                              ├─ Ảnh chân dung / QR: max 1200px, JPEG q85
+                              └─ Ảnh tài liệu:        max 900px, JPEG q60
+
+  [Lưu trữ]              →  data_json (cột TEXT trong PostgreSQL Neon)
+                              ├─ photo:           Base64 hoặc URL Cloudflare R2
+                              ├─ qr_line:         Base64 hoặc URL Cloudflare R2
+                              └─ document_images: mảng Base64 (tài liệu giấy tờ)
+
+  [Render CV offline]    →  photo/qr là URL R2 → _fetch_r2_image_as_base64()
+                              (kéo ảnh về nhúng vào HTML để xem offline được)
+
+  [currentDocumentImages[] - JS]
+  ├─ Mảng Base64 duy trì suốt session nhập liệu
+  ├─ restoreData(): gán thẳng từ DB → preview tức thì (0ms)
+  ├─ Thêm ảnh: resizeToBase64() → push vào mảng
+  ├─ Xóa ảnh: splice() khỏi mảng → re-render preview
+  └─ Lưu form: đọc thẳng mảng → không re-convert
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 9. TÍNH NĂNG QUẢN LÝ HỒ SƠ (Dashboard Features)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Bảng danh sách hồ sơ (Lazy Load)
+  ├─ Tải trang: chỉ lấy metadata (id, ma_so, ho_ten, ngay_tao, is_selected...)
+  ├─ Mở chỉnh sửa: gọi /api/history/<id>/data để lấy data_json đầy đủ
+  └─ Tìm kiếm, lọc theo đơn hàng, NPT, trạng thái
+
+  Trúng tuyển (Toggle Selected)
+  ├─ POST /api/history/<id>/toggle-selected
+  ├─ Lưu đơn hàng trúng tuyển vào selected_job (chỉ 1 đơn duy nhất)
+  └─ Auto-cleanup on-the-fly: nếu is_selected=True nhưng selected_job trống → tự điền
+
+  Gán đơn hàng
+  ├─ Gán hàng loạt: POST /api/history/bulk-assign-job (nhiều ID)
+  ├─ Gán theo mã số: POST /api/history/assign-job-by-maso (nhiều Maso)
+  └─ Xóa đơn hàng: POST /api/history/remove-job-from-maso
+
+  Xóa hồ sơ
+  ├─ Xóa mềm: is_deleted=True, lọc khỏi danh sách thường
+  ├─ Xóa mềm hàng loạt: POST /api/history/bulk-delete
+  └─ Xóa cứng theo năm: POST /api/history/hard-delete-year (giải phóng dung lượng DB)
+
+  Xuất file
+  ├─ Xem CV: /cv/<slug> → HTML inline, nút "Lưu PDF" dùng window.print()
+  ├─ Tải HTML offline: /api/download-cv/<maso> → file HTML nhúng đủ ảnh Base64
+  ├─ Zip Pack: /api/history/<id>/zip-pack → CV.html + ảnh tài liệu riêng biệt
+  ├─ In hàng loạt: POST /api/history/bulk-print → Streaming HTML (nhiều CV)
+  └─ Xuất Excel: POST /api/history/export-excel → .xlsx (thống kê + biểu đồ)
+
+  Excel Export (openpyxl)
+  ├─ Sheet dữ liệu: danh sách ứng viên đã chọn
+  ├─ Sheet thống kê: BarChart (theo tháng), PieChart (theo đơn hàng)
+  └─ Style: màu sắc, font, viền, căn chỉnh
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 10. BẢO MẬT (Security)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ├─ Basic Auth (Flask-BasicAuth): bảo vệ /fct-1503 và toàn bộ API admin
+  │   Tắt khi chạy local (chỉ bật khi RENDER env var có mặt)
+  ├─ CORS: whitelist origin cv.fct.vn, localhost:5000, 127.0.0.1:5000
+  ├─ Anti-DevTools: JS inject vào mọi CV — chặn F12, Ctrl+Shift+I, Ctrl+U
+  │   Kiểm tra window.outerWidth - innerWidth > 400 (DevTools panel mở)
+  ├─ HTML Minify: _protect_html() — xóa comment, gộp whitespace
+  ├─ MAX_CONTENT_LENGTH: 20MB per request
+  └─ Neon SSL: sslmode=require, connect_timeout=10
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 11. HIỆU NĂNG ĐÃ TỐI ƯU (Performance Optimizations)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [Mở form ứng viên — đã tối ưu]
+  Vấn đề cũ: base64ToFile() vòng lặp while đồng bộ → đơ Main Thread 1-3s/ảnh
+  Giải pháp:  currentDocumentImages[] — gán thẳng Base64 string → 0ms
+
+  [Lưu form — đã tối ưu]
+  Vấn đề cũ: convert ngược từ FileInput → File → Base64 dù ảnh không thay đổi
+  Giải pháp:  đọc thẳng currentDocumentImages[] — không re-convert
+
+  [Xem & In CV — đã tối ưu]
+  Vấn đề cũ: mỗi lần in gọi 8 API dịch thuật (1.5-4s mỗi lần)
+  Giải pháp:  translateField() dịch khi nhập liệu → lưu tiếng Trung vào DB
+              is_chinese() guard → khi render CV không bao giờ gọi API nữa
+
+  [In hàng loạt — đã tối ưu]
+  Vấn đề cũ: 10 hồ sơ × 8 trường = 80 lượt gọi API → timeout / rate limit
+  Giải pháp:  0 lượt gọi API (dữ liệu tiếng Trung sẵn trong DB)
+              Streaming response (stream_with_context) — không load RAM toàn bộ
+
+  [Logo/Background cache]
+  _init_cache(): đọc logo.png + fct_bg.png vào RAM 1 lần khi khởi động
+  → mọi request render CV sau đó không đọc file disk nữa
+
+  [Lazy Load Dashboard]
+  api_history: chỉ trả metadata (không trả data_json nặng)
+  api_history_data: trả data_json đầy đủ chỉ khi người dùng mở hồ sơ
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 12. THƯ VIỆN & CÔNG CỤ (Dependencies)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Backend (requirements.txt)
+  ├─ Flask                  — Web framework
+  ├─ flask-cors             — CORS header management
+  ├─ Flask-BasicAuth        — HTTP Basic Authentication
+  ├─ Flask-SQLAlchemy 3.1.1 — ORM
+  ├─ psycopg2-binary 2.9.9  — PostgreSQL adapter (Linux only)
+  ├─ gunicorn               — WSGI server (production)
+  ├─ python-dotenv          — Load biến môi trường từ .env
+  ├─ deep-translator        — Google Translate (vi→zh-TW)
+  ├─ google-generativeai    — Gemini 3.5 Flash API
+  ├─ boto3 1.28.85          — AWS S3 SDK (Cloudflare R2 compatible)
+  ├─ Pillow 10.0.0          — Xử lý / resize ảnh
+  ├─ openpyxl 3.1.2         — Xuất file Excel (.xlsx + charts)
+  └─ requests               — HTTP client (fetch ảnh từ R2)
+
+  Frontend (inline trong HTML)
+  ├─ Tailwind CSS (CDN)     — Utility CSS framework
+  ├─ Jinja2 Template        — fct_template_v6.18.html render CV
+  └─ Vanilla JS             — Không dùng framework JS nặng
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 13. BIẾN MÔI TRƯỜNG (Environment Variables — .env)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  DATABASE_URL       — PostgreSQL connection string (Neon.tech)
+  ADMIN_USERNAME     — Tên đăng nhập admin (mặc định: fctvt)
+  ADMIN_PASSWORD     — Mật khẩu admin (mặc định: 1503)
+  GEMINI_API_KEY     — Google Gemini API key (nếu không có → dùng Google Translate)
+  FLASK_DEBUG        — true/false (chỉ dùng khi phát triển local)
+  RENDER             — Render.com tự inject → bật Basic Auth khi deploy
+
+  (boto3 / Cloudflare R2 keys nằm trong .env nhưng không được app đọc chủ động
+   — chỉ dùng nếu tái kích hoạt R2 upload trong tương lai)
