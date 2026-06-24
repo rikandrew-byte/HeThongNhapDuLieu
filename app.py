@@ -558,7 +558,7 @@ def _fetch_r2_image_as_base64(url: str) -> str:
         return ""
 
 # --- LOGIC PREPARE ---
-def prepare_render_data(raw_data: dict) -> dict:
+def prepare_render_data(raw_data: dict, record=None) -> dict:
     data = {}
     fields = [
         'Maso', 'Hoten', 'TentiengTrung', 'Ngaysinh', 'Tuoi', 'Chieucao', 'Cannang', 
@@ -580,16 +580,60 @@ def prepare_render_data(raw_data: dict) -> dict:
     data['Ngaysinh'] = fmt_date(data['Ngaysinh'])
     if not data['Tuoi'] and raw_data.get('Ngaysinh'): data['Tuoi'] = calc_age(raw_data.get('Ngaysinh'))
 
+    # ==========================================================================
+    # 🚀 TỐI ƯU: Translation Cache (Lazy Write-back)
+    # - Đọc bản dịch đã lưu trong DB thay vì gọi API mỗi lần render
+    # - Chỉ dịch các trường CHƯA có cache
+    # - Ghi cache ngược lại DB (write-back) để lần sau dùng ngay
+    # ==========================================================================
     fields_to_translate = ['Noio', 'ndcv1', 'ndcv2', 'ndcv3', 'loi_binh_1', 'N1', 'N2', 'N3']
-    non_empty = {f: data[f] for f in fields_to_translate if data.get(f, '').strip()}
-    if non_empty:
+    fields_needing_translation = {}
+    cache_updated = False
+
+    for f in fields_to_translate:
+        viet_val = data.get(f, '').strip()
+        if not viet_val:
+            continue  # Trường rỗng → bỏ qua
+        
+        cache_key = f'_trans_{f}'
+        cached_translation = raw_data.get(cache_key, '').strip()
+        
+        if cached_translation:
+            # ✅ Cache HIT: dùng bản dịch sẵn có (0ms)
+            data[f] = cached_translation
+        else:
+            # ❌ Cache MISS: cần dịch
+            fields_needing_translation[f] = viet_val
+
+    if fields_needing_translation:
         from concurrent.futures import ThreadPoolExecutor, as_completed
-        with ThreadPoolExecutor(max_workers=min(len(non_empty), 4)) as executor:
-            future_map = {executor.submit(translate_free, v): k for k, v in non_empty.items()}
+        with ThreadPoolExecutor(max_workers=min(len(fields_needing_translation), 4)) as executor:
+            future_map = {executor.submit(translate_free, v): k for k, v in fields_needing_translation.items()}
             for future in as_completed(future_map):
                 field = future_map[future]
-                try: data[field] = future.result()
-                except: pass
+                try:
+                    translated = future.result()
+                    data[field] = translated
+                    # Lưu vào raw_data để write-back xuống DB
+                    raw_data[f'_trans_{field}'] = translated
+                    cache_updated = True
+                except:
+                    pass
+
+    # Write-back cache xuống DB nếu có bản dịch mới
+    if cache_updated and record is not None:
+        try:
+            current_db_data = json.loads(record.data_json) if record.data_json else {}
+            for field in fields_needing_translation:
+                cache_key = f'_trans_{field}'
+                if raw_data.get(cache_key):
+                    current_db_data[cache_key] = raw_data[cache_key]
+            record.data_json = json.dumps(current_db_data, ensure_ascii=False)
+            db.session.commit()
+            print(f"✅ Translation cache saved for record {record.id}: {list(fields_needing_translation.keys())}")
+        except Exception as e:
+            print(f"⚠️ Không thể ghi cache dịch thuật xuống DB: {e}")
+    # ==========================================================================
 
     yellow_alerts = []
     for i in range(1, 23):
@@ -674,11 +718,11 @@ def _protect_html(html: str) -> str:
     )
     return html.replace('</body>', anti_devtools + '</body>')
 
-def generate_html_resume(form_data: dict, template_name='fct_template_v6.18.html', skip_images: bool = False) -> str:
+def generate_html_resume(form_data: dict, template_name='fct_template_v6.18.html', skip_images: bool = False, record=None) -> str:
     render_data = dict(form_data)
     if skip_images:
         render_data['__skip_images__'] = True
-    processed_data = prepare_render_data(render_data)
+    processed_data = prepare_render_data(render_data, record=record)
     processed_data['logo_base64'] = _LOGO_B64_CACHE or get_base64_image(os.path.join(BASE_DIR, 'static', 'logo.png'))
     processed_data['bg_base64']   = _BG_B64_CACHE   or get_base64_image(os.path.join(BASE_DIR, 'static', 'fct_bg.png'), max_size=400, quality=75)
     
@@ -792,6 +836,17 @@ def api_submit_only():
                 record.don_hang = str(data.get('Donhang', '')).strip()
             else:
                 data['Donhang'] = record.don_hang or ''
+            # 🚀 TỐI ƯU: Giữ lại cache dịch thuật cho các trường không thay đổi
+            _TRANSLATABLE_FIELDS = ['Noio', 'ndcv1', 'ndcv2', 'ndcv3', 'loi_binh_1', 'N1', 'N2', 'N3']
+            for field in _TRANSLATABLE_FIELDS:
+                cache_key = f'_trans_{field}'
+                # Chỉ giữ cache nếu giá trị tiếng Việt không thay đổi
+                old_viet_val = str(old_data.get(field, '')).strip()
+                new_viet_val = str(data.get(field, '')).strip()
+                if old_viet_val == new_viet_val and old_data.get(cache_key):
+                    data[cache_key] = old_data[cache_key]  # Kế thừa bản dịch cũ
+                else:
+                    data.pop(cache_key, None)  # Xóa cache cũ → sẽ dịch lại khi render
             record.data_json = json.dumps(_prepare_data_for_db(data), ensure_ascii=False)
             db.session.commit()
             msg = 'Đã cập nhật.'
@@ -843,7 +898,7 @@ def download_history(maso):
     try:
         record = FormHistory.query.filter_by(ma_so=maso).order_by(FormHistory.ngay_tao.desc()).first()
         if not record: return jsonify({"error": "Not found"}), 404
-        html_content = generate_html_resume(json.loads(record.data_json))
+        html_content = generate_html_resume(json.loads(record.data_json), record=record)
         filename = f"{maso}_{sanitize_filename_master(record.ho_ten)}.html"
         return send_file(io.BytesIO(html_content.encode('utf-8')), mimetype='text/html', as_attachment=True, download_name=filename)
     except: return jsonify({"error": "Error"}), 400
@@ -854,7 +909,7 @@ def api_preview(record_id):
     try:
         record = FormHistory.query.get(record_id)
         if not record: return "Not found", 404
-        html_content = generate_html_resume(json.loads(record.data_json))
+        html_content = generate_html_resume(json.loads(record.data_json), record=record)
         return Response(html_content, mimetype="text/html", headers={"Content-Type": "text/html; charset=utf-8"})
     except Exception as e: return str(e), 500
 
@@ -892,7 +947,7 @@ def secure_web_view(slug):
         # Kiểm tra maso trong slug (nếu có id/maso) để đảm bảo tính bảo mật/nhất quán
         # (Nếu dùng Maso từ slug thì record đã khớp rồi)
         
-        html_content = generate_html_resume(json.loads(record.data_json))
+        html_content = generate_html_resume(json.loads(record.data_json), record=record)
         # Tạo tên file đẹp cho trình duyệt
         clean_name = sanitize_filename_master(record.ho_ten)
         filename = f"{record.ma_so}_{clean_name}.html"
@@ -1116,7 +1171,7 @@ def api_history_zip_pack(record_id):
         render_form_data['document_images'] = rel_doc_filenames
 
         # skip_images=True: vẫn hiển thị ảnh chân dung/QR bằng URL trực tiếp, không fetch R2
-        html_content = generate_html_resume(render_form_data, skip_images=True)
+        html_content = generate_html_resume(render_form_data, skip_images=True, record=r)
         html_filename = f"{r.ma_so}_{sanitize_filename_master(r.ho_ten)}.html"
         
         return jsonify({
@@ -1794,7 +1849,7 @@ def api_bulk_print():
             r0 = sorted_records[0]
             try:
                 form_data = json.loads(r0.data_json)
-                base_html = generate_html_resume(form_data)
+                base_html = generate_html_resume(form_data, record=r0)
             except Exception as e:
                 yield f"<h1>Lỗi tạo trang đầu tiên: {str(e)}</h1>"
                 return
@@ -1822,7 +1877,7 @@ def api_bulk_print():
             for r in sorted_records[1:]:
                 try:
                     form_data = json.loads(r.data_json)
-                    html = generate_html_resume(form_data)
+                    html = generate_html_resume(form_data, record=r)
                     
                     # Cắt lấy nguyên cụm thẻ <div class="a4-page ...">
                     start_idx = html.find('<div class="a4-page')

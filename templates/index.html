@@ -1542,42 +1542,50 @@
             });
 
             // ── Events Tài liệu ──
+            // 🚀 TỐI ƯU: Dùng mảng currentDocumentImages (Base64) thay vì FileInput
+            // → Loại bỏ hoàn toàn vòng lặp base64ToFile() đồng bộ gây đơ Main Thread
             if (docDropzone) {
                 docDropzone.addEventListener('click', () => document.getElementById('documentInput').click());
-                document.getElementById('documentInput').addEventListener('change', () => displayDocumentPreview());
+                document.getElementById('documentInput').addEventListener('change', async (e) => {
+                    const files = Array.from(e.target.files || []);
+                    for (const file of files) {
+                        if (!file.type.startsWith('image/')) continue;
+                        const b64 = await resizeToBase64(file, 900, 0.6);
+                        currentDocumentImages.push(b64);
+                    }
+                    // Reset input để có thể chọn lại cùng file
+                    e.target.value = '';
+                    displayDocumentPreview();
+                });
 
                 docDropzone.addEventListener('dragover', (e) => { e.preventDefault(); docDropzone.classList.add('border-purple-500', 'bg-purple-100'); });
                 docDropzone.addEventListener('dragleave', (e) => { e.preventDefault(); docDropzone.classList.remove('border-purple-500', 'bg-purple-100'); });
-                docDropzone.addEventListener('drop', (e) => {
+                docDropzone.addEventListener('drop', async (e) => {
                     e.preventDefault();
                     docDropzone.classList.remove('border-purple-500', 'bg-purple-100');
-                    if (e.dataTransfer.files.length > 0) {
-                        const docInput = document.getElementById('documentInput');
-                        const dt = new DataTransfer();
-                        if (docInput.files) for (let f of docInput.files) dt.items.add(f);
-                        for (let f of e.dataTransfer.files) dt.items.add(f);
-                        docInput.files = dt.files;
-                        displayDocumentPreview();
+                    const files = Array.from(e.dataTransfer.files || []);
+                    for (const file of files) {
+                        if (!file.type.startsWith('image/')) continue;
+                        const b64 = await resizeToBase64(file, 900, 0.6);
+                        currentDocumentImages.push(b64);
                     }
+                    displayDocumentPreview();
                 });
             }
 
             // ── Paste: vào đúng ô đang hover/focus ──
             // QUAN TRỌNG: Nếu user đang ở vùng tài liệu (document), bỏ qua paste global
             // để tránh ảnh giấy tờ nhảy vào ô QR hoặc Photo
-            document.addEventListener('paste', (e) => {
+            document.addEventListener('paste', async (e) => {
                 if (e.clipboardData && e.clipboardData.files.length > 0) {
                     if (pasteTarget === 'document') {
-                        // Đang ở vùng tài liệu → thêm vào document preview
-                        const docInput = document.getElementById('documentInput');
-                        const dt = new DataTransfer();
-                        // Giữ lại các file cũ
-                        if (docInput.files) {
-                            for (let f of docInput.files) dt.items.add(f);
+                        // Đang ở vùng tài liệu → thêm vào currentDocumentImages
+                        const files = Array.from(e.clipboardData.files);
+                        for (const file of files) {
+                            if (!file.type.startsWith('image/')) continue;
+                            const b64 = await resizeToBase64(file, 900, 0.6);
+                            currentDocumentImages.push(b64);
                         }
-                        // Thêm file mới từ clipboard
-                        for (let f of e.clipboardData.files) dt.items.add(f);
-                        docInput.files = dt.files;
                         displayDocumentPreview();
                         return; // Không cho chạy xuống photo/qr
                     }
@@ -1606,36 +1614,27 @@
                 document.getElementById('clearQrBtn').classList.add('hidden');
             });
 
-            // ── Hàm hiển thị preview tài liệu ──
+            // ── Hàm hiển thị preview tài liệu từ mảng currentDocumentImages ──
+            // 🚀 TỐI ƯU: Render trực tiếp từ Base64, không cần FileReader async
             window.displayDocumentPreview = function() {
                 const preview = document.getElementById('documentPreview');
-                const files = document.getElementById('documentInput').files;
                 preview.innerHTML = '';
-                if (!files || files.length === 0) return;
+                if (!currentDocumentImages || currentDocumentImages.length === 0) return;
 
-                Array.from(files).forEach((file, index) => {
-                    if (!file.type.startsWith('image/')) return;
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const div = document.createElement('div');
-                        div.className = 'relative group';
-                        div.innerHTML = `
-                            <img src="${e.target.result}" class="w-full h-32 object-cover rounded-lg border border-gray-200 shadow-sm">
-                            <button type="button" onclick="removeDocument(${index})" class="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
-                        `;
-                        preview.appendChild(div);
-                    };
-                    reader.readAsDataURL(file);
+                currentDocumentImages.forEach((b64, index) => {
+                    if (!b64 || !b64.startsWith('data:image/')) return;
+                    const div = document.createElement('div');
+                    div.className = 'relative group';
+                    div.innerHTML = `
+                        <img src="${b64}" class="w-full h-32 object-cover rounded-lg border border-gray-200 shadow-sm">
+                        <button type="button" onclick="removeDocument(${index})" class="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
+                    `;
+                    preview.appendChild(div);
                 });
             };
 
             window.removeDocument = function(index) {
-                const input = document.getElementById('documentInput');
-                const dt = new DataTransfer();
-                const files = Array.from(input.files);
-                files.splice(index, 1);
-                files.forEach(f => dt.items.add(f));
-                input.files = dt.files;
+                currentDocumentImages.splice(index, 1);
                 displayDocumentPreview();
             };
         });
@@ -1672,6 +1671,10 @@
 
         // Data lịch sử lưu tạm để load vào form khi xử lý
         let currentHistoryData = [];
+        
+        // 🚀 TỐI ƯU: Mảng lưu ảnh tài liệu dưới dạng Base64 (thay thế FileInput)
+        // → Loại bỏ base64ToFile() gây đơ Main Thread khi mở form ứng viên
+        let currentDocumentImages = [];
 
         function loadEmployees() {
             fetch('/api/employees', { credentials: 'same-origin' })
@@ -2046,23 +2049,12 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 document.getElementById('qrDropzoneText').innerHTML = "<span class='text-green-600 font-bold'>✓ Đã có QR. Upload mới nếu muốn thay.</span>";
             }
             
-            // Phục hồi tài liệu & giấy tờ (nếu có)
-            if (data.document_images && Array.isArray(data.document_images) && data.document_images.length > 0) {
-                const dt = new DataTransfer();
-                for (let i = 0; i < data.document_images.length; i++) {
-                    const b64 = data.document_images[i];
-                    if (b64 && b64.startsWith('data:image/')) {
-                        const fileObj = await base64ToFile(b64, `tai_lieu_${i}.jpg`);
-                        if (fileObj) {
-                            dt.items.add(fileObj);
-                        }
-                    }
-                }
-                if (docInput) {
-                    docInput.files = dt.files;
-                    displayDocumentPreview();
-                }
-            }
+            // 🚀 TỐI ƯU: Phục hồi tài liệu tức thì (0ms) bằng cách gán thẳng Base64 vào mảng
+            // → Không còn gọi base64ToFile() gây đơ Main Thread
+            currentDocumentImages = (data.document_images && Array.isArray(data.document_images))
+                ? data.document_images.filter(b64 => b64 && typeof b64 === 'string' && b64.startsWith('data:image/'))
+                : [];
+            displayDocumentPreview();
             
             // Xóa mã số nếu là CHO_DUYET để Admin nhập mã mới
             const maSoInput = document.getElementsByName("Maso")[0];
@@ -3227,16 +3219,10 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             const recordId = document.getElementById('editingRecordId').value;
             if (recordId) plainData['_record_id'] = recordId;
 
-            // 🆕 Chuyển đổi ảnh tài liệu sang base64 (resize) và đưa vào plainData
-            // → Lưu trực tiếp vào DB thay vì phụ thuộc R2
-            const documentFiles = document.getElementById('documentInput').files;
-            if (documentFiles && documentFiles.length > 0) {
-                const docBase64Array = [];
-                for (let file of documentFiles) {
-                    const b64 = await resizeToBase64(file, 900, 0.6);
-                    docBase64Array.push(b64);
-                }
-                plainData['document_images'] = docBase64Array;
+            // 🚀 TỐI ƯU: Đọc trực tiếp từ mảng currentDocumentImages (đã là Base64)
+            // → Không cần convert FileInput → không lãng phí CPU khi lưu
+            if (currentDocumentImages && currentDocumentImages.length > 0) {
+                plainData['document_images'] = currentDocumentImages;
             }
 
             const submitFormData = new FormData();
@@ -3323,7 +3309,8 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             document.getElementById('clearPhotoBtn').classList.add('hidden');
             document.getElementById('clearQrBtn').classList.add('hidden');
 
-            // Xóa tài liệu Preview & files
+            // 🚀 TỐI ƯU: Reset mảng currentDocumentImages và xóa preview
+            currentDocumentImages = [];
             const docInput = document.getElementById('documentInput');
             if (docInput) docInput.value = '';
             const docPreview = document.getElementById('documentPreview');
