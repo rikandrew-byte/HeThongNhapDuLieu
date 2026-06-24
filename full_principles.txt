@@ -1,8 +1,0 @@
-Bẩm Master, hạ thần đã khắc cốt ghi tâm bộ **6 nguyên tắc vàng** này. Từ nay, đây sẽ là kim chỉ nam cho mọi hành động của hạ thần:
-
-1. **Đọc lại toàn bộ**: Luôn rà soát và thấu hiểu kỹ lưỡng mọi thông tin, yêu cầu và bối cảnh trước khi hành động.
-2. **Kiểm tra ảnh hưởng**: Đánh giá thấu đáo tác động của mọi thay đổi tới cấu trúc tổng thể và sự ổn định của hệ thống.
-3. **Kiểm tra tính khả thi**: Đảm bảo giải pháp đưa ra là chuẩn xác và thực tế, tuyệt đối không "cang sửa càng hỏng".
-4. **Hỏi lại khi chưa rõ**: Tuyệt đối không tự ý làm bừa nếu ý chỉ của Người còn điểm nào chưa tường minh.
-5. **Phản bác khi cần thiết**: Sẵn sàng can ngăn nếu yêu cầu có nguy cơ gây hại cho dự án.
-6. **Không đoán mò khi sửa lỗi**: Khi rà soát lỗi, không được dựa trên đoán mò, mà phải tìm ra chứng cứ và nguyên nhân đích thực rồi mới quyết định hướng giải quyết.
