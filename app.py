@@ -90,6 +90,8 @@ class FormHistory(db.Model):
     don_hang = db.Column(db.String(255), default='')    # Đơn hàng ứng tuyển (mã đơn)
     nguoi_phu_trach = db.Column(db.String(100), default='') # Tên Nhân viên - Đối tác
     selected_job = db.Column(db.String(255), default='')    # Đơn hàng trúng tuyển chính thức
+    selected_at = db.Column(db.DateTime, nullable=True, default=None)  # Thời điểm trúng tuyển
+    deleted_at = db.Column(db.DateTime, nullable=True, default=None)   # Thời điểm xóa mềm
 
 class Employee(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -220,6 +222,22 @@ with app.app_context():
             except Exception as db_ex:
                 print(f"Error checking/migrating selected_job data: {db_ex}")
                 db.session.rollback()
+            # Migration for selected_at
+            if 'selected_at' not in columns:
+                if 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI']:
+                    db.session.execute(text('ALTER TABLE form_history ADD COLUMN selected_at DATETIME DEFAULT NULL'))
+                else:
+                    db.session.execute(text('ALTER TABLE form_history ADD COLUMN selected_at DATETIME DEFAULT NULL'))
+                db.session.commit()
+                print("Added selected_at column.")
+            # Migration for deleted_at
+            if 'deleted_at' not in columns:
+                if 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI']:
+                    db.session.execute(text('ALTER TABLE form_history ADD COLUMN deleted_at DATETIME DEFAULT NULL'))
+                else:
+                    db.session.execute(text('ALTER TABLE form_history ADD COLUMN deleted_at DATETIME DEFAULT NULL'))
+                db.session.commit()
+                print("Added deleted_at column.")
         except Exception as ex:
             print(f"⚠️ Column migration skipped or failed: {ex}")
             db.session.rollback()
@@ -1041,8 +1059,10 @@ def api_bulk_delete_history():
         ids = data.get('ids', [])
         if not ids: return jsonify({'success': False, 'error': 'No IDs'}), 400
         records = FormHistory.query.filter(FormHistory.id.in_([int(i) for i in ids])).all()
-        for r in records: 
+        now_utc = datetime.utcnow()
+        for r in records:
             r.is_deleted = True
+            r.deleted_at = now_utc
             try:
                 if r.data_json:
                     jd = json.loads(r.data_json)
@@ -1064,6 +1084,7 @@ def api_delete_history(record_id):
         r = FormHistory.query.get(record_id)
         if r:
             r.is_deleted = True
+            r.deleted_at = datetime.utcnow()
             try:
                 if r.data_json:
                     jd = json.loads(r.data_json)
@@ -1326,15 +1347,19 @@ def api_export_excel():
         
         if ids:
             # Khi xuất theo IDs (frontend chỉ gửi active records)
-            # active = các ID được chọn, deleted = tất cả bản ghi xóa mềm cùng năm
             active_records = FormHistory.query.filter(FormHistory.id.in_([int(i) for i in ids])).all()
             if year_val and str(year_val) != 'ALL':
                 deleted_records = FormHistory.query.filter(
                     FormHistory.is_deleted == True,
-                    func.extract('year', FormHistory.ngay_tao) == int(year_val)
+                    func.extract('year', func.coalesce(FormHistory.deleted_at, FormHistory.ngay_tao)) == int(year_val)
+                ).all()
+                selected_records = FormHistory.query.filter(
+                    FormHistory.is_selected == True,
+                    func.extract('year', func.coalesce(FormHistory.selected_at, FormHistory.ngay_tao)) == int(year_val)
                 ).all()
             else:
                 deleted_records = FormHistory.query.filter(FormHistory.is_deleted == True).all()
+                selected_records = FormHistory.query.filter(FormHistory.is_selected == True).all()
         elif year_val and str(year_val) != 'ALL':
             active_records = FormHistory.query.filter(
                 FormHistory.is_deleted == False,
@@ -1342,11 +1367,16 @@ def api_export_excel():
             ).all()
             deleted_records = FormHistory.query.filter(
                 FormHistory.is_deleted == True,
-                func.extract('year', FormHistory.ngay_tao) == int(year_val)
+                func.extract('year', func.coalesce(FormHistory.deleted_at, FormHistory.ngay_tao)) == int(year_val)
+            ).all()
+            selected_records = FormHistory.query.filter(
+                FormHistory.is_selected == True,
+                func.extract('year', func.coalesce(FormHistory.selected_at, FormHistory.ngay_tao)) == int(year_val)
             ).all()
         else:
             active_records = FormHistory.query.filter(FormHistory.is_deleted == False).all()
             deleted_records = FormHistory.query.filter(FormHistory.is_deleted == True).all()
+            selected_records = FormHistory.query.filter(FormHistory.is_selected == True).all()
         
         # records = active_records (để tương thích với logic bên dưới của Sheet 1 & Thống Kê)
         records = active_records
@@ -1642,7 +1672,125 @@ def api_export_excel():
         ws_del.auto_filter.ref = f"A4:L{ws_del.max_row}" if ws_del.max_row >= 4 else "A4:L4"
 
         # =========================================================
-        # SHEET 3: THỐNG KÊ
+        # SHEET 3: DANH SÁCH TRÚNG TUYỂN (Selected records)
+        # =========================================================
+        ws_sel = wb.create_sheet(title="Danh sách trúng tuyển")
+        
+        # Title banner
+        ws_sel.merge_cells("A1:L1")
+        sel_title_cell = ws_sel.cell(row=1, column=1, value="DANH SÁCH ỨNG VIÊN TRÚNG TUYỂN - FCT HUMAN RESOURCE")
+        sel_title_cell.font = Font(name="Segoe UI", size=14, bold=True, color="FFFFFF")
+        sel_title_cell.fill = PatternFill(start_color="065F46", end_color="065F46", fill_type="solid")
+        sel_title_cell.alignment = Alignment(horizontal="center", vertical="center")
+        ws_sel.row_dimensions[1].height = 35
+        
+        # Subtitle
+        ws_sel.merge_cells("A2:L2")
+        sel_subtitle = ws_sel.cell(row=2, column=1,
+            value=f"Thời gian xuất báo cáo: {export_time_str}   |   Tổng số trúng tuyển: {len(selected_records)} hồ sơ")
+        sel_subtitle.font = Font(name="Segoe UI", size=10, italic=True, color="065F46")
+        sel_subtitle.fill = PatternFill(start_color="ECFDF5", end_color="ECFDF5", fill_type="solid")
+        sel_subtitle.alignment = Alignment(horizontal="center", vertical="center")
+        ws_sel.row_dimensions[2].height = 22
+        
+        # Spacer row 3
+        ws_sel.append([""] * 12)
+        ws_sel.row_dimensions[3].height = 8
+        
+        # Headers at row 4
+        sel_headers = ['Mã số', 'Họ tên', 'Ngày sinh', 'Đơn hàng trúng tuyển', 'Trạng thái',
+                       'Chiều cao (cm)', 'Cân nặng (kg)', 'Trình độ văn hóa',
+                       'Nơi ở', 'Tay nghề', 'Kinh nghiệm công việc', 'Người phụ trách']
+        ws_sel.append(sel_headers)
+        
+        # Style header row
+        sel_header_fill = PatternFill(start_color="065F46", end_color="065F46", fill_type="solid")
+        sel_header_font = Font(name="Segoe UI", color="FFFFFF", bold=True, size=11)
+        sel_thin_border = Border(
+            left=Side(style='thin', color="A7F3D0"),
+            right=Side(style='thin', color="A7F3D0"),
+            top=Side(style='thin', color="A7F3D0"),
+            bottom=Side(style='thin', color="A7F3D0")
+        )
+        ws_sel.row_dimensions[4].height = 30
+        ws_sel.freeze_panes = 'A5'
+        
+        for cell in ws_sel[4]:
+            cell.fill = sel_header_fill
+            cell.font = sel_header_font
+            cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+            cell.border = sel_thin_border
+        
+        # Row fills
+        sel_row_fill_1 = PatternFill(start_color="ECFDF5", end_color="ECFDF5", fill_type="solid")
+        sel_row_fill_2 = PatternFill(start_color="F0FDF4", end_color="F0FDF4", fill_type="solid")
+        
+        for idx, r in enumerate(selected_records):
+            try:
+                form_data = json.loads(r.data_json) if r.data_json else {}
+                ma_so = r.ma_so or ''
+                ho_ten = r.ho_ten or ''
+                ngay_sinh = form_data.get('Ngaysinh', '')
+                chieu_cao = form_data.get('Chieucao', '')
+                can_nang  = form_data.get('Cannang', '')
+                hoc_van   = form_data.get('Hocvan', '')
+                noi_o     = form_data.get('Noio', '')
+                hoc_van_vi = ZH_TO_VI.get(hoc_van.strip(), hoc_van) if hoc_van else ''
+                noi_o_vi   = ZH_TO_VI.get(noi_o.strip(), noi_o) if noi_o else ''
+                nguoi_pt   = form_data.get('f48', '')
+                
+                skills_sel = []
+                for k, v in EXCEL_SKILL_MAPPING.items():
+                    if form_data.get(k):
+                        skills_sel.append(v)
+                tay_nghe_sel = ", ".join(skills_sel)
+                
+                kn_sel = []
+                for i in range(1, 4):
+                    qg = form_data.get(f'QG{i}', '')
+                    nam = form_data.get(f'N{i}', '')
+                    cv  = form_data.get(f'ndcv{i}', '')
+                    if qg or cv:
+                        parts = []
+                        if qg: parts.append(qg)
+                        if nam: parts.append(f"({nam})")
+                        if cv: parts.append(f": {cv}")
+                        kn_sel.append(" ".join(parts))
+                kinh_nghiem_sel = "\n".join(kn_sel)
+                
+                sel_job = getattr(r, 'selected_job', '') or ''
+                trang_thai = '✅ Trúng tuyển (Active)' if not getattr(r, 'is_deleted', False) else '❌ Trúng tuyển (Deleted)'
+                
+                ws_sel.append([ma_so, ho_ten, ngay_sinh, sel_job, trang_thai,
+                               chieu_cao, can_nang, hoc_van_vi, noi_o_vi,
+                               tay_nghe_sel, kinh_nghiem_sel, nguoi_pt])
+            except Exception as e:
+                print("Error parsing selected record:", e)
+        
+        # Style body rows
+        sel_body_font = Font(name="Segoe UI", size=10)
+        for row_idx, row in enumerate(ws_sel.iter_rows(min_row=5, max_row=ws_sel.max_row, min_col=1, max_col=12), 5):
+            ws_sel.row_dimensions[row_idx].height = 38
+            row_bg = sel_row_fill_1 if (row_idx % 2 == 0) else sel_row_fill_2
+            
+            for cell in row:
+                cell.font = sel_body_font
+                cell.border = sel_thin_border
+                if cell.column in (10, 11):
+                    cell.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+                else:
+                    cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+                cell.fill = row_bg
+        
+        # Column widths
+        sel_col_widths = {'A':15, 'B':26, 'C':15, 'D':24, 'E':22, 'F':15, 'G':15, 'H':20, 'I':20, 'J':32, 'K':55, 'L':22}
+        for col_let, width in sel_col_widths.items():
+            ws_sel.column_dimensions[col_let].width = width
+        
+        ws_sel.auto_filter.ref = f"A4:L{ws_sel.max_row}" if ws_sel.max_row >= 4 else "A4:L4"
+
+        # =========================================================
+        # SHEET 4: THỐNG KÊ
         # =========================================================
         ws_stat = wb.create_sheet(title="Thống Kê")
 
@@ -1685,12 +1833,12 @@ def api_export_excel():
                                    top=Side(style='thin', color="E2E8F0"),
                                    bottom=Side(style='thin', color="E2E8F0"))
                                    
-        def style_kpi_card(col_start, label, value):
-            ws_stat.merge_cells(start_row=5, start_column=col_start, end_row=7, end_column=col_start+1)
-            main_cell = ws_stat.cell(row=5, column=col_start, value=f"{label}\n\n{value}")
+        def style_kpi_card_row(row_start, col_start, label, value):
+            ws_stat.merge_cells(start_row=row_start, start_column=col_start, end_row=row_start+2, end_column=col_start+1)
+            main_cell = ws_stat.cell(row=row_start, column=col_start, value=f"{label}\n\n{value}")
             main_cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
             
-            for r in range(5, 8):
+            for r in range(row_start, row_start+3):
                 for c in range(col_start, col_start + 2):
                     cell = ws_stat.cell(row=r, column=c)
                     cell.fill = kpi_card_fill
@@ -1701,15 +1849,31 @@ def api_export_excel():
             
             main_cell.font = Font(name=font_family, bold=True, size=10, color="1E3A8A")
             
-        style_kpi_card(4, "TỔNG ỨNG VIÊN", f"{len(records)}")
-        style_kpi_card(6, "NAM (MD)", f"{type_count['Nam (MD)']}")
-        style_kpi_card(8, "NỮ (FD)", f"{type_count['Nữ (FD)']}")
-        style_kpi_card(10, "ĐIỀU DƯỠNG (KD)", f"{type_count['Điều dưỡng (KD)']}")
-        style_kpi_card(12, "MÃ KHÁC", f"{type_count['Khác']}")
+        style_kpi_card_row(5, 4, "TỔNG ỨNG VIÊN", f"{len(records)}")
+        style_kpi_card_row(5, 6, "NAM (MD)", f"{type_count['Nam (MD)']}")
+        style_kpi_card_row(5, 8, "NỮ (FD)", f"{type_count['Nữ (FD)']}")
+        style_kpi_card_row(5, 10, "ĐIỀU DƯỠNG (KD)", f"{type_count['Điều dưỡng (KD)']}")
+        style_kpi_card_row(5, 12, "MÃ KHÁC", f"{type_count['Khác']}")
         
         ws_stat.row_dimensions[5].height = 15
         ws_stat.row_dimensions[6].height = 15
         ws_stat.row_dimensions[7].height = 15
+        
+        # Đếm theo loại mã số cho trúng tuyển
+        sel_md = sum(1 for r in selected_records if (r.ma_so or '').strip().upper().startswith('MD'))
+        sel_fd = sum(1 for r in selected_records if (r.ma_so or '').strip().upper().startswith('FD'))
+        sel_kd = sum(1 for r in selected_records if (r.ma_so or '').strip().upper().startswith('KD'))
+        sel_other = len(selected_records) - sel_md - sel_fd - sel_kd
+        
+        style_kpi_card_row(9, 4, "TỔNG TRÚNG TUYỂN", f"{len(selected_records)}")
+        style_kpi_card_row(9, 6, "NAM TRÚNG TUYỂN", f"{sel_md}")
+        style_kpi_card_row(9, 8, "NỮ TRÚNG TUYỂN", f"{sel_fd}")
+        style_kpi_card_row(9, 10, "ĐIỀU DƯỠNG", f"{sel_kd}")
+        style_kpi_card_row(9, 12, "KHÁC", f"{sel_other}")
+
+        ws_stat.row_dimensions[9].height = 15
+        ws_stat.row_dimensions[10].height = 15
+        ws_stat.row_dimensions[11].height = 15
         
         # 4. Dynamic Data Tables in Columns A & B (Báo cáo kiểm toán)
         header_fill = PatternFill(start_color="0F172A", end_color="0F172A", fill_type="solid") # Slate-900 sang trọng
@@ -1735,7 +1899,7 @@ def api_export_excel():
         total_rows = {}
         
         # Subsection I: Tay nghề
-        row_skill = 9
+        row_skill = 13
         section_rows[row_skill - 1] = "I. THỐNG KÊ TAY NGHỀ & KỸ NĂNG"
         header_rows[row_skill] = ("Tay nghề", "Số lượng")
         
@@ -1921,107 +2085,7 @@ def api_export_excel():
         for col_let in ['D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N']:
             ws_stat.column_dimensions[col_let].width = 12
         
-        # =========================================================
-        # SECTION V: THỐNG KÊ TRÚNG TUYỂN (trên tất cả records kể cả đã xóa)
-        # =========================================================
-        all_records_combined = list(active_records) + list(deleted_records)
-        selected_all = [r for r in all_records_combined if getattr(r, 'is_selected', False)]
-        
-        # Đếm theo loại mã số
-        sel_md = sum(1 for r in selected_all if (r.ma_so or '').strip().upper().startswith('MD'))
-        sel_fd = sum(1 for r in selected_all if (r.ma_so or '').strip().upper().startswith('FD'))
-        sel_kd = sum(1 for r in selected_all if (r.ma_so or '').strip().upper().startswith('KD'))
-        sel_other = len(selected_all) - sel_md - sel_fd - sel_kd
-        
-        # Vị trí section V: sau row_loc_total + 3
-        row_sel_section = row_loc_total + 4
-        
-        # Section title
-        cell_sel_title = ws_stat.cell(row=row_sel_section - 1, column=1, value="V. THỐNG KÊ TRÚNG TUYỂN")
-        cell_sel_title.font = section_font
-        ws_stat.row_dimensions[row_sel_section - 1].height = 25
-        section_rows[row_sel_section - 1] = "V. THỐNG KÊ TRÚNG TUYỂN"  # đăng ký để tránh style đè
-        
-        # KPI mini row (dùng cột A-B, theo dạng bảng dọc)
-        kpi_sel_labels = [
-            ("Tổng trúng tuyển", len(selected_all)),
-            ("Nam trúng tuyển (MD)", sel_md),
-            ("Nữ trúng tuyển (FD)", sel_fd),
-            ("Điều dưỡng trúng tuyển (KD)", sel_kd),
-            ("Khác", sel_other),
-        ]
-        
-        # Header cho bảng KPI trúng tuyển
-        kpi_h1 = ws_stat.cell(row=row_sel_section, column=1, value="Phân loại")
-        kpi_h2 = ws_stat.cell(row=row_sel_section, column=2, value="Số lượng")
-        sel_header_fill = PatternFill(start_color="065F46", end_color="065F46", fill_type="solid")  # Emerald-900
-        sel_header_font = Font(name=font_family, color="FFFFFF", bold=True, size=10)
-        for hc in [kpi_h1, kpi_h2]:
-            hc.fill = sel_header_fill
-            hc.font = sel_header_font
-            hc.alignment = Alignment(horizontal="center", vertical="center")
-        ws_stat.row_dimensions[row_sel_section].height = 22
-        header_rows[row_sel_section] = ("Phân loại", "Số lượng")
-        
-        sel_body_fill_even = PatternFill(start_color="D1FAE5", end_color="D1FAE5", fill_type="solid")
-        for idx, (label, count) in enumerate(kpi_sel_labels, 1):
-            r_idx = row_sel_section + idx
-            c1 = ws_stat.cell(row=r_idx, column=1, value=label)
-            c2 = ws_stat.cell(row=r_idx, column=2, value=count)
-            is_even_r = (idx % 2 == 0)
-            row_bg = sel_body_fill_even if is_even_r else None
-            for cell in [c1, c2]:
-                cell.font = body_font
-                cell.border = thin_border
-                cell.alignment = Alignment(horizontal="center", vertical="center")
-                if row_bg: cell.fill = row_bg
-            c1.alignment = Alignment(horizontal="left", vertical="center")
-            ws_stat.row_dimensions[r_idx].height = 20
-        
-        # Dòng tổng cộng (double border)
-        row_sel_total = row_sel_section + len(kpi_sel_labels) + 1
-        tc1 = ws_stat.cell(row=row_sel_total, column=1, value="Tổng cộng")
-        tc2 = ws_stat.cell(row=row_sel_total, column=2, value=f"=SUM(B{row_sel_section+1}:B{row_sel_section+1})")
-        tc2.value = len(selected_all)
-        for cell in [tc1, tc2]:
-            cell.font = body_bold_font
-            cell.border = double_bottom_border
-        tc2.alignment = Alignment(horizontal="center", vertical="center")
-        ws_stat.row_dimensions[row_sel_total].height = 20
-        total_rows[row_sel_total] = len(selected_all)
-        
-        # Bảng chi tiết danh sách trúng tuyển
-        row_sel_detail_title = row_sel_total + 2
-        cell_dt = ws_stat.cell(row=row_sel_detail_title, column=1, value="DANH SÁCH CHI TIẾT - TRÚNG TUYỂN")
-        cell_dt.font = Font(name=font_family, bold=True, size=10, color="065F46")
-        ws_stat.row_dimensions[row_sel_detail_title].height = 22
-        
-        row_sel_detail_header = row_sel_detail_title + 1
-        dh1 = ws_stat.cell(row=row_sel_detail_header, column=1, value="Mã số")
-        dh2 = ws_stat.cell(row=row_sel_detail_header, column=2, value="Họ tên")
-        dh3 = ws_stat.cell(row=row_sel_detail_header, column=3, value="Đơn hàng trúng tuyển")
-        for hc in [dh1, dh2, dh3]:
-            hc.fill = sel_header_fill
-            hc.font = sel_header_font
-            hc.alignment = Alignment(horizontal="center", vertical="center")
-        ws_stat.row_dimensions[row_sel_detail_header].height = 22
-        ws_stat.column_dimensions['C'].width = 28  # Mở rộng cột C cho đơn hàng
-        
-        sel_detail_even = PatternFill(start_color="ECFDF5", end_color="ECFDF5", fill_type="solid")
-        for idx, r in enumerate(selected_all, 1):
-            r_row = row_sel_detail_header + idx
-            sel_job_val = getattr(r, 'selected_job', '') or getattr(r, 'don_hang', '') or ''
-            dc1 = ws_stat.cell(row=r_row, column=1, value=r.ma_so or '')
-            dc2 = ws_stat.cell(row=r_row, column=2, value=r.ho_ten or '')
-            dc3 = ws_stat.cell(row=r_row, column=3, value=sel_job_val)
-            row_bg = sel_detail_even if (idx % 2 == 0) else None
-            for cell in [dc1, dc2, dc3]:
-                cell.font = body_font
-                cell.border = thin_border
-                cell.alignment = Alignment(horizontal="center", vertical="center")
-                if row_bg: cell.fill = row_bg
-            dc2.alignment = Alignment(horizontal="left", vertical="center")
-            ws_stat.row_dimensions[r_row].height = 20
+        # Đã chuyển SECTION V sang Sheet 3 (Danh sách trúng tuyển) và phần trên cùng (KPI)
             
         excel_buffer = io.BytesIO()
         wb.save(excel_buffer)
@@ -2147,6 +2211,7 @@ def api_toggle_selected(record_id):
             
             record.don_hang = final_donhang
             record.is_selected = True
+            record.selected_at = datetime.utcnow()
             first_job = re.split(r'[,;]+', new_donhang)[0].strip() if new_donhang else ""
             record.selected_job = first_job
             
@@ -2168,10 +2233,12 @@ def api_toggle_selected(record_id):
             # Luôn xóa trạng thái trúng tuyển khi bỏ trúng tuyển
             # (không tự chuyển is_selected=True cho đơn còn lại)
             record.is_selected = False
+            record.selected_at = None
             record.selected_job = ""
                 
         elif not new_state and not new_donhang:
             record.is_selected = False
+            record.selected_at = None
             record.selected_job = ""
 
         try:
