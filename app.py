@@ -1325,13 +1325,33 @@ def api_export_excel():
         year_val = data.get('year')
         
         if ids:
-            records = FormHistory.query.filter(FormHistory.id.in_([int(i) for i in ids])).all()
+            # Khi xuất theo IDs (frontend chỉ gửi active records)
+            # active = các ID được chọn, deleted = tất cả bản ghi xóa mềm cùng năm
+            active_records = FormHistory.query.filter(FormHistory.id.in_([int(i) for i in ids])).all()
+            if year_val and str(year_val) != 'ALL':
+                deleted_records = FormHistory.query.filter(
+                    FormHistory.is_deleted == True,
+                    func.extract('year', FormHistory.ngay_tao) == int(year_val)
+                ).all()
+            else:
+                deleted_records = FormHistory.query.filter(FormHistory.is_deleted == True).all()
         elif year_val and str(year_val) != 'ALL':
-            records = FormHistory.query.filter(func.extract('year', FormHistory.ngay_tao) == int(year_val)).all()
+            active_records = FormHistory.query.filter(
+                FormHistory.is_deleted == False,
+                func.extract('year', FormHistory.ngay_tao) == int(year_val)
+            ).all()
+            deleted_records = FormHistory.query.filter(
+                FormHistory.is_deleted == True,
+                func.extract('year', FormHistory.ngay_tao) == int(year_val)
+            ).all()
         else:
-            records = FormHistory.query.all()
+            active_records = FormHistory.query.filter(FormHistory.is_deleted == False).all()
+            deleted_records = FormHistory.query.filter(FormHistory.is_deleted == True).all()
+        
+        # records = active_records (để tương thích với logic bên dưới của Sheet 1 & Thống Kê)
+        records = active_records
             
-        if not records:
+        if not records and not deleted_records:
             return jsonify({'success': False, 'error': 'No records found'}), 404
             
         wb = openpyxl.Workbook()
@@ -1350,7 +1370,7 @@ def api_export_excel():
         ws.merge_cells("A2:K2")
         from datetime import datetime
         export_time_str = datetime.now().strftime("%d/%m/%Y %H:%M")
-        subtitle_cell = ws.cell(row=2, column=1, value=f"Thời gian xuất báo cáo: {export_time_str}   |   Tổng số ứng viên: {len(records)} hồ sơ")
+        subtitle_cell = ws.cell(row=2, column=1, value=f"Thời gian xuất báo cáo: {export_time_str}   |   Ứng viên đang hoạt động: {len(records)} hồ sơ   |   Đã xóa: {len(deleted_records)} hồ sơ (xem sheet 'Danh sách đã xóa')")
         subtitle_cell.font = Font(name="Segoe UI", size=11, italic=True, color="1E3A8A")
         subtitle_cell.fill = PatternFill(start_color="EFF6FF", end_color="EFF6FF", fill_type="solid")
         subtitle_cell.alignment = Alignment(horizontal="center", vertical="center")
@@ -1496,9 +1516,136 @@ def api_export_excel():
             
         # Thêm AutoFilter
         ws.auto_filter.ref = f"A4:K{ws.max_row}"
+        
+        # =========================================================
+        # SHEET 2: DANH SÁCH ĐÃ XÓA (Soft-deleted records)
+        # =========================================================
+        ws_del = wb.create_sheet(title="Danh sách đã xóa")
+        
+        # Title banner
+        ws_del.merge_cells("A1:L1")
+        del_title_cell = ws_del.cell(row=1, column=1, value="DANH SÁCH ỨNG VIÊN ĐÃ XÓA KHỎI HỆ THỐNG - FCT HUMAN RESOURCE")
+        del_title_cell.font = Font(name="Segoe UI", size=14, bold=True, color="FFFFFF")
+        del_title_cell.fill = PatternFill(start_color="7F1D1D", end_color="7F1D1D", fill_type="solid")
+        del_title_cell.alignment = Alignment(horizontal="center", vertical="center")
+        ws_del.row_dimensions[1].height = 35
+        
+        # Subtitle
+        ws_del.merge_cells("A2:L2")
+        del_subtitle = ws_del.cell(row=2, column=1,
+            value=f"Thời gian xuất báo cáo: {export_time_str}   |   Tổng số đã xóa: {len(deleted_records)} hồ sơ   |   Trong đó trúng tuyển: {sum(1 for r in deleted_records if getattr(r,'is_selected',False))} hồ sơ")
+        del_subtitle.font = Font(name="Segoe UI", size=10, italic=True, color="7F1D1D")
+        del_subtitle.fill = PatternFill(start_color="FEF2F2", end_color="FEF2F2", fill_type="solid")
+        del_subtitle.alignment = Alignment(horizontal="center", vertical="center")
+        ws_del.row_dimensions[2].height = 22
+        
+        # Spacer row 3
+        ws_del.append([""] * 12)
+        ws_del.row_dimensions[3].height = 8
+        
+        # Headers at row 4 (thêm cột Trạng thái và Đơn hàng trúng tuyển)
+        del_headers = ['Mã số', 'Họ tên', 'Ngày sinh', 'Trạng thái', 'Đơn hàng trúng tuyển',
+                       'Chiều cao (cm)', 'Cân nặng (kg)', 'Trình độ văn hóa',
+                       'Nơi ở', 'Tay nghề', 'Kinh nghiệm công việc', 'Người phụ trách']
+        ws_del.append(del_headers)
+        
+        # Style header row
+        del_header_fill = PatternFill(start_color="7F1D1D", end_color="7F1D1D", fill_type="solid")
+        del_header_font = Font(name="Segoe UI", color="FFFFFF", bold=True, size=11)
+        del_thin_border = Border(
+            left=Side(style='thin', color="FCA5A5"),
+            right=Side(style='thin', color="FCA5A5"),
+            top=Side(style='thin', color="FCA5A5"),
+            bottom=Side(style='thin', color="FCA5A5")
+        )
+        ws_del.row_dimensions[4].height = 30
+        ws_del.freeze_panes = 'A5'
+        
+        for cell in ws_del[4]:
+            cell.fill = del_header_fill
+            cell.font = del_header_font
+            cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+            cell.border = del_thin_border
+        
+        # Row fills
+        del_selected_fill = PatternFill(start_color="D1FAE5", end_color="D1FAE5", fill_type="solid")  # Xanh lá = trúng tuyển
+        del_deleted_fill  = PatternFill(start_color="FEE2E2", end_color="FEE2E2", fill_type="solid")   # Đỏ nhạt = đã xóa
+        del_zebra_fill    = PatternFill(start_color="FFF1F2", end_color="FFF1F2", fill_type="solid")   # Đỏ cực nhạt = zebra
+        
+        for r in deleted_records:
+            try:
+                form_data = json.loads(r.data_json) if r.data_json else {}
+                ma_so = r.ma_so or ''
+                ho_ten = r.ho_ten or ''
+                ngay_sinh = form_data.get('Ngaysinh', '')
+                chieu_cao = form_data.get('Chieucao', '')
+                can_nang  = form_data.get('Cannang', '')
+                hoc_van   = form_data.get('Hocvan', '')
+                noi_o     = form_data.get('Noio', '')
+                hoc_van_vi = ZH_TO_VI.get(hoc_van.strip(), hoc_van) if hoc_van else ''
+                noi_o_vi   = ZH_TO_VI.get(noi_o.strip(), noi_o) if noi_o else ''
+                nguoi_pt   = form_data.get('f48', '')
+                
+                skills_del = []
+                for k, v in EXCEL_SKILL_MAPPING.items():
+                    if form_data.get(k):
+                        skills_del.append(v)
+                tay_nghe_del = ", ".join(skills_del)
+                
+                kn_del = []
+                for i in range(1, 4):
+                    qg = form_data.get(f'QG{i}', '')
+                    nam = form_data.get(f'N{i}', '')
+                    cv  = form_data.get(f'ndcv{i}', '')
+                    if qg or cv:
+                        parts = []
+                        if qg: parts.append(qg)
+                        if nam: parts.append(f"({nam})")
+                        if cv: parts.append(f": {cv}")
+                        kn_del.append(" ".join(parts))
+                kinh_nghiem_del = "\n".join(kn_del)
+                
+                is_sel = getattr(r, 'is_selected', False)
+                sel_job = getattr(r, 'selected_job', '') or ''
+                trang_thai_del = '✅ Trúng tuyển' if is_sel else '❌ Đã xóa'
+                
+                ws_del.append([ma_so, ho_ten, ngay_sinh, trang_thai_del, sel_job,
+                               chieu_cao, can_nang, hoc_van_vi, noi_o_vi,
+                               tay_nghe_del, kinh_nghiem_del, nguoi_pt])
+            except Exception as e:
+                print("Error parsing deleted record:", e)
+        
+        # Style body rows
+        del_body_font = Font(name="Segoe UI", size=10)
+        for row_idx, row in enumerate(ws_del.iter_rows(min_row=5, max_row=ws_del.max_row, min_col=1, max_col=12), 5):
+            ws_del.row_dimensions[row_idx].height = 38
+            is_sel_row = (row[3].value == '✅ Trúng tuyển')
+            if is_sel_row:
+                row_bg = del_selected_fill
+            else:
+                row_bg = del_deleted_fill if (row_idx % 2 == 0) else del_zebra_fill
             
-        # Thêm Sheet Thống Kê
+            for cell in row:
+                cell.font = del_body_font
+                cell.border = del_thin_border
+                if cell.column in (10, 11):  # Tay nghề, Kinh nghiệm
+                    cell.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+                else:
+                    cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+                cell.fill = row_bg
+        
+        # Column widths cho sheet đã xóa
+        del_col_widths = {'A':15, 'B':26, 'C':15, 'D':18, 'E':24, 'F':15, 'G':15, 'H':20, 'I':20, 'J':32, 'K':55, 'L':22}
+        for col_let, width in del_col_widths.items():
+            ws_del.column_dimensions[col_let].width = width
+        
+        ws_del.auto_filter.ref = f"A4:L{ws_del.max_row}" if ws_del.max_row >= 4 else "A4:L4"
+
+        # =========================================================
+        # SHEET 3: THỐNG KÊ
+        # =========================================================
         ws_stat = wb.create_sheet(title="Thống Kê")
+
         
         # 1. Ẩn Gridlines - Tạo hiệu ứng phẳng như một trang Web Canvas cao cấp
         ws_stat.sheet_view.showGridLines = False
@@ -1773,6 +1920,108 @@ def api_export_excel():
         
         for col_let in ['D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N']:
             ws_stat.column_dimensions[col_let].width = 12
+        
+        # =========================================================
+        # SECTION V: THỐNG KÊ TRÚNG TUYỂN (trên tất cả records kể cả đã xóa)
+        # =========================================================
+        all_records_combined = list(active_records) + list(deleted_records)
+        selected_all = [r for r in all_records_combined if getattr(r, 'is_selected', False)]
+        
+        # Đếm theo loại mã số
+        sel_md = sum(1 for r in selected_all if (r.ma_so or '').strip().upper().startswith('MD'))
+        sel_fd = sum(1 for r in selected_all if (r.ma_so or '').strip().upper().startswith('FD'))
+        sel_kd = sum(1 for r in selected_all if (r.ma_so or '').strip().upper().startswith('KD'))
+        sel_other = len(selected_all) - sel_md - sel_fd - sel_kd
+        
+        # Vị trí section V: sau row_loc_total + 3
+        row_sel_section = row_loc_total + 4
+        
+        # Section title
+        cell_sel_title = ws_stat.cell(row=row_sel_section - 1, column=1, value="V. THỐNG KÊ TRÚNG TUYỂN")
+        cell_sel_title.font = section_font
+        ws_stat.row_dimensions[row_sel_section - 1].height = 25
+        section_rows[row_sel_section - 1] = "V. THỐNG KÊ TRÚNG TUYỂN"  # đăng ký để tránh style đè
+        
+        # KPI mini row (dùng cột A-B, theo dạng bảng dọc)
+        kpi_sel_labels = [
+            ("Tổng trúng tuyển", len(selected_all)),
+            ("Nam trúng tuyển (MD)", sel_md),
+            ("Nữ trúng tuyển (FD)", sel_fd),
+            ("Điều dưỡng trúng tuyển (KD)", sel_kd),
+            ("Khác", sel_other),
+        ]
+        
+        # Header cho bảng KPI trúng tuyển
+        kpi_h1 = ws_stat.cell(row=row_sel_section, column=1, value="Phân loại")
+        kpi_h2 = ws_stat.cell(row=row_sel_section, column=2, value="Số lượng")
+        sel_header_fill = PatternFill(start_color="065F46", end_color="065F46", fill_type="solid")  # Emerald-900
+        sel_header_font = Font(name=font_family, color="FFFFFF", bold=True, size=10)
+        for hc in [kpi_h1, kpi_h2]:
+            hc.fill = sel_header_fill
+            hc.font = sel_header_font
+            hc.alignment = Alignment(horizontal="center", vertical="center")
+        ws_stat.row_dimensions[row_sel_section].height = 22
+        header_rows[row_sel_section] = ("Phân loại", "Số lượng")
+        
+        sel_body_fill_even = PatternFill(start_color="D1FAE5", end_color="D1FAE5", fill_type="solid")
+        for idx, (label, count) in enumerate(kpi_sel_labels, 1):
+            r_idx = row_sel_section + idx
+            c1 = ws_stat.cell(row=r_idx, column=1, value=label)
+            c2 = ws_stat.cell(row=r_idx, column=2, value=count)
+            is_even_r = (idx % 2 == 0)
+            row_bg = sel_body_fill_even if is_even_r else None
+            for cell in [c1, c2]:
+                cell.font = body_font
+                cell.border = thin_border
+                cell.alignment = Alignment(horizontal="center", vertical="center")
+                if row_bg: cell.fill = row_bg
+            c1.alignment = Alignment(horizontal="left", vertical="center")
+            ws_stat.row_dimensions[r_idx].height = 20
+        
+        # Dòng tổng cộng (double border)
+        row_sel_total = row_sel_section + len(kpi_sel_labels) + 1
+        tc1 = ws_stat.cell(row=row_sel_total, column=1, value="Tổng cộng")
+        tc2 = ws_stat.cell(row=row_sel_total, column=2, value=f"=SUM(B{row_sel_section+1}:B{row_sel_section+1})")
+        tc2.value = len(selected_all)
+        for cell in [tc1, tc2]:
+            cell.font = body_bold_font
+            cell.border = double_bottom_border
+        tc2.alignment = Alignment(horizontal="center", vertical="center")
+        ws_stat.row_dimensions[row_sel_total].height = 20
+        total_rows[row_sel_total] = len(selected_all)
+        
+        # Bảng chi tiết danh sách trúng tuyển
+        row_sel_detail_title = row_sel_total + 2
+        cell_dt = ws_stat.cell(row=row_sel_detail_title, column=1, value="DANH SÁCH CHI TIẾT - TRÚNG TUYỂN")
+        cell_dt.font = Font(name=font_family, bold=True, size=10, color="065F46")
+        ws_stat.row_dimensions[row_sel_detail_title].height = 22
+        
+        row_sel_detail_header = row_sel_detail_title + 1
+        dh1 = ws_stat.cell(row=row_sel_detail_header, column=1, value="Mã số")
+        dh2 = ws_stat.cell(row=row_sel_detail_header, column=2, value="Họ tên")
+        dh3 = ws_stat.cell(row=row_sel_detail_header, column=3, value="Đơn hàng trúng tuyển")
+        for hc in [dh1, dh2, dh3]:
+            hc.fill = sel_header_fill
+            hc.font = sel_header_font
+            hc.alignment = Alignment(horizontal="center", vertical="center")
+        ws_stat.row_dimensions[row_sel_detail_header].height = 22
+        ws_stat.column_dimensions['C'].width = 28  # Mở rộng cột C cho đơn hàng
+        
+        sel_detail_even = PatternFill(start_color="ECFDF5", end_color="ECFDF5", fill_type="solid")
+        for idx, r in enumerate(selected_all, 1):
+            r_row = row_sel_detail_header + idx
+            sel_job_val = getattr(r, 'selected_job', '') or getattr(r, 'don_hang', '') or ''
+            dc1 = ws_stat.cell(row=r_row, column=1, value=r.ma_so or '')
+            dc2 = ws_stat.cell(row=r_row, column=2, value=r.ho_ten or '')
+            dc3 = ws_stat.cell(row=r_row, column=3, value=sel_job_val)
+            row_bg = sel_detail_even if (idx % 2 == 0) else None
+            for cell in [dc1, dc2, dc3]:
+                cell.font = body_font
+                cell.border = thin_border
+                cell.alignment = Alignment(horizontal="center", vertical="center")
+                if row_bg: cell.fill = row_bg
+            dc2.alignment = Alignment(horizontal="left", vertical="center")
+            ws_stat.row_dimensions[r_row].height = 20
             
         excel_buffer = io.BytesIO()
         wb.save(excel_buffer)
