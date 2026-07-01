@@ -3409,9 +3409,8 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
 
             // 🚀 TỐI ƯU: Đọc trực tiếp từ mảng currentDocumentImages (đã là Base64)
             // → Không cần convert FileInput → không lãng phí CPU khi lưu
-            if (currentDocumentImages && currentDocumentImages.length > 0) {
-                plainData['document_images'] = currentDocumentImages;
-            }
+            // Luôn gửi document_images kể cả khi rỗng để tránh Backend tự động khôi phục từ bản ghi cũ
+            plainData['document_images'] = currentDocumentImages || [];
 
             const submitFormData = new FormData();
             submitFormData.append('data', JSON.stringify(plainData));
