@@ -1159,7 +1159,10 @@
                         </div>
                         <img id="photoPreview" class="hidden absolute inset-0 w-full h-full object-contain bg-white z-0" src="" alt="Preview">
                     </div>
-                    <button id="clearPhotoBtn" type="button" class="hidden absolute top-1.5 right-1.5 z-20 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow" title="Xóa ảnh">✕</button>
+                    <div class="absolute top-1.5 right-1.5 z-20 flex gap-1">
+                        <a id="downloadPhotoBtn" href="" download="photo.jpg" class="hidden bg-blue-500 hover:bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-[10px] font-bold shadow" title="Tải ảnh">⬇</a>
+                        <button id="clearPhotoBtn" type="button" class="hidden bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow" title="Xóa ảnh">✕</button>
+                    </div>
                 </div>
             </div>
             <div>
@@ -1172,7 +1175,10 @@
                         </div>
                         <img id="qrPreview" class="hidden absolute inset-0 w-full h-full object-contain bg-white z-0" src="" alt="QR Preview">
                     </div>
-                    <button id="clearQrBtn" type="button" class="hidden absolute top-1.5 right-1.5 z-20 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow" title="Xóa QR">✕</button>
+                    <div class="absolute top-1.5 right-1.5 z-20 flex gap-1">
+                        <a id="downloadQrBtn" href="" download="qr_line.png" class="hidden bg-green-500 hover:bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-[10px] font-bold shadow" title="Tải QR">⬇</a>
+                        <button id="clearQrBtn" type="button" class="hidden bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow" title="Xóa QR">✕</button>
+                    </div>
                 </div>
             </div>
             </section>
@@ -1292,8 +1298,24 @@
                                 <option value="Nga">Nga</option>
                             </select>
                         </div>
-                        <div class="col-span-1"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Năm</label><input type="text" name="N1" onblur="translateField(this)" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none"></div>
-                        <div class="col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Công việc</label><input type="text" name="ndcv1" onblur="translateField(this)" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none"></div>
+                        <div class="col-span-1">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Năm</label>
+                            <input type="text" name="N1" onblur="translateField(this)" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none">
+                            <input type="hidden" name="N1_vi">
+                            <div id="orig_N1" class="hidden text-[10px] text-amber-600 mt-1 flex flex-wrap items-center justify-between gap-1 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100">
+                                <span>Gốc: <span class="val font-semibold"></span></span>
+                                <button type="button" tabindex="-1" onclick="restoreField('N1')" class="text-blue-600 hover:underline font-bold">Dùng</button>
+                            </div>
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Công việc</label>
+                            <input type="text" name="ndcv1" onblur="translateField(this)" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none">
+                            <input type="hidden" name="ndcv1_vi">
+                            <div id="orig_ndcv1" class="hidden text-[10px] text-amber-600 mt-1 flex flex-wrap items-center justify-between gap-1 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100">
+                                <span>Gốc: <span class="val font-semibold"></span></span>
+                                <button type="button" tabindex="-1" onclick="restoreField('ndcv1')" class="text-blue-600 hover:underline font-bold">Dùng</button>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="grid grid-cols-4 gap-4 pb-4 border-b border-gray-100">
@@ -1313,8 +1335,24 @@
                                 <option value="Nga">Nga</option>
                             </select>
                         </div>
-                        <div class="col-span-1"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Năm</label><input type="text" name="N2" onblur="translateField(this)" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none"></div>
-                        <div class="col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Công việc 2</label><input type="text" name="ndcv2" onblur="translateField(this)" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none"></div>
+                        <div class="col-span-1">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Năm</label>
+                            <input type="text" name="N2" onblur="translateField(this)" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none">
+                            <input type="hidden" name="N2_vi">
+                            <div id="orig_N2" class="hidden text-[10px] text-amber-600 mt-1 flex flex-wrap items-center justify-between gap-1 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100">
+                                <span>Gốc: <span class="val font-semibold"></span></span>
+                                <button type="button" tabindex="-1" onclick="restoreField('N2')" class="text-blue-600 hover:underline font-bold">Dùng</button>
+                            </div>
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Công việc 2</label>
+                            <input type="text" name="ndcv2" onblur="translateField(this)" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none">
+                            <input type="hidden" name="ndcv2_vi">
+                            <div id="orig_ndcv2" class="hidden text-[10px] text-amber-600 mt-1 flex flex-wrap items-center justify-between gap-1 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100">
+                                <span>Gốc: <span class="val font-semibold"></span></span>
+                                <button type="button" tabindex="-1" onclick="restoreField('ndcv2')" class="text-blue-600 hover:underline font-bold">Dùng</button>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="grid grid-cols-4 gap-4 pb-4 border-b border-gray-100">
@@ -1334,13 +1372,34 @@
                                 <option value="Nga">Nga</option>
                             </select>
                         </div>
-                        <div class="col-span-1"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Năm</label><input type="text" name="N3" onblur="translateField(this)" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none"></div>
-                        <div class="col-span-2"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Công việc 3</label><input type="text" name="ndcv3" onblur="translateField(this)" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none"></div>
+                        <div class="col-span-1">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Năm</label>
+                            <input type="text" name="N3" onblur="translateField(this)" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none">
+                            <input type="hidden" name="N3_vi">
+                            <div id="orig_N3" class="hidden text-[10px] text-amber-600 mt-1 flex flex-wrap items-center justify-between gap-1 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100">
+                                <span>Gốc: <span class="val font-semibold"></span></span>
+                                <button type="button" tabindex="-1" onclick="restoreField('N3')" class="text-blue-600 hover:underline font-bold">Dùng</button>
+                            </div>
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Công việc 3</label>
+                            <input type="text" name="ndcv3" onblur="translateField(this)" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none">
+                            <input type="hidden" name="ndcv3_vi">
+                            <div id="orig_ndcv3" class="hidden text-[10px] text-amber-600 mt-1 flex flex-wrap items-center justify-between gap-1 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100">
+                                <span>Gốc: <span class="val font-semibold"></span></span>
+                                <button type="button" tabindex="-1" onclick="restoreField('ndcv3')" class="text-blue-600 hover:underline font-bold">Dùng</button>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="pt-4 mt-4">
                         <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Ghi chú, Lời bình</label>
                         <textarea name="loi_binh_1" onblur="translateField(this)" class="w-full border-2 border-gray-200 rounded-xl p-3 text-sm focus:border-blue-600 focus:outline-none h-24 bg-gray-50"></textarea>
+                        <input type="hidden" name="loi_binh_1_vi">
+                        <div id="orig_loi_binh_1" class="hidden text-[10px] text-amber-600 mt-1 flex flex-wrap items-center justify-between gap-1 bg-amber-50 px-2 py-1 rounded border border-amber-100">
+                            <span>Bản gốc: <span class="val font-semibold"></span></span>
+                            <button type="button" tabindex="-1" onclick="restoreField('loi_binh_1')" class="text-blue-600 hover:underline font-bold">Sử dụng bản gốc</button>
+                        </div>
                     </div>
                     <div class="mt-4">
                         <label class="block text-xs font-bold text-slate-400 uppercase mb-1">
@@ -1505,6 +1564,11 @@
                 photoPreview.classList.remove('hidden');
                 dropzoneText.classList.add('hidden');
                 document.getElementById('clearPhotoBtn').classList.remove('hidden');
+                const dlBtn = document.getElementById('downloadPhotoBtn');
+                if (dlBtn) {
+                    dlBtn.href = b64;
+                    dlBtn.classList.remove('hidden');
+                }
                 document.getElementById('photoBase64').value = b64;
                 document.getElementById('existingPhotoPath').value = '';
             }
@@ -1517,6 +1581,11 @@
                 qrPreview.classList.remove('hidden');
                 qrDropzoneText.classList.add('hidden');
                 document.getElementById('clearQrBtn').classList.remove('hidden');
+                const dlBtn = document.getElementById('downloadQrBtn');
+                if (dlBtn) {
+                    dlBtn.href = b64;
+                    dlBtn.classList.remove('hidden');
+                }
                 document.getElementById('qrBase64').value = b64;
                 document.getElementById('existingQrPath').value = '';
             }
@@ -1603,6 +1672,11 @@
                 document.getElementById('existingPhotoPath').value = '';
                 document.getElementById('photoBase64').value = '';
                 document.getElementById('clearPhotoBtn').classList.add('hidden');
+                const dlBtn = document.getElementById('downloadPhotoBtn');
+                if (dlBtn) {
+                    dlBtn.href = '';
+                    dlBtn.classList.add('hidden');
+                }
             });
             document.getElementById('clearQrBtn').addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -1612,6 +1686,11 @@
                 document.getElementById('existingQrPath').value = '';
                 document.getElementById('qrBase64').value = '';
                 document.getElementById('clearQrBtn').classList.add('hidden');
+                const dlBtn = document.getElementById('downloadQrBtn');
+                if (dlBtn) {
+                    dlBtn.href = '';
+                    dlBtn.classList.add('hidden');
+                }
             });
 
             // ── Hàm hiển thị preview tài liệu từ mảng currentDocumentImages ──
@@ -1627,7 +1706,10 @@
                     div.className = 'relative group';
                     div.innerHTML = `
                         <img src="${b64}" class="w-full h-32 object-cover rounded-lg border border-gray-200 shadow-sm">
-                        <button type="button" onclick="removeDocument(${index})" class="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
+                        <div class="absolute -top-2 -right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                            <a href="${b64}" download="document_${index + 1}.jpg" class="bg-blue-500 hover:bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shadow" title="Tải tài liệu">⬇</a>
+                            <button type="button" onclick="removeDocument(${index})" class="bg-red-500 hover:bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shadow" title="Xóa tài liệu">✕</button>
+                        </div>
                     `;
                     preview.appendChild(div);
                 });
@@ -1658,6 +1740,31 @@
             }
         }
 
+        function restoreField(name) {
+            const inputEl = document.getElementsByName(name)[0];
+            const viEl = document.getElementsByName(name + '_vi')[0];
+            if (inputEl && viEl && viEl.value) {
+                inputEl.value = viEl.value;
+                inputEl.focus();
+            }
+        }
+
+        function updateOriginalDisplay(name, value) {
+            const origDiv = document.getElementById('orig_' + name);
+            const viEl = document.getElementsByName(name + '_vi')[0];
+            if (viEl) {
+                viEl.value = value || '';
+            }
+            if (origDiv) {
+                if (value && value.trim()) {
+                    origDiv.querySelector('.val').textContent = value;
+                    origDiv.classList.remove('hidden');
+                } else {
+                    origDiv.classList.add('hidden');
+                }
+            }
+        }
+
         // Hàm tự động dịch nội dung tự do (công việc, lời bình, năm...) sang tiếng Trung
         // Được gắn vào sự kiện onblur — dịch khi nhân viên click ra ngoài ô
         // Ghi đè luôn kết quả tiếng Trung vào chính ô đó → khi Lưu sẽ lưu tiếng Trung vào DB
@@ -1668,6 +1775,9 @@
             // Kiểm tra nếu đã là tiếng Trung (Unicode khối CJK) thì bỏ qua
             const hasChinese = /[\u4e00-\u9fff\u3400-\u4dbf]/.test(text);
             if (hasChinese) return;
+
+            // Lưu lại bản gốc tiếng Việt trước khi dịch
+            updateOriginalDisplay(el.name, text);
 
             // Hiệu ứng loading: mờ nhẹ như đang xử lý
             el.style.opacity = '0.4';
@@ -2082,13 +2192,49 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             }
 
             
-            // Ảnh: chỉ hiển thị thông báo, KHÔNG đưa base64 vào form để tránh lỗi 413
-            // Server sẽ giữ nguyên ảnh cũ trong DB nếu không upload ảnh mới
-            if (data['photo'] && data['photo'] !== '__HAS_IMAGE__') {
-                document.getElementById('dropzoneText').innerHTML = "<span class='text-green-600 font-bold'>✓ Đã có ảnh. Upload mới nếu muốn thay.</span>";
+            // Cập nhật hiển thị bản gốc tiếng Việt
+            ['N1', 'ndcv1', 'N2', 'ndcv2', 'N3', 'ndcv3', 'loi_binh_1'].forEach(name => {
+                let viVal = data[name + '_vi'] || '';
+                // Nếu chưa có bản gốc lưu riêng, nhưng giá trị hiện tại không chứa tiếng Trung (là tiếng Việt gốc), ta lấy giá trị hiện tại làm bản gốc
+                if (!viVal && data[name]) {
+                    const hasChinese = /[\u4e00-\u9fff\u3400-\u4dbf]/.test(data[name]);
+                    if (!hasChinese) {
+                        viVal = data[name];
+                    }
+                }
+                updateOriginalDisplay(name, viVal);
+            });
+            
+            // Ảnh chân dung: hiển thị preview & nút tải nếu có ảnh
+            if (data['photo'] && data['photo'].startsWith('data:image/')) {
+                const photoPreview = document.getElementById('photoPreview');
+                photoPreview.src = data['photo'];
+                photoPreview.classList.remove('hidden');
+                document.getElementById('dropzoneText').classList.add('hidden');
+                const dlBtn = document.getElementById('downloadPhotoBtn');
+                if (dlBtn) {
+                    dlBtn.href = data['photo'];
+                    dlBtn.classList.remove('hidden');
+                }
+                document.getElementById('clearPhotoBtn').classList.remove('hidden');
+            } else {
+                document.getElementById('downloadPhotoBtn').classList.add('hidden');
             }
-            if (data['qr_line'] && data['qr_line'] !== '__HAS_IMAGE__') {
-                document.getElementById('qrDropzoneText').innerHTML = "<span class='text-green-600 font-bold'>✓ Đã có QR. Upload mới nếu muốn thay.</span>";
+            
+            // QR Code LINE: hiển thị preview & nút tải nếu có QR
+            if (data['qr_line'] && data['qr_line'].startsWith('data:image/')) {
+                const qrPreview = document.getElementById('qrPreview');
+                qrPreview.src = data['qr_line'];
+                qrPreview.classList.remove('hidden');
+                document.getElementById('qrDropzoneText').classList.add('hidden');
+                const dlBtn = document.getElementById('downloadQrBtn');
+                if (dlBtn) {
+                    dlBtn.href = data['qr_line'];
+                    dlBtn.classList.remove('hidden');
+                }
+                document.getElementById('clearQrBtn').classList.remove('hidden');
+            } else {
+                document.getElementById('downloadQrBtn').classList.add('hidden');
             }
             
             // 🚀 TỐI ƯU: Phục hồi tài liệu tức thì (0ms) bằng cách gán thẳng Base64 vào mảng
@@ -3333,6 +3479,19 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             
             document.getElementById('clearPhotoBtn').classList.add('hidden');
             document.getElementById('clearQrBtn').classList.add('hidden');
+
+            const dlPhoto = document.getElementById('downloadPhotoBtn');
+            if (dlPhoto) { dlPhoto.classList.add('hidden'); dlPhoto.href = ''; }
+            const dlQr = document.getElementById('downloadQrBtn');
+            if (dlQr) { dlQr.classList.add('hidden'); dlQr.href = ''; }
+
+            // Ẩn tất cả bản gốc tiếng Việt
+            ['N1', 'ndcv1', 'N2', 'ndcv2', 'N3', 'ndcv3', 'loi_binh_1'].forEach(name => {
+                const origDiv = document.getElementById('orig_' + name);
+                if (origDiv) origDiv.classList.add('hidden');
+                const viEl = document.getElementsByName(name + '_vi')[0];
+                if (viEl) viEl.value = '';
+            });
 
             // 🚀 TỐI ƯU: Reset mảng currentDocumentImages và xóa preview
             currentDocumentImages = [];

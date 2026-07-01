@@ -744,6 +744,13 @@ def _prepare_data_for_db(data: dict) -> dict:
     # Resize ảnh tài liệu nếu có - Giảm sâu hơn để tránh lỗi 413 (900px, quality 60)
     if clean.get('document_images') and isinstance(clean['document_images'], list):
         clean['document_images'] = [_resize_image_for_db(img, max_px=900, quality=60) for img in clean['document_images'] if img]
+    
+    # Tự động sao lưu văn bản tiếng Việt gốc nếu chưa có trường _vi
+    for key in ('ndcv1', 'ndcv2', 'ndcv3', 'loi_binh_1', 'N1', 'N2', 'N3'):
+        if key in clean and f"{key}_vi" not in clean:
+            val = clean[key]
+            if val and not any(ord(c) >= 0x4e00 and ord(c) <= 0x9fff for c in str(val)):
+                clean[f"{key}_vi"] = val
     return clean
 
 # --- API ROUTES ---
