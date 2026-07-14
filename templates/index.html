@@ -2120,7 +2120,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             }
             loader.style.display = 'none';
             
-            const data = item.data_json;
+            const data = item.data_json || {};
             const form = document.getElementById('resumeForm');
             
             // Đặt lại form về trạng thái trống trước khi lấp đầy dữ liệu
