@@ -21,7 +21,7 @@
         .animate-pulse-soft { animation: pulse-soft 3s infinite; }
         
         body { 
-            font-family: Tahoma, Arial, sans-serif; 
+            font-family: 'Be Vietnam Pro', Tahoma, Arial, sans-serif; 
             background-color: #f8fafc; 
             display: block; 
             min-height: 100vh; 
@@ -86,7 +86,7 @@
         .content-wrapper { display: flex; flex: 1; background: #fff; min-height: 0; }
         
         .sidebar { 
-            background-color: #f0fdf4; 
+            background: linear-gradient(180deg, #f4fbf7 0%, #eefbf3 100%); 
             width: 38.196%; 
             display: flex; 
             flex-direction: column;
@@ -108,7 +108,7 @@
             font-weight: 900;
             color: #064e3b;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.08em;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -118,31 +118,39 @@
             flex-shrink: 0;
         }
 
+        .section-title span:first-child {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
         .section-title span:last-child { font-size: 14px; color: #b45309; font-family: 'Outfit', 'Be Vietnam Pro', sans-serif; font-weight: 800; }
 
-        .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; }
+        .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
         .info-item {
-            background: #fff;
-            border: 1px solid #e2e8f0;
+            background: linear-gradient(135deg, #ffffff 0%, #fcfefe 100%);
+            border: 1px solid #f1f5f9;
+            border-left: 3px solid var(--primary-emerald);
             padding: 8px 10px;
-            border-radius: 8px;
+            border-radius: 6px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             gap: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.015);
         }
-        .info-label { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; line-height: 1.2; }
+        .info-label { font-size: 10.5px; font-weight: 800; color: #64748b; text-transform: uppercase; line-height: 1.2; font-family: 'Outfit', sans-serif; }
         .info-value { font-size: 14.5px; font-weight: 700; color: #0f172a; line-height: 1.4; }
 
         .skill-tag-container > * {
             display: inline-block;
-            border: 1.5px solid #10b981;
-            background: #f0fdf4;
-            padding: 3px 12px;
-            border-radius: 8px;
-            color: #064e3b;
+            border: 1.5px solid #a7f3d0;
+            background: #ecfdf5;
+            padding: 4px 14px;
+            border-radius: 9999px;
+            color: #047857;
             font-weight: 800;
-            font-size: 12.5px;
+            font-size: 12px;
             margin-right: 6px;
             margin-bottom: 6px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.03);
@@ -240,7 +248,7 @@
             <div class="sidebar border-r border-emerald-100 flex flex-col">
                 <div class="sidebar-top mb-5 text-center border-b-2 border-emerald-200 pb-4 flex-shrink-0">
                     <p class="text-[14px] font-bold text-amber-600 mb-1.5 uppercase tracking-[0.1em]">ID: {{Maso}}</p>
-                    <h1 class="text-[20px] font-bold text-slate-900 leading-tight mb-2 pb-1" style="font-family: Tahoma, Arial, sans-serif; letter-spacing: -0.01em; white-space: nowrap; text-align: center; width: 100%;" title="{{Hoten}}">{{Hoten}}</h1>
+                    <h1 class="text-[20px] font-bold text-slate-900 leading-tight mb-2 pb-1" style="font-family: 'Outfit', 'Be Vietnam Pro', sans-serif; font-weight: 800; letter-spacing: -0.01em; white-space: nowrap; text-align: center; width: 100%;" title="{{Hoten}}">{{Hoten}}</h1>
                     <p class="text-[18px] font-bold text-emerald-800 tracking-[0.15em] mt-1" style="font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;">{{TentiengTrung}}</p>
                 </div>
                 <div class="sidebar-photo w-full aspect-[3/4] bg-white rounded-2xl shadow-md p-1 mb-5 border border-emerald-100 overflow-hidden flex-shrink-0">
@@ -268,9 +276,9 @@
                     {% endif %}
                 </div>
 
-                <div class="sidebar-notes mt-auto bg-white p-4 rounded-xl border border-emerald-100 flex flex-col min-h-[180px] shadow-sm overflow-hidden">
+                <div class="sidebar-notes mt-auto bg-white p-4 rounded-xl border border-slate-100 border-l-4 border-l-amber-500 flex flex-col min-h-[180px] shadow-sm overflow-hidden">
                     <h2 class="text-[14px] font-black text-emerald-900 border-b border-emerald-100 pb-1 mb-2 uppercase flex justify-between items-center flex-shrink-0">
-                        <span>Ghi chú / 備註</span><span class="text-emerald-500">✒</span>
+                        <span>Ghi chú / 備註</span><span class="text-amber-500">✒</span>
                     </h2>
                     <div class="text-[13px] text-slate-700 leading-relaxed font-medium overflow-hidden">{{loi_binh_1}}</div>
                 </div>
@@ -286,7 +294,7 @@
             <div class="main flex flex-col">
                 <section id="personal" class="section-personal">
                     <div class="section-title">
-                        <span>THÔNG TIN CÁ NHÂN</span><span>個人基本信息</span>
+                        <span><span class="text-amber-500 mr-1">✦</span>THÔNG TIN CÁ NHÂN</span><span>個人基本信息</span>
                     </div>
                     <div class="info-grid">
                         <div class="info-item"><span class="info-label">Tuổi / 年齡</span><span class="info-value">{{Tuoi}}</span></div>
@@ -306,14 +314,14 @@
                 
                 <section id="skills" class="section-skills">
                     <div class="section-title">
-                        <span>KỸ NĂNG & TAY NGHỀ</span><span>工作技能</span>
+                        <span><span class="text-amber-500 mr-1">✦</span>KỸ NĂNG & TAY NGHỀ</span><span>工作技能</span>
                     </div>
                     <div class="skill-tag-container px-1">{{KyNangList_HTML}}</div>
                 </section>
 
                 <section id="experience" class="section-experience">
                     <div class="section-title">
-                        <span>Kinh nghiệm làm việc</span><span>工作經驗</span>
+                        <span><span class="text-amber-500 mr-1">✦</span>Kinh nghiệm làm việc</span><span>工作經驗</span>
                     </div>
                     <div class="space-y-1 relative border-l-2 border-emerald-100 ml-4 flex-1">
                         {% if ndcv1 %}<div class="pl-6 relative mb-4"><div class="absolute w-2.5 h-2.5 bg-amber-500 rounded-full -left-[6px] border-2 border-white top-1.5 shadow-sm"></div><h3 class="text-[15px] font-bold text-slate-900 uppercase leading-snug">{{ndcv1}}</h3><p class="text-[14px] text-emerald-600 font-bold mt-1">{{QG1}} ({{N1}})</p></div>{% endif %}
