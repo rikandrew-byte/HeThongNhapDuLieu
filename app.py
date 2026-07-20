@@ -910,6 +910,12 @@ def api_preview(record_id):
 
 @app.route('/cv/<path:slug>', methods=['GET'])
 def secure_web_view(slug):
+    # Chặn robot xem trước của Line/Zalo/Social để tránh hiện khung preview rườm rà
+    user_agent = request.headers.get('User-Agent', '').lower()
+    bot_keywords = ['line-pbot', 'facebookexternalhit', 'zalo', 'bot', 'crawler', 'spider']
+    if any(k in user_agent for k in bot_keywords):
+        return "Preview blocked for privacy", 403
+
     try:
         # Hỗ trợ 2 định dạng:
         # 1. /cv/92/MD13243_Nguyen_Van_Chuc (id/slug) -> Ưu tiên ID (chính xác nhất)
