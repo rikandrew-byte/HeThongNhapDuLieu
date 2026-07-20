@@ -5,7 +5,7 @@ Nhập liệu Tiếng Việt → Hệ thống quản lý và xuất hồ sơ th�
 """
 import os, uuid, re, unicodedata, json, base64, traceback, io, zipfile, requests
 from datetime import date, datetime, timedelta, timezone
-from flask import Flask, request, jsonify, send_file, render_template, Response, make_response
+from flask import Flask, request, jsonify, send_file, render_template, Response, make_response, redirect
 from flask_cors import CORS
 from jinja2 import Template
 from deep_translator import GoogleTranslator
@@ -44,6 +44,13 @@ app.config['BASIC_AUTH_USERNAME'] = username
 app.config['BASIC_AUTH_PASSWORD'] = password
 app.config['BASIC_AUTH_FORCE_PROMPT'] = True
 basic_auth = BasicAuth(app)
+
+@app.before_request
+def enforce_custom_domain():
+    # Tự động chuyển hướng mọi yêu cầu từ tên miền mặc định .onrender.com sang tên miền tùy chỉnh cv.fct.vn
+    if 'onrender.com' in request.host:
+        url = request.url.replace(request.host, 'cv.fct.vn', 1)
+        return redirect(url, code=301)
 
 def auth_required(f):
     if os.environ.get('RENDER'):
