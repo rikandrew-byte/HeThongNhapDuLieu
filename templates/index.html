@@ -864,7 +864,10 @@
                 <span>🏆</span> Danh sách trúng tuyển
             </button>
             <button type="button" onclick="switchHistoryTab('jobs')" id="tabBtn-jobs" class="modal-tab-btn">
-                <span>💼</span> Tổng hợp đơn hàng
+                <span>💼</span> Ghép đơn & Theo dõi
+            </button>
+            <button type="button" onclick="switchHistoryTab('configs')" id="tabBtn-configs" class="modal-tab-btn">
+                <span>🏗️</span> Cấu hình Đơn hàng
             </button>
         </div>
 
@@ -952,10 +955,74 @@
                 <div style="font-size:15px; font-weight:850; color:#166534; display:flex; align-items:center; gap:8px;">
                     <span style="font-size:18px;">🏆</span> Danh sách ứng viên trúng tuyển
                 </div>
-                <p style="font-size:13px; color:#15803d; margin-top:4px;">Các ứng viên đã trúng tuyển được phân loại theo từng đơn hàng cụ thể.</p>
+                <p style="font-size:13px; color:#15803d; margin-top:4px;">Quản lý tiến độ xuất cảnh, giấy tờ đơn hàng và KPI trực quan.</p>
             </div>
-            <div id="passedSummaryContainer" style="display:flex; flex-direction:column; gap:20px;">
+
+            <!-- Bảng điều khiển View Toggle và Lọc nhanh -->
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:16px; background:#ffffff; border:1px solid #cbd5e1; border-radius:12px; padding:10px 16px; flex-wrap:wrap;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <label style="font-size:12px; font-weight:800; color:#475569;">Lọc Nhà máy / Đơn:</label>
+                    <select id="kanbanFilterSelect" onchange="renderPassedTable()" style="padding:6px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:12px; font-weight:700; color:#1e293b; outline:none; background:#f8fafc;">
+                        <option value="ALL">-- Tất cả đơn hàng / Nhà máy --</option>
+                    </select>
+                </div>
+                <div style="display:flex; gap:6px; background:#f1f5f9; padding:4px; border-radius:10px;">
+                    <button type="button" id="toggleViewBtn-kanban" onclick="switchPassedView('kanban')" style="padding:6px 14px; border:none; border-radius:8px; font-size:12px; font-weight:800; cursor:pointer; background:#ffffff; color:#0f172a; box-shadow:0 1px 3px rgba(0,0,0,0.05); display:flex; align-items:center; gap:4px;">
+                        <span>📊</span> Bảng Kanban
+                    </button>
+                    <button type="button" id="toggleViewBtn-list" onclick="switchPassedView('list')" style="padding:6px 14px; border:none; border-radius:8px; font-size:12px; font-weight:800; cursor:pointer; background:transparent; color:#475569; display:flex; align-items:center; gap:4px;">
+                        <span>📝</span> Danh sách
+                    </button>
+                </div>
+            </div>
+
+            <!-- View 1: Danh sách truyền thống -->
+            <div id="passedSummaryContainer" style="display:none; flex-direction:column; gap:20px;">
                 <!-- Danh sách trúng tuyển sẽ được render vào đây bằng JS -->
+            </div>
+
+            <!-- View 2: Bảng Kanban Kéo Thả Trực Quan -->
+            <div id="passedKanbanContainer" style="display:flex; gap:12px; overflow-x:auto; padding-bottom:12px; align-items:flex-start; min-height:550px;">
+                <!-- 5 Cột Kanban -->
+                <div class="kanban-column" data-status="GOM_HO_SO" ondragover="allowDrop(event)" ondrop="handleKanbanDrop(event, 'GOM_HO_SO')" style="flex:1; min-width:240px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:14px; padding:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.02);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:2px solid #cbd5e1; padding-bottom:8px;">
+                        <span style="font-size:12px; font-weight:850; color:#475569; display:flex; align-items:center; gap:4px;">📁 GOM HỒ SƠ</span>
+                        <span id="count-GOM_HO_SO" style="background:#cbd5e1; color:#475569; font-size:11px; font-weight:800; padding:2px 8px; border-radius:20px;">0</span>
+                    </div>
+                    <div id="list-GOM_HO_SO" style="display:flex; flex-direction:column; gap:10px; min-height:480px;"></div>
+                </div>
+
+                <div class="kanban-column" data-status="TRINH_CUC" ondragover="allowDrop(event)" ondrop="handleKanbanDrop(event, 'TRINH_CUC')" style="flex:1; min-width:240px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:14px; padding:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.02);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:2px solid #bfdbfe; padding-bottom:8px;">
+                        <span style="font-size:12px; font-weight:850; color:#1e40af; display:flex; align-items:center; gap:4px;">🏛️ TRÌNH CỤC</span>
+                        <span id="count-TRINH_CUC" style="background:#bfdbfe; color:#1e40af; font-size:11px; font-weight:800; padding:2px 8px; border-radius:20px;">0</span>
+                    </div>
+                    <div id="list-TRINH_CUC" style="display:flex; flex-direction:column; gap:10px; min-height:480px;"></div>
+                </div>
+
+                <div class="kanban-column" data-status="LAM_VISA" ondragover="allowDrop(event)" ondrop="handleKanbanDrop(event, 'LAM_VISA')" style="flex:1; min-width:240px; background:#fff7ed; border:1px solid #fed7aa; border-radius:14px; padding:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.02);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:2px solid #fed7aa; padding-bottom:8px;">
+                        <span style="font-size:12px; font-weight:850; color:#c2410c; display:flex; align-items:center; gap:4px;">🎫 LÀM VISA</span>
+                        <span id="count-LAM_VISA" style="background:#fed7aa; color:#c2410c; font-size:11px; font-weight:800; padding:2px 8px; border-radius:20px;">0</span>
+                    </div>
+                    <div id="list-LAM_VISA" style="display:flex; flex-direction:column; gap:10px; min-height:480px;"></div>
+                </div>
+
+                <div class="kanban-column" data-status="NHAN_VISA" ondragover="allowDrop(event)" ondrop="handleKanbanDrop(event, 'NHAN_VISA')" style="flex:1; min-width:240px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:14px; padding:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.02);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:2px solid #bbf7d0; padding-bottom:8px;">
+                        <span style="font-size:12px; font-weight:850; color:#15803d; display:flex; align-items:center; gap:4px;">✅ CÓ VISA</span>
+                        <span id="count-NHAN_VISA" style="background:#bbf7d0; color:#15803d; font-size:11px; font-weight:800; padding:2px 8px; border-radius:20px;">0</span>
+                    </div>
+                    <div id="list-NHAN_VISA" style="display:flex; flex-direction:column; gap:10px; min-height:480px;"></div>
+                </div>
+
+                <div class="kanban-column" data-status="XUAT_CANH" ondragover="allowDrop(event)" ondrop="handleKanbanDrop(event, 'XUAT_CANH')" style="flex:1; min-width:240px; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:14px; padding:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.02);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:2px solid #a7f3d0; padding-bottom:8px;">
+                        <span style="font-size:12px; font-weight:850; color:#065f46; display:flex; align-items:center; gap:4px;">✈️ ĐÃ XUẤT CẢNH</span>
+                        <span id="count-XUAT_CANH" style="background:#a7f3d0; color:#065f46; font-size:11px; font-weight:800; padding:2px 8px; border-radius:20px;">0</span>
+                    </div>
+                    <div id="list-XUAT_CANH" style="display:flex; flex-direction:column; gap:10px; min-height:480px;"></div>
+                </div>
             </div>
         </div>
 
@@ -1016,8 +1083,220 @@
                 </div>
             </div>
         </div>
+
+        <!-- Tab 2.5: Cấu hình Đơn hàng Content Area (Thẩm định & Visa) -->
+        <div id="tabContent-configs" style="display: none; padding:16px 20px;">
+            <!-- Cấu hình Nhà máy & Giấy tờ Đơn hàng (Gom từ Dự án B) -->
+            <div style="padding:18px 24px; background:linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%); border:1px solid #bbf7d0; border-radius:14px; box-shadow:0 4px 14px -2px rgba(16,185,129,0.06);">
+                <div style="font-size:15px; font-weight:850; color:#15803d; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:18px;">🏗️</span> Cấu hình Nhà máy & Giấy tờ Đơn hàng
+                </div>
+                
+                <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:20px; margin-bottom:20px;">
+                    <!-- Quản lý Nhà máy -->
+                    <div style="background:#ffffff; border:1px solid #c7d2fe; border-radius:10px; padding:16px;">
+                        <h4 style="font-size:13px; font-weight:800; color:#1e293b; margin-bottom:12px;">🏭 Thêm Nhà máy mới</h4>
+                        <div style="display:flex; gap:10px; align-items:flex-end;">
+                            <div style="flex:1;">
+                                <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px;">Tên Nhà máy:</label>
+                                <input type="text" id="newFactoryName" placeholder="Ví dụ: Foxconn Đài Bắc" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px;">
+                            </div>
+                            <button type="button" onclick="submitAddFactory()" style="padding:8px 16px; background:#10b981; color:#fff; border:none; border-radius:6px; font-size:13px; font-weight:800; cursor:pointer;">Thêm</button>
+                        </div>
+                    </div>
+
+                    <!-- Quản lý Giấy tờ -->
+                    <div style="background:#ffffff; border:1px solid #c7d2fe; border-radius:10px; padding:16px;">
+                        <h4 style="font-size:13px; font-weight:800; color:#1e293b; margin-bottom:12px;">📄 Thêm Giấy tờ (Thẩm định/Visa)</h4>
+                        <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:10px; margin-bottom:10px;">
+                            <div>
+                                <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px;">Nhà máy:</label>
+                                <select id="docFactorySelect" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; font-weight:600;"></select>
+                            </div>
+                            <div>
+                                <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px;">Loại giấy tờ:</label>
+                                <select id="docTypeSelect" onchange="onDocTypeChanged()" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; font-weight:600;">
+                                    <option value="APPRAISAL">Tờ Thẩm định</option>
+                                    <option value="VISA">Tờ Visa</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px;">Mã số giấy tờ:</label>
+                                <input type="text" id="docCodeInput" placeholder="Ví dụ: TD9988 hoặc VS112" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px;">Chỉ tiêu (Capacity):</label>
+                                <input type="number" id="docCapacityInput" value="5" min="1" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px;">Ngày hết hạn:</label>
+                                <input type="date" id="docExpiryDateInput" style="width:100%; padding:7px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px;">
+                            </div>
+                            <div id="docParentAppraisalDiv">
+                                <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px;">Thẩm định cha:</label>
+                                <select id="docParentAppraisalSelect" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; font-weight:600;"></select>
+                            </div>
+                        </div>
+                        <div style="display:flex; justify-content:flex-end;">
+                            <button type="button" onclick="submitAddDoc()" style="padding:8px 16px; background:#10b981; color:#fff; border:none; border-radius:6px; font-size:13px; font-weight:800; cursor:pointer;">Thêm Giấy tờ</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bảng hiển thị danh sách cấu hình -->
+                <div style="background:#ffffff; border:1px solid #c7d2fe; border-radius:10px; overflow:hidden;">
+                    <table style="width:100%; border-collapse:collapse; text-align:left; font-size:12px;">
+                        <thead>
+                            <tr style="background:#f1f5f9; border-bottom:1px solid #cbd5e1;">
+                                <th style="padding:10px; font-weight:800; color:#475569;">Tên Nhà máy</th>
+                                <th style="padding:10px; font-weight:800; color:#475569;">Mã Thẩm Định</th>
+                                <th style="padding:10px; font-weight:800; color:#475569;">Mã Visa</th>
+                                <th style="padding:10px; font-weight:800; color:#475569; text-align:center;">Dung lượng (Chỉ tiêu)</th>
+                                <th style="padding:10px; font-weight:800; color:#475569; text-align:center;">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="factoryDocListBody">
+                            <!-- Sẽ render động qua Javascript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
         
         <input type="file" id="importFileInput" accept=".html,.htm" style="display:none;" onchange="loadFromFile(this)">
+    </div>
+
+    <!-- Modal Ghép Tiến Độ & Giấy Tờ (Migrated from B) -->
+    <div id="placementModal" class="glass-modal" style="display:none; position:fixed; top:5%; left:10%; width:80%; max-height:90%; z-index:10000; overflow-y:auto; border-radius:20px; font-family:'Inter',sans-serif; background:rgba(255,255,255,0.98); box-shadow:0 20px 50px rgba(0,0,0,0.15); border:1px solid #e2e8f0; padding:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #e2e8f0; padding-bottom:12px; margin-bottom:20px;">
+            <h3 id="placementModalTitle" style="font-size:18px; font-weight:800; color:#1e293b; display:flex; align-items:center; gap:8px;">
+                <span>⚙️</span> Cập nhật Tiến độ & Giấy tờ ứng viên
+            </h3>
+            <button type="button" onclick="closePlacementModal()" style="background:#ef4444; color:#fff; font-weight:800; font-size:12px; padding:6px 14px; border-radius:8px; border:none; cursor:pointer; transition:all 0.15s;">Đóng</button>
+        </div>
+        
+        <input type="hidden" id="placementRecordId" value="">
+        
+        <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:20px;">
+            <!-- Cột Trái: Đơn hàng & Tiến độ -->
+            <div style="display:flex; flex-direction:column; gap:16px; border-right:1px solid #f1f5f9; padding-right:20px;">
+                <div style="background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #e2e8f0;">
+                    <p style="font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase;">Ứng viên:</p>
+                    <p id="placementCandidateInfo" style="font-size:15px; font-weight:800; color:#0f172a; margin-top:2px;"></p>
+                </div>
+
+                <div>
+                    <label style="display:block; font-size:12px; font-weight:800; color:#475569; margin-bottom:6px;">Chủ sử dụng / Nhà máy:</label>
+                    <select id="placementFactorySelect" onchange="onPlacementFactoryChanged()" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; font-weight:600; outline:none; background:#fff;"></select>
+                </div>
+
+                <div>
+                    <label style="display:block; font-size:12px; font-weight:800; color:#475569; margin-bottom:6px;">Tờ thẩm định:</label>
+                    <select id="placementAppraisalSelect" onchange="onPlacementAppraisalChanged()" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; font-weight:600; outline:none; background:#fff;"></select>
+                </div>
+
+                <div>
+                    <label style="display:block; font-size:12px; font-weight:800; color:#475569; margin-bottom:6px;">Tờ Visa:</label>
+                    <select id="placementVisaSelect" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; font-weight:600; outline:none; background:#fff;"></select>
+                </div>
+
+                <div>
+                    <label style="display:block; font-size:12px; font-weight:800; color:#475569; margin-bottom:6px;">Tiến độ xuất cảnh:</label>
+                    <select id="placementStatusSelect" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; font-weight:700; color:#047857; outline:none; background:#fff;">
+                        <option value="GOM_HO_SO">1. Gom hồ sơ / 準備資料</option>
+                        <option value="TRINH_CUC">2. Trình cục / 呈送勞動部</option>
+                        <option value="LAM_VISA">3. Làm Visa / 辦理簽證</option>
+                        <option value="NHAN_VISA">4. Nhận Visa / 取得簽證</option>
+                        <option value="XUAT_CANH">5. Đã xuất cảnh / 已經出境</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label style="display:block; font-size:12px; font-weight:800; color:#475569; margin-bottom:6px;">Ghi chú hồ sơ:</label>
+                    <textarea id="placementNoteTextarea" rows="3" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; font-weight:600; outline:none; resize:none; font-family:sans-serif;" placeholder="Nhập ghi chú hoặc lý do đặc biệt..."></textarea>
+                </div>
+            </div>
+            
+            <!-- Cột Phải: Các mốc ngày & Giấy tờ -->
+            <div style="display:flex; flex-direction:column; gap:16px;">
+                <!-- Mốc hạn giấy tờ -->
+                <div style="border-bottom:1px solid #f1f5f9; padding-bottom:16px;">
+                    <h4 style="font-size:13px; font-weight:800; color:#047857; text-transform:uppercase; margin-bottom:12px; display:flex; align-items:center; gap:4px;">📅 Thời Hạn Giấy Tờ</h4>
+                    <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;">
+                        <div>
+                            <label style="display:block; font-size:11px; font-weight:700; color:#64748b; margin-bottom:4px;">Hạn Hộ Chiếu:</label>
+                            <input type="date" id="placementPassportExpiry" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; font-weight:600;">
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:11px; font-weight:700; color:#64748b; margin-bottom:4px;">Hạn CCCD:</label>
+                            <input type="date" id="placementIdCardExpiry" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; font-weight:600;">
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:11px; font-weight:700; color:#64748b; margin-bottom:4px;">Hạn Sức Khỏe:</label>
+                            <input type="date" id="placementHealthExpiry" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; font-weight:600;">
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:11px; font-weight:700; color:#64748b; margin-bottom:4px;">Hạn Tư Pháp Số 2:</label>
+                            <input type="date" id="placementJudicialExpiry" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; font-weight:600;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mốc tiến độ -->
+                <div style="border-bottom:1px solid #f1f5f9; padding-bottom:16px;">
+                    <h4 style="font-size:13px; font-weight:800; color:#047857; text-transform:uppercase; margin-bottom:12px; display:flex; align-items:center; gap:4px;">📈 Các Mốc Ngày Tiến Độ</h4>
+                    <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;">
+                        <div>
+                            <label style="display:block; font-size:11px; font-weight:700; color:#64748b; margin-bottom:4px;">Ngày Trình Cục:</label>
+                            <input type="date" id="placementDateTrinhCuc" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; font-weight:600;">
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:11px; font-weight:700; color:#64748b; margin-bottom:4px;">Dự Kiến Kết Quả Cục:</label>
+                            <input type="date" id="placementDateTrinhCucExpected" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; font-weight:600;">
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:11px; font-weight:700; color:#64748b; margin-bottom:4px;">Ngày Nộp Visa:</label>
+                            <input type="date" id="placementDateLamVisa" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; font-weight:600;">
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:11px; font-weight:700; color:#64748b; margin-bottom:4px;">Ngày Có Visa:</label>
+                            <input type="date" id="placementDateNhanVisa" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; font-weight:600;">
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:11px; font-weight:700; color:#64748b; margin-bottom:4px;">Dự Kiến Xuất Cảnh:</label>
+                            <input type="date" id="placementDateXuatCanh" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; font-weight:600;">
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:11px; font-weight:700; color:#64748b; margin-bottom:4px;">Ngày Xuất Cảnh Thực Tế:</label>
+                            <input type="date" id="placementDateXuatCanhActual" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; font-weight:600;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quản lý Hủy hồ sơ -->
+                <div style="background:#fff5f5; border:1px solid #feb2b2; border-radius:10px; padding:14px;">
+                    <h4 style="font-size:13px; font-weight:800; color:#c53030; text-transform:uppercase; margin-bottom:10px; display:flex; align-items:center; gap:4px; justify-content:space-between;">
+                        <span>❌ Yêu cầu Hủy hồ sơ / Rút đơn</span>
+                        <input type="checkbox" id="placementIsCancelled" onchange="togglePlacementCancelFields()" style="width:18px; height:18px; cursor:pointer;">
+                    </h4>
+                    <div id="placementCancelFields" style="display:none; flex-direction:column; gap:10px; margin-top:10px;">
+                        <div>
+                            <label style="display:block; font-size:11px; font-weight:700; color:#9b2c2c; margin-bottom:4px;">Ngày Hủy:</label>
+                            <input type="date" id="placementCancelDate" style="width:100%; padding:8px 10px; border:1px solid #fc8181; border-radius:6px; font-size:13px; font-weight:600; background:#fff;">
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:11px; font-weight:700; color:#9b2c2c; margin-bottom:4px;">Lý do Hủy hồ sơ:</label>
+                            <textarea id="placementCancelReason" rows="2" style="width:100%; padding:8px 10px; border:1px solid #fc8181; border-radius:6px; font-size:13px; font-weight:600; outline:none; resize:none; font-family:sans-serif;" placeholder="Ví dụ: Rút vì lý do gia đình..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px; border-top:1px solid #e2e8f0; padding-top:16px;">
+            <button type="button" onclick="closePlacementModal()" style="padding:10px 20px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; font-weight:700; color:#475569; background:#fff; cursor:pointer;">Hủy bỏ</button>
+            <button type="button" onclick="savePlacementData()" style="padding:10px 24px; border:none; border-radius:8px; font-size:13px; font-weight:800; color:#fff; background:#10b981; cursor:pointer; box-shadow:0 4px 6px rgba(16,185,129,0.2);">Lưu Cấu Hình</button>
+        </div>
     </div>
 
     <div class="w-full lg:w-2/3 h-full overflow-y-auto relative main-content-area px-4 py-6 lg:px-16 lg:py-12">
@@ -2371,13 +2650,15 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             const btnCandidates = document.getElementById('tabBtn-candidates');
             const btnPassed = document.getElementById('tabBtn-passed');
             const btnJobs = document.getElementById('tabBtn-jobs');
+            const btnConfigs = document.getElementById('tabBtn-configs');
             
             const contentCandidates = document.getElementById('tabContent-candidates');
             const contentPassed = document.getElementById('tabContent-passed');
             const contentJobs = document.getElementById('tabContent-jobs');
+            const contentConfigs = document.getElementById('tabContent-configs');
             
             // Reset tất cả các nút
-            [btnCandidates, btnPassed, btnJobs].forEach(btn => {
+            [btnCandidates, btnPassed, btnJobs, btnConfigs].forEach(btn => {
                 if(btn) {
                     btn.style.borderBottom = '3px solid transparent';
                     btn.style.color = '#64748b';
@@ -2389,6 +2670,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             if (contentCandidates) contentCandidates.style.display = 'none';
             if (contentPassed) contentPassed.style.display = 'none';
             if (contentJobs) contentJobs.style.display = 'none';
+            if (contentConfigs) contentConfigs.style.display = 'none';
             
             // Hiển thị tab được chọn
             let activeBtn;
@@ -2407,6 +2689,12 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                     contentJobs.style.display = 'block';
                     renderJobSummaryTable();
                 }
+            } else if (tabId === 'configs') {
+                activeBtn = btnConfigs;
+                if (contentConfigs) {
+                    contentConfigs.style.display = 'block';
+                    loadFactoryDocConfig();
+                }
             }
             
             if (activeBtn) {
@@ -2417,82 +2705,706 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
         }
 
 
-        function renderPassedTable() {
-            const container = document.getElementById('passedSummaryContainer');
-            if (!container) return;
-            container.innerHTML = '';
+        function getStatusBadgeHtml(status, cancelDate) {
+            if (cancelDate || status === 'CANCELLED') {
+                return `<span style="background:#fee2e2; color:#ef4444; font-size:11px; padding:2px 8px; border-radius:12px; font-weight:800; border:1px solid #fca5a5;">❌ ĐÃ HỦY HỒ SƠ</span>`;
+            }
+            switch (status) {
+                case 'GOM_HO_SO':
+                    return `<span style="background:#f1f5f9; color:#475569; font-size:11px; padding:2px 8px; border-radius:12px; font-weight:800; border:1px solid #cbd5e1;">📁 Gom hồ sơ</span>`;
+                case 'TRINH_CUC':
+                    return `<span style="background:#dbeafe; color:#2563eb; font-size:11px; padding:2px 8px; border-radius:12px; font-weight:800; border:1px solid #bfdbfe;">🏛️ Trình cục</span>`;
+                case 'LAM_VISA':
+                    return `<span style="background:#fef3c7; color:#d97706; font-size:11px; padding:2px 8px; border-radius:12px; font-weight:800; border:1px solid #fde68a;">🎫 Làm Visa</span>`;
+                case 'NHAN_VISA':
+                    return `<span style="background:#dcfce7; color:#16a34a; font-size:11px; padding:2px 8px; border-radius:12px; font-weight:800; border:1px solid #bbf7d0;">✅ Có Visa</span>`;
+                case 'XUAT_CANH':
+                    return `<span style="background:#ecfdf5; color:#059669; font-size:11px; padding:2px 8px; border-radius:12px; font-weight:800; border:1px solid #a7f3d0; box-shadow:0 2px 4px rgba(16,185,129,0.1);">✈️ Đã xuất cảnh</span>`;
+                default:
+                    return `<span style="background:#f1f5f9; color:#475569; font-size:11px; padding:2px 8px; border-radius:12px; font-weight:800; border:1px solid #cbd5e1;">📁 Gom hồ sơ</span>`;
+            }
+        }
+
+        let currentPassedViewMode = 'kanban';
+
+        function switchPassedView(view) {
+            currentPassedViewMode = view;
+            const btnKanban = document.getElementById('toggleViewBtn-kanban');
+            const btnList = document.getElementById('toggleViewBtn-list');
             
+            if (view === 'kanban') {
+                btnKanban.style.background = '#ffffff';
+                btnKanban.style.color = '#0f172a';
+                btnKanban.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)';
+                btnList.style.background = 'transparent';
+                btnList.style.color = '#475569';
+                btnList.style.boxShadow = 'none';
+                document.getElementById('passedSummaryContainer').style.display = 'none';
+                document.getElementById('passedKanbanContainer').style.display = 'flex';
+            } else {
+                btnList.style.background = '#ffffff';
+                btnList.style.color = '#0f172a';
+                btnList.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)';
+                btnKanban.style.background = 'transparent';
+                btnKanban.style.color = '#475569';
+                btnKanban.style.boxShadow = 'none';
+                document.getElementById('passedKanbanContainer').style.display = 'none';
+                document.getElementById('passedSummaryContainer').style.display = 'flex';
+            }
+            renderPassedTable();
+        }
+
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        function handleKanbanDragStart(ev, recordId) {
+            ev.dataTransfer.setData("text/plain", recordId);
+        }
+
+        async function handleKanbanDrop(ev, newStatus) {
+            ev.preventDefault();
+            const recordId = ev.dataTransfer.getData("text/plain");
+            if (!recordId) return;
+            await updatePlacementStatusApi(recordId, newStatus);
+        }
+
+        async function moveKanbanStatus(recordId, direction) {
+            const item = currentHistoryData.find(i => i.id === recordId);
+            if (!item) return;
+            const statuses = ['GOM_HO_SO', 'TRINH_CUC', 'LAM_VISA', 'NHAN_VISA', 'XUAT_CANH'];
+            let currentIdx = statuses.indexOf(item.placement_status || 'GOM_HO_SO');
+            if (currentIdx === -1) currentIdx = 0;
+            let newIdx = currentIdx + direction;
+            if (newIdx >= 0 && newIdx < statuses.length) {
+                await updatePlacementStatusApi(recordId, statuses[newIdx]);
+            }
+        }
+
+        async function updatePlacementStatusApi(recordId, newStatus) {
+            const item = currentHistoryData.find(i => i.id === recordId);
+            if (!item) return;
+            
+            const data = {
+                passport_expiry: item.passport_expiry || '',
+                id_card_expiry: item.id_card_expiry || '',
+                health_check_expiry: item.health_check_expiry || '',
+                judicial_record_2_expiry: item.judicial_record_2_expiry || '',
+                placement_status: newStatus,
+                factory_id: item.factory_id || '',
+                appraisal_id: item.appraisal_id || '',
+                visa_id: item.visa_id || '',
+                placement_note: item.placement_note || '',
+                date_trinh_cuc: item.date_trinh_cuc || '',
+                date_trinh_cuc_expected: item.date_trinh_cuc_expected || '',
+                date_lam_visa: item.date_lam_visa || '',
+                date_nhan_visa: item.date_nhan_visa || '',
+                date_xuat_canh: item.date_xuat_canh || '',
+                date_xuat_canh_actual: item.date_xuat_canh_actual || '',
+                cancel_date: item.cancel_date || '',
+                cancel_reason: item.cancel_reason || ''
+            };
+            
+            if (newStatus === 'XUAT_CANH' && !data.date_xuat_canh_actual) {
+                data.date_xuat_canh_actual = new Date().toISOString().substring(0, 10);
+            }
+
+            try {
+                const res = await fetch(`/api/placements/${recordId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                    credentials: 'same-origin'
+                });
+                const result = await res.json();
+                if (result.success) {
+                    await loadHistory();
+                } else {
+                    alert("Lỗi cập nhật tiến độ: " + result.error);
+                }
+            } catch(e) {
+                console.error("Lỗi:", e);
+            }
+        }
+
+        function renderPassedTable() {
             // Lọc ra những người trúng tuyển
             const passedCandidates = currentHistoryData.filter(item => item.is_selected);
-            
-            if (passedCandidates.length === 0) {
-                container.innerHTML = '<div style="text-align:center; padding: 20px; color: #666; background:#fff; border-radius:12px; border:1px solid #e2e8f0;">Chưa có ứng viên nào trúng tuyển.</div>';
-                return;
+
+            // Cập nhật dropdown Lọc đơn hàng/Nhà máy
+            const filterSelect = document.getElementById('kanbanFilterSelect');
+            if (filterSelect && filterSelect.options.length <= 1) {
+                const existingJobs = new Set();
+                passedCandidates.forEach(item => {
+                    const selJob = (item.selected_job || '').trim();
+                    const firstSelJob = selJob.split(/[,;]+/)[0].trim();
+                    if (firstSelJob) existingJobs.add(firstSelJob.toUpperCase());
+                });
+                existingJobs.forEach(jobName => {
+                    const opt = document.createElement('option');
+                    opt.value = jobName;
+                    opt.textContent = jobName;
+                    filterSelect.appendChild(opt);
+                });
             }
-            
-            // Nhóm theo đơn hàng TRÚNG TUYỂN (selected_job), không phải toàn bộ don_hang
-            const jobMap = {};
-            passedCandidates.forEach(item => {
-                // Chỉ dùng selected_job — là đơn hàng mà người dùng đã bấm "Trúng tuyển" thực sự
+
+            // Lọc danh sách theo bộ lọc đã chọn
+            const selectedFilter = filterSelect ? filterSelect.value : 'ALL';
+            const filteredCandidates = passedCandidates.filter(item => {
+                if (selectedFilter === 'ALL') return true;
                 const selJob = (item.selected_job || '').trim();
-                // Lấy đơn đầu tiên nếu selected_job có nhiều đơn (dữ liệu cũ — phòng ngừa)
-                const firstSelJob = selJob.split(/[,;]+/)[0].trim();
-                const jobKey = firstSelJob ? firstSelJob.toUpperCase() : 'CHƯA RÕ ĐƠN HÀNG';
-                if (!jobMap[jobKey]) jobMap[jobKey] = [];
-                jobMap[jobKey].push(item);
+                const firstSelJob = selJob.split(/[,;]+/)[0].trim().toUpperCase();
+                return firstSelJob === selectedFilter;
             });
 
-            
-            // Render từng nhóm
-            const sortedJobs = Object.keys(jobMap).sort((a, b) => {
-                if (a === 'CHƯA RÕ ĐƠN HÀNG') return 1;
-                if (b === 'CHƯA RÕ ĐƠN HÀNG') return -1;
-                return a.localeCompare(b);
-            });
-            
-            sortedJobs.forEach(jobName => {
-                const candidates = jobMap[jobName];
-                const isUnknown = jobName === 'CHƯA RÕ ĐƠN HÀNG';
+            if (currentPassedViewMode === 'list') {
+                const container = document.getElementById('passedSummaryContainer');
+                if (!container) return;
+                container.innerHTML = '';
                 
-                const card = document.createElement('div');
-                card.style.cssText = `background: #fff; border-radius: 12px; border: 1px solid ${isUnknown ? '#fca5a5' : '#86efac'}; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow: hidden;`;
+                if (filteredCandidates.length === 0) {
+                    container.innerHTML = '<div style="text-align:center; padding: 20px; color: #666; background:#fff; border-radius:12px; border:1px solid #e2e8f0;">Chưa có ứng viên nào trúng tuyển theo bộ lọc này.</div>';
+                    return;
+                }
                 
-                const header = document.createElement('div');
-                header.style.cssText = `background: ${isUnknown ? '#fef2f2' : '#f0fdf4'}; border-bottom: 1px solid ${isUnknown ? '#fecaca' : '#bbf7d0'}; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;`;
-                header.innerHTML = `
-                    <div style="font-weight: 800; color: ${isUnknown ? '#991b1b' : '#166534'}; font-size: 14px; text-transform: uppercase;">
-                        ${isUnknown ? '⚠️' : '🏆'} ĐƠN HÀNG: ${jobName}
-                    </div>
-                    <div style="background: ${isUnknown ? '#f87171' : '#22c55e'}; color: #fff; font-weight: 800; font-size: 12px; padding: 4px 10px; border-radius: 20px;">
-                        ${candidates.length} NGƯỜI
-                    </div>
-                `;
-                card.appendChild(header);
-                
-                const list = document.createElement('div');
-                list.style.padding = '8px 16px';
-                
-                candidates.forEach((item, index) => {
-                    const row = document.createElement('div');
-                    row.style.cssText = `display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed #e2e8f0; gap: 8px;`;
-                    if (index === candidates.length - 1) row.style.borderBottom = 'none';
-                    
-                    row.innerHTML = `
-                        <div style="display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1;">
-                            <span style="font-weight: 700; color: #1e293b; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${item.ho_ten}">${item.ho_ten}</span>
-                            <span style="background: #f1f5f9; color: #475569; font-size: 11px; padding: 2px 6px; border-radius: 4px; border: 1px solid #cbd5e1; flex-shrink: 0;">${item.ma_so}</span>
-                        </div>
-                        <div style="display: flex; gap: 6px; flex-shrink: 0;">
-                            <a href="/cv/${item.ma_so === 'CHO_DUYET' ? `${item.id}/` : ''}${item.ma_so}${item.ho_ten ? '_' + sanitizeSlug(item.ho_ten) : ''}" target="_blank" class="btn-passed-view">🖨️ <span class="hidden sm:inline">Xem/In</span><span class="sm:hidden">Xem</span></a>
-                            <button onclick="toggleSelected(${item.id}, true, this, true, '${jobName.replace(/'/g, "\\'")}')" class="btn-passed-remove">❌ <span class="hidden sm:inline">Bỏ trúng tuyển</span><span class="sm:hidden">Bỏ</span></button>
-                        </div>
-                    `;
-                    list.appendChild(row);
+                const jobMap = {};
+                filteredCandidates.forEach(item => {
+                    const selJob = (item.selected_job || '').trim();
+                    const firstSelJob = selJob.split(/[,;]+/)[0].trim();
+                    const jobKey = firstSelJob ? firstSelJob.toUpperCase() : 'CHƯA RÕ ĐƠN HÀNG';
+                    if (!jobMap[jobKey]) jobMap[jobKey] = [];
+                    jobMap[jobKey].push(item);
                 });
                 
-                card.appendChild(list);
-                container.appendChild(card);
+                const sortedJobs = Object.keys(jobMap).sort((a, b) => {
+                    if (a === 'CHƯA RÕ ĐƠN HÀNG') return 1;
+                    if (b === 'CHƯA RÕ ĐƠN HÀNG') return -1;
+                    return a.localeCompare(b);
+                });
+                
+                sortedJobs.forEach(jobName => {
+                    const candidates = jobMap[jobName];
+                    const isUnknown = jobName === 'CHƯA RÕ ĐƠN HÀNG';
+                    
+                    const card = document.createElement('div');
+                    card.style.cssText = `background: #fff; border-radius: 12px; border: 1px solid ${isUnknown ? '#fca5a5' : '#86efac'}; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow: hidden;`;
+                    
+                    const header = document.createElement('div');
+                    header.style.cssText = `background: ${isUnknown ? '#fef2f2' : '#f0fdf4'}; border-bottom: 1px solid ${isUnknown ? '#fecaca' : '#bbf7d0'}; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;`;
+                    header.innerHTML = `
+                        <div style="font-weight: 800; color: ${isUnknown ? '#991b1b' : '#166534'}; font-size: 14px; text-transform: uppercase;">
+                            ${isUnknown ? '⚠️' : '🏆'} ĐƠN HÀNG: ${jobName}
+                        </div>
+                        <div style="background: ${isUnknown ? '#f87171' : '#22c55e'}; color: #fff; font-weight: 800; font-size: 12px; padding: 4px 10px; border-radius: 20px;">
+                            ${candidates.length} NGƯỜI
+                        </div>
+                    `;
+                    card.appendChild(header);
+                    
+                    const list = document.createElement('div');
+                    list.style.padding = '8px 16px';
+                    
+                    candidates.forEach((item, index) => {
+                        const row = document.createElement('div');
+                        row.style.cssText = `display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed #e2e8f0; gap: 8px; flex-wrap: wrap;`;
+                        if (index === candidates.length - 1) row.style.borderBottom = 'none';
+                        
+                        let warningsHtml = '';
+                        const today = new Date();
+                        const checkExpiry = (dateStr, name) => {
+                            if (!dateStr) return;
+                            const expDate = new Date(dateStr);
+                            const diffTime = expDate - today;
+                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                            if (diffDays <= 0) {
+                                warningsHtml += `<span style="background:#fee2e2; color:#ef4444; font-size:9.5px; padding:2px 6px; border-radius:4px; font-weight:800; border:1px solid #fca5a5; margin-left:4px;">⚠️ ${name} hết hạn</span>`;
+                            } else if (diffDays <= 30) {
+                                warningsHtml += `<span style="background:#fffbeb; color:#d97706; font-size:9.5px; padding:2px 6px; border-radius:4px; font-weight:800; border:1px solid #fde68a; margin-left:4px;">⚠️ Hạn ${name} &lt; 30 ngày</span>`;
+                            }
+                        };
+                        
+                        checkExpiry(item.passport_expiry, 'Hộ chiếu');
+                        checkExpiry(item.health_check_expiry, 'Khám sức khỏe');
+                        checkExpiry(item.id_card_expiry, 'CCCD');
+                        checkExpiry(item.judicial_record_2_expiry, 'Tư pháp');
+ 
+                        row.innerHTML = `
+                            <div style="display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1;">
+                                <span style="font-weight: 700; color: #1e293b; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${item.ho_ten}">${item.ho_ten}</span>
+                                <span style="background: #f1f5f9; color: #475569; font-size: 11px; padding: 2px 6px; border-radius: 4px; border: 1px solid #cbd5e1; flex-shrink: 0;">${item.ma_so}</span>
+                                ${getStatusBadgeHtml(item.placement_status, item.cancel_date)}
+                                <div style="display:flex; flex-wrap:wrap; gap:4px;">${warningsHtml}</div>
+                            </div>
+                            <div style="display: flex; gap: 6px; flex-shrink: 0;">
+                                <button onclick="openPlacementModal(${item.id})" class="btn-passed-view" style="background:#3b82f6; border-color:#2563eb; color:#fff;">⚙️ <span class="hidden sm:inline">Tiến độ & Giấy tờ</span><span class="sm:hidden">Sửa</span></button>
+                                <a href="/cv/${item.ma_so === 'CHO_DUYET' ? `${item.id}/` : ''}${item.ma_so}${item.ho_ten ? '_' + sanitizeSlug(item.ho_ten) : ''}" target="_blank" class="btn-passed-view">🖨️ <span class="hidden sm:inline">Xem/In</span><span class="sm:hidden">Xem</span></a>
+                                <button onclick="toggleSelected(${item.id}, true, this, true, '${jobName.replace(/'/g, "\\'")}')" class="btn-passed-remove">❌ <span class="hidden sm:inline">Bỏ trúng tuyển</span><span class="sm:hidden">Bỏ</span></button>
+                            </div>
+                        `;
+                        list.appendChild(row);
+                    });
+                    
+                    card.appendChild(list);
+                    container.appendChild(card);
+                });
+            } else {
+                // RENDER KANBAN VIEW
+                const columns = ['GOM_HO_SO', 'TRINH_CUC', 'LAM_VISA', 'NHAN_VISA', 'XUAT_CANH'];
+                
+                // Reset columns UI
+                columns.forEach(col => {
+                    const listDiv = document.getElementById(`list-${col}`);
+                    if (listDiv) listDiv.innerHTML = '';
+                    const countSpan = document.getElementById(`count-${col}`);
+                    if (countSpan) countSpan.textContent = '0';
+                });
+ 
+                const colCounts = { 'GOM_HO_SO': 0, 'TRINH_CUC': 0, 'LAM_VISA': 0, 'NHAN_VISA': 0, 'XUAT_CANH': 0 };
+ 
+                filteredCandidates.forEach(item => {
+                    const status = item.placement_status || 'GOM_HO_SO';
+                    if (!columns.includes(status)) return;
+ 
+                    colCounts[status]++;
+ 
+                    const listDiv = document.getElementById(`list-${status}`);
+                    if (!listDiv) return;
+ 
+                    // Kiểm tra hạn giấy tờ
+                    let warningsHtml = '';
+                    const today = new Date();
+                    const checkExpiry = (dateStr, name) => {
+                        if (!dateStr) return;
+                        const expDate = new Date(dateStr);
+                        const diffTime = expDate - today;
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        if (diffDays <= 0) {
+                            warningsHtml += `<span style="background:#fee2e2; color:#ef4444; font-size:9.5px; padding:2px 6px; border-radius:4px; font-weight:800; border:1px solid #fca5a5;" title="Hết hạn ${name}">⚠️ ${name} hết hạn</span>`;
+                        } else if (diffDays <= 30) {
+                            warningsHtml += `<span style="background:#fffbeb; color:#d97706; font-size:9.5px; padding:2px 6px; border-radius:4px; font-weight:800; border:1px solid #fde68a;" title="Sắp hết hạn ${name} (${diffDays} ngày)">⚠️ Hạn ${name} &lt; 30d</span>`;
+                        }
+                    };
+ 
+                    checkExpiry(item.passport_expiry, 'Hộ chiếu');
+                    checkExpiry(item.health_check_expiry, 'Sức khỏe');
+                    checkExpiry(item.id_card_expiry, 'CCCD');
+                    checkExpiry(item.judicial_record_2_expiry, 'Tư pháp');
+ 
+                    const facName = item.selected_job || '';
+ 
+                    const card = document.createElement('div');
+                    card.className = 'kanban-card';
+                    card.draggable = true;
+                    card.ondragstart = (e) => handleKanbanDragStart(e, item.id);
+                    card.style.cssText = `background:#ffffff; border:1px solid #cbd5e1; border-radius:10px; padding:10px; cursor:grab; box-shadow:0 2px 4px rgba(0,0,0,0.03); transition:all 0.15s; display:flex; flex-direction:column; gap:6px;`;
+                    
+                    card.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-weight:700; color:#1e293b; font-size:13px; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${item.ho_ten}">${item.ho_ten}</span>
+                            <span style="font-size:9.5px; font-weight:700; background:#f1f5f9; color:#475569; padding:1px 4px; border-radius:4px; font-family:monospace;">${item.ma_so}</span>
+                        </div>
+                        <div style="font-size:11px; color:#64748b; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="Nhà máy: ${facName}">🏭 ${facName || 'Chưa rõ đơn'}</div>
+                        <div style="display:flex; flex-direction:column; gap:4px; margin-top:2px;">${warningsHtml}</div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed #e2e8f0; padding-top:6px; margin-top:4px;">
+                            <div style="display:flex; gap:3px;">
+                                <button onclick="moveKanbanStatus(${item.id}, -1)" style="padding:1px 5px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:4px; font-size:10px; cursor:pointer;" title="Lùi lại">◀</button>
+                                <button onclick="moveKanbanStatus(${item.id}, 1)" style="padding:1px 5px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:4px; font-size:10px; cursor:pointer;" title="Tiến lên">▶</button>
+                            </div>
+                            <button onclick="openPlacementModal(${item.id})" style="color:#3b82f6; background:none; border:none; font-size:11px; font-weight:800; cursor:pointer;">⚙️ Sửa</button>
+                        </div>
+                    `;
+                    listDiv.appendChild(card);
+                });
+ 
+                // Update headers counts
+                columns.forEach(col => {
+                    const countSpan = document.getElementById(`count-${col}`);
+                    if (countSpan) countSpan.textContent = colCounts[col];
+                });
+            }
+        }
+ 
+        // ─── PHẦN MỞ RỘNG JS: QUẢN LÝ TIẾN ĐỘ VÀ ĐƠN HÀNG (MIGRATED FROM B) ───
+        let globalFactories = [];
+        let globalDocs = [];
+ 
+        async function openPlacementModal(recordId) {
+            const item = currentHistoryData.find(i => i.id === recordId);
+            if (!item) return;
+ 
+            document.getElementById('placementRecordId').value = recordId;
+            document.getElementById('placementCandidateInfo').textContent = `${item.ho_ten} (${item.ma_so})`;
+            
+            // Tải danh sách nhà máy và giấy tờ từ API trước
+            try {
+                const facRes = await fetch('/api/factories', { credentials: 'same-origin' });
+                globalFactories = await facRes.json();
+ 
+                const docRes = await fetch('/api/docs', { credentials: 'same-origin' });
+                globalDocs = await docRes.json();
+            } catch(e) {
+                console.error("Lỗi tải thông tin cấu hình đơn hàng:", e);
+            }
+ 
+            // Render Nhà máy select
+            const facSelect = document.getElementById('placementFactorySelect');
+            facSelect.innerHTML = '<option value="">-- CHƯA GÁN NHÀ MÁY --</option>';
+            globalFactories.forEach(f => {
+                const opt = document.createElement('option');
+                opt.value = f.id;
+                opt.textContent = f.name;
+                facSelect.appendChild(opt);
             });
+ 
+            // Set các mốc ngày hạn giấy tờ
+            document.getElementById('placementPassportExpiry').value = item.passport_expiry || '';
+            document.getElementById('placementIdCardExpiry').value = item.id_card_expiry || '';
+            document.getElementById('placementHealthExpiry').value = item.health_check_expiry || '';
+            document.getElementById('placementJudicialExpiry').value = item.judicial_record_2_expiry || '';
+ 
+            // Set các mốc tiến độ & ghi chú
+            document.getElementById('placementStatusSelect').value = item.placement_status || 'GOM_HO_SO';
+            document.getElementById('placementNoteTextarea').value = item.placement_note || '';
+ 
+            // Set các mốc ngày tiến độ
+            document.getElementById('placementDateTrinhCuc').value = item.date_trinh_cuc || '';
+            document.getElementById('placementDateTrinhCucExpected').value = item.date_trinh_cuc_expected || '';
+            document.getElementById('placementDateLamVisa').value = item.date_lam_visa || '';
+            document.getElementById('placementDateNhanVisa').value = item.date_nhan_visa || '';
+            document.getElementById('placementDateXuatCanh').value = item.date_xuat_canh || '';
+            document.getElementById('placementDateXuatCanhActual').value = item.date_xuat_canh_actual || '';
+ 
+            // Set trạng thái hủy
+            const isCancelled = item.cancel_date || item.placement_status === 'CANCELLED';
+            document.getElementById('placementIsCancelled').checked = !!isCancelled;
+            document.getElementById('placementCancelDate').value = item.cancel_date || '';
+            document.getElementById('placementCancelReason').value = item.cancel_reason || '';
+            togglePlacementCancelFields();
+ 
+            // Set các dropdown nhà máy, thẩm định, visa
+            facSelect.value = item.factory_id || '';
+            onPlacementFactoryChanged();
+            
+            document.getElementById('placementAppraisalSelect').value = item.appraisal_id || '';
+            onPlacementAppraisalChanged();
+            
+            document.getElementById('placementVisaSelect').value = item.visa_id || '';
+ 
+            // Hiển thị modal
+            document.getElementById('placementModal').style.display = 'block';
+        }
+ 
+        function closePlacementModal() {
+            document.getElementById('placementModal').style.display = 'none';
+        }
+ 
+        function onPlacementFactoryChanged() {
+            const factoryId = document.getElementById('placementFactorySelect').value;
+            const appSelect = document.getElementById('placementAppraisalSelect');
+            appSelect.innerHTML = '<option value="">-- CHƯA GHÉP TỜ THẨM ĐỊNH --</option>';
+ 
+            if (!factoryId) {
+                document.getElementById('placementVisaSelect').innerHTML = '<option value="">-- CHƯA GHÉP TỜ VISA --</option>';
+                return;
+            }
+ 
+            // Lọc các tờ thẩm định của riêng nhà máy này
+            const appraisals = globalDocs.filter(d => d.factory_id === factoryId && d.type === 'APPRAISAL');
+            appraisals.forEach(a => {
+                const opt = document.createElement('option');
+                opt.value = a.id;
+                opt.textContent = `TĐ: ${a.code} (Hạn: ${a.expiry_date || 'Chưa rõ'}, Slot: ${a.capacity || 0})`;
+                appSelect.appendChild(opt);
+            });
+ 
+            onPlacementAppraisalChanged();
+        }
+ 
+        function onPlacementAppraisalChanged() {
+            const appId = document.getElementById('placementAppraisalSelect').value;
+            const visaSelect = document.getElementById('placementVisaSelect');
+            visaSelect.innerHTML = '<option value="">-- CHƯA GHÉP TỜ VISA --</option>';
+ 
+            if (!appId) return;
+ 
+            // Lọc các tờ visa liên kết với tờ thẩm định này
+            const visas = globalDocs.filter(d => d.type === 'VISA' && d.parent_appraisal_id === appId);
+            visas.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = v.id;
+                opt.textContent = `Visa: ${v.code} (Hạn: ${v.expiry_date || 'Chưa rõ'}, Slot: ${v.capacity || 0})`;
+                visaSelect.appendChild(opt);
+            });
+        }
+ 
+        function togglePlacementCancelFields() {
+            const isChecked = document.getElementById('placementIsCancelled').checked;
+            document.getElementById('placementCancelFields').style.display = isChecked ? 'flex' : 'none';
+        }
+ 
+        async function savePlacementData() {
+            const recordId = document.getElementById('placementRecordId').value;
+            if (!recordId) return;
+ 
+            const isCancelled = document.getElementById('placementIsCancelled').checked;
+            const data = {
+                passport_expiry: document.getElementById('placementPassportExpiry').value,
+                id_card_expiry: document.getElementById('placementIdCardExpiry').value,
+                health_check_expiry: document.getElementById('placementHealthExpiry').value,
+                judicial_record_2_expiry: document.getElementById('placementJudicialExpiry').value,
+                
+                placement_status: isCancelled ? 'CANCELLED' : document.getElementById('placementStatusSelect').value,
+                factory_id: document.getElementById('placementFactorySelect').value,
+                appraisal_id: document.getElementById('placementAppraisalSelect').value,
+                visa_id: document.getElementById('placementVisaSelect').value,
+                placement_note: document.getElementById('placementNoteTextarea').value,
+                
+                date_trinh_cuc: document.getElementById('placementDateTrinhCuc').value,
+                date_trinh_cuc_expected: document.getElementById('placementDateTrinhCucExpected').value,
+                date_lam_visa: document.getElementById('placementDateLamVisa').value,
+                date_nhan_visa: document.getElementById('placementDateNhanVisa').value,
+                date_xuat_canh: document.getElementById('placementDateXuatCanh').value,
+                date_xuat_canh_actual: document.getElementById('placementDateXuatCanhActual').value,
+                
+                cancel_date: isCancelled ? document.getElementById('placementCancelDate').value : '',
+                cancel_reason: isCancelled ? document.getElementById('placementCancelReason').value : ''
+            };
+ 
+            try {
+                const res = await fetch(`/api/placements/${recordId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                    credentials: 'same-origin'
+                });
+                const result = await res.json();
+                if (result.success) {
+                    closePlacementModal();
+                    await loadHistory();
+                } else {
+                    alert("Lỗi lưu cấu hình tiến độ: " + result.error);
+                }
+            } catch(e) {
+                console.error("Lỗi kết nối lưu tiến độ:", e);
+                alert("Lỗi kết nối máy chủ.");
+            }
+        }
+ 
+        async function loadFactoryDocConfig() {
+            const tbody = document.getElementById('factoryDocListBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+ 
+            try {
+                const facRes = await fetch('/api/factories', { credentials: 'same-origin' });
+                const factories = await facRes.json();
+ 
+                const docRes = await fetch('/api/docs', { credentials: 'same-origin' });
+                const docs = await docRes.json();
+ 
+                globalFactories = factories;
+                globalDocs = docs;
+ 
+                const docFacSelect = document.getElementById('docFactorySelect');
+                if (docFacSelect) {
+                    docFacSelect.innerHTML = '';
+                    factories.forEach(f => {
+                        const opt = document.createElement('option');
+                        opt.value = f.id;
+                        opt.textContent = f.name;
+                        docFacSelect.appendChild(opt);
+                    });
+                }
+ 
+                const docParentSelect = document.getElementById('docParentAppraisalSelect');
+                if (docParentSelect) {
+                    docParentSelect.innerHTML = '<option value="">-- KHÔNG CÓ (THẨM ĐỊNH CHA) --</option>';
+                    docs.filter(d => d.type === 'APPRAISAL').forEach(a => {
+                        const opt = document.createElement('option');
+                        opt.value = a.id;
+                        opt.textContent = `${a.code} (${a.note || ''})`;
+                        docParentSelect.appendChild(opt);
+                    });
+                }
+ 
+                if (factories.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="padding:12px; text-align:center; color:#64748b; font-style:italic;">Chưa có cấu hình nhà máy.</td></tr>';
+                    return;
+                }
+ 
+                factories.forEach(f => {
+                    const fDocs = docs.filter(d => d.factory_id === f.id);
+                    const appraisals = fDocs.filter(d => d.type === 'APPRAISAL');
+                    const visas = fDocs.filter(d => d.type === 'VISA');
+ 
+                    const maxRows = Math.max(appraisals.length, visas.length, 1);
+ 
+                    for (let i = 0; i < maxRows; i++) {
+                        const tr = document.createElement('tr');
+                        tr.style.borderBottom = '1px solid #cbd5e1';
+ 
+                        if (i === 0) {
+                            const tdFac = document.createElement('td');
+                            tdFac.rowSpan = maxRows;
+                            tdFac.style.cssText = 'padding:10px; font-weight:700; color:#1e293b; border-right:1px solid #e2e8f0;';
+                            tdFac.innerHTML = `
+                                🏢 ${f.name}
+                                <div style="margin-top:4px;">
+                                    <button onclick="deleteFactory('${f.id}')" style="color:#ef4444; background:none; border:none; cursor:pointer; font-size:11px; font-weight:800; padding:0;">🗑️ Xóa Nhà máy</button>
+                                </div>
+                            `;
+                            tr.appendChild(tdFac);
+                        }
+ 
+                        const app = appraisals[i];
+                        const tdApp = document.createElement('td');
+                        tdApp.style.padding = '10px';
+                        let appCapacityText = '';
+                        if (app) {
+                            const used = currentHistoryData.filter(item => item.is_selected && item.appraisal_id === app.id).length;
+                            tdApp.innerHTML = `
+                                <div style="font-weight:700; color:#3b82f6;">Mã: ${app.code}</div>
+                                <div style="font-size:10.5px; color:#64748b;">Hạn: ${app.expiry_date || 'Chưa có'}</div>
+                                <button onclick="deleteOrderDoc('${app.id}')" style="color:#f87171; background:none; border:none; cursor:pointer; font-size:10px; font-weight:700; padding:2px 0 0 0;">🗑️ Xóa</button>
+                            `;
+                            appCapacityText = `<span style="background:#e0f2fe; color:#0369a1; font-weight:800; padding:2px 6px; border-radius:10px;">📊 Thẩm định: ${used}/${app.capacity} slots</span>`;
+                        } else {
+                            tdApp.innerHTML = '<span style="color:#94a3b8; font-style:italic;">-</span>';
+                        }
+                        tr.appendChild(tdApp);
+ 
+                        const visa = visas[i];
+                        const tdVisa = document.createElement('td');
+                        tdVisa.style.padding = '10px';
+                        let visaCapacityText = '';
+                        if (visa) {
+                            const usedVisa = currentHistoryData.filter(item => item.is_selected && item.visa_id === visa.id).length;
+                            tdVisa.innerHTML = `
+                                <div style="font-weight:700; color:#10b981;">Mã: ${visa.code}</div>
+                                <div style="font-size:10.5px; color:#64748b;">Hạn: ${visa.expiry_date || 'Chưa có'}</div>
+                                <button onclick="deleteOrderDoc('${visa.id}')" style="color:#f87171; background:none; border:none; cursor:pointer; font-size:10px; font-weight:700; padding:2px 0 0 0;">🗑️ Xóa</button>
+                            `;
+                            visaCapacityText = `<span style="background:#dcfce7; color:#15803d; font-weight:800; padding:2px 6px; border-radius:10px;">📊 Visa: ${usedVisa}/${visa.capacity} slots</span>`;
+                        } else {
+                            tdVisa.innerHTML = '<span style="color:#94a3b8; font-style:italic;">-</span>';
+                        }
+                        tr.appendChild(tdVisa);
+ 
+                        const tdCap = document.createElement('td');
+                        tdCap.style.cssText = 'padding:10px; text-align:center;';
+                        tdCap.innerHTML = `<div style="display:flex; flex-direction:column; gap:4px; align-items:center;">
+                            ${appCapacityText}
+                            ${visaCapacityText}
+                        </div>`;
+                        tr.appendChild(tdCap);
+ 
+                        const tdAction = document.createElement('td');
+                        tdAction.style.cssText = 'padding:10px; text-align:center;';
+                        tdAction.innerHTML = '-';
+                        tr.appendChild(tdAction);
+ 
+                        tbody.appendChild(tr);
+                    }
+                });
+            } catch(e) {
+                console.error("Lỗi kết nối bảng cấu hình:", e);
+            }
+        }
+ 
+        function onDocTypeChanged() {
+            const type = document.getElementById('docTypeSelect').value;
+            document.getElementById('docParentAppraisalDiv').style.display = (type === 'VISA') ? 'block' : 'none';
+        }
+ 
+        async function submitAddFactory() {
+            const name = document.getElementById('newFactoryName').value.trim();
+            if (!name) {
+                alert("Vui lòng nhập tên nhà máy.");
+                return;
+            }
+ 
+            try {
+                const res = await fetch('/api/factories', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name }),
+                    credentials: 'same-origin'
+                });
+                const result = await res.json();
+                if (result.success) {
+                    document.getElementById('newFactoryName').value = '';
+                    await loadFactoryDocConfig();
+                } else {
+                    alert("Lỗi thêm nhà máy: " + result.error);
+                }
+            } catch(e) {
+                console.error("Lỗi:", e);
+            }
+        }
+ 
+        async function submitAddDoc() {
+            const factory_id = document.getElementById('docFactorySelect').value;
+            const type = document.getElementById('docTypeSelect').value;
+            const code = document.getElementById('docCodeInput').value.trim();
+            const capacity = document.getElementById('docCapacityInput').value;
+            const expiry_date = document.getElementById('docExpiryDateInput').value;
+            const parent_appraisal_id = document.getElementById('docParentAppraisalSelect').value;
+ 
+            if (!factory_id || !code) {
+                alert("Vui lòng chọn nhà máy và nhập mã giấy tờ.");
+                return;
+            }
+ 
+            try {
+                const res = await fetch('/api/docs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        factory_id, type, code, capacity, expiry_date, parent_appraisal_id
+                    }),
+                    credentials: 'same-origin'
+                });
+                const result = await res.json();
+                if (result.success) {
+                    document.getElementById('docCodeInput').value = '';
+                    document.getElementById('docExpiryDateInput').value = '';
+                    await loadFactoryDocConfig();
+                } else {
+                    alert("Lỗi thêm tài liệu: " + result.error);
+                }
+            } catch(e) {
+                console.error("Lỗi:", e);
+            }
+        }
+ 
+        async function deleteFactory(id) {
+            if (!confirm("Bạn có chắc chắn muốn xóa nhà máy này không? Toàn bộ giấy tờ và ghép nối sẽ bị ảnh hưởng.")) return;
+            try {
+                const res = await fetch(`/api/factories/${id}`, { method: 'DELETE', credentials: 'same-origin' });
+                const result = await res.json();
+                if (result.success) {
+                    await loadFactoryDocConfig();
+                } else {
+                    alert("Lỗi xóa nhà máy: " + result.error);
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        }
+ 
+        async function deleteOrderDoc(id) {
+            if (!confirm("Bạn có chắc chắn muốn xóa tài liệu này không?")) return;
+            try {
+                const res = await fetch(`/api/docs/${id}`, { method: 'DELETE', credentials: 'same-origin' });
+                const result = await res.json();
+                if (result.success) {
+                    await loadFactoryDocConfig();
+                } else {
+                    alert("Lỗi xóa tài liệu: " + result.error);
+                }
+            } catch(e) {
+                console.error(e);
+            }
         }
 
         function renderJobSummaryTable() {

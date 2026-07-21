@@ -104,9 +104,54 @@ class FormHistory(db.Model):
     selected_at = db.Column(db.DateTime, nullable=True, default=None)  # Thời điểm trúng tuyển
     deleted_at = db.Column(db.DateTime, nullable=True, default=None)   # Thời điểm xóa mềm
 
+    # Thẻ và ngày hết hạn giấy tờ
+    passport_expiry = db.Column(db.String(50), default='')
+    id_card_expiry = db.Column(db.String(50), default='')
+    health_check_expiry = db.Column(db.String(50), default='')
+    judicial_record_2_expiry = db.Column(db.String(50), default='')
+    
+    # Tiến độ & Nhà máy ghép
+    placement_status = db.Column(db.String(50), default='GOM_HO_SO') # GOM_HO_SO, TRINH_CUC, LAM_VISA, NHAN_VISA, XUAT_CANH
+    factory_id = db.Column(db.String(100), default='')
+    appraisal_id = db.Column(db.String(100), default='')
+    visa_id = db.Column(db.String(100), default='')
+    placement_note = db.Column(db.Text, default='')
+
+    # Các mốc thời gian tiến độ
+    date_trinh_cuc = db.Column(db.String(50), nullable=True, default=None)
+    date_trinh_cuc_expected = db.Column(db.String(50), nullable=True, default=None)
+    date_lam_visa = db.Column(db.String(50), nullable=True, default=None)
+    date_nhan_visa = db.Column(db.String(50), nullable=True, default=None)
+    date_xuat_canh = db.Column(db.String(50), nullable=True, default=None)
+    date_xuat_canh_actual = db.Column(db.String(50), nullable=True, default=None)
+
+    # Trạng thái hủy
+    cancel_date = db.Column(db.String(50), nullable=True, default=None)
+    cancel_reason = db.Column(db.Text, default='')
+
 class Employee(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
+
+class Broker(db.Model):
+    id = db.Column(db.String(50), primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+
+class Factory(db.Model):
+    id = db.Column(db.String(50), primary_key=True)
+    broker_id = db.Column(db.String(50), default='')
+    name = db.Column(db.String(255), nullable=False)
+
+class OrderDoc(db.Model):
+    id = db.Column(db.String(50), primary_key=True)
+    factory_id = db.Column(db.String(50), nullable=False)
+    type = db.Column(db.String(50), nullable=False) # 'APPRAISAL' | 'VISA'
+    code = db.Column(db.String(100), nullable=False)
+    expiry_date = db.Column(db.String(50), default='')
+    received_date = db.Column(db.String(50), default='')
+    capacity = db.Column(db.Integer, default=0)
+    parent_appraisal_id = db.Column(db.String(50), default='')
+    note = db.Column(db.Text, default='')
 
 def normalize_npt(f48_raw):
     f48 = str(f48_raw or '').strip()
@@ -150,6 +195,34 @@ with app.app_context():
             inspector = inspect(db.engine)
             # Lấy danh sách cột của bảng form_history
             columns = [c['name'].lower() for c in inspector.get_columns('form_history')]
+
+            # Migration for Project B (FCT-HR-MANAGER) integration - run this first!
+            new_cols = {
+                'passport_expiry': "VARCHAR(50) DEFAULT ''",
+                'id_card_expiry': "VARCHAR(50) DEFAULT ''",
+                'health_check_expiry': "VARCHAR(50) DEFAULT ''",
+                'judicial_record_2_expiry': "VARCHAR(50) DEFAULT ''",
+                'placement_status': "VARCHAR(50) DEFAULT 'GOM_HO_SO'",
+                'factory_id': "VARCHAR(100) DEFAULT ''",
+                'appraisal_id': "VARCHAR(100) DEFAULT ''",
+                'visa_id': "VARCHAR(100) DEFAULT ''",
+                'placement_note': "TEXT DEFAULT ''",
+                'date_trinh_cuc': "VARCHAR(50) DEFAULT ''",
+                'date_trinh_cuc_expected': "VARCHAR(50) DEFAULT ''",
+                'date_lam_visa': "VARCHAR(50) DEFAULT ''",
+                'date_nhan_visa': "VARCHAR(50) DEFAULT ''",
+                'date_xuat_canh': "VARCHAR(50) DEFAULT ''",
+                'date_xuat_canh_actual': "VARCHAR(50) DEFAULT ''",
+                'cancel_date': "VARCHAR(50) DEFAULT ''",
+                'cancel_reason': "TEXT DEFAULT ''"
+            }
+            for col, col_type in new_cols.items():
+                if col.lower() not in columns:
+                    db.session.execute(text(f"ALTER TABLE form_history ADD COLUMN {col} {col_type}"))
+                    db.session.commit()
+                    print(f"Added column {col} to form_history.")
+                    columns.append(col.lower())
+
             if 'is_deleted' not in columns:
                 if 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI']:
                     db.session.execute(text('ALTER TABLE form_history ADD COLUMN is_deleted BOOLEAN DEFAULT 0'))
@@ -239,14 +312,6 @@ with app.app_context():
                     db.session.execute(text('ALTER TABLE form_history ADD COLUMN selected_at DATETIME DEFAULT NULL'))
                 else:
                     db.session.execute(text('ALTER TABLE form_history ADD COLUMN selected_at TIMESTAMP DEFAULT NULL'))
-                db.session.commit()
-                print("Added selected_at column.")
-            # Migration for deleted_at
-            if 'deleted_at' not in columns:
-                if 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI']:
-                    db.session.execute(text('ALTER TABLE form_history ADD COLUMN deleted_at DATETIME DEFAULT NULL'))
-                else:
-                    db.session.execute(text('ALTER TABLE form_history ADD COLUMN deleted_at TIMESTAMP DEFAULT NULL'))
                 db.session.commit()
                 print("Added deleted_at column.")
         except Exception as ex:
@@ -1025,7 +1090,24 @@ def api_history():
                 FormHistory.is_selected,
                 FormHistory.don_hang,
                 FormHistory.nguoi_phu_trach,
-                FormHistory.selected_job
+                FormHistory.selected_job,
+                FormHistory.passport_expiry,
+                FormHistory.id_card_expiry,
+                FormHistory.health_check_expiry,
+                FormHistory.judicial_record_2_expiry,
+                FormHistory.placement_status,
+                FormHistory.factory_id,
+                FormHistory.appraisal_id,
+                FormHistory.visa_id,
+                FormHistory.placement_note,
+                FormHistory.date_trinh_cuc,
+                FormHistory.date_trinh_cuc_expected,
+                FormHistory.date_lam_visa,
+                FormHistory.date_nhan_visa,
+                FormHistory.date_xuat_canh,
+                FormHistory.date_xuat_canh_actual,
+                FormHistory.cancel_date,
+                FormHistory.cancel_reason
             ))
             .order_by(FormHistory.ngay_tao.desc())
             .all()
@@ -1055,7 +1137,24 @@ def api_history():
             'is_selected': getattr(r, 'is_selected', False),
             'selected_job': getattr(r, 'selected_job', '') or '',
             'nguoi_phu_trach': getattr(r, 'nguoi_phu_trach', '') or '',
-            'ngay_tao': r.ngay_tao.replace(tzinfo=timezone.utc).astimezone(vietnam_tz).strftime("%d/%m/%Y %H:%M:%S") if r.ngay_tao else ''
+            'ngay_tao': r.ngay_tao.replace(tzinfo=timezone.utc).astimezone(vietnam_tz).strftime("%d/%m/%Y %H:%M:%S") if r.ngay_tao else '',
+            'passport_expiry': getattr(r, 'passport_expiry', '') or '',
+            'id_card_expiry': getattr(r, 'id_card_expiry', '') or '',
+            'health_check_expiry': getattr(r, 'health_check_expiry', '') or '',
+            'judicial_record_2_expiry': getattr(r, 'judicial_record_2_expiry', '') or '',
+            'placement_status': getattr(r, 'placement_status', 'GOM_HO_SO') or 'GOM_HO_SO',
+            'factory_id': getattr(r, 'factory_id', '') or '',
+            'appraisal_id': getattr(r, 'appraisal_id', '') or '',
+            'visa_id': getattr(r, 'visa_id', '') or '',
+            'placement_note': getattr(r, 'placement_note', '') or '',
+            'date_trinh_cuc': getattr(r, 'date_trinh_cuc', '') or '',
+            'date_trinh_cuc_expected': getattr(r, 'date_trinh_cuc_expected', '') or '',
+            'date_lam_visa': getattr(r, 'date_lam_visa', '') or '',
+            'date_nhan_visa': getattr(r, 'date_nhan_visa', '') or '',
+            'date_xuat_canh': getattr(r, 'date_xuat_canh', '') or '',
+            'date_xuat_canh_actual': getattr(r, 'date_xuat_canh_actual', '') or '',
+            'cancel_date': getattr(r, 'cancel_date', '') or '',
+            'cancel_reason': getattr(r, 'cancel_reason', '') or ''
         } for r in records]
         return jsonify({'success': True, 'data': data})
     except Exception as e:
@@ -1814,6 +1913,241 @@ def api_export_excel():
         ws_sel.auto_filter.ref = f"A4:L{ws_sel.max_row}" if ws_sel.max_row >= 4 else "A4:L4"
 
         # =========================================================
+        # SHEET: THEO DÕI TIẾN ĐỘ
+        # =========================================================
+        factories_dict = {f.id: f.name for f in Factory.query.all()}
+        docs_dict = {d.id: d.code for d in OrderDoc.query.all()}
+
+        ws_progress = wb.create_sheet(title="Theo Dõi Tiến Độ")
+        ws_progress.sheet_view.showGridLines = True
+        
+        ws_progress.merge_cells("A1:Q1")
+        title_p = ws_progress.cell(row=1, column=1, value="BẢNG THEO DÕI TIẾN ĐỘ XUẤT CẢNH - FCT HUMAN RESOURCE")
+        title_p.font = Font(name="Segoe UI", size=14, bold=True, color="FFFFFF")
+        title_p.fill = PatternFill(start_color="1E3A8A", end_color="1E3A8A", fill_type="solid")
+        title_p.alignment = Alignment(horizontal="center", vertical="center")
+        ws_progress.row_dimensions[1].height = 35
+
+        # Subtitle
+        ws_progress.merge_cells("A2:Q2")
+        active_placements = [r for r in selected_records if not r.cancel_date and r.placement_status != 'CANCELLED']
+        sub_p = ws_progress.cell(row=2, column=1, value=f"Thời gian xuất báo cáo: {export_time_str}   |   Đang xử lý tiến độ: {len(active_placements)} ứng viên")
+        sub_p.font = Font(name="Segoe UI", size=10, italic=True, color="1E3A8A")
+        sub_p.fill = PatternFill(start_color="EFF6FF", end_color="EFF6FF", fill_type="solid")
+        sub_p.alignment = Alignment(horizontal="center", vertical="center")
+        ws_progress.row_dimensions[2].height = 22
+
+        p_headers = [
+            'Mã số', 'Họ tên', 'Nhà máy / Chủ sử dụng', 'Tờ thẩm định', 'Tờ Visa',
+            'Hạn hộ chiếu', 'Hạn CCCD', 'Hạn sức khỏe', 'Hạn tư pháp số 2',
+            'Tiến độ hiện tại', 'Ngày trình cục', 'Ngày dự kiến có kết quả',
+            'Ngày nộp Visa', 'Ngày có Visa', 'Ngày XC dự kiến', 'Ngày XC thực tế',
+            'Ghi chú hồ sơ'
+        ]
+        ws_progress.append(p_headers)
+        ws_progress.row_dimensions[4].height = 28
+        ws_progress.freeze_panes = 'A5'
+
+        p_header_fill = PatternFill(start_color="1E3A8A", end_color="1E3A8A", fill_type="solid")
+        p_header_font = Font(name="Segoe UI", color="FFFFFF", bold=True, size=10)
+        p_thin_border = Border(
+            left=Side(style='thin', color="93C5FD"),
+            right=Side(style='thin', color="93C5FD"),
+            top=Side(style='thin', color="93C5FD"),
+            bottom=Side(style='thin', color="93C5FD")
+        )
+
+        for cell in ws_progress[4]:
+            cell.fill = p_header_fill
+            cell.font = p_header_font
+            cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+            cell.border = p_thin_border
+
+        status_translation = {
+            'GOM_HO_SO': '📁 Gom hồ sơ',
+            'TRINH_CUC': '🏛️ Trình cục',
+            'LAM_VISA': '🎫 Làm Visa',
+            'NHAN_VISA': '✅ Có Visa',
+            'XUAT_CANH': '✈️ Đã xuất cảnh'
+        }
+
+        for idx, r in enumerate(active_placements):
+            fac_name = factories_dict.get(r.factory_id, '') or r.selected_job or ''
+            app_code = docs_dict.get(r.appraisal_id, '') or ''
+            visa_code = docs_dict.get(r.visa_id, '') or ''
+            p_status = status_translation.get(r.placement_status, '📁 Gom hồ sơ')
+            
+            ws_progress.append([
+                r.ma_so or '', r.ho_ten or '', fac_name, app_code, visa_code,
+                r.passport_expiry or '', r.id_card_expiry or '', r.health_check_expiry or '', r.judicial_record_2_expiry or '',
+                p_status, r.date_trinh_cuc or '', r.date_trinh_cuc_expected or '',
+                r.date_lam_visa or '', r.date_nhan_visa or '', r.date_xuat_canh or '', r.date_xuat_canh_actual or '',
+                r.placement_note or ''
+            ])
+
+        p_row_fill_1 = PatternFill(start_color="F8FAFC", end_color="F8FAFC", fill_type="solid")
+        p_row_fill_2 = PatternFill(start_color="FFFFFF", end_color="FFFFFF", fill_type="solid")
+        p_body_font = Font(name="Segoe UI", size=9.5)
+
+        for row_idx in range(5, ws_progress.max_row + 1):
+            ws_progress.row_dimensions[row_idx].height = 24
+            row_bg = p_row_fill_1 if (row_idx % 2 == 0) else p_row_fill_2
+            for cell in ws_progress[row_idx]:
+                cell.font = p_body_font
+                cell.border = p_thin_border
+                cell.fill = row_bg
+                if cell.column in (1, 2, 3, 17):
+                    cell.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+                else:
+                    cell.alignment = Alignment(horizontal="center", vertical="center")
+
+        p_col_widths = {
+            'A':12, 'B':22, 'C':22, 'D':15, 'E':15,
+            'F':14, 'G':14, 'H':14, 'I':14,
+            'J':18, 'K':13, 'L':13, 'M':13, 'N':13, 'O':13, 'P':13, 'Q':35
+        }
+        for col_let, width in p_col_widths.items():
+            ws_progress.column_dimensions[col_let].width = width
+
+        # =========================================================
+        # SHEET: ĐÃ XUẤT CẢNH
+        # =========================================================
+        ws_departed = wb.create_sheet(title="Đã Xuất Cảnh")
+        ws_departed.sheet_view.showGridLines = True
+        
+        ws_departed.merge_cells("A1:H1")
+        title_d = ws_departed.cell(row=1, column=1, value="DANH SÁCH ỨNG VIÊN ĐÃ XUẤT CẢNH - FCT HUMAN RESOURCE")
+        title_d.font = Font(name="Segoe UI", size=14, bold=True, color="FFFFFF")
+        title_d.fill = PatternFill(start_color="047857", end_color="047857", fill_type="solid")
+        title_d.alignment = Alignment(horizontal="center", vertical="center")
+        ws_departed.row_dimensions[1].height = 35
+
+        # Subtitle
+        ws_departed.merge_cells("A2:H2")
+        departed_records = [r for r in selected_records if r.placement_status == 'XUAT_CANH']
+        sub_d = ws_departed.cell(row=2, column=1, value=f"Thời gian xuất báo cáo: {export_time_str}   |   Tổng số đã xuất cảnh: {len(departed_records)} ứng viên")
+        sub_d.font = Font(name="Segoe UI", size=10, italic=True, color="047857")
+        sub_d.fill = PatternFill(start_color="E6F4EA", end_color="E6F4EA", fill_type="solid")
+        sub_d.alignment = Alignment(horizontal="center", vertical="center")
+        ws_departed.row_dimensions[2].height = 22
+
+        d_headers = ['Mã số', 'Họ tên', 'Nhà máy / Chủ sử dụng', 'Tờ thẩm định', 'Tờ Visa', 'Ngày xuất cảnh thực tế', 'Người phụ trách', 'Ghi chú hồ sơ']
+        ws_departed.append(d_headers)
+        ws_departed.row_dimensions[4].height = 28
+        ws_departed.freeze_panes = 'A5'
+
+        d_header_fill = PatternFill(start_color="047857", end_color="047857", fill_type="solid")
+        d_header_font = Font(name="Segoe UI", color="FFFFFF", bold=True, size=10)
+        d_thin_border = Border(
+            left=Side(style='thin', color="A7F3D0"),
+            right=Side(style='thin', color="A7F3D0"),
+            top=Side(style='thin', color="A7F3D0"),
+            bottom=Side(style='thin', color="A7F3D0")
+        )
+
+        for cell in ws_departed[4]:
+            cell.fill = d_header_fill
+            cell.font = d_header_font
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+            cell.border = d_thin_border
+
+        for r in departed_records:
+            fac_name = factories_dict.get(r.factory_id, '') or r.selected_job or ''
+            app_code = docs_dict.get(r.appraisal_id, '') or ''
+            visa_code = docs_dict.get(r.visa_id, '') or ''
+            ws_departed.append([
+                r.ma_so or '', r.ho_ten or '', fac_name, app_code, visa_code,
+                r.date_xuat_canh_actual or '', r.nguoi_phu_trach or '', r.placement_note or ''
+            ])
+
+        d_row_fill_1 = PatternFill(start_color="E8F5E9", end_color="E8F5E9", fill_type="solid")
+        d_row_fill_2 = PatternFill(start_color="FFFFFF", end_color="FFFFFF", fill_type="solid")
+        
+        for row_idx in range(5, ws_departed.max_row + 1):
+            ws_departed.row_dimensions[row_idx].height = 24
+            row_bg = d_row_fill_1 if (row_idx % 2 == 0) else d_row_fill_2
+            for cell in ws_departed[row_idx]:
+                cell.font = p_body_font
+                cell.border = d_thin_border
+                cell.fill = row_bg
+                if cell.column in (1, 2, 3, 8):
+                    cell.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+                else:
+                    cell.alignment = Alignment(horizontal="center", vertical="center")
+
+        d_col_widths = {'A':12, 'B':22, 'C':24, 'D':16, 'E':16, 'F':18, 'G':18, 'H':35}
+        for col_let, width in d_col_widths.items():
+            ws_departed.column_dimensions[col_let].width = width
+
+        # =========================================================
+        # SHEET: DANH SÁCH HỦY
+        # =========================================================
+        ws_cancelled = wb.create_sheet(title="Danh Sách Hủy")
+        ws_cancelled.sheet_view.showGridLines = True
+        
+        ws_cancelled.merge_cells("A1:G1")
+        title_c = ws_cancelled.cell(row=1, column=1, value="DANH SÁCH ỨNG VIÊN HỦY HỒ SƠ / RÚT ĐƠN")
+        title_c.font = Font(name="Segoe UI", size=14, bold=True, color="FFFFFF")
+        title_c.fill = PatternFill(start_color="B91C1C", end_color="B91C1C", fill_type="solid")
+        title_c.alignment = Alignment(horizontal="center", vertical="center")
+        ws_cancelled.row_dimensions[1].height = 35
+
+        # Subtitle
+        ws_cancelled.merge_cells("A2:G2")
+        cancelled_records = [r for r in selected_records if r.placement_status == 'CANCELLED' or r.cancel_date]
+        sub_c = ws_cancelled.cell(row=2, column=1, value=f"Thời gian xuất báo cáo: {export_time_str}   |   Tổng số đã hủy/rút đơn: {len(cancelled_records)} ứng viên")
+        sub_c.font = Font(name="Segoe UI", size=10, italic=True, color="B91C1C")
+        sub_c.fill = PatternFill(start_color="FCE8E6", end_color="FCE8E6", fill_type="solid")
+        sub_c.alignment = Alignment(horizontal="center", vertical="center")
+        ws_cancelled.row_dimensions[2].height = 22
+
+        c_headers = ['Mã số', 'Họ tên', 'Nhà máy / Chủ sử dụng', 'Ngày hủy', 'Lý do hủy hồ sơ', 'Người phụ trách', 'Ghi chú hồ sơ']
+        ws_cancelled.append(c_headers)
+        ws_cancelled.row_dimensions[4].height = 28
+        ws_cancelled.freeze_panes = 'A5'
+
+        c_header_fill = PatternFill(start_color="B91C1C", end_color="B91C1C", fill_type="solid")
+        c_header_font = Font(name="Segoe UI", color="FFFFFF", bold=True, size=10)
+        c_thin_border = Border(
+            left=Side(style='thin', color="FCA5A5"),
+            right=Side(style='thin', color="FCA5A5"),
+            top=Side(style='thin', color="FCA5A5"),
+            bottom=Side(style='thin', color="FCA5A5")
+        )
+
+        for cell in ws_cancelled[4]:
+            cell.fill = c_header_fill
+            cell.font = c_header_font
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+            cell.border = c_thin_border
+
+        for r in cancelled_records:
+            fac_name = factories_dict.get(r.factory_id, '') or r.selected_job or ''
+            ws_cancelled.append([
+                r.ma_so or '', r.ho_ten or '', fac_name, r.cancel_date or '', r.cancel_reason or '',
+                r.nguoi_phu_trach or '', r.placement_note or ''
+            ])
+
+        c_row_fill_1 = PatternFill(start_color="FDF2F2", end_color="FDF2F2", fill_type="solid")
+        c_row_fill_2 = PatternFill(start_color="FFFFFF", end_color="FFFFFF", fill_type="solid")
+        
+        for row_idx in range(5, ws_cancelled.max_row + 1):
+            ws_cancelled.row_dimensions[row_idx].height = 24
+            row_bg = c_row_fill_1 if (row_idx % 2 == 0) else c_row_fill_2
+            for cell in ws_cancelled[row_idx]:
+                cell.font = p_body_font
+                cell.border = c_thin_border
+                cell.fill = row_bg
+                if cell.column in (1, 2, 3, 5, 7):
+                    cell.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+                else:
+                    cell.alignment = Alignment(horizontal="center", vertical="center")
+
+        c_col_widths = {'A':12, 'B':22, 'C':24, 'D':15, 'E':28, 'F':18, 'G':35}
+        for col_let, width in c_col_widths.items():
+            ws_cancelled.column_dimensions[col_let].width = width
+
+        # =========================================================
         # SHEET 4: THỐNG KÊ
         # =========================================================
         ws_stat = wb.create_sheet(title="Thống Kê")
@@ -1898,6 +2232,15 @@ def api_export_excel():
         ws_stat.row_dimensions[9].height = 15
         ws_stat.row_dimensions[10].height = 15
         ws_stat.row_dimensions[11].height = 15
+        
+        # Thống kê tiến độ xuất cảnh & hủy hồ sơ
+        style_kpi_card_row(13, 4, "ĐÃ XUẤT CẢNH", f"{len(departed_records)}")
+        style_kpi_card_row(13, 6, "ĐANG TIẾN ĐỘ", f"{len(active_placements) - len(departed_records)}")
+        style_kpi_card_row(13, 8, "ĐÃ HỦY HỒ SƠ", f"{len(cancelled_records)}")
+        
+        ws_stat.row_dimensions[13].height = 15
+        ws_stat.row_dimensions[14].height = 15
+        ws_stat.row_dimensions[15].height = 15
         
         # 4. Dynamic Data Tables in Columns A & B (Báo cáo kiểm toán)
         header_fill = PatternFill(start_color="0F172A", end_color="0F172A", fill_type="solid") # Slate-900 sang trọng
@@ -2275,53 +2618,10 @@ def api_toggle_selected(record_id):
 
         db.session.commit()
         
-        # Nếu trúng tuyển (is_selected = True), gửi dữ liệu sang B
-        if record.is_selected and new_state: # Chỉ gửi khi MỚI bật trúng tuyển
-            try:
-                form_data = json.loads(record.data_json) if record.data_json else {}
-                
-                # Mapping dữ liệu A → B
-                worker_data = {
-                    'id': record.ma_so or f'worker_{record.id}',
-                    'full_name': record.ho_ten or '',
-                    'date_of_birth': form_data.get('Ngaysinh') or None,
-                    'phone_number': form_data.get('Lienhe') or None,
-                    'hometown': form_data.get('Noio') or None,
-                    'avatar_url': form_data.get('photo') or '',  # Base64 ảnh
-                    'win_date': datetime.utcnow().strftime('%Y-%m-%d'),
-                    'status': 'DRAFT',
-                    'is_placed': False,
-                    'passport_expiry': '',
-                    'id_card_expiry': '',
-                    'health_check_expiry': '',
-                    'judicial_record_2_expiry': '',
-                }
-                
-                # Gửi sang B (Firebase)
-                b_api_url = os.environ.get('B_API_URL', 'http://localhost:3000')
-                response = requests.post(
-                    f'{b_api_url}/api/workers/sync-from-a',
-                    json=worker_data,
-                    timeout=10
-                )
-                
-                if response.status_code != 200:
-                    # Nếu gửi thất bại, rollback toggle
-                    record.is_selected = False
-                    db.session.commit()
-                    return jsonify({
-                        'success': False,
-                        'error': f'Failed to sync to B: {response.text}'
-                    }), 500
-            except Exception as e:
-                # Nếu có lỗi, rollback toggle
-                record.is_selected = False
-                db.session.commit()
-                traceback.print_exc()
-                return jsonify({
-                    'success': False,
-                    'error': f'Sync error: {str(e)}'
-                }), 500
+        # Đã gom B vào A nên không cần gửi API đồng bộ sang B nữa. Khởi tạo trạng thái tiến độ nếu trống.
+        if record.is_selected and (not record.placement_status or record.placement_status == ''):
+            record.placement_status = 'GOM_HO_SO'
+            db.session.commit()
         
         return jsonify({
             'success': True,
@@ -2333,6 +2633,235 @@ def api_toggle_selected(record_id):
     except Exception as e:
         traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
+
+# ==========================================
+# ─── API GATEWAY MIGRATED FROM PROJECT B ───
+# ==========================================
+
+@app.route('/api/brokers', methods=['GET', 'POST'])
+@auth_required
+def api_manage_brokers():
+    if request.method == 'GET':
+        brokers = Broker.query.order_by(Broker.name).all()
+        return jsonify([{'id': b.id, 'name': b.name} for b in brokers])
+    
+    # POST - Create or Update
+    data = request.get_json() or {}
+    b_id = data.get('id') or str(uuid.uuid4())[:8]
+    b_name = data.get('name')
+    if not b_name:
+        return jsonify({'success': False, 'error': 'Tên nhà môi giới không được để trống'}), 400
+        
+    broker = Broker.query.get(b_id)
+    if not broker:
+        broker = Broker(id=b_id, name=b_name)
+        db.session.add(broker)
+    else:
+        broker.name = b_name
+    db.session.commit()
+    return jsonify({'success': True, 'broker': {'id': broker.id, 'name': broker.name}})
+
+@app.route('/api/brokers/<b_id>', methods=['DELETE'])
+@auth_required
+def api_delete_broker(b_id):
+    broker = Broker.query.get(b_id)
+    if not broker:
+        return jsonify({'success': False, 'error': 'Không tìm thấy nhà môi giới'}), 404
+    db.session.delete(broker)
+    db.session.commit()
+    return jsonify({'success': True})
+
+
+@app.route('/api/factories', methods=['GET', 'POST'])
+@auth_required
+def api_manage_factories():
+    if request.method == 'GET':
+        factories = Factory.query.order_by(Factory.name).all()
+        return jsonify([{'id': f.id, 'broker_id': f.broker_id, 'name': f.name} for f in factories])
+        
+    # POST - Create or Update
+    data = request.get_json() or {}
+    f_id = data.get('id') or str(uuid.uuid4())[:8]
+    f_name = data.get('name')
+    b_id = data.get('broker_id', '')
+    if not f_name:
+        return jsonify({'success': False, 'error': 'Tên nhà máy không được để trống'}), 400
+        
+    factory = Factory.query.get(f_id)
+    if not factory:
+        factory = Factory(id=f_id, name=f_name, broker_id=b_id)
+        db.session.add(factory)
+    else:
+        factory.name = f_name
+        factory.broker_id = b_id
+    db.session.commit()
+    return jsonify({'success': True, 'factory': {'id': factory.id, 'name': factory.name, 'broker_id': factory.broker_id}})
+
+@app.route('/api/factories/<f_id>', methods=['DELETE'])
+@auth_required
+def api_delete_factory(f_id):
+    factory = Factory.query.get(f_id)
+    if not factory:
+        return jsonify({'success': False, 'error': 'Không tìm thấy nhà máy'}), 404
+    db.session.delete(factory)
+    db.session.commit()
+    return jsonify({'success': True})
+
+
+@app.route('/api/docs', methods=['GET', 'POST'])
+@auth_required
+def api_manage_docs():
+    if request.method == 'GET':
+        docs = OrderDoc.query.order_by(OrderDoc.code).all()
+        return jsonify([{
+            'id': d.id,
+            'factory_id': d.factory_id,
+            'type': d.type,
+            'code': d.code,
+            'expiry_date': d.expiry_date,
+            'received_date': d.received_date,
+            'capacity': d.capacity,
+            'parent_appraisal_id': d.parent_appraisal_id,
+            'note': d.note
+        } for d in docs])
+        
+    # POST - Create or Update
+    data = request.get_json() or {}
+    d_id = data.get('id') or str(uuid.uuid4())[:8]
+    factory_id = data.get('factory_id')
+    d_type = data.get('type') # 'APPRAISAL' | 'VISA'
+    code = data.get('code')
+    if not factory_id or not d_type or not code:
+        return jsonify({'success': False, 'error': 'Thiếu thông tin bắt buộc (nhà máy, loại, mã giấy tờ)'}), 400
+        
+    doc = OrderDoc.query.get(d_id)
+    if not doc:
+        doc = OrderDoc(
+            id=d_id,
+            factory_id=factory_id,
+            type=d_type,
+            code=code,
+            expiry_date=data.get('expiry_date', ''),
+            received_date=data.get('received_date', ''),
+            capacity=int(data.get('capacity', 0) or 0),
+            parent_appraisal_id=data.get('parent_appraisal_id', ''),
+            note=data.get('note', '')
+        )
+        db.session.add(doc)
+    else:
+        doc.factory_id = factory_id
+        doc.type = d_type
+        doc.code = code
+        doc.expiry_date = data.get('expiry_date', '')
+        doc.received_date = data.get('received_date', '')
+        doc.capacity = int(data.get('capacity', 0) or 0)
+        doc.parent_appraisal_id = data.get('parent_appraisal_id', '')
+        doc.note = data.get('note', '')
+        
+    db.session.commit()
+    return jsonify({'success': True, 'doc': {
+        'id': doc.id,
+        'factory_id': doc.factory_id,
+        'type': doc.type,
+        'code': doc.code,
+        'expiry_date': doc.expiry_date,
+        'received_date': doc.received_date,
+        'capacity': doc.capacity,
+        'parent_appraisal_id': doc.parent_appraisal_id,
+        'note': doc.note
+    }})
+
+@app.route('/api/docs/<d_id>', methods=['DELETE'])
+@auth_required
+def api_delete_doc(d_id):
+    doc = OrderDoc.query.get(d_id)
+    if not doc:
+        return jsonify({'success': False, 'error': 'Không tìm thấy tài liệu'}), 404
+    db.session.delete(doc)
+    db.session.commit()
+    return jsonify({'success': True})
+
+
+# API Lấy danh sách tiến độ ứng viên trúng tuyển
+@app.route('/api/placements', methods=['GET'])
+@auth_required
+def api_get_placements():
+    records = FormHistory.query.filter_by(is_selected=True, is_deleted=False).all()
+    # Tải trước tên nhà máy để phản hồi nhanh
+    factories = {f.id: f.name for f in Factory.query.all()}
+    
+    result = []
+    for r in records:
+        result.append({
+            'record_id': r.id,
+            'ma_so': r.ma_so,
+            'ho_ten': r.ho_ten,
+            'selected_job': r.selected_job,
+            'selected_at': r.selected_at.isoformat() if r.selected_at else None,
+            'passport_expiry': r.passport_expiry or '',
+            'id_card_expiry': r.id_card_expiry or '',
+            'health_check_expiry': r.health_check_expiry or '',
+            'judicial_record_2_expiry': r.judicial_record_2_expiry or '',
+            'placement_status': r.placement_status or 'GOM_HO_SO',
+            'factory_id': r.factory_id or '',
+            'factory_name': factories.get(r.factory_id, 'CHƯA GÁN NHÀ MÁY') if r.factory_id else 'CHƯA GÁN NHÀ MÁY',
+            'appraisal_id': r.appraisal_id or '',
+            'visa_id': r.visa_id or '',
+            'placement_note': r.placement_note or '',
+            'date_trinh_cuc': r.date_trinh_cuc or '',
+            'date_trinh_cuc_expected': r.date_trinh_cuc_expected or '',
+            'date_lam_visa': r.date_lam_visa or '',
+            'date_nhan_visa': r.date_nhan_visa or '',
+            'date_xuat_canh': r.date_xuat_canh or '',
+            'date_xuat_canh_actual': r.date_xuat_canh_actual or '',
+            'cancel_date': r.cancel_date or '',
+            'cancel_reason': r.cancel_reason or ''
+        })
+    return jsonify(result)
+
+# API Cập nhật tiến độ ứng viên trúng tuyển
+@app.route('/api/placements/<int:record_id>', methods=['POST'])
+@auth_required
+def api_update_placement(record_id):
+    record = FormHistory.query.get(record_id)
+    if not record:
+        return jsonify({'success': False, 'error': 'Không tìm thấy ứng viên'}), 404
+        
+    data = request.get_json() or {}
+    
+    # Cập nhật thời hạn giấy tờ
+    if 'passport_expiry' in data: record.passport_expiry = data.get('passport_expiry', '')
+    if 'id_card_expiry' in data: record.id_card_expiry = data.get('id_card_expiry', '')
+    if 'health_check_expiry' in data: record.health_check_expiry = data.get('health_check_expiry', '')
+    if 'judicial_record_2_expiry' in data: record.judicial_record_2_expiry = data.get('judicial_record_2_expiry', '')
+    
+    # Cập nhật tiến độ & gán đơn
+    if 'placement_status' in data: record.placement_status = data.get('placement_status', 'GOM_HO_SO')
+    if 'factory_id' in data: record.factory_id = data.get('factory_id', '')
+    if 'appraisal_id' in data: record.appraisal_id = data.get('appraisal_id', '')
+    if 'visa_id' in data: record.visa_id = data.get('visa_id', '')
+    if 'placement_note' in data: record.placement_note = data.get('placement_note', '')
+    
+    # Cập nhật các mốc thời gian
+    if 'date_trinh_cuc' in data: record.date_trinh_cuc = data.get('date_trinh_cuc', '')
+    if 'date_trinh_cuc_expected' in data: record.date_trinh_cuc_expected = data.get('date_trinh_cuc_expected', '')
+    if 'date_lam_visa' in data: record.date_lam_visa = data.get('date_lam_visa', '')
+    if 'date_nhan_visa' in data: record.date_nhan_visa = data.get('date_nhan_visa', '')
+    if 'date_xuat_canh' in data: record.date_xuat_canh = data.get('date_xuat_canh', '')
+    if 'date_xuat_canh_actual' in data: record.date_xuat_canh_actual = data.get('date_xuat_canh_actual', '')
+    
+    # Xử lý trạng thái Hủy hồ sơ nếu được gán
+    if 'cancel_date' in data: record.cancel_date = data.get('cancel_date', '')
+    if 'cancel_reason' in data: record.cancel_reason = data.get('cancel_reason', '')
+    
+    # Tự động gán selected_job theo tên nhà máy nếu được ghép
+    if record.factory_id:
+        factory = Factory.query.get(record.factory_id)
+        if factory:
+            record.selected_job = factory.name
+            
+    db.session.commit()
+    return jsonify({'success': True})
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
