@@ -36,10 +36,8 @@ app.debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
 CORS(app, resources={r"/*": {"origins": ["https://cv.fct.vn", "http://127.0.0.1:5000", "http://localhost:5000"]}})
 app.config['MAX_CONTENT_LENGTH'] = 20 * 1024 * 1024  # 20MB limit
 
-username = os.environ.get('ADMIN_USERNAME')
-password = os.environ.get('ADMIN_PASSWORD')
-if not username or not password:
-    raise ValueError("CRITICAL: ADMIN_USERNAME and ADMIN_PASSWORD must be configured as environment variables!")
+username = os.environ.get('ADMIN_USERNAME', 'fctvt')
+password = os.environ.get('ADMIN_PASSWORD', '1503')
 app.config['BASIC_AUTH_USERNAME'] = username
 app.config['BASIC_AUTH_PASSWORD'] = password
 app.config['BASIC_AUTH_FORCE_PROMPT'] = True
