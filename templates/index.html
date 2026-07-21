@@ -2195,6 +2195,11 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 renderJobSummaryTable();
             }
             
+            // Cập nhật bảng danh sách trúng tuyển / Kanban nếu tab Passed đang mở
+            if (typeof currentActiveHistoryTab !== 'undefined' && currentActiveHistoryTab === 'passed') {
+                renderPassedTable();
+            }
+            
             // Nếu chưa có lịch sử nào
             if (result.data.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 15px; color: #666;">Chưa có dữ liệu lịch sử nào.</td></tr>';
@@ -2785,6 +2790,16 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             const item = currentHistoryData.find(i => i.id === recordId);
             if (!item) return;
             
+            // Lưu lại trạng thái cũ để rollback nếu lỗi
+            const oldStatus = item.placement_status;
+            
+            // Cập nhật optimistic UI ngay lập tức
+            item.placement_status = newStatus;
+            if (newStatus === 'XUAT_CANH' && !item.date_xuat_canh_actual) {
+                item.date_xuat_canh_actual = new Date().toISOString().substring(0, 10);
+            }
+            renderPassedTable();
+            
             const data = {
                 passport_expiry: item.passport_expiry || '',
                 id_card_expiry: item.id_card_expiry || '',
@@ -2804,10 +2819,6 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 cancel_date: item.cancel_date || '',
                 cancel_reason: item.cancel_reason || ''
             };
-            
-            if (newStatus === 'XUAT_CANH' && !data.date_xuat_canh_actual) {
-                data.date_xuat_canh_actual = new Date().toISOString().substring(0, 10);
-            }
 
             try {
                 const res = await fetch(`/api/placements/${recordId}`, {
@@ -2820,10 +2831,17 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 if (result.success) {
                     await loadHistory();
                 } else {
+                    // Rollback nếu API báo lỗi
+                    item.placement_status = oldStatus;
+                    renderPassedTable();
                     alert("Lỗi cập nhật tiến độ: " + result.error);
                 }
             } catch(e) {
                 console.error("Lỗi:", e);
+                // Rollback nếu mất kết nối
+                item.placement_status = oldStatus;
+                renderPassedTable();
+                alert("Lỗi kết nối máy chủ khi cập nhật tiến độ.");
             }
         }
 
