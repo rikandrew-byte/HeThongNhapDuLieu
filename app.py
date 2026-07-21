@@ -48,7 +48,8 @@ basic_auth = BasicAuth(app)
 @app.before_request
 def enforce_custom_domain():
     # Tự động chuyển hướng mọi yêu cầu từ tên miền mặc định .onrender.com sang tên miền tùy chỉnh cv.fct.vn
-    if 'onrender.com' in request.host:
+    # Không chuyển hướng nếu là môi trường test PR Previews (chứa '-pr-')
+    if 'onrender.com' in request.host and '-pr-' not in request.host:
         url = request.url.replace(request.host, 'cv.fct.vn', 1)
         return redirect(url, code=301)
 
