@@ -1072,46 +1072,46 @@
             </div>
 
             <!-- View 2: Bảng Kanban Kéo Thả Trực Quan -->
-            <div id="passedKanbanContainer" style="display:flex; gap:12px; overflow-x:auto; padding-bottom:12px; align-items:flex-start; min-height:550px;">
+            <div id="passedKanbanContainer" style="display:flex; gap:8px; overflow-x:auto; padding-bottom:12px; align-items:flex-start; min-height:550px;">
                 <!-- 5 Cột Kanban -->
-                <div class="kanban-column" data-status="GOM_HO_SO" ondragover="allowDrop(event)" ondrop="handleKanbanDrop(event, 'GOM_HO_SO')" style="flex:1; min-width:240px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:14px; padding:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.02);">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:2px solid #cbd5e1; padding-bottom:8px;">
-                        <span style="font-size:12px; font-weight:850; color:#475569; display:flex; align-items:center; gap:4px;">📁 GOM HỒ SƠ</span>
-                        <span id="count-GOM_HO_SO" style="background:#cbd5e1; color:#475569; font-size:11px; font-weight:800; padding:2px 8px; border-radius:20px;">0</span>
+                <div class="kanban-column" data-status="GOM_HO_SO" ondragover="allowDrop(event)" ondrop="handleKanbanDrop(event, 'GOM_HO_SO')" style="flex:1; min-width:190px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:14px; padding:8px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.02);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:2px solid #cbd5e1; padding-bottom:6px;">
+                        <span style="font-size:11px; font-weight:850; color:#475569; display:flex; align-items:center; gap:2px;">📁 GOM HỒ SƠ</span>
+                        <span id="count-GOM_HO_SO" style="background:#cbd5e1; color:#475569; font-size:10px; font-weight:800; padding:1px 6px; border-radius:20px;">0</span>
                     </div>
-                    <div id="list-GOM_HO_SO" style="display:flex; flex-direction:column; gap:10px; min-height:480px;"></div>
+                    <div id="list-GOM_HO_SO" style="display:flex; flex-direction:column; gap:8px; min-height:480px;"></div>
                 </div>
 
-                <div class="kanban-column" data-status="TRINH_CUC" ondragover="allowDrop(event)" ondrop="handleKanbanDrop(event, 'TRINH_CUC')" style="flex:1; min-width:240px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:14px; padding:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.02);">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:2px solid #bfdbfe; padding-bottom:8px;">
-                        <span style="font-size:12px; font-weight:850; color:#1e40af; display:flex; align-items:center; gap:4px;">🏛️ TRÌNH CỤC</span>
-                        <span id="count-TRINH_CUC" style="background:#bfdbfe; color:#1e40af; font-size:11px; font-weight:800; padding:2px 8px; border-radius:20px;">0</span>
+                <div class="kanban-column" data-status="TRINH_CUC" ondragover="allowDrop(event)" ondrop="handleKanbanDrop(event, 'TRINH_CUC')" style="flex:1; min-width:190px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:14px; padding:8px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.02);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:2px solid #bfdbfe; padding-bottom:6px;">
+                        <span style="font-size:11px; font-weight:850; color:#1e40af; display:flex; align-items:center; gap:2px;">🏛️ TRÌNH CỤC</span>
+                        <span id="count-TRINH_CUC" style="background:#bfdbfe; color:#1e40af; font-size:10px; font-weight:800; padding:1px 6px; border-radius:20px;">0</span>
                     </div>
-                    <div id="list-TRINH_CUC" style="display:flex; flex-direction:column; gap:10px; min-height:480px;"></div>
+                    <div id="list-TRINH_CUC" style="display:flex; flex-direction:column; gap:8px; min-height:480px;"></div>
                 </div>
 
-                <div class="kanban-column" data-status="LAM_VISA" ondragover="allowDrop(event)" ondrop="handleKanbanDrop(event, 'LAM_VISA')" style="flex:1; min-width:240px; background:#fff7ed; border:1px solid #fed7aa; border-radius:14px; padding:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.02);">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:2px solid #fed7aa; padding-bottom:8px;">
-                        <span style="font-size:12px; font-weight:850; color:#c2410c; display:flex; align-items:center; gap:4px;">🎫 LÀM VISA</span>
-                        <span id="count-LAM_VISA" style="background:#fed7aa; color:#c2410c; font-size:11px; font-weight:800; padding:2px 8px; border-radius:20px;">0</span>
+                <div class="kanban-column" data-status="LAM_VISA" ondragover="allowDrop(event)" ondrop="handleKanbanDrop(event, 'LAM_VISA')" style="flex:1; min-width:190px; background:#fff7ed; border:1px solid #fed7aa; border-radius:14px; padding:8px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.02);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:2px solid #fed7aa; padding-bottom:6px;">
+                        <span style="font-size:11px; font-weight:850; color:#c2410c; display:flex; align-items:center; gap:2px;">🎫 LÀM VISA</span>
+                        <span id="count-LAM_VISA" style="background:#fed7aa; color:#c2410c; font-size:10px; font-weight:800; padding:1px 6px; border-radius:20px;">0</span>
                     </div>
-                    <div id="list-LAM_VISA" style="display:flex; flex-direction:column; gap:10px; min-height:480px;"></div>
+                    <div id="list-LAM_VISA" style="display:flex; flex-direction:column; gap:8px; min-height:480px;"></div>
                 </div>
 
-                <div class="kanban-column" data-status="NHAN_VISA" ondragover="allowDrop(event)" ondrop="handleKanbanDrop(event, 'NHAN_VISA')" style="flex:1; min-width:240px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:14px; padding:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.02);">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:2px solid #bbf7d0; padding-bottom:8px;">
-                        <span style="font-size:12px; font-weight:850; color:#15803d; display:flex; align-items:center; gap:4px;">✅ CÓ VISA</span>
-                        <span id="count-NHAN_VISA" style="background:#bbf7d0; color:#15803d; font-size:11px; font-weight:800; padding:2px 8px; border-radius:20px;">0</span>
+                <div class="kanban-column" data-status="NHAN_VISA" ondragover="allowDrop(event)" ondrop="handleKanbanDrop(event, 'NHAN_VISA')" style="flex:1; min-width:190px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:14px; padding:8px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.02);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:2px solid #bbf7d0; padding-bottom:6px;">
+                        <span style="font-size:11px; font-weight:850; color:#15803d; display:flex; align-items:center; gap:2px;">✅ CÓ VISA</span>
+                        <span id="count-NHAN_VISA" style="background:#bbf7d0; color:#15803d; font-size:10px; font-weight:800; padding:1px 6px; border-radius:20px;">0</span>
                     </div>
-                    <div id="list-NHAN_VISA" style="display:flex; flex-direction:column; gap:10px; min-height:480px;"></div>
+                    <div id="list-NHAN_VISA" style="display:flex; flex-direction:column; gap:8px; min-height:480px;"></div>
                 </div>
 
-                <div class="kanban-column" data-status="XUAT_CANH" ondragover="allowDrop(event)" ondrop="handleKanbanDrop(event, 'XUAT_CANH')" style="flex:1; min-width:240px; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:14px; padding:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.02);">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:2px solid #a7f3d0; padding-bottom:8px;">
-                        <span style="font-size:12px; font-weight:850; color:#065f46; display:flex; align-items:center; gap:4px;">✈️ ĐÃ XUẤT CẢNH</span>
-                        <span id="count-XUAT_CANH" style="background:#a7f3d0; color:#065f46; font-size:11px; font-weight:800; padding:2px 8px; border-radius:20px;">0</span>
+                <div class="kanban-column" data-status="XUAT_CANH" ondragover="allowDrop(event)" ondrop="handleKanbanDrop(event, 'XUAT_CANH')" style="flex:1; min-width:190px; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:14px; padding:8px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.02);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:2px solid #a7f3d0; padding-bottom:6px;">
+                        <span style="font-size:11px; font-weight:850; color:#065f46; display:flex; align-items:center; gap:2px;">✈️ ĐÃ XUẤT CẢNH</span>
+                        <span id="count-XUAT_CANH" style="background:#a7f3d0; color:#065f46; font-size:10px; font-weight:800; padding:1px 6px; border-radius:20px;">0</span>
                     </div>
-                    <div id="list-XUAT_CANH" style="display:flex; flex-direction:column; gap:10px; min-height:480px;"></div>
+                    <div id="list-XUAT_CANH" style="display:flex; flex-direction:column; gap:8px; min-height:480px;"></div>
                 </div>
             </div>
         </div>
