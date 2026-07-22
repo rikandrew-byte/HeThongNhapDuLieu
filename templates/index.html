@@ -9,6 +9,96 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
+        /* ── Modern Kanban Aesthetics ── */
+        .kanban-column {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        .kanban-column:hover {
+            box-shadow: 0 12px 20px -8px rgba(0, 0, 0, 0.04), 0 4px 12px -2px rgba(0, 0, 0, 0.02) !important;
+            transform: translateY(-2px);
+        }
+        .kanban-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px;
+            cursor: grab;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 1px 2px rgba(0, 0, 0, 0.04);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        .kanban-card:hover {
+            border-color: #6366f1 !important;
+            box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.12), 0 4px 6px -2px rgba(99, 102, 241, 0.04) !important;
+            transform: translateY(-2px);
+        }
+        .kanban-card:active {
+            cursor: grabbing;
+            transform: scale(0.98);
+        }
+        .kanban-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: #cbd5e1;
+        }
+        /* Color left bar based on placement column parent status classes */
+        .kanban-column[data-status="GOM_HO_SO"] .kanban-card::before { background: #64748b; }
+        .kanban-column[data-status="TRINH_CUC"] .kanban-card::before { background: #3b82f6; }
+        .kanban-column[data-status="LAM_VISA"] .kanban-card::before { background: #f97316; }
+        .kanban-column[data-status="NHAN_VISA"] .kanban-card::before { background: #10b981; }
+        .kanban-column[data-status="XUAT_CANH"] .kanban-card::before { background: #14b8a6; }
+
+        .kanban-btn {
+            width: 24px;
+            height: 24px;
+            background: #f8fafc;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 10px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+        .kanban-btn:hover {
+            color: #6366f1;
+            border-color: #c7d2fe;
+            background: #f5f3ff;
+            transform: translateY(-1px);
+        }
+        .kanban-btn-edit {
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .kanban-btn-edit:hover {
+            background: #3b82f6;
+            color: #ffffff;
+            border-color: #2563eb;
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);
+            transform: translateY(-1px);
+        }
+
         /* ═══════════════════════════════════════════════════════════
            FCT HR SYSTEM — PREMIUM DARK-SIDEBAR DESIGN SYSTEM v3.0
            ═══════════════════════════════════════════════════════════ */
@@ -3014,21 +3104,23 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                     card.className = 'kanban-card';
                     card.draggable = true;
                     card.ondragstart = (e) => handleKanbanDragStart(e, item.id);
-                    card.style.cssText = `background:#ffffff; border:1px solid #cbd5e1; border-radius:10px; padding:10px; cursor:grab; box-shadow:0 2px 4px rgba(0,0,0,0.03); transition:all 0.15s; display:flex; flex-direction:column; gap:6px;`;
+                    card.style.paddingLeft = '16px'; // Để không đè lên thanh màu bên trái
                     
                     card.innerHTML = `
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-weight:700; color:#1e293b; font-size:13px; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${item.ho_ten}">${item.ho_ten}</span>
-                            <span style="font-size:9.5px; font-weight:700; background:#f1f5f9; color:#475569; padding:1px 4px; border-radius:4px; font-family:monospace;">${item.ma_so}</span>
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                            <span style="font-weight:800; color:#0f172a; font-size:13.5px; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-family:'Inter', sans-serif;" title="${item.ho_ten}">${item.ho_ten}</span>
+                            <span style="font-size:10px; font-weight:800; background:#f1f5f9; color:#475569; padding:2px 6px; border-radius:6px; font-family:monospace; border:1px solid #e2e8f0; flex-shrink:0;">${item.ma_so}</span>
                         </div>
-                        <div style="font-size:11px; color:#64748b; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="Nhà máy: ${facName}">🏭 ${facName || 'Chưa rõ đơn'}</div>
+                        <div style="font-size:11px; color:#4f46e5; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; gap:4px;" title="Nhà máy: ${facName}">
+                            <span>🏭</span> <span>${facName || '<span style="color:#94a3b8; font-weight:500; font-style:italic;">Chưa rõ đơn</span>'}</span>
+                        </div>
                         <div style="display:flex; flex-direction:column; gap:4px; margin-top:2px;">${warningsHtml}</div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed #e2e8f0; padding-top:6px; margin-top:4px;">
-                            <div style="display:flex; gap:3px;">
-                                <button onclick="moveKanbanStatus(${item.id}, -1)" style="padding:1px 5px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:4px; font-size:10px; cursor:pointer;" title="Lùi lại">◀</button>
-                                <button onclick="moveKanbanStatus(${item.id}, 1)" style="padding:1px 5px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:4px; font-size:10px; cursor:pointer;" title="Tiến lên">▶</button>
+                        <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed #e2e8f0; padding-top:8px; margin-top:6px; gap:8px;">
+                            <div style="display:flex; gap:4px;">
+                                <button onclick="moveKanbanStatus(${item.id}, -1)" class="kanban-btn" title="Lùi lại">◀</button>
+                                <button onclick="moveKanbanStatus(${item.id}, 1)" class="kanban-btn" title="Tiến lên">▶</button>
                             </div>
-                            <button onclick="openPlacementModal(${item.id})" style="color:#3b82f6; background:none; border:none; font-size:11px; font-weight:800; cursor:pointer;">⚙️ Sửa</button>
+                            <button onclick="openPlacementModal(${item.id})" class="kanban-btn-edit">⚙️ Sửa</button>
                         </div>
                     `;
                     listDiv.appendChild(card);
