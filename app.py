@@ -102,6 +102,7 @@ class FormHistory(db.Model):
     selected_job = db.Column(db.String(255), default='')    # Đơn hàng trúng tuyển chính thức
     selected_at = db.Column(db.DateTime, nullable=True, default=None)  # Thời điểm trúng tuyển
     deleted_at = db.Column(db.DateTime, nullable=True, default=None)   # Thời điểm xóa mềm
+    is_archived = db.Column(db.Boolean, default=False)                 # Lưu trữ hồ sơ đã xuất cảnh
 
     # Thẻ và ngày hết hạn giấy tờ
     passport_expiry = db.Column(db.String(50), default='')
@@ -213,7 +214,8 @@ with app.app_context():
                 'date_xuat_canh': "VARCHAR(50) DEFAULT ''",
                 'date_xuat_canh_actual': "VARCHAR(50) DEFAULT ''",
                 'cancel_date': "VARCHAR(50) DEFAULT ''",
-                'cancel_reason': "TEXT DEFAULT ''"
+                'cancel_reason': "TEXT DEFAULT ''",
+                'is_archived': "BOOLEAN DEFAULT FALSE"
             }
             for col, col_type in new_cols.items():
                 if col.lower() not in columns:
@@ -1106,7 +1108,8 @@ def api_history():
                 FormHistory.date_xuat_canh,
                 FormHistory.date_xuat_canh_actual,
                 FormHistory.cancel_date,
-                FormHistory.cancel_reason
+                FormHistory.cancel_reason,
+                FormHistory.is_archived
             ))
             .order_by(FormHistory.ngay_tao.desc())
             .all()
@@ -1153,7 +1156,8 @@ def api_history():
             'date_xuat_canh': getattr(r, 'date_xuat_canh', '') or '',
             'date_xuat_canh_actual': getattr(r, 'date_xuat_canh_actual', '') or '',
             'cancel_date': getattr(r, 'cancel_date', '') or '',
-            'cancel_reason': getattr(r, 'cancel_reason', '') or ''
+            'cancel_reason': getattr(r, 'cancel_reason', '') or '',
+            'is_archived': getattr(r, 'is_archived', False)
         } for r in records]
         return jsonify({'success': True, 'data': data})
     except Exception as e:
@@ -2840,6 +2844,7 @@ def api_update_placement(record_id):
     if 'appraisal_id' in data: record.appraisal_id = data.get('appraisal_id', '')
     if 'visa_id' in data: record.visa_id = data.get('visa_id', '')
     if 'placement_note' in data: record.placement_note = data.get('placement_note', '')
+    if 'is_archived' in data: record.is_archived = data.get('is_archived', False)
     
     # Cập nhật các mốc thời gian
     if 'date_trinh_cuc' in data: record.date_trinh_cuc = data.get('date_trinh_cuc', '')

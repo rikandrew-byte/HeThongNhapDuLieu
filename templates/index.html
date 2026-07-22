@@ -1056,6 +1056,14 @@
                         <option value="ALL">-- Tất cả đơn hàng / Nhà máy --</option>
                     </select>
                 </div>
+                
+                <!-- Nút xuất báo cáo tiến độ Excel giống bên B -->
+                <button type="button" onclick="exportPassedHistoryExcel(event)" style="padding:8px 16px; background:#10b981; color:#ffffff; border:none; border-radius:8px; font-size:12px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.15s ease;"
+                    onmouseover="this.style.background='#059669'; this.style.transform='translateY(-1px)';"
+                    onmouseout="this.style.background='#10b981'; this.style.transform='none';">
+                    <span>📊</span> Xuất Excel Tiến Độ
+                </button>
+
                 <div style="display:flex; gap:6px; background:#f1f5f9; padding:4px; border-radius:10px;">
                     <button type="button" id="toggleViewBtn-kanban" onclick="switchPassedView('kanban')" style="padding:6px 14px; border:none; border-radius:8px; font-size:12px; font-weight:800; cursor:pointer; background:#ffffff; color:#0f172a; box-shadow:0 1px 3px rgba(0,0,0,0.05); display:flex; align-items:center; gap:4px;">
                         <span>📊</span> Bảng Kanban
@@ -2935,9 +2943,80 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             }
         }
 
+        async function archivePlacement(recordId) {
+            if (!confirm("Xác nhận lưu trữ ứng viên này? Họ sẽ được ẩn khỏi bảng Kanban và lưu trong danh sách Đã xuất cảnh để xuất Excel.")) return;
+            
+            const item = currentHistoryData.find(i => i.id === recordId);
+            if (!item) return;
+            
+            const oldArchived = item.is_archived;
+            
+            // Optimistic UI update
+            item.is_archived = true;
+            renderPassedTable();
+            
+            try {
+                const res = await fetch(`/api/placements/${recordId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ is_archived: true }),
+                    credentials: 'same-origin'
+                });
+                const result = await res.json();
+                if (result.success) {
+                    await loadHistory();
+                } else {
+                    item.is_archived = oldArchived;
+                    renderPassedTable();
+                    alert("Lỗi lưu trữ: " + result.error);
+                }
+            } catch(e) {
+                console.error(e);
+                item.is_archived = oldArchived;
+                renderPassedTable();
+                alert("Lỗi kết nối khi lưu trữ.");
+            }
+        }
+
+        async function exportPassedHistoryExcel(event) {
+            const btn = event.currentTarget;
+            const origText = btn.innerHTML;
+            btn.innerHTML = "⏳ Đang xuất...";
+            btn.disabled = true;
+            
+            try {
+                const yearFilter = document.getElementById('yearFilter');
+                const year = yearFilter ? yearFilter.value : 'ALL';
+                
+                const res = await fetch('/api/history/export-excel', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ year: year }),
+                    credentials: 'same-origin'
+                });
+                if (!res.ok) throw new Error("HTTP error " + res.status);
+                
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Bao_Cao_Tien_Do_FCT_${year}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+            } catch(e) {
+                console.error(e);
+                alert("Lỗi xuất Excel: " + e.message);
+            } finally {
+                btn.innerHTML = origText;
+                btn.disabled = false;
+            }
+        }
+
         function renderPassedTable() {
-            // Lọc ra những người trúng tuyển
-            const passedCandidates = currentHistoryData.filter(item => item.is_selected);
+            // Lọc ra những người trúng tuyển và chưa lưu trữ
+            const passedCandidates = currentHistoryData.filter(item => item.is_selected && !item.is_archived);
 
             // Cập nhật dropdown Lọc đơn hàng/Nhà máy
             const filterSelect = document.getElementById('kanbanFilterSelect');
@@ -3118,7 +3197,10 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                         <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed #e2e8f0; padding-top:8px; margin-top:6px; gap:8px;">
                             <div style="display:flex; gap:4px;">
                                 <button onclick="moveKanbanStatus(${item.id}, -1)" class="kanban-btn" title="Lùi lại">◀</button>
-                                <button onclick="moveKanbanStatus(${item.id}, 1)" class="kanban-btn" title="Tiến lên">▶</button>
+                                ${item.placement_status === 'XUAT_CANH' 
+                                    ? `<button onclick="archivePlacement(${item.id})" class="kanban-btn" style="background:#fee2e2; color:#ef4444; border-color:#fca5a5; font-size:9px;" title="Lưu trữ (Ẩn khỏi bảng)">🗃️</button>` 
+                                    : `<button onclick="moveKanbanStatus(${item.id}, 1)" class="kanban-btn" title="Tiến lên">▶</button>`
+                                }
                             </div>
                             <button onclick="openPlacementModal(${item.id})" class="kanban-btn-edit">⚙️ Sửa</button>
                         </div>
