@@ -781,6 +781,7 @@ def generate_html_resume(form_data: dict, template_name='fct_template_v6.18.html
     processed_data = prepare_render_data(render_data)
     processed_data['logo_base64'] = _LOGO_B64_CACHE or get_base64_image(os.path.join(BASE_DIR, 'static', 'logo.png'))
     processed_data['bg_base64']   = _BG_B64_CACHE   or get_base64_image(os.path.join(BASE_DIR, 'static', 'fct_bg.png'), max_size=400, quality=75)
+    processed_data['clean_name_pdf'] = sanitize_filename_master(processed_data.get('Hoten', ''))
     
     # Nhúng dữ liệu gốc (không chứa ảnh base64 nặng) để có thể nạp lại sau này
     raw_for_embed = {k: v for k, v in form_data.items() if k not in ('photo', 'qr_line', 'document_images')}
