@@ -332,6 +332,36 @@
             transform: translateY(-2px);
         }
         .btn-bar:active { transform: translateY(0); }
+
+        /* Fix layout on mobile screen sizes to prevent the bottom bar from being pushed off-screen */
+        @media (max-width: 1023px) {
+            body {
+                overflow: hidden !important;
+                height: 100vh !important;
+                display: flex !important;
+                flex-direction: column !important;
+            }
+            .premium-sidebar {
+                flex-shrink: 0 !important;
+                height: auto !important;
+                padding: 16px 20px !important;
+            }
+            .main-content-area {
+                flex: 1 !important;
+                height: auto !important;
+                min-height: 0 !important;
+                overflow-y: auto !important;
+                padding-bottom: 120px !important;
+            }
+            .glass-bottom-bar {
+                position: sticky !important;
+                bottom: 0 !important;
+                width: 100% !important;
+                z-index: 1000 !important;
+                box-sizing: border-box !important;
+            }
+        }
+
         .btn-bar-ghost {
             background: rgba(255,255,255,0.08);
             color: #94a3b8;
