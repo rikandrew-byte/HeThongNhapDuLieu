@@ -1145,7 +1145,7 @@
 
                 <div class="kanban-column" data-status="XUAT_CANH" ondragover="allowDrop(event)" ondrop="handleKanbanDrop(event, 'XUAT_CANH')" style="flex:1; min-width:190px; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:14px; padding:8px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.02);">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:2px solid #a7f3d0; padding-bottom:6px;">
-                        <span style="font-size:11px; font-weight:850; color:#065f46; display:flex; align-items:center; gap:2px;">✈️ ĐÃ XUẤT CẢNH</span>
+                        <span style="font-size:11px; font-weight:850; color:#065f46; display:flex; align-items:center; gap:2px;">✈️ DỰ KIẾN XUẤT CẢNH</span>
                         <span id="count-XUAT_CANH" style="background:#a7f3d0; color:#065f46; font-size:10px; font-weight:800; padding:1px 6px; border-radius:20px;">0</span>
                     </div>
                     <div id="list-XUAT_CANH" style="display:flex; flex-direction:column; gap:8px; min-height:480px;"></div>
@@ -1334,7 +1334,7 @@
                         <option value="TRINH_CUC">2. Trình cục / 呈送勞動部</option>
                         <option value="LAM_VISA">3. Làm Visa / 辦理簽證</option>
                         <option value="NHAN_VISA">4. Nhận Visa / 取得簽證</option>
-                        <option value="XUAT_CANH">5. Đã xuất cảnh / 已經出境</option>
+                        <option value="XUAT_CANH">5. Dự kiến xuất cảnh / 預計出境</option>
                     </select>
                 </div>
                 
@@ -2851,7 +2851,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 case 'NHAN_VISA':
                     return `<span style="background:#dcfce7; color:#16a34a; font-size:11px; padding:2px 8px; border-radius:12px; font-weight:800; border:1px solid #bbf7d0;">✅ Có Visa</span>`;
                 case 'XUAT_CANH':
-                    return `<span style="background:#ecfdf5; color:#059669; font-size:11px; padding:2px 8px; border-radius:12px; font-weight:800; border:1px solid #a7f3d0; box-shadow:0 2px 4px rgba(16,185,129,0.1);">✈️ Đã xuất cảnh</span>`;
+                    return `<span style="background:#ecfdf5; color:#059669; font-size:11px; padding:2px 8px; border-radius:12px; font-weight:800; border:1px solid #a7f3d0; box-shadow:0 2px 4px rgba(16,185,129,0.1);">✈️ Dự kiến xuất cảnh</span>`;
                 default:
                     return `<span style="background:#f1f5f9; color:#475569; font-size:11px; padding:2px 8px; border-radius:12px; font-weight:800; border:1px solid #cbd5e1;">📁 Gom hồ sơ</span>`;
             }
