@@ -1886,7 +1886,25 @@ def api_export_excel():
                 kinh_nghiem_sel = "\n".join(kn_sel)
                 
                 sel_job = getattr(r, 'selected_job', '') or ''
-                trang_thai = '✅ Trúng tuyển (Active)' if not getattr(r, 'is_deleted', False) else '❌ Trúng tuyển (Deleted)'
+                is_archived = getattr(r, 'is_archived', False)
+                is_deleted  = getattr(r, 'is_deleted', False)
+                is_cancelled = r.cancel_date or r.placement_status == 'CANCELLED'
+                
+                if is_deleted:
+                    trang_thai = '🗑️ Đã xóa khỏi hệ thống'
+                elif is_cancelled:
+                    trang_thai = '❌ Đã hủy hồ sơ'
+                elif is_archived:
+                    trang_thai = '✈️ Đã xuất cảnh'
+                else:
+                    status_map = {
+                        'GOM_HO_SO': '📁 Gom hồ sơ',
+                        'TRINH_CUC': '🏛️ Trình cục',
+                        'LAM_VISA': '🎫 Làm Visa',
+                        'NHAN_VISA': '✅ Có Visa',
+                        'XUAT_CANH': '✈️ Dự kiến xuất cảnh',
+                    }
+                    trang_thai = status_map.get(r.placement_status or '', '📁 Gom hồ sơ')
                 
                 ws_sel.append([ma_so, ho_ten, ngay_sinh, sel_job, trang_thai,
                                chieu_cao, can_nang, hoc_van_vi, noi_o_vi,
@@ -2466,6 +2484,201 @@ def api_export_excel():
         filename_prefix = f"Nam{year_val}_" if year_val and str(year_val) != 'ALL' else ""
         return send_file(excel_buffer, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 
                          as_attachment=True, download_name=f'FCT_UngVien_{filename_prefix}{timestamp}.xlsx')
+    except Exception as e:
+        print(traceback.format_exc())
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/history/export-progress', methods=['POST'])
+@auth_required
+def api_export_progress():
+    """Xuất file Excel Tiến Độ gọn (2 sheet: Theo Dõi Tiến Độ + Đã Xuất Cảnh)"""
+    try:
+        from datetime import datetime
+        export_time_str = datetime.now().strftime("%d/%m/%Y %H:%M")
+        today_str = datetime.now().strftime("%Y%m%d")
+
+        # Lấy toàn bộ ứng viên trúng tuyển
+        selected_records = FormHistory.query.filter(FormHistory.is_selected == True).all()
+        factories_dict = {f.id: f.name for f in Factory.query.all()}
+        docs_dict = {d.id: d.code for d in OrderDoc.query.all()}
+
+        wb = openpyxl.Workbook()
+        # Xóa sheet mặc định
+        wb.remove(wb.active)
+
+        # ─── Font & Style ────────────────────────────────────────────
+        def make_border(color):
+            s = Side(style='thin', color=color)
+            return Border(left=s, right=s, top=s, bottom=s)
+
+        body_font = Font(name="Segoe UI", size=9.5)
+        p_thin_border = make_border("93C5FD")
+
+        # =========================================================
+        # SHEET 1: THEO DÕI TIẾN ĐỘ
+        # =========================================================
+        ws_progress = wb.create_sheet(title="Theo Dõi Tiến Độ")
+        ws_progress.sheet_view.showGridLines = True
+
+        ws_progress.merge_cells("A1:Q1")
+        title_p = ws_progress.cell(row=1, column=1, value="BẢNG THEO DÕI TIẾN ĐỘ XUẤT CẢNH — FCT HUMAN RESOURCE")
+        title_p.font = Font(name="Segoe UI", size=14, bold=True, color="FFFFFF")
+        title_p.fill = PatternFill(start_color="1E3A8A", end_color="1E3A8A", fill_type="solid")
+        title_p.alignment = Alignment(horizontal="center", vertical="center")
+        ws_progress.row_dimensions[1].height = 35
+
+        active_placements = [r for r in selected_records
+                             if not r.cancel_date and r.placement_status != 'CANCELLED' and not getattr(r, 'is_archived', False)]
+        archived_placements = [r for r in selected_records if getattr(r, 'is_archived', False)]
+
+        ws_progress.merge_cells("A2:Q2")
+        sub_p = ws_progress.cell(row=2, column=1,
+            value=f"Thời gian xuất báo cáo: {export_time_str}   |   Đang xử lý tiến độ: {len(active_placements)} ứng viên   |   Đã xuất cảnh: {len(archived_placements)} ứng viên")
+        sub_p.font = Font(name="Segoe UI", size=10, italic=True, color="1E3A8A")
+        sub_p.fill = PatternFill(start_color="EFF6FF", end_color="EFF6FF", fill_type="solid")
+        sub_p.alignment = Alignment(horizontal="center", vertical="center")
+        ws_progress.row_dimensions[2].height = 22
+
+        p_headers = [
+            'Mã số', 'Họ tên', 'Nhà máy / Chủ sử dụng', 'Tờ thẩm định', 'Tờ Visa',
+            'Hạn hộ chiếu', 'Hạn CCCD', 'Hạn sức khỏe', 'Hạn tư pháp số 2',
+            'Tiến độ hiện tại', 'Ngày trình cục', 'Ngày dự kiến có kết quả',
+            'Ngày nộp Visa', 'Ngày có Visa', 'Ngày XC dự kiến', 'Ngày XC thực tế',
+            'Ghi chú hồ sơ'
+        ]
+        ws_progress.append(p_headers)
+        ws_progress.row_dimensions[4].height = 28
+        ws_progress.freeze_panes = 'A5'
+
+        p_header_fill = PatternFill(start_color="1E3A8A", end_color="1E3A8A", fill_type="solid")
+        p_header_font = Font(name="Segoe UI", color="FFFFFF", bold=True, size=10)
+        for cell in ws_progress[4]:
+            cell.fill = p_header_fill
+            cell.font = p_header_font
+            cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+            cell.border = p_thin_border
+
+        status_translation = {
+            'GOM_HO_SO': '📁 Gom hồ sơ',
+            'TRINH_CUC': '🏛️ Trình cục',
+            'LAM_VISA': '🎫 Làm Visa',
+            'NHAN_VISA': '✅ Có Visa',
+            'XUAT_CANH': '✈️ Dự kiến xuất cảnh'
+        }
+
+        for r in active_placements:
+            fac_name = factories_dict.get(r.factory_id, '') or r.selected_job or ''
+            app_code = docs_dict.get(r.appraisal_id, '') or ''
+            visa_code = docs_dict.get(r.visa_id, '') or ''
+            p_status = status_translation.get(r.placement_status, '📁 Gom hồ sơ')
+            ws_progress.append([
+                r.ma_so or '', r.ho_ten or '', fac_name, app_code, visa_code,
+                r.passport_expiry or '', r.id_card_expiry or '', r.health_check_expiry or '', r.judicial_record_2_expiry or '',
+                p_status, r.date_trinh_cuc or '', r.date_trinh_cuc_expected or '',
+                r.date_lam_visa or '', r.date_nhan_visa or '', r.date_xuat_canh or '', r.date_xuat_canh_actual or '',
+                r.placement_note or ''
+            ])
+
+        p_row_fill_1 = PatternFill(start_color="F8FAFC", end_color="F8FAFC", fill_type="solid")
+        p_row_fill_2 = PatternFill(start_color="FFFFFF", end_color="FFFFFF", fill_type="solid")
+        for row_idx in range(5, ws_progress.max_row + 1):
+            ws_progress.row_dimensions[row_idx].height = 24
+            row_bg = p_row_fill_1 if (row_idx % 2 == 0) else p_row_fill_2
+            for cell in ws_progress[row_idx]:
+                cell.font = body_font
+                cell.border = p_thin_border
+                cell.fill = row_bg
+                if cell.column in (1, 2, 3, 17):
+                    cell.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+                else:
+                    cell.alignment = Alignment(horizontal="center", vertical="center")
+
+        p_col_widths = {
+            'A':12, 'B':22, 'C':22, 'D':15, 'E':15,
+            'F':14, 'G':14, 'H':14, 'I':14,
+            'J':20, 'K':13, 'L':13, 'M':13, 'N':13, 'O':13, 'P':13, 'Q':35
+        }
+        for col_let, width in p_col_widths.items():
+            ws_progress.column_dimensions[col_let].width = width
+
+        if ws_progress.max_row >= 4:
+            ws_progress.auto_filter.ref = f"A4:Q{ws_progress.max_row}"
+
+        # =========================================================
+        # SHEET 2: ĐÃ XUẤT CẢNH (is_archived = True)
+        # =========================================================
+        ws_dep = wb.create_sheet(title="Đã Xuất Cảnh")
+        ws_dep.sheet_view.showGridLines = True
+
+        ws_dep.merge_cells("A1:H1")
+        title_d = ws_dep.cell(row=1, column=1, value="DANH SÁCH ỨNG VIÊN ĐÃ XUẤT CẢNH — FCT HUMAN RESOURCE")
+        title_d.font = Font(name="Segoe UI", size=14, bold=True, color="FFFFFF")
+        title_d.fill = PatternFill(start_color="047857", end_color="047857", fill_type="solid")
+        title_d.alignment = Alignment(horizontal="center", vertical="center")
+        ws_dep.row_dimensions[1].height = 35
+
+        ws_dep.merge_cells("A2:H2")
+        sub_d = ws_dep.cell(row=2, column=1,
+            value=f"Thời gian xuất báo cáo: {export_time_str}   |   Tổng số đã xuất cảnh: {len(archived_placements)} ứng viên")
+        sub_d.font = Font(name="Segoe UI", size=10, italic=True, color="047857")
+        sub_d.fill = PatternFill(start_color="ECFDF5", end_color="ECFDF5", fill_type="solid")
+        sub_d.alignment = Alignment(horizontal="center", vertical="center")
+        ws_dep.row_dimensions[2].height = 22
+
+        d_headers = ['Mã số', 'Họ tên', 'Nhà máy / Chủ sử dụng',
+                     'Tờ thẩm định', 'Tờ Visa',
+                     'Ngày xuất cảnh thực tế', 'Người phụ trách', 'Ghi chú hồ sơ']
+        ws_dep.append(d_headers)
+        ws_dep.row_dimensions[4].height = 28
+        ws_dep.freeze_panes = 'A5'
+
+        d_thin_border = make_border("A7F3D0")
+        d_header_fill = PatternFill(start_color="047857", end_color="047857", fill_type="solid")
+        d_header_font = Font(name="Segoe UI", color="FFFFFF", bold=True, size=10)
+        for cell in ws_dep[4]:
+            cell.fill = d_header_fill
+            cell.font = d_header_font
+            cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+            cell.border = d_thin_border
+
+        for r in archived_placements:
+            fac_name = factories_dict.get(r.factory_id, '') or r.selected_job or ''
+            app_code = docs_dict.get(r.appraisal_id, '') or ''
+            visa_code = docs_dict.get(r.visa_id, '') or ''
+            ws_dep.append([
+                r.ma_so or '', r.ho_ten or '', fac_name, app_code, visa_code,
+                r.date_xuat_canh_actual or '', r.nguoi_phu_trach or '', r.placement_note or ''
+            ])
+
+        d_row_fill_1 = PatternFill(start_color="ECFDF5", end_color="ECFDF5", fill_type="solid")
+        d_row_fill_2 = PatternFill(start_color="FFFFFF", end_color="FFFFFF", fill_type="solid")
+        for row_idx in range(5, ws_dep.max_row + 1):
+            ws_dep.row_dimensions[row_idx].height = 24
+            row_bg = d_row_fill_1 if (row_idx % 2 == 0) else d_row_fill_2
+            for cell in ws_dep[row_idx]:
+                cell.font = body_font
+                cell.border = d_thin_border
+                cell.fill = row_bg
+                if cell.column in (1, 2, 3, 8):
+                    cell.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+                else:
+                    cell.alignment = Alignment(horizontal="center", vertical="center")
+
+        d_col_widths = {'A':12, 'B':22, 'C':24, 'D':16, 'E':16, 'F':18, 'G':20, 'H':35}
+        for col_let, width in d_col_widths.items():
+            ws_dep.column_dimensions[col_let].width = width
+        if ws_dep.max_row >= 4:
+            ws_dep.auto_filter.ref = f"A4:H{ws_dep.max_row}"
+
+        # ─── Xuất file ────────────────────────────────────────────
+        excel_buffer = io.BytesIO()
+        wb.save(excel_buffer)
+        excel_buffer.seek(0)
+        download_name = f'Tien_Do_Xuat_Canh_FCT_{today_str}.xlsx'
+        return send_file(excel_buffer,
+                         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                         as_attachment=True,
+                         download_name=download_name)
     except Exception as e:
         print(traceback.format_exc())
         return jsonify({'success': False, 'error': str(e)}), 500

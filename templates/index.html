@@ -3041,13 +3041,10 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             btn.disabled = true;
             
             try {
-                const yearFilter = document.getElementById('yearFilter');
-                const year = yearFilter ? yearFilter.value : 'ALL';
-                
-                const res = await fetch('/api/history/export-excel', {
+                const res = await fetch('/api/history/export-progress', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ year: year }),
+                    body: JSON.stringify({}),
                     credentials: 'same-origin'
                 });
                 if (!res.ok) throw new Error("HTTP error " + res.status);
@@ -3056,7 +3053,14 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `Bao_Cao_Tien_Do_FCT_${year}.xlsx`;
+                // Lấy tên file từ header Content-Disposition nếu có, fallback về tên mặc định
+                const disposition = res.headers.get('Content-Disposition');
+                let fileName = `Tien_Do_Xuat_Canh_FCT_${new Date().toISOString().slice(0,10).replace(/-/g,'')}.xlsx`;
+                if (disposition && disposition.includes('filename=')) {
+                    const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                    if (match && match[1]) fileName = match[1].replace(/['"]/g, '');
+                }
+                a.download = fileName;
                 document.body.appendChild(a);
                 a.click();
                 a.remove();
