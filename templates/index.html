@@ -1444,6 +1444,19 @@
         </div>
     </div>
 
+    <!-- Modal Chỉnh sửa cấu hình Nhà máy / Giấy tờ -->
+    <div id="editConfigModal" class="glass-modal" style="display:none; position:fixed; top:15%; left:5%; width:90%; max-width:480px; margin: 0 auto; z-index:20000; border-radius:16px; background:#ffffff; padding:20px; box-shadow:0 10px 40px rgba(0,0,0,0.2); border:1px solid #cbd5e1; font-family:'Inter',sans-serif;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1.5px solid #e2e8f0; padding-bottom:10px; margin-bottom:15px;">
+            <h3 id="editConfigTitle" style="font-size:14px; font-weight:850; color:#1e293b; margin:0;">Chỉnh sửa cấu hình</h3>
+            <button type="button" onclick="closeEditConfigModal()" style="background:none; border:none; color:#64748b; font-size:18px; cursor:pointer; font-weight:bold; padding:0;">✕</button>
+        </div>
+        <div id="editConfigFields" style="display:flex; flex-direction:column; gap:12px; margin-bottom:16px;"></div>
+        <div style="display:flex; justify-content:flex-end; gap:8px; border-top:1px solid #e2e8f0; padding-top:12px;">
+            <button type="button" onclick="closeEditConfigModal()" style="padding:6px 14px; background:#fff; color:#475569; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">Hủy bỏ</button>
+            <button type="button" onclick="saveEditConfigData()" style="padding:6px 16px; background:#10b981; color:#fff; border:none; border-radius:6px; font-size:12px; font-weight:800; cursor:pointer; box-shadow:0 2px 4px rgba(16,185,129,0.15);">Lưu Lại</button>
+        </div>
+    </div>
+
     <div class="w-full lg:w-2/3 h-full overflow-y-auto relative main-content-area px-4 py-6 lg:px-16 lg:py-12">
         
         <!-- Nút Quay lại Bảng Quản Lý -->
@@ -3586,8 +3599,9 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                             tdFac.style.cssText = 'padding:10px; font-weight:700; color:#1e293b; border-right:1px solid #e2e8f0;';
                             tdFac.innerHTML = `
                                 🏢 ${f.name}
-                                <div style="margin-top:4px;">
-                                    <button onclick="deleteFactory('${f.id}')" style="color:#ef4444; background:none; border:none; cursor:pointer; font-size:11px; font-weight:800; padding:0;">🗑️ Xóa Nhà máy</button>
+                                <div style="margin-top:6px; display:flex; gap:8px; align-items:center;">
+                                    <button onclick="deleteFactory('${f.id}')" style="color:#ef4444; background:none; border:none; cursor:pointer; font-size:11px; font-weight:800; padding:0; display:inline-flex; align-items:center; gap:2px;">🗑️ Xóa</button>
+                                    <button onclick="openEditFactoryModal('${f.id}', '${f.name.replace(/'/g, "\\'")}')" style="color:#3b82f6; background:none; border:none; cursor:pointer; font-size:11px; font-weight:800; padding:0; display:inline-flex; align-items:center; gap:2px;">✏️ Sửa</button>
                                 </div>
                             `;
                             tr.appendChild(tdFac);
@@ -3602,7 +3616,10 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                             tdApp.innerHTML = `
                                 <div style="font-weight:700; color:#3b82f6;">Mã: ${app.code}</div>
                                 <div style="font-size:10.5px; color:#64748b;">Hạn: ${app.expiry_date || 'Chưa có'}</div>
-                                <button onclick="deleteOrderDoc('${app.id}')" style="color:#f87171; background:none; border:none; cursor:pointer; font-size:10px; font-weight:700; padding:2px 0 0 0;">🗑️ Xóa</button>
+                                <div style="margin-top:4px; display:flex; gap:8px; align-items:center;">
+                                    <button onclick="deleteOrderDoc('${app.id}')" style="color:#f87171; background:none; border:none; cursor:pointer; font-size:10px; font-weight:700; padding:0; display:inline-flex; align-items:center; gap:2px;">🗑️ Xóa</button>
+                                    <button onclick="openEditDocModal('${app.id}')" style="color:#3b82f6; background:none; border:none; cursor:pointer; font-size:10px; font-weight:700; padding:0; display:inline-flex; align-items:center; gap:2px;">✏️ Sửa</button>
+                                </div>
                             `;
                             appCapacityText = `<span style="background:#e0f2fe; color:#0369a1; font-weight:800; padding:2px 6px; border-radius:10px;">📊 Thẩm định: ${used}/${app.capacity} slots</span>`;
                         } else {
@@ -3619,7 +3636,10 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                             tdVisa.innerHTML = `
                                 <div style="font-weight:700; color:#10b981;">Mã: ${visa.code}</div>
                                 <div style="font-size:10.5px; color:#64748b;">Hạn: ${visa.expiry_date || 'Chưa có'}</div>
-                                <button onclick="deleteOrderDoc('${visa.id}')" style="color:#f87171; background:none; border:none; cursor:pointer; font-size:10px; font-weight:700; padding:2px 0 0 0;">🗑️ Xóa</button>
+                                <div style="margin-top:4px; display:flex; gap:8px; align-items:center;">
+                                    <button onclick="deleteOrderDoc('${visa.id}')" style="color:#f87171; background:none; border:none; cursor:pointer; font-size:10px; font-weight:700; padding:0; display:inline-flex; align-items:center; gap:2px;">🗑️ Xóa</button>
+                                    <button onclick="openEditDocModal('${visa.id}')" style="color:#3b82f6; background:none; border:none; cursor:pointer; font-size:10px; font-weight:700; padding:0; display:inline-flex; align-items:center; gap:2px;">✏️ Sửa</button>
+                                </div>
                             `;
                             visaCapacityText = `<span style="background:#dcfce7; color:#15803d; font-weight:800; padding:2px 6px; border-radius:10px;">📊 Visa: ${usedVisa}/${visa.capacity} slots</span>`;
                         } else {
@@ -3741,6 +3761,150 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 }
             } catch(e) {
                 console.error(e);
+            }
+        }
+
+        // ─── CHỈNH SỬA CẤU HÌNH NHÀ MÁY & GIẤY TỜ ───
+        let currentEditType = ''; // 'FACTORY' | 'DOC'
+        let currentEditId = '';
+
+        function openEditFactoryModal(id, name) {
+            currentEditType = 'FACTORY';
+            currentEditId = id;
+            document.getElementById('editConfigTitle').textContent = '✏️ Chỉnh sửa tên Nhà máy';
+            
+            const fieldsDiv = document.getElementById('editConfigFields');
+            fieldsDiv.innerHTML = `
+                <div>
+                    <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px;">Tên Nhà máy:</label>
+                    <input type="text" id="editFactoryNameInput" value="${name.replace(/"/g, '&quot;')}" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; font-weight:600; box-sizing:border-box;">
+                </div>
+            `;
+            document.getElementById('editConfigModal').style.display = 'block';
+        }
+
+        function openEditDocModal(id) {
+            currentEditType = 'DOC';
+            currentEditId = id;
+            
+            const doc = globalDocs.find(d => d.id === id);
+            if (!doc) return;
+            
+            document.getElementById('editConfigTitle').textContent = doc.type === 'APPRAISAL' ? '✏️ Chỉnh sửa Tờ Thẩm định' : '✏️ Chỉnh sửa Tờ Visa';
+            
+            const fieldsDiv = document.getElementById('editConfigFields');
+            
+            // Nếu là tờ Visa, cho phép đổi Tờ thẩm định liên kết (nằm trong cùng nhà máy đó)
+            let parentAppraisalSelectHtml = '';
+            if (doc.type === 'VISA') {
+                let optionsHtml = '<option value="">-- KHÔNG CÓ (THẨM ĐỊNH CHA) --</option>';
+                globalDocs.filter(d => d.type === 'APPRAISAL' && d.factory_id === doc.factory_id).forEach(a => {
+                    const selectedAttr = (a.id === doc.parent_appraisal_id) ? 'selected' : '';
+                    optionsHtml += `<option value="${a.id}" ${selectedAttr}>${a.code} (Hạn: ${a.expiry_date || 'Chưa rõ'})</option>`;
+                });
+                
+                parentAppraisalSelectHtml = `
+                    <div>
+                        <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px;">Thẩm định liên kết:</label>
+                        <select id="editDocParentSelect" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; font-weight:600; box-sizing:border-box;">
+                            ${optionsHtml}
+                        </select>
+                    </div>
+                `;
+            }
+            
+            fieldsDiv.innerHTML = `
+                <input type="hidden" id="editDocFactoryId" value="${doc.factory_id}">
+                <input type="hidden" id="editDocType" value="${doc.type}">
+                <div>
+                    <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px;">Mã số giấy tờ:</label>
+                    <input type="text" id="editDocCodeInput" value="${doc.code.replace(/"/g, '&quot;')}" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; font-weight:600; box-sizing:border-box;">
+                </div>
+                <div>
+                    <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px;">Chỉ tiêu (Capacity):</label>
+                    <input type="number" id="editDocCapacityInput" value="${doc.capacity || 0}" min="1" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; box-sizing:border-box;">
+                </div>
+                <div>
+                    <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px;">Ngày hết hạn:</label>
+                    <input type="date" id="editDocExpiryInput" value="${doc.expiry_date || ''}" style="width:100%; padding:7px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; box-sizing:border-box;">
+                </div>
+                ${parentAppraisalSelectHtml}
+            `;
+            document.getElementById('editConfigModal').style.display = 'block';
+        }
+
+        function closeEditConfigModal() {
+            document.getElementById('editConfigModal').style.display = 'none';
+        }
+
+        async function saveEditConfigData() {
+            if (currentEditType === 'FACTORY') {
+                const name = document.getElementById('editFactoryNameInput').value.trim();
+                if (!name) {
+                    alert("Vui lòng nhập tên nhà máy.");
+                    return;
+                }
+                
+                try {
+                    const res = await fetch('/api/factories', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: currentEditId, name: name }),
+                        credentials: 'same-origin'
+                    });
+                    const result = await res.json();
+                    if (result.success) {
+                        closeEditConfigModal();
+                        await loadFactoryDocConfig();
+                        await loadHistory(); // Để update tên hiển thị ở các bảng trúng tuyển
+                    } else {
+                        alert("Lỗi sửa nhà máy: " + result.error);
+                    }
+                } catch(e) {
+                    console.error("Lỗi:", e);
+                    alert("Lỗi kết nối máy chủ.");
+                }
+            } else if (currentEditType === 'DOC') {
+                const code = document.getElementById('editDocCodeInput').value.trim();
+                const capacity = document.getElementById('editDocCapacityInput').value;
+                const expiry_date = document.getElementById('editDocExpiryInput').value;
+                const factory_id = document.getElementById('editDocFactoryId').value;
+                const type = document.getElementById('editDocType').value;
+                
+                const parentEl = document.getElementById('editDocParentSelect');
+                const parent_appraisal_id = parentEl ? parentEl.value : '';
+                
+                if (!code) {
+                    alert("Vui lòng nhập mã số giấy tờ.");
+                    return;
+                }
+                
+                try {
+                    const res = await fetch('/api/docs', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            id: currentEditId,
+                            factory_id,
+                            type,
+                            code,
+                            capacity,
+                            expiry_date,
+                            parent_appraisal_id
+                        }),
+                        credentials: 'same-origin'
+                    });
+                    const result = await res.json();
+                    if (result.success) {
+                        closeEditConfigModal();
+                        await loadFactoryDocConfig();
+                    } else {
+                        alert("Lỗi sửa giấy tờ: " + result.error);
+                    }
+                } catch(e) {
+                    console.error("Lỗi:", e);
+                    alert("Lỗi kết nối máy chủ.");
+                }
             }
         }
 
