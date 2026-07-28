@@ -1126,7 +1126,7 @@ def api_history():
                     r.selected_job = first_job
                     needs_commit = True
                 
-                # Check and link/create factory
+                # Check and link factory
                 first_job = getattr(r, 'selected_job', '')
                 if first_job:
                     existing_factory = Factory.query.filter(func.lower(Factory.name) == first_job.lower()).first()
@@ -1135,11 +1135,11 @@ def api_history():
                             r.factory_id = existing_factory.id
                             needs_commit = True
                     else:
-                        # Auto-create the factory in config so it is select-able and configurable
-                        new_fac_id = str(uuid.uuid4())[:8]
-                        new_factory = Factory(id=new_fac_id, name=first_job, broker_id='')
-                        db.session.add(new_factory)
-                        r.factory_id = new_fac_id
+                        # If the factory was deleted from config, clear the candidate's factory links
+                        r.factory_id = ''
+                        r.appraisal_id = ''
+                        r.visa_id = ''
+                        r.selected_job = ''
                         needs_commit = True
         
         if needs_commit:
@@ -2946,6 +2946,19 @@ def api_delete_factory(f_id):
     factory = Factory.query.get(f_id)
     if not factory:
         return jsonify({'success': False, 'error': 'Không tìm thấy nhà máy'}), 404
+    
+    # 1. Clear candidate linkages to this factory
+    linked_candidates = FormHistory.query.filter(FormHistory.factory_id == f_id).all()
+    for c in linked_candidates:
+        c.factory_id = ''
+        c.appraisal_id = ''
+        c.visa_id = ''
+        c.selected_job = ''
+    
+    # 2. Delete all related OrderDocs (Appraisals and Visas) for this factory
+    OrderDoc.query.filter(OrderDoc.factory_id == f_id).delete()
+    
+    # 3. Delete the factory itself
     db.session.delete(factory)
     db.session.commit()
     return jsonify({'success': True})
