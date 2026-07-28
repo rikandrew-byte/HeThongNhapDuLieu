@@ -936,8 +936,8 @@
         </div>
     </div>
 
-    <!-- Bảng Popup (Modal) hiển thị lịch sử (Mặc định ẩn) -->
-    <div id="historyModal" class="glass-modal" style="display:none; position:fixed; top:1%; left:5%; width:90%; max-height:98%; z-index:9999; overflow-y:auto; border-radius: 20px; font-family:'Inter',sans-serif;">
+    <!-- Bảng Popup (Modal) hiển thị lịch sử (Mặc định mở) -->
+    <div id="historyModal" class="glass-modal" style="display:block; position:fixed; top:1%; left:5%; width:90%; max-height:98%; z-index:9999; overflow-y:auto; border-radius: 20px; font-family:'Inter',sans-serif;">
 
         <!-- Header -->
         <div class="modal-header-dark notranslate">
@@ -968,10 +968,7 @@
                     <span class="hidden sm:inline">📂 Nạp file</span>
                     <span class="sm:hidden">📂</span>
                 </button>
-                <button type="button" onclick="document.getElementById('historyModal').style.display='none'" class="modal-header-btn modal-header-btn-red" title="Đóng">
-                    <span class="hidden sm:inline">✕ Đóng</span>
-                    <span class="sm:hidden">✕</span>
-                </button>
+
             </div>
         </div>
 
@@ -4690,10 +4687,9 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                     // Reset editing state và ẩn nút
                     cancelEdit();
                     
-                    // Nếu đang mở lịch sử thì tải lại (thực tế mode save thường dùng khi đóng history)
-                    if (document.getElementById('historyModal').style.display !== 'none') {
-                        loadHistory();
-                    }
+                    // Sau khi lưu, luôn quay về trang quản lý hồ sơ
+                    await loadHistory();
+                    document.getElementById('historyModal').style.display = 'block';
                 } else {
                     alert("Lỗi: " + result.error);
                 }
