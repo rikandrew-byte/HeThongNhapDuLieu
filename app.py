@@ -1116,15 +1116,31 @@ def api_history():
             .all()
         )
         
-        # On-the-fly cleanup for corrupted selected_job
+        # On-the-fly cleanup for corrupted selected_job & auto-create missing factories
         needs_commit = False
         for r in records:
-            if getattr(r, 'is_selected', False) and getattr(r, 'selected_job', ''):
+            if getattr(r, 'is_selected', False):
                 sj = getattr(r, 'selected_job', '')
                 if sj and (',' in sj or ';' in sj):
                     first_job = re.split(r'[,;]+', sj)[0].strip()
                     r.selected_job = first_job
                     needs_commit = True
+                
+                # Check and link/create factory
+                first_job = getattr(r, 'selected_job', '')
+                if first_job:
+                    existing_factory = Factory.query.filter(func.lower(Factory.name) == first_job.lower()).first()
+                    if existing_factory:
+                        if getattr(r, 'factory_id', '') != existing_factory.id:
+                            r.factory_id = existing_factory.id
+                            needs_commit = True
+                    else:
+                        # Auto-create the factory in config so it is select-able and configurable
+                        new_fac_id = str(uuid.uuid4())[:8]
+                        new_factory = Factory(id=new_fac_id, name=first_job, broker_id='')
+                        db.session.add(new_factory)
+                        r.factory_id = new_fac_id
+                        needs_commit = True
         
         if needs_commit:
             try:
@@ -2798,6 +2814,16 @@ def api_toggle_selected(record_id):
             record.selected_at = datetime.utcnow()
             first_job = re.split(r'[,;]+', new_donhang)[0].strip() if new_donhang else ""
             record.selected_job = first_job
+            
+            if first_job:
+                existing_factory = Factory.query.filter(func.lower(Factory.name) == first_job.lower()).first()
+                if existing_factory:
+                    record.factory_id = existing_factory.id
+                else:
+                    new_fac_id = str(uuid.uuid4())[:8]
+                    new_factory = Factory(id=new_fac_id, name=first_job, broker_id='')
+                    db.session.add(new_factory)
+                    record.factory_id = new_fac_id
             
         elif not new_state and new_donhang:
             # Bỏ trúng tuyển: luôn xóa trạng thái trúng tuyển, không tự chuyển sang đơn khác
