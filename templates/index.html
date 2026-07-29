@@ -4942,8 +4942,15 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                     // Reset editing state và ẩn nút
                     cancelEdit();
                     
-                    // Sau khi lưu, luôn quay về trang quản lý hồ sơ
-                    await loadHistory();
+                    // Sau khi lưu, luôn quay về trang quản lý hồ sơ và tự động chuyển ô tìm kiếm sang mã số mới
+                    const newMaso = result.ma_so;
+                    if (newMaso && newMaso !== 'CHO_DUYET') {
+                        document.getElementById('searchInput').value = newMaso;
+                        await loadHistory(newMaso);
+                    } else {
+                        document.getElementById('searchInput').value = '';
+                        await loadHistory();
+                    }
                     document.getElementById('historyModal').style.display = 'block';
                 } else {
                     alert("Lỗi: " + result.error);
