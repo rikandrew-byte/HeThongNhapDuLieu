@@ -879,6 +879,7 @@ def api_submit_only():
                 if key not in data and old_data.get(key): data[key] = old_data[key]
             record.ma_so = ma_so or 'CHO_DUYET'
             record.ho_ten = ho_ten
+            record.ngay_tao = datetime.utcnow() # Float edited candidates to the top of the list
             
             # Xử lý NPT
             if 'f48_emp' in data or 'f48_partner' in data:
