@@ -1064,6 +1064,7 @@ def handle_employees():
 def api_history():
     try:
         from sqlalchemy.orm import load_only
+        from sqlalchemy import case
         # load_only: chỉ SELECT các cột cần thiết, bỏ qua data_json (chứa ảnh base64 nặng hàng MB)
         q = request.args.get('q', '').strip()
         
@@ -1113,7 +1114,15 @@ def api_history():
                 FormHistory.cancel_reason,
                 FormHistory.is_archived
             ))
-            .order_by(FormHistory.ngay_tao.desc())
+            .order_by(
+                case(
+                    (FormHistory.ma_so == 'CHO_DUYET', 1),
+                    else_=0
+                ).desc(),
+                func.length(FormHistory.ma_so).desc(),
+                FormHistory.ma_so.desc(),
+                FormHistory.ngay_tao.desc()
+            )
             .all()
         )
         
