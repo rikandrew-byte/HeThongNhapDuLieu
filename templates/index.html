@@ -5072,6 +5072,62 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
     <style>
         /* ===== CSS CHỈ GIữ LẠI NHỮNG GÌ THỰC SỰ CẦN, TAILWIND XọN LẠI ===== */
 
+        /* Flex layout for historyModal to prevent overlap completely */
+        #historyModal {
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+        }
+        #historyModal[style*="display: none"],
+        #historyModal[style*="display:none"] {
+            display: none !important;
+        }
+        .modal-header-dark,
+        .modal-tab-bar {
+            position: static !important;
+            flex-shrink: 0 !important;
+        }
+        
+        #tabContent-candidates {
+            display: none;
+            flex-direction: column;
+            overflow: hidden !important;
+            min-height: 0 !important;
+        }
+        #tabContent-candidates[style*="display: block"],
+        #tabContent-candidates[style*="display:block"] {
+            display: flex !important;
+            flex: 1 !important;
+        }
+        .modal-search-bar {
+            position: static !important;
+            flex-shrink: 0 !important;
+        }
+        .history-container {
+            flex: 1 !important;
+            overflow-y: auto !important;
+            min-height: 0 !important;
+        }
+
+        #tabContent-passed,
+        #tabContent-archived,
+        #tabContent-jobs,
+        #tabContent-configs {
+            flex: 1 !important;
+            overflow-y: auto !important;
+            min-height: 0 !important;
+        }
+        #tabContent-passed[style*="display: block"],
+        #tabContent-passed[style*="display:block"],
+        #tabContent-archived[style*="display: block"],
+        #tabContent-archived[style*="display:block"],
+        #tabContent-jobs[style*="display: block"],
+        #tabContent-jobs[style*="display:block"],
+        #tabContent-configs[style*="display: block"],
+        #tabContent-configs[style*="display:block"] {
+            display: block !important;
+        }
+
         /* Mobile: Modals hiển thị toàn màn hình */
         @media (max-width: 768px) {
             #historyModal,
