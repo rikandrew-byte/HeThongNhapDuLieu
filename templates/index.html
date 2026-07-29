@@ -3319,6 +3319,18 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                   )
                 : archivedCandidates;
 
+            // Sắp xếp danh sách theo thứ tự mới nhất (Ngày xuất cảnh thực tế giảm dần, nếu trùng hoặc rỗng thì xếp theo ID giảm dần)
+            filtered.sort((a, b) => {
+                const dateA = a.date_xuat_canh_actual || '';
+                const dateB = b.date_xuat_canh_actual || '';
+                if (dateA && dateB) {
+                    return dateB.localeCompare(dateA);
+                }
+                if (dateA) return -1;
+                if (dateB) return 1;
+                return b.id - a.id;
+            });
+
             // Cập nhật badge count
             const countBadge = document.getElementById('archivedCountBadge');
             if (countBadge) countBadge.textContent = archivedCandidates.length;
