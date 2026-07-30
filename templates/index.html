@@ -945,7 +945,7 @@
     </div>
 
     <!-- Bảng Popup (Modal) hiển thị lịch sử (Mặc định mở) -->
-    <div id="historyModal" class="glass-modal" style="display:block; position:fixed; top:1%; left:5%; width:90%; max-height:98%; z-index:9999; overflow-y:auto; border-radius: 20px; font-family:'Inter',sans-serif;">
+    <div id="historyModal" class="glass-modal" style="display:block; position:fixed; top:1%; left:5%; width:90%; max-height:98%; z-index:9999; overflow-y:auto; border-radius:20px; font-family:'Inter',sans-serif;">
 
         <!-- Header -->
         <div class="modal-header-dark notranslate">
@@ -964,19 +964,10 @@
                 <button type="button" onclick="document.getElementById('historyModal').style.display='none'" class="modal-header-btn modal-header-btn-ghost" style="background:rgba(99,102,241,0.15); color:#a5b4fc; border-color:rgba(99,102,241,0.3);" title="Nhập hồ sơ mới">
                     <span>➕ Nhập Hồ Sơ Mới</span>
                 </button>
-                <button type="button" id="historyRefreshBtn" onclick="loadHistory()" class="modal-header-btn modal-header-btn-ghost" title="Làm mới">
-                    <span class="hidden sm:inline">🔄 Làm mới</span>
-                    <span class="sm:hidden">🔄</span>
-                </button>
                 <button type="button" onclick="bulkExportExcelHistory(true, event)" class="modal-header-btn modal-header-btn-green" title="Xuất Excel tất cả">
                     <span class="hidden sm:inline">📊 Xuất Excel</span>
                     <span class="sm:hidden">📊</span>
                 </button>
-                <button type="button" onclick="document.getElementById('importFileInput').click()" class="modal-header-btn modal-header-btn-green" title="Nạp file">
-                    <span class="hidden sm:inline">📂 Nạp file</span>
-                    <span class="sm:hidden">📂</span>
-                </button>
-
             </div>
         </div>
 
@@ -1467,10 +1458,13 @@
 
     <div class="w-full lg:w-2/3 h-full overflow-y-auto relative main-content-area px-4 py-6 lg:px-16 lg:py-12">
         
-        <!-- Nút Quay lại Bảng Quản Lý -->
-        <div class="flex justify-start mb-6 max-w-4xl mx-auto gap-3">
+        <!-- Nút Quay lại Bảng Quản Lý & Nạp file backup -->
+        <div class="flex justify-between items-center mb-6 max-w-4xl mx-auto gap-3">
             <button type="button" onclick="loadHistory()" class="btn-cta-primary" style="background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; box-shadow:none;">
                 <span>←</span><span> Quay lại bảng Quản lý Hồ Sơ</span>
+            </button>
+            <button type="button" onclick="document.getElementById('importFileInput').click()" class="btn-cta-primary" style="background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; box-shadow:none;">
+                <span>📂 Nạp file backup</span>
             </button>
         </div>
 
