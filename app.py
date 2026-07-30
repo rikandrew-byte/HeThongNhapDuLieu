@@ -980,7 +980,7 @@ def api_preview(record_id):
 def secure_web_view(slug):
     # Chặn robot xem trước của Line/Zalo/Social để tránh hiện khung preview rườm rà
     user_agent = request.headers.get('User-Agent', '').lower()
-    bot_keywords = ['line-pbot', 'facebookexternalhit', 'zalo', 'bot', 'crawler', 'spider']
+    bot_keywords = ['line-pbot', 'facebookexternalhit', 'zalo-uri-validator', 'bot', 'crawler', 'spider']
     if any(k in user_agent for k in bot_keywords):
         return "Preview blocked for privacy", 403
 
