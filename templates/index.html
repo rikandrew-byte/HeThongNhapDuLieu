@@ -2396,6 +2396,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 row.dataset.date = item.ngay_tao || '';
                 row.dataset.job = (item.don_hang || '').toLowerCase();
                 row.dataset.npt = (item.nguoi_phu_trach || '').toLowerCase();
+                row.setAttribute('data-archived', item.is_archived ? 'true' : 'false');
                 row.onmouseover = () => { if (!row.dataset.checked) row.style.background = '#f8fafc'; };
                 row.onmouseout  = () => { if (!row.dataset.checked) row.style.background = ''; };
 
@@ -4736,6 +4737,11 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             const rows = tbody.getElementsByTagName('tr');
             
             Array.from(rows).forEach(row => {
+                // Bỏ qua hồ sơ đã xuất cảnh (archived) khỏi danh sách hoạt động chính
+                if (row.getAttribute('data-archived') === 'true') {
+                    row.style.setProperty('display', 'none', 'important');
+                    return;
+                }
                 const name = (row.getAttribute('data-name') || '').toLowerCase();
                 const maso = (row.getAttribute('data-maso') || '').toUpperCase().trim();
                 const dateStr = row.getAttribute('data-date') || '';
