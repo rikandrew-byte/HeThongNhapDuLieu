@@ -2399,15 +2399,23 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 row.onmouseover = () => { if (!row.dataset.checked) row.style.background = '#f8fafc'; };
                 row.onmouseout  = () => { if (!row.dataset.checked) row.style.background = ''; };
 
-                // Tách các đơn hàng của ứng viên
+                // Tách các đơn hàng của ứng viên hoặc hiển thị đơn hàng đã trúng tuyển
                 let jobBadgesHtml = '';
-                if (item.don_hang && item.don_hang.trim() !== '') {
-                    const jobs = item.don_hang.split(/[,;]+/).map(j => j.trim()).filter(j => j.length > 0);
-                    jobs.forEach(job => {
-                        jobBadgesHtml += `<span style="display:inline-block; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; border-radius:6px; padding:2px 6px; font-size:11px; font-weight:700; margin-left:4px; text-transform:uppercase;">${job}</span>`;
-                    });
+                if (item.is_selected) {
+                    if (item.selected_job && item.selected_job.trim() !== '') {
+                        jobBadgesHtml += `<span style="display:inline-block; background:#ecfdf5; color:#059669; border:1px solid #a7f3d0; border-radius:6px; padding:2px 6px; font-size:11px; font-weight:700; margin-left:4px; text-transform:uppercase;">🎯 ĐÃ ĐỖ: ${item.selected_job}</span>`;
+                    } else {
+                        jobBadgesHtml += `<span style="display:inline-block; background:#fef3c7; color:#d97706; border:1px solid #fde68a; border-radius:6px; padding:2px 6px; font-size:11px; font-weight:700; margin-left:4px; text-transform:uppercase;">🎯 TRÚNG TUYỂN (CHƯA RÕ ĐƠN)</span>`;
+                    }
                 } else {
-                    jobBadgesHtml += `<span style="display:inline-block; color:#ef4444; font-size:11px; font-weight:600; margin-left:4px; font-style:italic;">[Chưa ghép đơn]</span>`;
+                    if (item.don_hang && item.don_hang.trim() !== '') {
+                        const jobs = item.don_hang.split(/[,;]+/).map(j => j.trim()).filter(j => j.length > 0);
+                        jobs.forEach(job => {
+                            jobBadgesHtml += `<span style="display:inline-block; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; border-radius:6px; padding:2px 6px; font-size:11px; font-weight:700; margin-left:4px; text-transform:uppercase;">${job}</span>`;
+                        });
+                    } else {
+                        jobBadgesHtml += `<span style="display:inline-block; color:#ef4444; font-size:11px; font-weight:600; margin-left:4px; font-style:italic;">[Chưa ghép đơn]</span>`;
+                    }
                 }
 
                 row.innerHTML = `
