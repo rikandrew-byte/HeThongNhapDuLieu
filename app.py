@@ -509,6 +509,8 @@ def translate_name(text: str) -> str:
         except:
             return text_normalized
 
+_FREE_TRANS_CACHE = {}
+
 def translate_free(text: str) -> str:
     """Dành cho dịch nội dung tự do (công việc, địa chỉ): Ưu tiên thuật ngữ nghề nghiệp"""
     if not text or not text.strip() or is_chinese(text): return text
@@ -517,9 +519,15 @@ def translate_free(text: str) -> str:
     text_normalized = normalize('NFC', text)
     text_lower = text_normalized.strip().lower()
     
+    # 0. Kiểm tra bộ nhớ tạm (Cache) để tối ưu hiệu suất tối đa
+    if text_lower in _FREE_TRANS_CACHE:
+        return _FREE_TRANS_CACHE[text_lower]
+    
     # 1. Kiểm tra khớp chính xác trong FIXED_TRANS
     fixed = FIXED_TRANS.get(text_lower)
-    if fixed: return fixed
+    if fixed:
+        _FREE_TRANS_CACHE[text_lower] = fixed
+        return fixed
     
     # 2. Xử lý các từ khóa quan trọng TRONG câu (ví dụ: "may" -> "縫紉")
     # Để tránh Google dịch nhầm "may" thành "có lẽ/có thể" (possibly)
@@ -538,7 +546,9 @@ def translate_free(text: str) -> str:
     
     # Nếu text là một từ đơn nằm trong danh sách bảo vệ, trả về luôn
     if text_lower in protected_terms:
-        return protected_terms[text_lower]
+        res_val = protected_terms[text_lower]
+        _FREE_TRANS_CACHE[text_lower] = res_val
+        return res_val
 
     # 3. Dùng Gemini API hoặc Google Translate cho đoạn văn
     try:
@@ -567,13 +577,18 @@ def translate_free(text: str) -> str:
             result = re.sub(r'(?i)nghệ\s+an', '藝安', result)
             result = re.sub(r'(?i)nghe\s+an', '藝安', result)
                     
-        return result if result else text_normalized
+        final_res = result if result else text_normalized
+        _FREE_TRANS_CACHE[text_lower] = final_res
+        return final_res
     except Exception as e:
         print(f"Free text translation error: {e}")
         try:
             # Fallback to Google Translate if Gemini fails
-            return GoogleTranslator(source='vi', target='zh-TW').translate(processed_text.strip()) or text_normalized
+            final_res = GoogleTranslator(source='vi', target='zh-TW').translate(processed_text.strip()) or text_normalized
+            _FREE_TRANS_CACHE[text_lower] = final_res
+            return final_res
         except:
+            _FREE_TRANS_CACHE[text_lower] = text_normalized
             return text_normalized
 
 def sanitize_filename_master(name):
@@ -793,14 +808,37 @@ def generate_html_resume(form_data: dict, template_name='fct_template_v6.18.html
     # Dùng placeholder để _protect_html không phá hủy JSON
     processed_data['raw_data_json'] = '___FCT_RAW_PLACEHOLDER___'
     
+    # Tối ưu hóa hiệu suất: Trích xuất các ảnh base64 nặng ra ngoài trước khi render & minify
+    # Điều này tránh việc regex của _protect_html phải quét qua hàng triệu ký tự base64
+    photo_b64 = processed_data.get('photo_base64', '')
+    qr_b64 = processed_data.get('qr_line_base64', '')
+    doc_imgs = processed_data.get('document_images', []) or []
+    
+    processed_data['photo_base64'] = '___FCT_PHOTO_PLACEHOLDER___'
+    processed_data['qr_line_base64'] = '___FCT_QR_PLACEHOLDER___'
+    
+    placeholder_docs = []
+    for idx in range(len(doc_imgs)):
+        placeholder_docs.append(f'___FCT_DOC_PLACEHOLDER_{idx}___')
+    processed_data['document_images'] = placeholder_docs
+
     if _TEMPLATE_OBJ_CACHE and template_name == 'fct_template_v6.18.html':
         template = _TEMPLATE_OBJ_CACHE
     else:
         with open(os.path.join(BASE_DIR, 'templates', template_name), 'r', encoding='utf-8') as f:
             template = Template(f.read())
-    html = _protect_html(template.render(processed_data))
-    # Thay placeholder bằng JSON thật SAU KHI minify xong
-    return html.replace('___FCT_RAW_PLACEHOLDER___', raw_json_str)
+            
+    html = template.render(processed_data)
+    html = _protect_html(html)
+    
+    # Khôi phục các dữ liệu ảnh base64 thật sau khi đã minify xong bằng replace (cực kỳ nhanh)
+    html = html.replace('___FCT_RAW_PLACEHOLDER___', raw_json_str)
+    html = html.replace('___FCT_PHOTO_PLACEHOLDER___', photo_b64 or '')
+    html = html.replace('___FCT_QR_PLACEHOLDER___', qr_b64 or '')
+    for idx, real_img in enumerate(doc_imgs):
+        html = html.replace(f'___FCT_DOC_PLACEHOLDER_{idx}___', real_img or '')
+        
+    return html
 
 def _resize_image_for_db(data_uri: str, max_px: int = 1200, quality: int = 85) -> str:
     if not data_uri or not data_uri.startswith('data:image/'): return data_uri
@@ -823,12 +861,18 @@ def _prepare_data_for_db(data: dict) -> dict:
     if clean.get('document_images') and isinstance(clean['document_images'], list):
         clean['document_images'] = [_resize_image_for_db(img, max_px=900, quality=60) for img in clean['document_images'] if img]
     
-    # Tự động sao lưu văn bản tiếng Việt gốc nếu chưa có trường _vi
-    for key in ('ndcv1', 'ndcv2', 'ndcv3', 'loi_binh_1', 'N1', 'N2', 'N3'):
-        if key in clean and f"{key}_vi" not in clean:
-            val = clean[key]
-            if val and not any(ord(c) >= 0x4e00 and ord(c) <= 0x9fff for c in str(val)):
-                clean[f"{key}_vi"] = val
+    # Tự động sao lưu văn bản tiếng Việt gốc và dịch trước sang tiếng Trung Phồn thể để lưu vào DB
+    # Điều này loại bỏ hoàn toàn việc dịch trên trang hiển thị (CV), giúp mở CV nhanh tức thì.
+    for key in ('Noio', 'ndcv1', 'ndcv2', 'ndcv3', 'loi_binh_1', 'N1', 'N2', 'N3'):
+        val = clean.get(key)
+        if val and isinstance(val, str) and val.strip():
+            # Nếu chuỗi không chứa ký tự tiếng Trung → đây là văn bản tiếng Việt
+            if not any(ord(c) >= 0x4e00 and ord(c) <= 0x9fff for c in val):
+                # Lưu bản gốc tiếng Việt vào trường _vi nếu chưa có
+                if f"{key}_vi" not in clean or not clean[f"{key}_vi"]:
+                    clean[f"{key}_vi"] = val
+                # Dịch trường chính sang tiếng Trung ngay tại thời điểm lưu DB
+                clean[key] = translate_free(val)
     return clean
 
 # --- API ROUTES ---
