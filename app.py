@@ -136,6 +136,7 @@ class Employee(db.Model):
 class Broker(db.Model):
     id = db.Column(db.String(50), primary_key=True)
     name = db.Column(db.String(255), nullable=False)
+    name_zh = db.Column(db.String(255), default='')
 
 class Factory(db.Model):
     id = db.Column(db.String(50), primary_key=True)
@@ -193,6 +194,15 @@ with app.app_context():
         # Auto migration for is_deleted, don_hang, nguoi_phu_trach
         try:
             inspector = inspect(db.engine)
+            
+            # Migration for broker table name_zh column
+            if 'broker' in inspector.get_table_names():
+                broker_cols = [c['name'].lower() for c in inspector.get_columns('broker')]
+                if 'name_zh' not in broker_cols:
+                    db.session.execute(text("ALTER TABLE broker ADD COLUMN name_zh VARCHAR(255) DEFAULT ''"))
+                    db.session.commit()
+                    print("Added column name_zh to broker table.")
+
             # Lấy danh sách cột của bảng form_history
             columns = [c['name'].lower() for c in inspector.get_columns('form_history')]
 
@@ -2561,16 +2571,40 @@ def api_export_excel():
 @app.route('/api/history/export-progress', methods=['POST'])
 @auth_required
 def api_export_progress():
-    """Xuất file Excel Tiến Độ gọn (2 sheet: Theo Dõi Tiến Độ + Đã Xuất Cảnh)"""
+    """Xuất file Excel Tiến Độ gọn (2 sheet: Theo Dõi Tiến Độ + Đã Xuất Cảnh) hỗ trợ đa ngôn ngữ và lọc theo môi giới"""
     try:
         from datetime import datetime
         export_time_str = datetime.now().strftime("%d/%m/%Y %H:%M")
         today_str = datetime.now().strftime("%Y%m%d")
 
+        # Đọc tham số lang và broker_id
+        data = request.get_json() or {}
+        lang = data.get('lang', 'vi')
+        broker_id = data.get('broker_id', 'ALL')
+
+        # Lấy danh sách nhà máy tương ứng với môi giới được chọn (nếu có lọc)
+        allowed_factory_ids = None
+        broker_zh_prefix = ""
+        if broker_id and broker_id != 'ALL':
+            brk = Broker.query.get(broker_id)
+            if brk:
+                broker_zh_prefix = f"{(brk.name_zh or brk.name).strip()} - "
+            # Lấy tất cả các nhà máy của môi giới này
+            allowed_factory_ids = {f.id for f in Factory.query.filter_by(broker_id=broker_id).all()}
+
         # Lấy toàn bộ ứng viên trúng tuyển
         selected_records = FormHistory.query.filter(FormHistory.is_selected == True).all()
         factories_dict = {f.id: f.name for f in Factory.query.all()}
         docs_dict = {d.id: d.code for d in OrderDoc.query.all()}
+
+        # Phân loại và lọc ứng viên theo nhà máy/môi giới
+        active_placements = [r for r in selected_records
+                             if not r.cancel_date and r.placement_status != 'CANCELLED' and not getattr(r, 'is_archived', False)]
+        archived_placements = [r for r in selected_records if getattr(r, 'is_archived', False)]
+
+        if allowed_factory_ids is not None:
+            active_placements = [r for r in active_placements if r.factory_id in allowed_factory_ids]
+            archived_placements = [r for r in archived_placements if r.factory_id in allowed_factory_ids]
 
         wb = openpyxl.Workbook()
         # Xóa sheet mặc định
@@ -2587,35 +2621,51 @@ def api_export_progress():
         # =========================================================
         # SHEET 1: THEO DÕI TIẾN ĐỘ
         # =========================================================
-        ws_progress = wb.create_sheet(title="Theo Dõi Tiến Độ")
+        sheet1_title = "出境進度追蹤" if lang == 'zh-TW' else "Theo Dõi Tiến Độ"
+        ws_progress = wb.create_sheet(title=sheet1_title)
         ws_progress.sheet_view.showGridLines = True
 
         ws_progress.merge_cells("A1:Q1")
-        title_p = ws_progress.cell(row=1, column=1, value="BẢNG THEO DÕI TIẾN ĐỘ XUẤT CẢNH — FCT HUMAN RESOURCE")
+        if lang == 'zh-TW':
+            title_p_val = f"{broker_zh_prefix}出境進度追蹤表 — FCT HUMAN RESOURCE"
+        else:
+            title_p_val = "BẢNG THEO DÕI TIẾN ĐỘ XUẤT CẢNH — FCT HUMAN RESOURCE"
+            
+        title_p = ws_progress.cell(row=1, column=1, value=title_p_val)
         title_p.font = Font(name="Segoe UI", size=14, bold=True, color="FFFFFF")
         title_p.fill = PatternFill(start_color="1E3A8A", end_color="1E3A8A", fill_type="solid")
         title_p.alignment = Alignment(horizontal="center", vertical="center")
         ws_progress.row_dimensions[1].height = 35
 
-        active_placements = [r for r in selected_records
-                             if not r.cancel_date and r.placement_status != 'CANCELLED' and not getattr(r, 'is_archived', False)]
-        archived_placements = [r for r in selected_records if getattr(r, 'is_archived', False)]
-
         ws_progress.merge_cells("A2:Q2")
-        sub_p = ws_progress.cell(row=2, column=1,
-            value=f"Thời gian xuất báo cáo: {export_time_str}   |   Đang xử lý tiến độ: {len(active_placements)} ứng viên   |   Đã xuất cảnh: {len(archived_placements)} ứng viên")
+        if lang == 'zh-TW':
+            sub_p_val = f"匯出時間: {export_time_str}   |   處理中進度: {len(active_placements)} 人   |   已出境: {len(archived_placements)} 人"
+        else:
+            sub_p_val = f"Thời gian xuất báo cáo: {export_time_str}   |   Đang xử lý tiến độ: {len(active_placements)} ứng viên   |   Đã xuất cảnh: {len(archived_placements)} ứng viên"
+            
+        sub_p = ws_progress.cell(row=2, column=1, value=sub_p_val)
         sub_p.font = Font(name="Segoe UI", size=10, italic=True, color="1E3A8A")
         sub_p.fill = PatternFill(start_color="EFF6FF", end_color="EFF6FF", fill_type="solid")
         sub_p.alignment = Alignment(horizontal="center", vertical="center")
         ws_progress.row_dimensions[2].height = 22
 
-        p_headers = [
-            'Mã số', 'Họ tên', 'Nhà máy / Chủ sử dụng', 'Tờ thẩm định', 'Tờ Visa',
-            'Hạn hộ chiếu', 'Hạn CCCD', 'Hạn sức khỏe', 'Hạn tư pháp số 2',
-            'Tiến độ hiện tại', 'Ngày trình cục', 'Ngày dự kiến có kết quả',
-            'Ngày nộp Visa', 'Ngày có Visa', 'Ngày XC dự kiến', 'Ngày XC thực tế',
-            'Ghi chú hồ sơ'
-        ]
+        if lang == 'zh-TW':
+            p_headers = [
+                '工號', '姓名', '雇主 / 工廠', '核准函', '簽證文號',
+                '護照效期', '身分證效期', '體檢效期', '良民證效期',
+                '目前進度', '送件日期', '預計核准日期',
+                '送簽日期', '取簽日期', '預計出境日期', '實際出境日期',
+                '備註'
+            ]
+        else:
+            p_headers = [
+                'Mã số', 'Họ tên', 'Nhà máy / Chủ sử dụng', 'Tờ thẩm định', 'Tờ Visa',
+                'Hạn hộ chiếu', 'Hạn CCCD', 'Hạn sức khỏe', 'Hạn tư pháp số 2',
+                'Tiến độ hiện tại', 'Ngày trình cục', 'Ngày dự kiến có kết quả',
+                'Ngày nộp Visa', 'Ngày có Visa', 'Ngày XC dự kiến', 'Ngày XC thực tế',
+                'Ghi chú hồ sơ'
+            ]
+            
         ws_progress.append(p_headers)
         ws_progress.row_dimensions[4].height = 28
         ws_progress.freeze_panes = 'A5'
@@ -2628,21 +2678,40 @@ def api_export_progress():
             cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
             cell.border = p_thin_border
 
-        status_translation = {
-            'GOM_HO_SO': '📁 Gom hồ sơ',
-            'TRINH_CUC': '🏛️ Trình cục',
-            'LAM_VISA': '🎫 Làm Visa',
-            'NHAN_VISA': '✅ Có Visa',
-            'XUAT_CANH': '✈️ Dự kiến xuất cảnh'
-        }
+        if lang == 'zh-TW':
+            status_translation = {
+                'GOM_HO_SO': '📁 收集檔案',
+                'TRINH_CUC': '🏛️ 呈報核准函',
+                'LAM_VISA': '🎫 辦理簽證',
+                'NHAN_VISA': '✅ 取得簽證',
+                'XUAT_CANH': '✈️ 預計出境'
+            }
+        else:
+            status_translation = {
+                'GOM_HO_SO': '📁 Gom hồ sơ',
+                'TRINH_CUC': '🏛️ Trình cục',
+                'LAM_VISA': '🎫 Làm Visa',
+                'NHAN_VISA': '✅ Có Visa',
+                'XUAT_CANH': '✈️ Dự kiến xuất cảnh'
+            }
 
         for r in active_placements:
             fac_name = factories_dict.get(r.factory_id, '') or r.selected_job or ''
             app_code = docs_dict.get(r.appraisal_id, '') or ''
             visa_code = docs_dict.get(r.visa_id, '') or ''
-            p_status = status_translation.get(r.placement_status, '📁 Gom hồ sơ')
+            p_status = status_translation.get(r.placement_status, status_translation['GOM_HO_SO'])
+            
+            # Xử lý ghép tên tiếng Trung nếu có
+            import json
+            jd = json.loads(r.data_json) if r.data_json else {}
+            zh_name = jd.get('TentiengTrung', '').strip()
+            if lang == 'zh-TW' and zh_name:
+                full_name = f"{zh_name} ({r.ho_ten})"
+            else:
+                full_name = r.ho_ten
+
             ws_progress.append([
-                r.ma_so or '', r.ho_ten or '', fac_name, app_code, visa_code,
+                r.ma_so or '', full_name or '', fac_name, app_code, visa_code,
                 r.passport_expiry or '', r.id_card_expiry or '', r.health_check_expiry or '', r.judicial_record_2_expiry or '',
                 p_status, r.date_trinh_cuc or '', r.date_trinh_cuc_expected or '',
                 r.date_lam_visa or '', r.date_nhan_visa or '', r.date_xuat_canh or '', r.date_xuat_canh_actual or '',
@@ -2677,27 +2746,39 @@ def api_export_progress():
         # =========================================================
         # SHEET 2: ĐÃ XUẤT CẢNH (is_archived = True)
         # =========================================================
-        ws_dep = wb.create_sheet(title="Đã Xuất Cảnh")
+        sheet2_title = "已出境名單" if lang == 'zh-TW' else "Đã Xuất Cảnh"
+        ws_dep = wb.create_sheet(title=sheet2_title)
         ws_dep.sheet_view.showGridLines = True
 
         ws_dep.merge_cells("A1:H1")
-        title_d = ws_dep.cell(row=1, column=1, value="DANH SÁCH ỨNG VIÊN ĐÃ XUẤT CẢNH — FCT HUMAN RESOURCE")
+        if lang == 'zh-TW':
+            title_d_val = f"{broker_zh_prefix}已出境名單 — FCT HUMAN RESOURCE"
+        else:
+            title_d_val = "DANH SÁCH ỨNG VIÊN ĐÃ XUẤT CẢNH — FCT HUMAN RESOURCE"
+            
+        title_d = ws_dep.cell(row=1, column=1, value=title_d_val)
         title_d.font = Font(name="Segoe UI", size=14, bold=True, color="FFFFFF")
         title_d.fill = PatternFill(start_color="047857", end_color="047857", fill_type="solid")
         title_d.alignment = Alignment(horizontal="center", vertical="center")
         ws_dep.row_dimensions[1].height = 35
 
         ws_dep.merge_cells("A2:H2")
-        sub_d = ws_dep.cell(row=2, column=1,
-            value=f"Thời gian xuất báo cáo: {export_time_str}   |   Tổng số đã xuất cảnh: {len(archived_placements)} ứng viên")
+        if lang == 'zh-TW':
+            sub_d_val = f"匯出時間: {export_time_str}   |   已出境總數: {len(archived_placements)} 人"
+        else:
+            sub_d_val = f"Thời gian xuất báo cáo: {export_time_str}   |   Tổng số đã xuất cảnh: {len(archived_placements)} ứng viên"
+            
+        sub_d = ws_dep.cell(row=2, column=1, value=sub_d_val)
         sub_d.font = Font(name="Segoe UI", size=10, italic=True, color="047857")
         sub_d.fill = PatternFill(start_color="ECFDF5", end_color="ECFDF5", fill_type="solid")
         sub_d.alignment = Alignment(horizontal="center", vertical="center")
         ws_dep.row_dimensions[2].height = 22
 
-        d_headers = ['Mã số', 'Họ tên', 'Nhà máy / Chủ sử dụng',
-                     'Tờ thẩm định', 'Tờ Visa',
-                     'Ngày xuất cảnh thực tế', 'Người phụ trách', 'Ghi chú hồ sơ']
+        if lang == 'zh-TW':
+            d_headers = ['工號', '姓名', '雇主 / 工廠', '核准函', '簽證文號', '實際出境日期', '負責人', '備註']
+        else:
+            d_headers = ['Mã số', 'Họ tên', 'Nhà máy / Chủ sử dụng', 'Tờ thẩm định', 'Tờ Visa', 'Ngày xuất cảnh thực tế', 'Người phụ trách', 'Ghi chú hồ sơ']
+            
         ws_dep.append(d_headers)
         ws_dep.row_dimensions[4].height = 28
         ws_dep.freeze_panes = 'A5'
@@ -2715,8 +2796,18 @@ def api_export_progress():
             fac_name = factories_dict.get(r.factory_id, '') or r.selected_job or ''
             app_code = docs_dict.get(r.appraisal_id, '') or ''
             visa_code = docs_dict.get(r.visa_id, '') or ''
+            
+            # Xử lý ghép tên tiếng Trung nếu có
+            import json
+            jd = json.loads(r.data_json) if r.data_json else {}
+            zh_name = jd.get('TentiengTrung', '').strip()
+            if lang == 'zh-TW' and zh_name:
+                full_name = f"{zh_name} ({r.ho_ten})"
+            else:
+                full_name = r.ho_ten
+
             ws_dep.append([
-                r.ma_so or '', r.ho_ten or '', fac_name, app_code, visa_code,
+                r.ma_so or '', full_name or '', fac_name, app_code, visa_code,
                 r.date_xuat_canh_actual or '', r.nguoi_phu_trach or '', r.placement_note or ''
             ])
 
@@ -2744,11 +2835,19 @@ def api_export_progress():
         excel_buffer = io.BytesIO()
         wb.save(excel_buffer)
         excel_buffer.seek(0)
-        download_name = f'Tien_Do_Xuat_Canh_FCT_{today_str}.xlsx'
+        
+        if lang == 'zh-TW':
+            download_name = f"出境進度追蹤表_FCT_{today_str}.xlsx"
+        else:
+            download_name = f"Tien_Do_Xuat_Canh_FCT_{today_str}.xlsx"
+            
         return send_file(excel_buffer,
                          mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                          as_attachment=True,
                          download_name=download_name)
+    except Exception as e:
+        print(traceback.format_exc())
+        return jsonify({'success': False, 'error': str(e)}), 500
     except Exception as e:
         print(traceback.format_exc())
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -2940,23 +3039,25 @@ def api_toggle_selected(record_id):
 def api_manage_brokers():
     if request.method == 'GET':
         brokers = Broker.query.order_by(Broker.name).all()
-        return jsonify([{'id': b.id, 'name': b.name} for b in brokers])
+        return jsonify([{'id': b.id, 'name': b.name, 'name_zh': b.name_zh or ''} for b in brokers])
     
     # POST - Create or Update
     data = request.get_json() or {}
     b_id = data.get('id') or str(uuid.uuid4())[:8]
     b_name = data.get('name')
+    b_name_zh = data.get('name_zh', '')
     if not b_name:
         return jsonify({'success': False, 'error': 'Tên nhà môi giới không được để trống'}), 400
         
     broker = Broker.query.get(b_id)
     if not broker:
-        broker = Broker(id=b_id, name=b_name)
+        broker = Broker(id=b_id, name=b_name, name_zh=b_name_zh)
         db.session.add(broker)
     else:
         broker.name = b_name
+        broker.name_zh = b_name_zh
     db.session.commit()
-    return jsonify({'success': True, 'broker': {'id': broker.id, 'name': broker.name}})
+    return jsonify({'success': True, 'broker': {'id': broker.id, 'name': broker.name, 'name_zh': broker.name_zh}})
 
 @app.route('/api/brokers/<b_id>', methods=['DELETE'])
 @auth_required
@@ -2964,6 +3065,10 @@ def api_delete_broker(b_id):
     broker = Broker.query.get(b_id)
     if not broker:
         return jsonify({'success': False, 'error': 'Không tìm thấy nhà môi giới'}), 404
+    
+    # Clear linked factories broker_id
+    Factory.query.filter_by(broker_id=b_id).update({Factory.broker_id: ''})
+    
     db.session.delete(broker)
     db.session.commit()
     return jsonify({'success': True})
