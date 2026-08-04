@@ -3185,7 +3185,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 globalBrokers.forEach(b => {
                     const opt = document.createElement('option');
                     opt.value = b.id;
-                    opt.textContent = `${b.name_zh || b.name} (${b.name})`;
+                    opt.textContent = formatBrokerName(b);
                     exportBrokerSelect.appendChild(opt);
                 });
                 
@@ -3314,7 +3314,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 globalBrokers.forEach(b => {
                     const opt = document.createElement('option');
                     opt.value = b.id;
-                    opt.textContent = `${b.name_zh || b.name} (${b.name})`;
+                    opt.textContent = formatBrokerName(b);
                     brokerFilter.appendChild(opt);
                 });
             }
@@ -3865,6 +3865,16 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
  
         let globalBrokers = [];
 
+        function formatBrokerName(b) {
+            if (!b) return '-';
+            const name = (b.name || '').trim();
+            const nameZh = (b.name_zh || '').trim();
+            if (!nameZh || name === nameZh) return name;
+            if (name.toLowerCase().includes(nameZh.toLowerCase())) return name;
+            if (nameZh.toLowerCase().includes(name.toLowerCase())) return nameZh;
+            return `${name} (${nameZh})`;
+        }
+
         async function loadFactoryDocConfig() {
             const tbody = document.getElementById('factoryDocListBody');
             if (!tbody) return;
@@ -3887,7 +3897,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                             const bDiv = document.createElement('div');
                             bDiv.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:3px 6px; border-radius:4px; border:1px solid #e2e8f0; font-size:11.5px;';
                             bDiv.innerHTML = `
-                                <span style="font-weight:600; color:#1e293b;">${b.name_zh || b.name} (${b.name})</span>
+                                <span style="font-weight:600; color:#1e293b;">${formatBrokerName(b)}</span>
                                 <button type="button" onclick="deleteBroker('${b.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:10px; font-weight:bold; padding:0 2px;">🗑️</button>
                             `;
                             brokerList.appendChild(bDiv);
@@ -3902,7 +3912,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                     brokers.forEach(b => {
                         const opt = document.createElement('option');
                         opt.value = b.id;
-                        opt.textContent = `${b.name_zh || b.name} (${b.name})`;
+                        opt.textContent = formatBrokerName(b);
                         newFactoryBrokerSelect.appendChild(opt);
                     });
                 }
@@ -3971,7 +3981,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                             tdBroker.rowSpan = maxRows;
                             tdBroker.style.cssText = 'padding:10px; font-weight:600; color:#475569; border-right:1px solid #e2e8f0;';
                             const bObj = globalBrokers.find(b => b.id === f.broker_id);
-                            tdBroker.textContent = bObj ? `${bObj.name_zh || bObj.name} (${bObj.name})` : '-';
+                            tdBroker.textContent = bObj ? formatBrokerName(bObj) : '-';
                             tr.appendChild(tdBroker);
                         }
  
@@ -4193,7 +4203,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             let brokerOptionsHtml = '<option value="">-- KHÔNG CÓ (MÔI GIỚI) --</option>';
             globalBrokers.forEach(b => {
                 const selectedAttr = (b.id === currentBrokerId) ? 'selected' : '';
-                brokerOptionsHtml += `<option value="${b.id}" ${selectedAttr}>${b.name_zh || b.name} (${b.name})</option>`;
+                brokerOptionsHtml += `<option value="${b.id}" ${selectedAttr}>${formatBrokerName(b)}</option>`;
             });
             
             const fieldsDiv = document.getElementById('editConfigFields');
