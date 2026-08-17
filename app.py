@@ -649,7 +649,10 @@ _TEMPLATE_OBJ_CACHE = None
 def _init_cache():
     global _LOGO_B64_CACHE, _BG_B64_CACHE, _TEMPLATE_OBJ_CACHE
     _LOGO_B64_CACHE = get_base64_image(os.path.join(BASE_DIR, 'static', 'logo.png'))
-    _BG_B64_CACHE   = get_base64_image(os.path.join(BASE_DIR, 'static', 'fct_bg.png'), max_size=400, quality=75)
+    bg_path = os.path.join(BASE_DIR, 'static', 'banner_bole_qianlima.jpg')
+    if not os.path.exists(bg_path):
+        bg_path = os.path.join(BASE_DIR, 'static', 'fct_bg.png')
+    _BG_B64_CACHE = get_base64_image(bg_path, max_size=1200, quality=85)
     try:
         with open(os.path.join(BASE_DIR, 'templates', 'fct_template_v6.18.html'), 'r', encoding='utf-8') as f:
             _TEMPLATE_OBJ_CACHE = Template(f.read())
@@ -805,7 +808,9 @@ def generate_html_resume(form_data: dict, template_name='fct_template_v6.18.html
         render_data['__skip_images__'] = True
     processed_data = prepare_render_data(render_data)
     processed_data['logo_base64'] = _LOGO_B64_CACHE or get_base64_image(os.path.join(BASE_DIR, 'static', 'logo.png'))
-    processed_data['bg_base64']   = _BG_B64_CACHE   or get_base64_image(os.path.join(BASE_DIR, 'static', 'fct_bg.png'), max_size=400, quality=75)
+    bg_path = os.path.join(BASE_DIR, 'static', 'banner_bole_qianlima.jpg')
+    if not os.path.exists(bg_path): bg_path = os.path.join(BASE_DIR, 'static', 'fct_bg.png')
+    processed_data['bg_base64']   = _BG_B64_CACHE   or get_base64_image(bg_path, max_size=1200, quality=85)
     processed_data['clean_name_pdf'] = sanitize_filename_master(processed_data.get('Hoten', ''))
     
     # Nhúng dữ liệu gốc (không chứa ảnh base64 nặng) để có thể nạp lại sau này
