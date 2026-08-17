@@ -138,7 +138,10 @@
             gap: 4px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
         }
-        .info-label { font-size: 11px; font-weight: 700; color: #334155; text-transform: uppercase; line-height: 1.2; font-family: 'Be Vietnam Pro', 'Microsoft JhengHei', sans-serif; letter-spacing: 0.01em; }
+        .info-label { display: flex; align-items: baseline; gap: 3px; line-height: 1.2; }
+        .label-vi { font-size: 11px; font-weight: 800; color: #334155; text-transform: uppercase; letter-spacing: 0.01em; font-family: 'Be Vietnam Pro', sans-serif; white-space: nowrap; }
+        .label-sep { font-size: 11px; font-weight: 600; color: #94a3b8; margin: 0 1px; }
+        .label-zh { font-size: 12.5px; font-weight: 700; color: #475569; font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif; letter-spacing: 0.02em; white-space: nowrap; }
         .info-value { font-size: 14.5px; font-weight: 700; color: #0f172a; line-height: 1.4; font-family: 'Be Vietnam Pro', 'Microsoft JhengHei', sans-serif; }
 
         .skill-tag-container > * {
@@ -296,18 +299,18 @@
                         <span><span class="text-amber-500 mr-1">✦</span>THÔNG TIN CÁ NHÂN</span><span>個人基本信息</span>
                     </div>
                     <div class="info-grid">
-                        <div class="info-item"><span class="info-label">Tuổi / 年齡</span><span class="info-value">{{Tuoi}}</span></div>
-                        <div class="info-item"><span class="info-label">Ngày sinh / 生日</span><span class="info-value">{{Ngaysinh}}</span></div>
-                        <div class="info-item"><span class="info-label">Chiều cao / 身高</span><span class="info-value">{{Chieucao}} cm</span></div>
-                        <div class="info-item"><span class="info-label">Cân nặng / 體重</span><span class="info-value">{{Cannang}} kg</span></div>
-                        <div class="info-item"><span class="info-label">Hôn nhân / 婚姻狀況</span><span class="info-value">{{Honnhan}}</span></div>
-                        <div class="info-item"><span class="info-label">Số người con / 子女人數</span><span class="info-value">{{Socon}}</span></div>
-                        <div class="info-item"><span class="info-label">Học vấn / 最高學歷</span><span class="info-value">{{Hocvan}}</span></div>
-                        <div class="info-item"><span class="info-label">Quê quán / 籍貫</span><span class="info-value">{{Noio}}</span></div>
-                        <div class="info-item"><span class="info-label">Thị lực / 視力</span><span class="info-value">{{ThiLuc}}</span></div>
-                        <div class="info-item"><span class="info-label">Tay thuận / 慣用手</span><span class="info-value">{{TayThuan}}</span></div>
-                        <div class="info-item"><span class="info-label">Hình xăm / 刺青</span><span class="info-value">{{f12}}</span></div>
-                        <div class="info-item"><span class="info-label">Thuốc / Rượu / 菸酒</span><span class="info-value">{{HutRuou}}</span></div>
+                        <div class="info-item"><div class="info-label"><span class="label-vi">Tuổi</span><span class="label-sep">/</span><span class="label-zh">年齡</span></div><span class="info-value">{{Tuoi}}</span></div>
+                        <div class="info-item"><div class="info-label"><span class="label-vi">Ngày sinh</span><span class="label-sep">/</span><span class="label-zh">生日</span></div><span class="info-value">{{Ngaysinh}}</span></div>
+                        <div class="info-item"><div class="info-label"><span class="label-vi">Chiều cao</span><span class="label-sep">/</span><span class="label-zh">身高</span></div><span class="info-value">{{Chieucao}} cm</span></div>
+                        <div class="info-item"><div class="info-label"><span class="label-vi">Cân nặng</span><span class="label-sep">/</span><span class="label-zh">體重</span></div><span class="info-value">{{Cannang}} kg</span></div>
+                        <div class="info-item"><div class="info-label"><span class="label-vi">Hôn nhân</span><span class="label-sep">/</span><span class="label-zh">婚姻狀況</span></div><span class="info-value">{{Honnhan}}</span></div>
+                        <div class="info-item"><div class="info-label"><span class="label-vi">Số người con</span><span class="label-sep">/</span><span class="label-zh">子女人數</span></div><span class="info-value">{{Socon}}</span></div>
+                        <div class="info-item"><div class="info-label"><span class="label-vi">Học vấn</span><span class="label-sep">/</span><span class="label-zh">最高學歷</span></div><span class="info-value">{{Hocvan}}</span></div>
+                        <div class="info-item"><div class="info-label"><span class="label-vi">Quê quán</span><span class="label-sep">/</span><span class="label-zh">籍貫</span></div><span class="info-value">{{Noio}}</span></div>
+                        <div class="info-item"><div class="info-label"><span class="label-vi">Thị lực</span><span class="label-sep">/</span><span class="label-zh">視力</span></div><span class="info-value">{{ThiLuc}}</span></div>
+                        <div class="info-item"><div class="info-label"><span class="label-vi">Tay thuận</span><span class="label-sep">/</span><span class="label-zh">慣用手</span></div><span class="info-value">{{TayThuan}}</span></div>
+                        <div class="info-item"><div class="info-label"><span class="label-vi">Hình xăm</span><span class="label-sep">/</span><span class="label-zh">刺青</span></div><span class="info-value">{{f12}}</span></div>
+                        <div class="info-item"><div class="info-label"><span class="label-vi">Thuốc / Rượu</span><span class="label-sep">/</span><span class="label-zh">菸酒</span></div><span class="info-value">{{HutRuou}}</span></div>
 
                     </div>
                 </section>
