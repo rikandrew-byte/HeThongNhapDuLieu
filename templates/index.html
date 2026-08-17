@@ -1528,14 +1528,21 @@
                     <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Ngày sinh</label><input type="date" name="Ngaysinh" id="birthDate" onchange="calcAge()" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
                     <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tuổi</label><input type="text" name="Tuoi" id="displayAge" readonly class="w-full border-b-2 border-gray-200 bg-gray-50 py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
                     
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Hôn nhân</label>
-                        <select name="Honnhan" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors cursor-pointer">
-                            <option value=""></option>
-                            <option value="Độc thân">Độc thân</option>
-                            <option value="Đã kết hôn">Đã kết hôn</option>
-                            <option value="Ly hôn">Ly hôn</option>
-                        </select>
+                    <div class="sm:col-span-2 grid grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Hôn nhân</label>
+                            <select name="Honnhan" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors cursor-pointer">
+                                <option value=""></option>
+                                <option value="Độc thân">Độc thân</option>
+                                <option value="Đã kết hôn">Đã kết hôn</option>
+                                <option value="Ly hôn">Ly hôn</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Số người con</label>
+                            <input type="number" name="Socon" min="0" max="20" placeholder="0"
+                                class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors">
+                        </div>
                     </div>
 
                     <div>
