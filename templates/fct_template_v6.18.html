@@ -129,20 +129,53 @@
         .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
         .info-item {
             background: #ffffff;
-            border: 1px solid #e2e8f0;
-            padding: 8px 10px;
+            border: 1px solid #d1fae5;
             border-radius: 8px;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            gap: 4px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
         }
-        .info-label { display: flex; align-items: baseline; gap: 3px; line-height: 1.2; }
-        .label-vi { font-size: 11px; font-weight: 800; color: #334155; text-transform: uppercase; letter-spacing: 0.01em; font-family: 'Be Vietnam Pro', sans-serif; white-space: nowrap; }
-        .label-sep { font-size: 11px; font-weight: 600; color: #94a3b8; margin: 0 1px; }
-        .label-zh { font-size: 12.5px; font-weight: 700; color: #475569; font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif; letter-spacing: 0.02em; white-space: nowrap; }
-        .info-value { font-size: 14.5px; font-weight: 700; color: #0f172a; line-height: 1.4; font-family: 'Be Vietnam Pro', 'Microsoft JhengHei', sans-serif; }
+        .info-label {
+            background: #f0fdf4;
+            border-bottom: 1px solid #e2f0e9;
+            padding: 4px 8px;
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+            line-height: 1.2;
+        }
+        .label-vi {
+            font-size: 10px;
+            font-weight: 800;
+            color: #065f46;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            font-family: 'Be Vietnam Pro', sans-serif;
+            white-space: nowrap;
+        }
+        .label-sep {
+            font-size: 10px;
+            font-weight: 600;
+            color: #a7f3d0;
+            margin: 0 1px;
+        }
+        .label-zh {
+            font-size: 11.5px;
+            font-weight: 700;
+            color: #b45309;
+            font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+        }
+        .info-value {
+            font-size: 14.5px;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.35;
+            padding: 5px 8px;
+            font-family: 'Be Vietnam Pro', 'Microsoft JhengHei', sans-serif;
+        }
 
         .skill-tag-container > * {
             display: inline-block;
