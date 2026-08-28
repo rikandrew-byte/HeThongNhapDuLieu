@@ -558,6 +558,13 @@
             gap: 10px;
             flex-wrap: wrap;
         }
+        .bulk-bar-top-row,
+        .bulk-bar-actions-scroll {
+            display: contents;
+        }
+        .bulk-btn-delete-right {
+            margin-left: auto;
+        }
         .bulk-btn {
             display: inline-flex;
             align-items: center;
@@ -1037,15 +1044,21 @@
 
             <!-- Bulk toolbar (ẩn khi chưa chọn) -->
             <div id="historyBulkBar" class="modal-bulk-bar" style="display:none;">
-                <span style="font-size:13px; font-weight:700; color:#a5b4fc;">Đã chọn: <span id="historySelectedCount" style="background:#6366f1; color:#fff; border-radius:999px; padding:2px 9px; font-size:11px; font-weight:800;">0</span></span>
-                <div style="width:1px; height:16px; background:rgba(255,255,255,0.1);"></div>
-                <button onclick="bulkAssignJob()" class="bulk-btn bulk-btn-indigo">💼 Ghép đơn hàng</button>
-                <button onclick="bulkCopyHistoryLinks()" class="bulk-btn bulk-btn-teal">📤 Copy link</button>
-                <button onclick="bulkDownloadHistory()" class="bulk-btn bulk-btn-indigo">📥 Tải (.ZIP)</button>
-                <button onclick="bulkExportExcelHistory(false, event)" class="bulk-btn bulk-btn-green">📊 Xuất Excel</button>
-                <button onclick="bulkPrintHistory()" class="bulk-btn bulk-btn-purple">🖨️ In PDF hàng loạt</button>
-                <button onclick="clearHistorySelection()" class="bulk-btn bulk-btn-ghost">✕ Bỏ chọn</button>
-                <button onclick="bulkDeleteHistory()" class="bulk-btn bulk-btn-red" style="margin-left:auto;">🗑️ Xóa hồ sơ</button>
+                <div class="bulk-bar-top-row">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:13px; font-weight:700; color:#a5b4fc;">Đã chọn: <span id="historySelectedCount" style="background:#6366f1; color:#fff; border-radius:999px; padding:2px 9px; font-size:11px; font-weight:800;">0</span></span>
+                        <div class="desktop-bulk-sep" style="width:1px; height:16px; background:rgba(255,255,255,0.1);"></div>
+                        <button onclick="clearHistorySelection()" class="bulk-btn bulk-btn-ghost">✕ Bỏ chọn</button>
+                    </div>
+                    <button onclick="bulkDeleteHistory()" class="bulk-btn bulk-btn-red bulk-btn-delete-right">🗑️ Xóa hồ sơ</button>
+                </div>
+                <div class="bulk-bar-actions-scroll">
+                    <button onclick="bulkAssignJob()" class="bulk-btn bulk-btn-indigo">💼 Ghép đơn hàng</button>
+                    <button onclick="bulkCopyHistoryLinks()" class="bulk-btn bulk-btn-teal">📤 Copy link</button>
+                    <button onclick="bulkDownloadHistory()" class="bulk-btn bulk-btn-indigo">📥 Tải (.ZIP)</button>
+                    <button onclick="bulkExportExcelHistory(false, event)" class="bulk-btn bulk-btn-green">📊 Xuất Excel</button>
+                    <button onclick="bulkPrintHistory()" class="bulk-btn bulk-btn-purple">🖨️ In PDF hàng loạt</button>
+                </div>
             </div>
 
             <!-- Table -->
@@ -5609,10 +5622,57 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             .mobile-action-menu .btn-action:hover { background: #f1f5f9 !important; }
             .mobile-action-menu .btn-action:last-child { color: #dc2626 !important; }
 
-            /* Desktop grid buttons -> Ẩn trên mobile */
-            .action-grid { display: none !important; }
+            /* Bulk toolbar -> Ghim cố định tinh gọn ở đáy màn hình trên mobile */
+            .modal-bulk-bar {
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                width: 100% !important;
+                z-index: 99999 !important;
+                background: rgba(15, 23, 42, 0.96) !important;
+                backdrop-filter: blur(20px) !important;
+                -webkit-backdrop-filter: blur(20px) !important;
+                border-top: 1.5px solid rgba(99, 102, 241, 0.45) !important;
+                border-bottom: none !important;
+                border-radius: 18px 18px 0 0 !important;
+                box-shadow: 0 -10px 35px rgba(0, 0, 0, 0.5) !important;
+                padding: 10px 14px calc(12px + env(safe-area-inset-bottom, 0px)) 14px !important;
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 8px !important;
+                animation: slideUpBulk 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+                box-sizing: border-box !important;
+            }
+            @keyframes slideUpBulk {
+                from { transform: translateY(100%); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+            .bulk-bar-top-row {
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                width: 100% !important;
+            }
+            .bulk-bar-actions-scroll {
+                display: flex !important;
+                overflow-x: auto !important;
+                white-space: nowrap !important;
+                gap: 6px !important;
+                width: 100% !important;
+                padding-bottom: 2px !important;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+            }
+            .bulk-bar-actions-scroll::-webkit-scrollbar { display: none; }
+            .desktop-bulk-sep { display: none !important; }
+            .bulk-btn {
+                padding: 6px 12px !important;
+                font-size: 11.5px !important;
+                flex-shrink: 0 !important;
+            }
 
-            .history-container { padding: 8px !important; }
+            .history-container { padding: 8px !important; padding-bottom: 120px !important; }
             .mobile-label { width: 80px !important; color: #94a3b8 !important; font-weight: 600; font-size: 11px; text-transform: uppercase; flex-shrink: 0; }
 
             /* ===== TỔNG HỢP ĐƠN HÀNG - Mobile Card Layout ===== */
