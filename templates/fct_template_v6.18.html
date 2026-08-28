@@ -295,31 +295,38 @@
     <div class="a4-page notranslate {% if document_images %}has-docs{% endif %}">
         <div class="fct-visual-header">
             <img src="{{bg_base64}}" alt="" class="header-bg-img" aria-hidden="true" style="opacity: 0.9; filter: brightness(0.92) contrast(1.08);">
-            <!-- Lớp phủ ánh sáng & bóng mờ tạo chiều sâu sân khấu cho Logo & Title -->
-            <div class="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/65 pointer-events-none z-[5]"></div>
-            <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(6,78,59,0.35)_0%,rgba(0,0,0,0.55)_100%)] pointer-events-none z-[5]"></div>
+            <!-- Lớp phủ ánh sáng & quầng sáng nổi bật cho Logo & Title -->
+            <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 pointer-events-none z-[5]"></div>
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.22)_0%,rgba(104,185,46,0.15)_35%,rgba(6,78,59,0.35)_60%,rgba(0,0,0,0.65)_100%)] pointer-events-none z-[5]"></div>
             
             <div class="relative z-10 w-full h-full flex flex-col justify-center items-center">
-                <!-- Danh ngôn Bá Nhạc & Thiên Lý Mã đóng khung kính mờ cao cấp -->
-                <div class="absolute top-3.5 left-6 animate-pulse-soft hidden sm:block z-20">
-                    <div class="px-3 py-1 bg-black/50 backdrop-blur-md rounded-full border border-amber-400/50 shadow-md flex items-center gap-1.5">
-                        <span class="text-amber-400 text-[9px]">✦</span>
-                        <p class="text-[9.5px] text-amber-200 font-bold uppercase tracking-widest" style="font-family: 'Microsoft JhengHei', sans-serif;">先 有 伯 樂 ， 後 有 千 里 馬</p>
+                <!-- Danh ngôn Bá Nhạc & Thiên Lý Mã đóng khung kính mờ cao cấp (Hiển thị nhấp nháy cả mobile & desktop) -->
+                <div class="absolute top-2 sm:top-3.5 left-2.5 sm:left-6 animate-pulse-soft z-20">
+                    <div class="px-2.5 sm:px-3 py-0.5 sm:py-1 bg-black/60 backdrop-blur-md rounded-full border border-amber-400/60 shadow-md flex items-center gap-1">
+                        <span class="text-amber-400 text-[8px] sm:text-[9px]">✦</span>
+                        <p class="text-[8.5px] sm:text-[9.5px] text-amber-200 font-bold uppercase tracking-widest" style="font-family: 'Microsoft JhengHei', sans-serif;">先 有 伯 樂 ， 後 有 千 里 馬</p>
                     </div>
                 </div>
                 
-                <!-- Logo & Tiêu đề Resumé với hiệu ứng Kim Hoàn sáng rực nổi bật -->
+                <!-- Logo Đại bàng 3 Sắc Xanh Uy Nghi & Tiêu đề 履歷表 Đại Khí -->
                 <div class="flex flex-col items-center z-20">
-                    <img src="{{logo_base64}}" alt="Logo" class="h-24 w-auto object-contain scale-x-125" 
-                         style="filter: brightness(1.6) contrast(1.15) drop-shadow(0 0 14px rgba(255, 255, 255, 0.95)) drop-shadow(0 4px 10px rgba(0, 0, 0, 0.9));">
-                    <h2 class="text-3xl font-black uppercase tracking-[0.6em] mt-[-18px]" 
-                        style="background: linear-gradient(180deg, #ffffff 0%, #fffbeb 20%, #fef08a 50%, #eab308 85%, #b45309 100%);
-                               -webkit-background-clip: text;
-                               -webkit-text-fill-color: transparent;
-                               filter: drop-shadow(0 2px 4px rgba(0,0,0,0.95)) drop-shadow(0 4px 14px rgba(0,0,0,0.85)) drop-shadow(0 0 25px rgba(234, 179, 8, 0.5));
-                               font-family: 'Playfair Display', serif;">
-                        Resumé
-                    </h2>
+                    <img src="{{logo_base64}}" alt="Logo" 
+                         style="height: 84px; width: auto; max-width: 380px; object-fit: contain; transform: scaleX(1.22); filter: brightness(1.28) contrast(1.2) drop-shadow(0 0 18px rgba(255, 255, 255, 0.98)) drop-shadow(0 0 35px rgba(104, 185, 46, 0.85)) drop-shadow(0 4px 14px rgba(0, 0, 0, 0.95));">
+                    <div class="flex flex-col items-center mt-[-14px]">
+                        <h2 class="text-[26px] font-black uppercase text-center" 
+                            style="background: linear-gradient(180deg, #ffffff 0%, #fffbeb 20%, #fef08a 50%, #eab308 85%, #b45309 100%);
+                                   -webkit-background-clip: text;
+                                   -webkit-text-fill-color: transparent;
+                                   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.95)) drop-shadow(0 4px 14px rgba(0,0,0,0.85)) drop-shadow(0 0 25px rgba(234, 179, 8, 0.6));
+                                   font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+                                   letter-spacing: 0.38em;">
+                            履 歷 表
+                        </h2>
+                        <span class="text-[9.5px] font-black uppercase tracking-[0.5em] text-amber-200/95 mt-[-3px]" 
+                              style="text-shadow: 0 1px 4px rgba(0,0,0,0.9); font-family: 'Playfair Display', serif;">
+                            CURRICULUM VITAE
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
