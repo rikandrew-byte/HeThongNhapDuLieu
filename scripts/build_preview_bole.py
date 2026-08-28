@@ -11,13 +11,13 @@ def get_b64(rel_path):
         if ext == 'jpg': ext = 'jpeg'
         return f"data:image/{ext};base64,{base64.b64encode(f.read()).decode('utf-8')}"
 
-# Đọc mẫu fct_template_bole.html
+# Đọc mẫu template
 with open(os.path.join(BASE_DIR, 'templates', 'fct_template_bole.html'), 'r', encoding='utf-8') as f:
     tpl_str = f.read()
 
 tpl = Template(tpl_str)
 bg_b64 = get_b64(os.path.join('static', 'banner_bole_qianlima.jpg'))
-logo_b64 = get_b64(os.path.join('static', 'logo.png'))
+logo_b64 = get_b64(os.path.join('static', 'logo_enamel_green.png'))
 
 sample_data = {
     'Maso': 'FD4128',
@@ -53,4 +53,4 @@ preview_file_path = os.path.join(BASE_DIR, 'preview_bole_ver2026.html')
 with open(preview_file_path, 'w', encoding='utf-8') as f:
     f.write(rendered)
 
-print(f"SUCCESS: Updated {preview_file_path}")
+print(f"SUCCESS: Generated preview with Fixed Proportional 3-Green Eagle Logo")
