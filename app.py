@@ -752,19 +752,24 @@ def prepare_render_data(raw_data: dict) -> dict:
     skip_images = raw_data.get('__skip_images__', False)
     for key in ('photo', 'qr_line'):
         path = raw_data.get(key, '')
+        if not path or str(path).strip().lower() in ('', 'null', 'undefined', 'none', '""', "''"):
+            data[f'{key}_base64'] = ""
+            continue
+        path = str(path).strip()
         if skip_images:
             # Giữ nguyên đường dẫn (URL R2 hoặc Base64 sẵn có) để trình duyệt tự tải
-            if isinstance(path, str) and (path.startswith('http') or path.startswith('data:image/')):
+            if path.startswith('http') or path.startswith('data:image/'):
                 data[f'{key}_base64'] = path
             else:
                 data[f'{key}_base64'] = ""
-        elif isinstance(path, str) and path.startswith('data:image/'):
+        elif path.startswith('data:image/'):
             # Đã là Base64 (upload từ Local hoặc cũ) → dùng luôn
             data[f'{key}_base64'] = path
-        elif isinstance(path, str) and path.startswith('http'):
+        elif path.startswith('http'):
             # Là URL từ Cloudflare R2 → Kéo về và chuyển thành Base64 để nhúng offline
             print(f"🔄 Fetching {key} from R2 for offline HTML...")
-            data[f'{key}_base64'] = _fetch_r2_image_as_base64(path)
+            fetched = _fetch_r2_image_as_base64(path)
+            data[f'{key}_base64'] = fetched if fetched else ""
         else:
             data[f'{key}_base64'] = ""
 
