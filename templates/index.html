@@ -1332,6 +1332,10 @@
                                 <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px;">Ngày hết hạn:</label>
                                 <input type="date" id="docExpiryDateInput" style="width:100%; padding:7px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px;">
                             </div>
+                            <div>
+                                <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px;">Ghi chú:</label>
+                                <input type="text" id="docNoteInput" placeholder="Nhập ghi chú cho giấy tờ..." style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px;">
+                            </div>
                             <div id="docParentAppraisalDiv">
                                 <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px;">Thẩm định cha:</label>
                                 <select id="docParentAppraisalSelect" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; font-weight:600;"></select>
@@ -2393,6 +2397,18 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
         const result = await response.json();
 
         if (result.success) {
+            // Sắp xếp mã số theo thứ tự số từ lớn đến bé (ví dụ: KD1425 > KD1423 > KD1422 > KD1421...)
+            function parseMasoNum(m) {
+                if (!m) return 0;
+                const match = m.toString().match(/\d+/);
+                return match ? parseInt(match[0], 10) : 0;
+            }
+            result.data.sort((a, b) => {
+                const numA = parseMasoNum(a.ma_so);
+                const numB = parseMasoNum(b.ma_so);
+                if (numB !== numA) return numB - numA;
+                return (b.ma_so || '').localeCompare(a.ma_so || '', undefined, { numeric: true, sensitivity: 'base' });
+            });
             currentHistoryData = result.data;
             
             // Cập nhật thống kê Sidebar
@@ -4017,6 +4033,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                             tdApp.innerHTML = `
                                 <div style="font-weight:700; color:#3b82f6;">Mã: ${app.code}</div>
                                 <div style="font-size:10.5px; color:#64748b;">Hạn: ${app.expiry_date || 'Chưa có'}</div>
+                                ${app.note ? `<div style="font-size:10px; color:#475569; background:#f8fafc; border-left:2.5px solid #3b82f6; padding:2px 5px; margin-top:3px; border-radius:2px; max-width:200px; word-break:break-word;">📝 ${app.note}</div>` : ''}
                                 <div style="margin-top:4px; display:flex; gap:8px; align-items:center;">
                                     <button onclick="deleteOrderDoc('${app.id}')" style="color:#f87171; background:none; border:none; cursor:pointer; font-size:10px; font-weight:700; padding:0; display:inline-flex; align-items:center; gap:2px;">🗑️ Xóa</button>
                                     <button onclick="openEditDocModal('${app.id}')" style="color:#3b82f6; background:none; border:none; cursor:pointer; font-size:10px; font-weight:700; padding:0; display:inline-flex; align-items:center; gap:2px;">✏️ Sửa</button>
@@ -4037,6 +4054,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                             tdVisa.innerHTML = `
                                 <div style="font-weight:700; color:#10b981;">Mã: ${visa.code}</div>
                                 <div style="font-size:10.5px; color:#64748b;">Hạn: ${visa.expiry_date || 'Chưa có'}</div>
+                                ${visa.note ? `<div style="font-size:10px; color:#475569; background:#f8fafc; border-left:2.5px solid #10b981; padding:2px 5px; margin-top:3px; border-radius:2px; max-width:200px; word-break:break-word;">📝 ${visa.note}</div>` : ''}
                                 <div style="margin-top:4px; display:flex; gap:8px; align-items:center;">
                                     <button onclick="deleteOrderDoc('${visa.id}')" style="color:#f87171; background:none; border:none; cursor:pointer; font-size:10px; font-weight:700; padding:0; display:inline-flex; align-items:center; gap:2px;">🗑️ Xóa</button>
                                     <button onclick="openEditDocModal('${visa.id}')" style="color:#3b82f6; background:none; border:none; cursor:pointer; font-size:10px; font-weight:700; padding:0; display:inline-flex; align-items:center; gap:2px;">✏️ Sửa</button>
@@ -4160,11 +4178,12 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             }
  
             try {
+                const note = document.getElementById('docNoteInput') ? document.getElementById('docNoteInput').value.trim() : '';
                 const res = await fetch('/api/docs', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        factory_id, type, code, capacity, expiry_date, parent_appraisal_id
+                        factory_id, type, code, capacity, expiry_date, note, parent_appraisal_id
                     }),
                     credentials: 'same-origin'
                 });
@@ -4172,6 +4191,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 if (result.success) {
                     document.getElementById('docCodeInput').value = '';
                     document.getElementById('docExpiryDateInput').value = '';
+                    if (document.getElementById('docNoteInput')) document.getElementById('docNoteInput').value = '';
                     await loadFactoryDocConfig();
                 } else {
                     alert("Lỗi thêm tài liệu: " + result.error);
@@ -4192,40 +4212,43 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                     alert("Lỗi xóa nhà máy: " + result.error);
                 }
             } catch(e) {
-                console.error(e);
+                console.error("Lỗi:", e);
+                alert("Lỗi kết nối máy chủ.");
             }
         }
  
         async function deleteOrderDoc(id) {
-            if (!confirm("Bạn có chắc chắn muốn xóa tài liệu này không?")) return;
+            if (!confirm("Bạn có chắc chắn muốn xóa giấy tờ này không?")) return;
             try {
                 const res = await fetch(`/api/docs/${id}`, { method: 'DELETE', credentials: 'same-origin' });
                 const result = await res.json();
                 if (result.success) {
                     await loadFactoryDocConfig();
                 } else {
-                    alert("Lỗi xóa tài liệu: " + result.error);
+                    alert("Lỗi xóa giấy tờ: " + result.error);
                 }
             } catch(e) {
-                console.error(e);
+                console.error("Lỗi:", e);
+                alert("Lỗi kết nối máy chủ.");
             }
         }
 
-        // ─── CHỈNH SỬA CẤU HÌNH NHÀ MÁY & GIẤY TỜ ───
-        let currentEditType = ''; // 'FACTORY' | 'DOC'
-        let currentEditId = '';
+        // Biến toàn cục để theo dõi Modal Edit
+        let currentEditType = null; // 'FACTORY' | 'DOC'
+        let currentEditId = null;
 
-        function openEditFactoryModal(id, name) {
+        function openEditFactoryModal(id) {
             currentEditType = 'FACTORY';
             currentEditId = id;
-            document.getElementById('editConfigTitle').textContent = '✏️ Chỉnh sửa Nhà máy';
             
             const factory = globalFactories.find(f => f.id === id);
-            const currentBrokerId = factory ? (factory.broker_id || '') : '';
+            if (!factory) return;
             
-            let brokerOptionsHtml = '<option value="">-- KHÔNG CÓ (MÔI GIỚI) --</option>';
+            document.getElementById('editConfigTitle').textContent = '✏️ Chỉnh sửa Nhà máy';
+            
+            let brokerOptionsHtml = '<option value="">-- CHƯA LIÊN KẾT MÔI GIỚI --</option>';
             globalBrokers.forEach(b => {
-                const selectedAttr = (b.id === currentBrokerId) ? 'selected' : '';
+                const selectedAttr = (b.id === factory.broker_id) ? 'selected' : '';
                 brokerOptionsHtml += `<option value="${b.id}" ${selectedAttr}>${formatBrokerName(b)}</option>`;
             });
             
@@ -4233,10 +4256,10 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             fieldsDiv.innerHTML = `
                 <div>
                     <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px;">Tên Nhà máy:</label>
-                    <input type="text" id="editFactoryNameInput" value="${name.replace(/"/g, '&quot;')}" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; font-weight:600; box-sizing:border-box; margin-bottom:10px;">
+                    <input type="text" id="editFactoryNameInput" value="${factory.name.replace(/"/g, '&quot;')}" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; font-weight:600; box-sizing:border-box;">
                 </div>
                 <div>
-                    <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px;">Nhà môi giới:</label>
+                    <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px;">Nhà Môi giới:</label>
                     <select id="editFactoryBrokerSelect" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; font-weight:600; box-sizing:border-box;">
                         ${brokerOptionsHtml}
                     </select>
@@ -4290,6 +4313,10 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                     <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px;">Ngày hết hạn:</label>
                     <input type="date" id="editDocExpiryInput" value="${doc.expiry_date || ''}" style="width:100%; padding:7px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; box-sizing:border-box;">
                 </div>
+                <div>
+                    <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px;">Ghi chú:</label>
+                    <textarea id="editDocNoteInput" rows="2" placeholder="Nhập ghi chú cho giấy tờ (nếu có)..." style="width:100%; padding:7px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; box-sizing:border-box; resize:vertical; font-family:'Inter',sans-serif;">${(doc.note || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+                </div>
                 ${parentAppraisalSelectHtml}
             `;
             document.getElementById('editConfigModal').style.display = 'block';
@@ -4331,6 +4358,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 const code = document.getElementById('editDocCodeInput').value.trim();
                 const capacity = document.getElementById('editDocCapacityInput').value;
                 const expiry_date = document.getElementById('editDocExpiryInput').value;
+                const note = document.getElementById('editDocNoteInput') ? document.getElementById('editDocNoteInput').value.trim() : '';
                 const factory_id = document.getElementById('editDocFactoryId').value;
                 const type = document.getElementById('editDocType').value;
                 
@@ -4353,6 +4381,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                             code,
                             capacity,
                             expiry_date,
+                            note,
                             parent_appraisal_id
                         }),
                         credentials: 'same-origin'
