@@ -22,13 +22,7 @@ from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 from openpyxl.chart import BarChart, PieChart, Reference
 from openpyxl.chart.label import DataLabelList
 from openpyxl.utils import get_column_letter
-from groq import Groq
-
 load_dotenv()
-
-# Configure Groq (thay thế Gemini)
-groq_api_key = os.environ.get('GROQ_API_KEY')
-groq_client = Groq(api_key=groq_api_key) if groq_api_key else None
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 app.debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
@@ -382,11 +376,11 @@ with app.app_context():
                 app.config['BASIC_AUTH_PASSWORD'] = saved_pw
                 print("✅ Loaded admin_password from DB.")
 
-            saved_groq = get_config('groq_api_key')
-            if saved_groq:
-                global groq_client
-                groq_client = Groq(api_key=saved_groq)
-                print("✅ Loaded groq_api_key from DB.")
+            legacy_groq = get_config('groq_api_key')
+            if legacy_groq and not get_config('ai_api_key'):
+                set_config('ai_api_key', legacy_groq)
+                set_config('ai_provider', 'groq')
+                print("✅ Migrated groq_api_key to ai_api_key.")
 
             # Seed mặc định settings_pin = 9595 nếu chưa có
             if not SystemConfig.query.get('settings_pin'):
@@ -536,6 +530,57 @@ def translate_fixed(text: str) -> str:
     if not text: return text
     return FIXED_TRANS.get(text.strip().lower(), text)
 
+def call_ai_translation(prompt: str) -> str:
+    """Gọi HTTP API dịch thuật đa nền tảng"""
+    provider = get_config('ai_provider', 'google')
+    api_key = get_config('ai_api_key', '')
+
+    if provider == 'google' or not api_key:
+        return "" # Sẽ fallback xuống Google Translate
+
+    import requests
+    try:
+        if provider == 'groq':
+            headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+            data = {"model": "llama-3.3-70b-versatile", "messages": [{"role": "user", "content": prompt}], "temperature": 0.1, "max_tokens": 500}
+            resp = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=data, timeout=15)
+            if resp.status_code == 200: return resp.json()["choices"][0]["message"]["content"].strip()
+
+        elif provider == 'openai':
+            headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+            data = {"model": "gpt-4o-mini", "messages": [{"role": "user", "content": prompt}], "temperature": 0.1, "max_tokens": 500}
+            resp = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=data, timeout=15)
+            if resp.status_code == 200: return resp.json()["choices"][0]["message"]["content"].strip()
+
+        elif provider == 'gemini':
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+            data = {"contents": [{"parts":[{"text": prompt}]}]}
+            resp = requests.post(url, json=data, timeout=15)
+            if resp.status_code == 200: return resp.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
+
+        elif provider == 'anthropic':
+            headers = {"x-api-key": api_key, "anthropic-version": "2023-06-01", "content-type": "application/json"}
+            data = {"model": "claude-3-haiku-20240307", "max_tokens": 500, "messages": [{"role": "user", "content": prompt}], "temperature": 0.1}
+            resp = requests.post("https://api.anthropic.com/v1/messages", headers=headers, json=data, timeout=15)
+            if resp.status_code == 200: return resp.json()["content"][0]["text"].strip()
+
+        elif provider == 'deepseek':
+            headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+            data = {"model": "deepseek-chat", "messages": [{"role": "user", "content": prompt}], "temperature": 0.1, "max_tokens": 500}
+            resp = requests.post("https://api.deepseek.com/chat/completions", headers=headers, json=data, timeout=15)
+            if resp.status_code == 200: return resp.json()["choices"][0]["message"]["content"].strip()
+
+        elif provider == 'openrouter':
+            headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+            data = {"model": "meta-llama/llama-3.3-70b-instruct", "messages": [{"role": "user", "content": prompt}], "temperature": 0.1, "max_tokens": 500}
+            resp = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=data, timeout=15)
+            if resp.status_code == 200: return resp.json()["choices"][0]["message"]["content"].strip()
+
+    except Exception as e:
+        print(f"AI Translation API Error ({provider}): {e}")
+    
+    return "" # Lỗi hoặc không khớp thì trả về chuỗi rỗng để Fallback
+
 def translate_name(text: str) -> str:
     """Dành riêng cho dịch Họ Tên: Ưu tiên từ điển tên để tránh nhầm với tiếng Anh"""
     if not text or not text.strip() or is_chinese(text): return text
@@ -549,23 +594,13 @@ def translate_name(text: str) -> str:
     if dict_result is not None:
         return dict_result
 
-    # 2. Nếu không có trong từ điển, dùng Groq hoặc Google Translate
+    # 2. Nếu không có trong từ điển, dùng AI hoặc Google Translate
     try:
-        if groq_client:
-            completion = groq_client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=[{
-                    "role": "user",
-                    "content": f"Dịch tên tiếng Việt sau sang tiếng Trung Phồn Thể một cách tự nhiên nhất (âm Hán Việt nếu có thể), chỉ trả về đúng tên đã dịch, tuyệt đối không giải thích thêm: {text_normalized}"
-                }],
-                temperature=0.1,
-                max_tokens=100,
-            )
-            result = completion.choices[0].message.content.strip()
-            return result if result else text_normalized
-        else:
+        prompt = f"Dịch tên tiếng Việt sau sang tiếng Trung Phồn Thể một cách tự nhiên nhất (âm Hán Việt nếu có thể), chỉ trả về đúng tên đã dịch, tuyệt đối không giải thích thêm: {text_normalized}"
+        result = call_ai_translation(prompt)
+        if not result:
             result = GoogleTranslator(source='vi', target='zh-TW').translate(text_normalized)
-            return result if result else text_normalized
+        return result if result else text_normalized
     except Exception as e:
         print(f"Name translation error: {e}")
         try:
@@ -615,20 +650,11 @@ def translate_free(text: str) -> str:
         _FREE_TRANS_CACHE[text_lower] = res_val
         return res_val
 
-    # 3. Dùng Groq hoặc Google Translate cho đoạn văn
+    # 3. Dùng AI hoặc Google Translate cho đoạn văn
     try:
-        if groq_client:
-            completion = groq_client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=[{
-                    "role": "user",
-                    "content": f"Bạn là chuyên gia dịch thuật CV xuất khẩu lao động Đài Loan. Hãy dịch đoạn kinh nghiệm làm việc sau sang tiếng Trung Phồn Thể. Yêu cầu: dịch sát nghĩa, chuẩn thuật ngữ nghề nghiệp (cơ khí, điện, xây dựng, nhà máy, dệt may...), giữ nguyên cách dòng và định dạng nếu có. Tuyệt đối KHÔNG kèm theo lời giải thích hay bình luận, chỉ trả về đúng kết quả dịch. Đoạn văn bản cần dịch: '{processed_text.strip()}'"
-                }],
-                temperature=0.1,
-                max_tokens=500,
-            )
-            result = completion.choices[0].message.content.strip()
-        else:
+        prompt = f"Bạn là chuyên gia dịch thuật CV xuất khẩu lao động Đài Loan. Hãy dịch đoạn kinh nghiệm làm việc sau sang tiếng Trung Phồn Thể. Yêu cầu: dịch sát nghĩa, chuẩn thuật ngữ nghề nghiệp (cơ khí, điện, xây dựng, nhà máy, dệt may...), giữ nguyên cách dòng và định dạng nếu có. Tuyệt đối KHÔNG kèm theo lời giải thích hay bình luận, chỉ trả về đúng kết quả dịch. Đoạn văn bản cần dịch: '{processed_text.strip()}'"
+        result = call_ai_translation(prompt)
+        if not result:
             result = GoogleTranslator(source='vi', target='zh-TW').translate(processed_text.strip())
 
         
@@ -3359,13 +3385,14 @@ def api_update_placement(record_id):
 @auth_required
 def api_get_settings():
     """Trả về cài đặt hiện tại (ẩn key nhạy cảm)"""
-    groq_key_stored = get_config('groq_api_key', os.environ.get('GROQ_API_KEY', ''))
-    hint = (groq_key_stored[:8] + '...' + groq_key_stored[-4:]) if len(groq_key_stored) > 12 else ('***' if groq_key_stored else '')
+    api_key_stored = get_config('ai_api_key', '')
+    hint = (api_key_stored[:8] + '...' + api_key_stored[-4:]) if len(api_key_stored) > 12 else ('***' if api_key_stored else '')
+    provider = get_config('ai_provider', 'google')
     return jsonify({
-        'ai_provider': get_config('ai_provider', 'groq' if groq_client else 'google'),
-        'groq_key_hint': hint,
-        'has_groq_key': bool(groq_key_stored),
-        'groq_active': bool(groq_client),
+        'ai_provider': provider,
+        'ai_key_hint': hint,
+        'has_ai_key': bool(api_key_stored),
+        'ai_active': bool(api_key_stored) and provider != 'google',
     })
 
 @app.route('/api/settings/password', methods=['POST'])
@@ -3403,7 +3430,6 @@ def api_change_password():
 @auth_required
 def api_change_ai():
     """Đổi nhà cung cấp AI dịch thuật"""
-    global groq_client
     data = request.get_json() or {}
 
     # Kiểm tra PIN thiết lập
@@ -3412,30 +3438,19 @@ def api_change_ai():
     if pin != settings_pin:
         return jsonify({'success': False, 'error': 'Mã PIN không đúng'}), 403
 
-    provider = data.get('provider', 'groq')   # 'groq' | 'google'
+    provider = data.get('provider', 'google')
     api_key  = str(data.get('api_key', '')).strip()
 
     set_config('ai_provider', provider)
 
-    if provider == 'groq':
+    if provider != 'google':
         if not api_key:
-            return jsonify({'success': False, 'error': 'Vui lòng nhập Groq API Key'}), 400
-        try:
-            # Test key trước khi lưu
-            test_client = Groq(api_key=api_key)
-            test_client.chat.completions.create(
-                model='llama-3.3-70b-versatile',
-                messages=[{'role': 'user', 'content': 'test'}],
-                max_tokens=1
-            )
-            set_config('groq_api_key', api_key)
-            groq_client = Groq(api_key=api_key)
-            return jsonify({'success': True, 'message': '✅ Đã kết nối Groq thành công!'})
-        except Exception as e:
-            return jsonify({'success': False, 'error': f'API Key không hợp lệ: {str(e)[:100]}'}), 400
+            return jsonify({'success': False, 'error': f'Vui lòng nhập API Key cho {provider}'}), 400
+        
+        set_config('ai_api_key', api_key)
+        return jsonify({'success': True, 'message': f'✅ Đã cấu hình {provider.capitalize()} thành công!'})
     else:
         # Chuyển sang Google Translate
-        groq_client = None
         return jsonify({'success': True, 'message': '✅ Đã chuyển sang Google Translate (miễn phí).'})
 
 if __name__ == '__main__':

@@ -6137,23 +6137,45 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                     <span style="font-size:14px; font-weight:700; color:#1e293b;">Cấu hình AI dịch thuật</span>
                 </div>
                 <div id="aiStatusBadge" style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:20px; font-size:12px; font-weight:700; margin-bottom:14px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0;"><span>⏳</span><span>Đang kiểm tra...</span></div>
-                <div style="display:flex; gap:10px; margin-bottom:14px;">
-                    <label style="flex:1; display:flex; align-items:center; gap:8px; padding:11px 14px; border:2px solid #e2e8f0; border-radius:10px; cursor:pointer;" id="groqLabel">
-                        <input type="radio" name="aiProvider" value="groq" id="radioGroq" onchange="onProviderChange()" style="accent-color:#6366f1;">
-                        <span style="font-size:13px; font-weight:600; color:#374151;">⚡ Groq (Llama)</span>
+                
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;" id="aiProviderContainer">
+                    <label style="display:flex; align-items:center; gap:8px; padding:11px 14px; border:2px solid #e2e8f0; border-radius:10px; cursor:pointer;" id="label-groq">
+                        <input type="radio" name="aiProvider" value="groq" onchange="onProviderChange()" style="accent-color:#6366f1;">
+                        <span style="font-size:13px; font-weight:600; color:#374151;">⚡ Groq</span>
                     </label>
-                    <label style="flex:1; display:flex; align-items:center; gap:8px; padding:11px 14px; border:2px solid #e2e8f0; border-radius:10px; cursor:pointer;" id="googleLabel">
-                        <input type="radio" name="aiProvider" value="google" id="radioGoogle" onchange="onProviderChange()" style="accent-color:#6366f1;">
-                        <span style="font-size:13px; font-weight:600; color:#374151;">🌐 Google Dịch</span>
+                    <label style="display:flex; align-items:center; gap:8px; padding:11px 14px; border:2px solid #e2e8f0; border-radius:10px; cursor:pointer;" id="label-openai">
+                        <input type="radio" name="aiProvider" value="openai" onchange="onProviderChange()" style="accent-color:#6366f1;">
+                        <span style="font-size:13px; font-weight:600; color:#374151;">🟢 OpenAI</span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:8px; padding:11px 14px; border:2px solid #e2e8f0; border-radius:10px; cursor:pointer;" id="label-gemini">
+                        <input type="radio" name="aiProvider" value="gemini" onchange="onProviderChange()" style="accent-color:#6366f1;">
+                        <span style="font-size:13px; font-weight:600; color:#374151;">♊ Gemini</span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:8px; padding:11px 14px; border:2px solid #e2e8f0; border-radius:10px; cursor:pointer;" id="label-anthropic">
+                        <input type="radio" name="aiProvider" value="anthropic" onchange="onProviderChange()" style="accent-color:#6366f1;">
+                        <span style="font-size:13px; font-weight:600; color:#374151;">🧠 Anthropic</span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:8px; padding:11px 14px; border:2px solid #e2e8f0; border-radius:10px; cursor:pointer;" id="label-deepseek">
+                        <input type="radio" name="aiProvider" value="deepseek" onchange="onProviderChange()" style="accent-color:#6366f1;">
+                        <span style="font-size:13px; font-weight:600; color:#374151;">🐋 DeepSeek</span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:8px; padding:11px 14px; border:2px solid #e2e8f0; border-radius:10px; cursor:pointer;" id="label-openrouter">
+                        <input type="radio" name="aiProvider" value="openrouter" onchange="onProviderChange()" style="accent-color:#6366f1;">
+                        <span style="font-size:13px; font-weight:600; color:#374151;">🌌 OpenRouter</span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:8px; padding:11px 14px; border:2px solid #e2e8f0; border-radius:10px; cursor:pointer; grid-column:span 2;" id="label-google">
+                        <input type="radio" name="aiProvider" value="google" onchange="onProviderChange()" style="accent-color:#6366f1;">
+                        <span style="font-size:13px; font-weight:600; color:#374151;">🌐 Google Dịch (Fallback miễn phí)</span>
                     </label>
                 </div>
-                <div id="groqKeySection" style="margin-bottom:12px;">
-                    <label style="font-size:12px; font-weight:600; color:#64748b; display:block; margin-bottom:4px;">Groq API Key</label>
+
+                <div id="aiKeySection" style="margin-bottom:12px;">
+                    <label style="font-size:12px; font-weight:600; color:#64748b; display:block; margin-bottom:4px;">API Key</label>
                     <div style="display:flex; gap:8px; align-items:center;">
-                        <input id="groqApiKey" type="password" placeholder="gsk_..." style="flex:1; padding:10px 12px; border:1.5px solid #e2e8f0; border-radius:9px; font-size:13px; outline:none; font-family:monospace;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
+                        <input id="aiApiKey" type="password" placeholder="Nhập API Key tương ứng..." style="flex:1; padding:10px 12px; border:1.5px solid #e2e8f0; border-radius:9px; font-size:13px; outline:none; font-family:monospace;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
                         <button onclick="toggleKeyVisibility()" style="padding:10px 12px; border-radius:9px; border:1.5px solid #e2e8f0; background:#f8fafc; cursor:pointer; font-size:14px;">👁</button>
                     </div>
-                    <div style="font-size:11px; color:#94a3b8; margin-top:4px;">Key hiện tại: <span id="groqKeyHint" style="font-family:monospace; color:#6366f1;">---</span></div>
+                    <div style="font-size:11px; color:#94a3b8; margin-top:4px;">Key hiện tại: <span id="aiKeyHint" style="font-family:monospace; color:#6366f1;">---</span></div>
                 </div>
                 <div id="aiMsg" style="font-size:12px; min-height:16px; font-weight:600; margin-bottom:8px;"></div>
                 <button onclick="saveAIConfig()" style="width:100%; padding:11px; border-radius:10px; border:none; background:linear-gradient(135deg,#059669,#047857); color:#fff; font-size:13px; font-weight:700; cursor:pointer;">💾 Lưu cấu hình AI</button>
@@ -6187,30 +6209,49 @@ function verifySettingsPin() {
 function loadAndOpenSettings() {
     document.getElementById('settingsModal').style.display = 'flex';
     ['pwMsg','aiMsg'].forEach(id => document.getElementById(id).textContent = '');
-    ['currentPw','newPw','confirmPw','groqApiKey'].forEach(id => document.getElementById(id).value = '');
+    ['currentPw','newPw','confirmPw','aiApiKey'].forEach(id => document.getElementById(id).value = '');
     fetch('/api/settings').then(r => r.json()).then(data => {
         const badge = document.getElementById('aiStatusBadge');
-        if (data.groq_active) {
+        const providerName = (data.ai_provider || 'google').toUpperCase();
+        
+        if (data.ai_active) {
             badge.style.cssText = 'display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:14px;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;';
-            badge.innerHTML = '<span>✅</span><span>Groq đang hoạt động</span>';
+            badge.innerHTML = `<span>✅</span><span>Đang dùng ${providerName}</span>`;
         } else {
             badge.style.cssText = 'display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:14px;background:#fefce8;color:#d97706;border:1px solid #fde68a;';
             badge.innerHTML = '<span>🌐</span><span>Đang dùng Google Translate</span>';
         }
-        const prov = data.ai_provider || (data.groq_active ? 'groq' : 'google');
-        document.getElementById(prov === 'groq' ? 'radioGroq' : 'radioGoogle').checked = true;
-        document.getElementById('groqKeyHint').textContent = data.groq_key_hint || '(chưa có)';
+        
+        const prov = data.ai_provider || 'google';
+        const radio = document.querySelector(`input[name="aiProvider"][value="${prov}"]`);
+        if (radio) radio.checked = true;
+        
+        document.getElementById('aiKeyHint').textContent = data.ai_key_hint || '(chưa có)';
         onProviderChange();
     });
 }
 function closeSettingsModal() { document.getElementById('settingsModal').style.display = 'none'; _settingsPin = ''; }
+
 function onProviderChange() {
-    const isGroq = document.getElementById('radioGroq').checked;
-    document.getElementById('groqKeySection').style.display = isGroq ? 'block' : 'none';
-    document.getElementById('groqLabel').style.borderColor = isGroq ? '#6366f1' : '#e2e8f0';
-    document.getElementById('googleLabel').style.borderColor = !isGroq ? '#6366f1' : '#e2e8f0';
+    const selected = document.querySelector('input[name="aiProvider"]:checked')?.value || 'google';
+    
+    // Toggle UI visibility
+    document.getElementById('aiKeySection').style.display = selected === 'google' ? 'none' : 'block';
+    
+    // Update active label borders
+    document.querySelectorAll('#aiProviderContainer label').forEach(lbl => {
+        lbl.style.borderColor = '#e2e8f0';
+        lbl.style.background = '#fff';
+    });
+    
+    const activeLabel = document.getElementById(`label-${selected}`);
+    if (activeLabel) {
+        activeLabel.style.borderColor = '#6366f1';
+        activeLabel.style.background = '#eef2ff';
+    }
 }
-function toggleKeyVisibility() { const i = document.getElementById('groqApiKey'); i.type = i.type==='password'?'text':'password'; }
+
+function toggleKeyVisibility() { const i = document.getElementById('aiApiKey'); i.type = i.type==='password'?'text':'password'; }
 function showMsg(id, text, ok) { const el=document.getElementById(id); el.textContent=text; el.style.color=ok?'#16a34a':'#ef4444'; }
 function savePassword() {
     const cur=document.getElementById('currentPw').value, nw=document.getElementById('newPw').value, cf=document.getElementById('confirmPw').value;
@@ -6223,13 +6264,13 @@ function savePassword() {
     });
 }
 function saveAIConfig() {
-    const prov=document.querySelector('input[name="aiProvider"]:checked')?.value||'groq';
-    const key=document.getElementById('groqApiKey').value.trim();
+    const prov = document.querySelector('input[name="aiProvider"]:checked')?.value || 'google';
+    const key = document.getElementById('aiApiKey').value.trim();
     fetch('/api/settings/ai',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({pin:_settingsPin,provider:prov,api_key:key})
     }).then(r=>r.json()).then(d=>{
         showMsg('aiMsg',d.message||d.error,d.success);
-        if(d.success){document.getElementById('groqApiKey').value='';loadAndOpenSettings();}
+        if(d.success){document.getElementById('aiApiKey').value='';loadAndOpenSettings();}
     });
 }
 document.getElementById('settingsPinOverlay').addEventListener('click',function(e){if(e.target===this)closeSettingsPin();});
@@ -6238,4 +6279,5 @@ document.getElementById('settingsModal').addEventListener('click',function(e){if
 
 </body>
 </html>
+
 

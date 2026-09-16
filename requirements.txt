@@ -10,4 +10,3 @@ gunicorn
 Pillow==10.0.0
 requests
 openpyxl==3.1.2
-groq
