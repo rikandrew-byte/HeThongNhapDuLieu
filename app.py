@@ -22,14 +22,13 @@ from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 from openpyxl.chart import BarChart, PieChart, Reference
 from openpyxl.chart.label import DataLabelList
 from openpyxl.utils import get_column_letter
-import google.generativeai as genai
+from groq import Groq
 
 load_dotenv()
 
-# Configure Gemini
-gemini_api_key = os.environ.get('GEMINI_API_KEY')
-if gemini_api_key:
-    genai.configure(api_key=gemini_api_key)
+# Configure Groq (thay thế Gemini)
+groq_api_key = os.environ.get('GROQ_API_KEY')
+groq_client = Groq(api_key=groq_api_key) if groq_api_key else None
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 app.debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
@@ -500,13 +499,19 @@ def translate_name(text: str) -> str:
     if dict_result is not None:
         return dict_result
 
-    # 2. Nếu không có trong từ điển, dùng Gemini API hoặc Google Translate
+    # 2. Nếu không có trong từ điển, dùng Groq hoặc Google Translate
     try:
-        if gemini_api_key:
-            model = genai.GenerativeModel('gemini-3.5-flash')
-            prompt = f"Dịch tên tiếng Việt sau sang tiếng Trung Phồn Thể một cách tự nhiên nhất (âm Hán Việt nếu có thể), chỉ trả về đúng tên đã dịch, tuyệt đối không giải thích thêm: {text_normalized}"
-            response = model.generate_content(prompt)
-            result = response.text.strip()
+        if groq_client:
+            completion = groq_client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[{
+                    "role": "user",
+                    "content": f"Dịch tên tiếng Việt sau sang tiếng Trung Phồn Thể một cách tự nhiên nhất (âm Hán Việt nếu có thể), chỉ trả về đúng tên đã dịch, tuyệt đối không giải thích thêm: {text_normalized}"
+                }],
+                temperature=0.1,
+                max_tokens=100,
+            )
+            result = completion.choices[0].message.content.strip()
             return result if result else text_normalized
         else:
             result = GoogleTranslator(source='vi', target='zh-TW').translate(text_normalized)
@@ -514,7 +519,7 @@ def translate_name(text: str) -> str:
     except Exception as e:
         print(f"Name translation error: {e}")
         try:
-            # Fallback to Google Translate if Gemini fails
+            # Fallback to Google Translate if Groq fails
             return GoogleTranslator(source='vi', target='zh-TW').translate(text_normalized) or text_normalized
         except:
             return text_normalized
@@ -560,15 +565,22 @@ def translate_free(text: str) -> str:
         _FREE_TRANS_CACHE[text_lower] = res_val
         return res_val
 
-    # 3. Dùng Gemini API hoặc Google Translate cho đoạn văn
+    # 3. Dùng Groq hoặc Google Translate cho đoạn văn
     try:
-        if gemini_api_key:
-            model = genai.GenerativeModel('gemini-3.5-flash')
-            prompt = f"Bạn là chuyên gia dịch thuật CV xuất khẩu lao động Đài Loan. Hãy dịch đoạn kinh nghiệm làm việc sau sang tiếng Trung Phồn Thể. Yêu cầu: dịch sát nghĩa, chuẩn thuật ngữ nghề nghiệp (cơ khí, điện, xây dựng, nhà máy, dệt may...), giữ nguyên cách dòng và định dạng nếu có. Tuyệt đối KHÔNG kèm theo lời giải thích hay bình luận, chỉ trả về đúng kết quả dịch. Đoạn văn bản cần dịch: '{processed_text.strip()}'"
-            response = model.generate_content(prompt)
-            result = response.text.strip()
+        if groq_client:
+            completion = groq_client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[{
+                    "role": "user",
+                    "content": f"Bạn là chuyên gia dịch thuật CV xuất khẩu lao động Đài Loan. Hãy dịch đoạn kinh nghiệm làm việc sau sang tiếng Trung Phồn Thể. Yêu cầu: dịch sát nghĩa, chuẩn thuật ngữ nghề nghiệp (cơ khí, điện, xây dựng, nhà máy, dệt may...), giữ nguyên cách dòng và định dạng nếu có. Tuyệt đối KHÔNG kèm theo lời giải thích hay bình luận, chỉ trả về đúng kết quả dịch. Đoạn văn bản cần dịch: '{processed_text.strip()}'"
+                }],
+                temperature=0.1,
+                max_tokens=500,
+            )
+            result = completion.choices[0].message.content.strip()
         else:
             result = GoogleTranslator(source='vi', target='zh-TW').translate(processed_text.strip())
+
         
         # Sửa lại nếu Google dịch nhầm "may" -> "可能"
         if '可能' in result and 'may' in text_lower:
@@ -593,7 +605,7 @@ def translate_free(text: str) -> str:
     except Exception as e:
         print(f"Free text translation error: {e}")
         try:
-            # Fallback to Google Translate if Gemini fails
+            # Fallback to Google Translate if Groq fails
             final_res = GoogleTranslator(source='vi', target='zh-TW').translate(processed_text.strip()) or text_normalized
             _FREE_TRANS_CACHE[text_lower] = final_res
             return final_res
