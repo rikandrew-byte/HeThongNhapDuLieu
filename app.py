@@ -153,6 +153,33 @@ class OrderDoc(db.Model):
     parent_appraisal_id = db.Column(db.String(50), default='')
     note = db.Column(db.Text, default='')
 
+class SystemConfig(db.Model):
+    """Bảng lưu cài đặt hệ thống (key-value)"""
+    __tablename__ = 'system_config'
+    key   = db.Column(db.String(100), primary_key=True)
+    value = db.Column(db.Text, default='')
+
+def get_config(key, default=''):
+    """Đọc cài đặt từ DB, fallback về default"""
+    try:
+        row = SystemConfig.query.get(key)
+        return row.value if (row and row.value) else default
+    except:
+        return default
+
+def set_config(key, value):
+    """Lưu cài đặt vào DB"""
+    try:
+        row = SystemConfig.query.get(key)
+        if row:
+            row.value = value
+        else:
+            db.session.add(SystemConfig(key=key, value=value))
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        print(f"set_config error: {e}")
+
 def normalize_npt(f48_raw):
     f48 = str(f48_raw or '').strip()
     if not f48: return ""
@@ -347,6 +374,29 @@ with app.app_context():
         except Exception as emp_ex:
             print(f"⚠️ Employee list init failed: {emp_ex}")
             db.session.rollback()
+
+        # ── Load SystemConfig từ DB và apply vào globals ──
+        try:
+            saved_pw = get_config('admin_password')
+            if saved_pw:
+                app.config['BASIC_AUTH_PASSWORD'] = saved_pw
+                print("✅ Loaded admin_password from DB.")
+
+            saved_groq = get_config('groq_api_key')
+            if saved_groq:
+                global groq_client
+                groq_client = Groq(api_key=saved_groq)
+                print("✅ Loaded groq_api_key from DB.")
+
+            # Seed mặc định settings_pin = 9595 nếu chưa có
+            if not SystemConfig.query.get('settings_pin'):
+                db.session.add(SystemConfig(key='settings_pin', value='9595'))
+                db.session.commit()
+                print("✅ Default settings_pin=9595 seeded.")
+        except Exception as cfg_ex:
+            print(f"⚠️ SystemConfig load failed: {cfg_ex}")
+            db.session.rollback()
+
     except Exception as e:
         print(f"❌ Database initialization error: {e}")
 
@@ -3301,6 +3351,93 @@ def api_update_placement(record_id):
     db.session.commit()
     return jsonify({'success': True})
 
+# ==========================================
+# ─── SYSTEM SETTINGS API ─────────────────
+# ==========================================
+
+@app.route('/api/settings', methods=['GET'])
+@auth_required
+def api_get_settings():
+    """Trả về cài đặt hiện tại (ẩn key nhạy cảm)"""
+    groq_key_stored = get_config('groq_api_key', os.environ.get('GROQ_API_KEY', ''))
+    hint = (groq_key_stored[:8] + '...' + groq_key_stored[-4:]) if len(groq_key_stored) > 12 else ('***' if groq_key_stored else '')
+    return jsonify({
+        'ai_provider': get_config('ai_provider', 'groq' if groq_client else 'google'),
+        'groq_key_hint': hint,
+        'has_groq_key': bool(groq_key_stored),
+        'groq_active': bool(groq_client),
+    })
+
+@app.route('/api/settings/password', methods=['POST'])
+@auth_required
+def api_change_password():
+    """Đổi mật khẩu đăng nhập /fct-1503"""
+    global groq_client
+    data = request.get_json() or {}
+
+    # Kiểm tra PIN thiết lập
+    pin = str(data.get('pin', '')).strip()
+    settings_pin = get_config('settings_pin', '9595')
+    if pin != settings_pin:
+        return jsonify({'success': False, 'error': 'Mã PIN không đúng'}), 403
+
+    current_pw = str(data.get('current_password', '')).strip()
+    new_pw     = str(data.get('new_password', '')).strip()
+    confirm_pw = str(data.get('confirm_password', '')).strip()
+
+    # Xác minh mật khẩu hiện tại
+    real_current = get_config('admin_password', app.config.get('BASIC_AUTH_PASSWORD', ''))
+    if current_pw != real_current:
+        return jsonify({'success': False, 'error': 'Mật khẩu hiện tại không đúng'}), 400
+    if len(new_pw) < 4:
+        return jsonify({'success': False, 'error': 'Mật khẩu mới phải có ít nhất 4 ký tự'}), 400
+    if new_pw != confirm_pw:
+        return jsonify({'success': False, 'error': 'Xác nhận mật khẩu không khớp'}), 400
+
+    # Lưu & apply ngay
+    set_config('admin_password', new_pw)
+    app.config['BASIC_AUTH_PASSWORD'] = new_pw
+    return jsonify({'success': True, 'message': '✅ Đổi mật khẩu thành công! Vui lòng đăng nhập lại.'})
+
+@app.route('/api/settings/ai', methods=['POST'])
+@auth_required
+def api_change_ai():
+    """Đổi nhà cung cấp AI dịch thuật"""
+    global groq_client
+    data = request.get_json() or {}
+
+    # Kiểm tra PIN thiết lập
+    pin = str(data.get('pin', '')).strip()
+    settings_pin = get_config('settings_pin', '9595')
+    if pin != settings_pin:
+        return jsonify({'success': False, 'error': 'Mã PIN không đúng'}), 403
+
+    provider = data.get('provider', 'groq')   # 'groq' | 'google'
+    api_key  = str(data.get('api_key', '')).strip()
+
+    set_config('ai_provider', provider)
+
+    if provider == 'groq':
+        if not api_key:
+            return jsonify({'success': False, 'error': 'Vui lòng nhập Groq API Key'}), 400
+        try:
+            # Test key trước khi lưu
+            test_client = Groq(api_key=api_key)
+            test_client.chat.completions.create(
+                model='llama-3.3-70b-versatile',
+                messages=[{'role': 'user', 'content': 'test'}],
+                max_tokens=1
+            )
+            set_config('groq_api_key', api_key)
+            groq_client = Groq(api_key=api_key)
+            return jsonify({'success': True, 'message': '✅ Đã kết nối Groq thành công!'})
+        except Exception as e:
+            return jsonify({'success': False, 'error': f'API Key không hợp lệ: {str(e)[:100]}'}), 400
+    else:
+        # Chuyển sang Google Translate
+        groq_client = None
+        return jsonify({'success': True, 'message': '✅ Đã chuyển sang Google Translate (miễn phí).'})
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port, debug=app.debug, use_reloader=False)
+    app.run(host='0.0.0.0', port=port, debug=app.debug, use_reloader=False)
