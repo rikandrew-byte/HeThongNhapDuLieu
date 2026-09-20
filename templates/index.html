@@ -3637,24 +3637,28 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
 
             // Tạo bảng phong cách Excel
             const tableWrapper = document.createElement('div');
-            tableWrapper.style.cssText = 'width:100%; overflow-x:auto; border:1px solid #cbd5e1; border-radius:10px; background:#fff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);';
+            tableWrapper.style.cssText = 'width:100%; overflow-x:auto; max-height:calc(100vh - 240px); overflow-y:auto; border:1px solid #cbd5e1; border-radius:10px; background:#fff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);';
 
             const table = document.createElement('table');
-            table.style.cssText = 'width:100%; border-collapse:collapse; font-size:12.5px; text-align:left; min-width:1150px;';
+            table.style.cssText = 'width:100%; border-collapse:separate; border-spacing:0; font-size:12.5px; text-align:left;';
 
             // Headers
             const headers = ['Mã số', 'Họ tên', 'Nhà máy / CSD', 'Thẩm định', 'Tờ Visa', 'Ngày XC thực tế', 'NPT', 'Ghi chú hồ sơ', 'Thao tác'];
             const thead = document.createElement('thead');
             const headerRow = document.createElement('tr');
-            headerRow.style.cssText = 'background:#f8fafc; border-bottom:2px solid #cbd5e1; font-weight:800; color:#334155;';
 
             headers.forEach(h => {
                 const th = document.createElement('th');
-                th.style.padding = '12px 14px';
+                th.style.padding = '10px 12px';
                 th.style.whiteSpace = 'nowrap';
-                th.style.fontSize = '12.5px';
+                th.style.fontSize = '12px';
                 th.style.fontWeight = '800';
                 th.style.color = '#334155';
+                th.style.background = '#f8fafc';
+                th.style.position = 'sticky';
+                th.style.top = '0';
+                th.style.zIndex = '10';
+                th.style.borderBottom = '2px solid #cbd5e1';
                 th.textContent = h;
                 if (h === 'Thao tác') {
                     th.style.textAlign = 'center';
@@ -3668,7 +3672,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             const tbody = document.createElement('tbody');
             filtered.forEach((item, index) => {
                 const tr = document.createElement('tr');
-                tr.style.cssText = `border-bottom:1px solid #e2e8f0; background: ${index % 2 === 0 ? '#ffffff' : '#f8fafc'}; transition: background 0.15s;`;
+                tr.style.cssText = `background: ${index % 2 === 0 ? '#ffffff' : '#f8fafc'}; transition: background 0.15s;`;
                 tr.onmouseenter = () => { tr.style.background = '#f1f5f9'; };
                 tr.onmouseleave = () => { tr.style.background = index % 2 === 0 ? '#ffffff' : '#f8fafc'; };
 
@@ -3694,12 +3698,13 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
 
                 cols.forEach(col => {
                     const td = document.createElement('td');
-                    td.style.padding = '12px 14px';
+                    td.style.padding = '10px 12px';
                     td.style.verticalAlign = 'middle';
+                    td.style.borderBottom = '1px solid #e2e8f0';
                     if (col.nowrap) {
                         td.style.whiteSpace = 'nowrap';
                     } else {
-                        td.style.maxWidth = '250px';
+                        td.style.maxWidth = '180px';
                         td.style.overflow = 'hidden';
                         td.style.textOverflow = 'ellipsis';
                         td.style.whiteSpace = 'nowrap';
@@ -3710,11 +3715,11 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
 
                 // Thao tác
                 const tdAction = document.createElement('td');
-                tdAction.style.cssText = 'padding:8px 14px; text-align:center; vertical-align:middle; white-space:nowrap;';
+                tdAction.style.cssText = 'padding:6px 10px; text-align:center; vertical-align:middle; white-space:nowrap; border-bottom:1px solid #e2e8f0;';
                 tdAction.innerHTML = `
                     <div style="display:flex; gap:6px; justify-content:center; align-items:center;">
-                        <a href="/cv/${item.ma_so === 'CHO_DUYET' ? item.id + '/' : ''}${item.ma_so}${item.ho_ten ? '_' + sanitizeSlug(item.ho_ten) : ''}" target="_blank" style="display:inline-flex; align-items:center; gap:4px; padding:6px 12px; background:#2563eb; color:#fff; border-radius:7px; font-size:11px; font-weight:800; text-decoration:none; cursor:pointer; border:none; transition: all 0.15s; white-space:nowrap;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">🖨️ Xem/In</a>
-                        <button onclick="unarchivePlacement(${item.id})" style="display:inline-flex; align-items:center; gap:4px; padding:6px 12px; background:#fff; color:#d97706; border:1.5px solid #fde68a; border-radius:7px; font-size:11px; font-weight:800; cursor:pointer; transition: all 0.15s; white-space:nowrap;" onmouseover="this.style.background='#fffbeb'" onmouseout="this.style.background='#fff'" title="Phục hồi về bảng Kanban">↩️ Phục hồi</button>
+                        <a href="/cv/${item.ma_so === 'CHO_DUYET' ? item.id + '/' : ''}${item.ma_so}${item.ho_ten ? '_' + sanitizeSlug(item.ho_ten) : ''}" target="_blank" style="display:inline-flex; align-items:center; gap:4px; padding:5px 10px; background:#2563eb; color:#fff; border-radius:7px; font-size:11px; font-weight:800; text-decoration:none; cursor:pointer; border:none; transition: all 0.15s; white-space:nowrap;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">🖨️ Xem/In</a>
+                        <button onclick="unarchivePlacement(${item.id})" style="display:inline-flex; align-items:center; gap:4px; padding:5px 10px; background:#fff; color:#d97706; border:1.5px solid #fde68a; border-radius:7px; font-size:11px; font-weight:800; cursor:pointer; transition: all 0.15s; white-space:nowrap;" onmouseover="this.style.background='#fffbeb'" onmouseout="this.style.background='#fff'" title="Phục hồi về bảng Kanban">↩️ Phục hồi</button>
                     </div>
                 `;
                 tr.appendChild(tdAction);
