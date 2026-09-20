@@ -2034,8 +2034,11 @@
                         }
                         const canvas = document.createElement('canvas');
                         canvas.width = w; canvas.height = h;
-                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                        resolve(canvas.toDataURL('image/jpeg', quality));
+                        const ctx = canvas.getContext('2d');
+                        ctx.imageSmoothingEnabled = true;
+                        ctx.imageSmoothingQuality = 'high';
+                        ctx.drawImage(img, 0, 0, w, h);
+                        resolve(canvas.toDataURL('image/jpeg', quality || 0.95));
                     };
                     img.src = e.target.result;
                 };
@@ -2074,7 +2077,7 @@
             // ── Hàm set ảnh chân dung — lưu base64 vào hidden field ──
             async function setPhoto(file) {
                 if (!file || !file.type.startsWith('image/')) return;
-                const b64 = await resizeToBase64(file, 1200, 0.82);
+                const b64 = await resizeToBase64(file, 1800, 0.95);
                 photoPreview.src = b64;
                 photoPreview.classList.remove('hidden');
                 dropzoneText.classList.add('hidden');
