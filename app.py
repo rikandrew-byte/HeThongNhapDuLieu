@@ -894,16 +894,20 @@ def generate_html_resume(form_data: dict, template_name='fct_template_v6.18.html
         
     return html
 
-def _resize_image_for_db(data_uri: str, max_px: int = 1200, quality: int = 85) -> str:
+def _resize_image_for_db(data_uri: str, max_px: int = 1800, quality: int = 95) -> str:
     if not data_uri or not data_uri.startswith('data:image/'): return data_uri
     try:
         header, encoded = data_uri.split(',', 1)
         img_bytes = base64.b64decode(encoded)
         img = Image.open(io.BytesIO(img_bytes))
-        if max(img.width, img.height) > max_px: img.thumbnail((max_px, max_px), Image.LANCZOS)
+        # Nếu ảnh đã nằm trong kích thước chuẩn và dung lượng vừa phải, giữ nguyên tránh giảm chất lượng nhiều lần
+        if max(img.width, img.height) <= max_px and len(img_bytes) <= 2 * 1024 * 1024:
+            return data_uri
+        if max(img.width, img.height) > max_px:
+            img.thumbnail((max_px, max_px), Image.LANCZOS)
         buf = io.BytesIO()
         if img.mode in ('RGBA', 'P'): img = img.convert('RGB')
-        img.save(buf, format='JPEG', quality=quality, optimize=True)
+        img.save(buf, format='JPEG', quality=quality, subsampling=0, optimize=True)
         return f"data:image/jpeg;base64,{base64.b64encode(buf.getvalue()).decode('utf-8')}"
     except: return data_uri
 
