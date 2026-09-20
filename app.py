@@ -2125,7 +2125,7 @@ def api_export_excel():
         ws_progress.row_dimensions[2].height = 22
 
         p_headers = [
-            'Mã số', 'Họ tên', 'Nhà máy / Chủ sử dụng', 'Tờ thẩm định', 'Tờ Visa',
+            'Mã số', 'Họ tên', 'Nhà máy / CSD', 'Thẩm định', 'Tờ Visa',
             'Hạn hộ chiếu', 'Hạn CCCD', 'Hạn sức khỏe', 'Hạn tư pháp số 2',
             'Tiến độ hiện tại', 'Ngày trình cục', 'Ngày dự kiến có kết quả',
             'Ngày nộp Visa', 'Ngày có Visa', 'Ngày XC dự kiến', 'Ngày XC thực tế',
@@ -2218,7 +2218,7 @@ def api_export_excel():
         sub_d.alignment = Alignment(horizontal="center", vertical="center")
         ws_departed.row_dimensions[2].height = 22
 
-        d_headers = ['Mã số', 'Họ tên', 'Nhà máy / Chủ sử dụng', 'Tờ thẩm định', 'Tờ Visa', 'Ngày xuất cảnh thực tế', 'Người phụ trách', 'Ghi chú hồ sơ']
+        d_headers = ['Mã số', 'Họ tên', 'Nhà máy / CSD', 'Thẩm định', 'Tờ Visa', 'Ngày XC thực tế', 'NPT', 'Ghi chú hồ sơ']
         ws_departed.append(d_headers)
         ws_departed.row_dimensions[4].height = 28
         ws_departed.freeze_panes = 'A5'
@@ -2288,7 +2288,7 @@ def api_export_excel():
         sub_c.alignment = Alignment(horizontal="center", vertical="center")
         ws_cancelled.row_dimensions[2].height = 22
 
-        c_headers = ['Mã số', 'Họ tên', 'Nhà máy / Chủ sử dụng', 'Ngày hủy', 'Lý do hủy hồ sơ', 'Người phụ trách', 'Ghi chú hồ sơ']
+        c_headers = ['Mã số', 'Họ tên', 'Nhà máy / CSD', 'Ngày hủy', 'Lý do hủy hồ sơ', 'NPT', 'Ghi chú hồ sơ']
         ws_cancelled.append(c_headers)
         ws_cancelled.row_dimensions[4].height = 28
         ws_cancelled.freeze_panes = 'A5'
@@ -2745,7 +2745,7 @@ def api_export_progress():
             ]
         else:
             p_headers = [
-                'Mã số', 'Họ tên', 'Nhà máy / Chủ sử dụng', 'Tờ thẩm định', 'Tờ Visa',
+                'Mã số', 'Họ tên', 'Nhà máy / CSD', 'Thẩm định', 'Tờ Visa',
                 'Hạn hộ chiếu', 'Hạn CCCD', 'Hạn sức khỏe', 'Hạn tư pháp số 2',
                 'Tiến độ hiện tại', 'Ngày trình cục', 'Ngày dự kiến có kết quả',
                 'Ngày nộp Visa', 'Ngày có Visa', 'Ngày XC dự kiến', 'Ngày XC thực tế',
@@ -2863,7 +2863,7 @@ def api_export_progress():
         if lang == 'zh-TW':
             d_headers = ['工號', '姓名', '雇主 / 工廠', '核准函', '簽證文號', '實際出境日期', '負責人', '備註']
         else:
-            d_headers = ['Mã số', 'Họ tên', 'Nhà máy / Chủ sử dụng', 'Tờ thẩm định', 'Tờ Visa', 'Ngày xuất cảnh thực tế', 'Người phụ trách', 'Ghi chú hồ sơ']
+            d_headers = ['Mã số', 'Họ tên', 'Nhà máy / CSD', 'Thẩm định', 'Tờ Visa', 'Ngày XC thực tế', 'NPT', 'Ghi chú hồ sơ']
             
         ws_dep.append(d_headers)
         ws_dep.row_dimensions[4].height = 28
