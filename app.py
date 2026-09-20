@@ -22,7 +22,13 @@ from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 from openpyxl.chart import BarChart, PieChart, Reference
 from openpyxl.chart.label import DataLabelList
 from openpyxl.utils import get_column_letter
+from groq import Groq
+
 load_dotenv()
+
+# Configure Groq (thay thế Gemini)
+groq_api_key = os.environ.get('GROQ_API_KEY')
+groq_client = Groq(api_key=groq_api_key) if groq_api_key else None
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 app.debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
@@ -146,33 +152,6 @@ class OrderDoc(db.Model):
     capacity = db.Column(db.Integer, default=0)
     parent_appraisal_id = db.Column(db.String(50), default='')
     note = db.Column(db.Text, default='')
-
-class SystemConfig(db.Model):
-    """Bảng lưu cài đặt hệ thống (key-value)"""
-    __tablename__ = 'system_config'
-    key   = db.Column(db.String(100), primary_key=True)
-    value = db.Column(db.Text, default='')
-
-def get_config(key, default=''):
-    """Đọc cài đặt từ DB, fallback về default"""
-    try:
-        row = SystemConfig.query.get(key)
-        return row.value if (row and row.value) else default
-    except:
-        return default
-
-def set_config(key, value):
-    """Lưu cài đặt vào DB"""
-    try:
-        row = SystemConfig.query.get(key)
-        if row:
-            row.value = value
-        else:
-            db.session.add(SystemConfig(key=key, value=value))
-        db.session.commit()
-    except Exception as e:
-        db.session.rollback()
-        print(f"set_config error: {e}")
 
 def normalize_npt(f48_raw):
     f48 = str(f48_raw or '').strip()
@@ -368,29 +347,6 @@ with app.app_context():
         except Exception as emp_ex:
             print(f"⚠️ Employee list init failed: {emp_ex}")
             db.session.rollback()
-
-        # ── Load SystemConfig từ DB và apply vào globals ──
-        try:
-            saved_pw = get_config('admin_password')
-            if saved_pw:
-                app.config['BASIC_AUTH_PASSWORD'] = saved_pw
-                print("✅ Loaded admin_password from DB.")
-
-            legacy_groq = get_config('groq_api_key')
-            if legacy_groq and not get_config('ai_api_key'):
-                set_config('ai_api_key', legacy_groq)
-                set_config('ai_provider', 'groq')
-                print("✅ Migrated groq_api_key to ai_api_key.")
-
-            # Seed mặc định settings_pin = 9595 nếu chưa có
-            if not SystemConfig.query.get('settings_pin'):
-                db.session.add(SystemConfig(key='settings_pin', value='9595'))
-                db.session.commit()
-                print("✅ Default settings_pin=9595 seeded.")
-        except Exception as cfg_ex:
-            print(f"⚠️ SystemConfig load failed: {cfg_ex}")
-            db.session.rollback()
-
     except Exception as e:
         print(f"❌ Database initialization error: {e}")
 
@@ -530,57 +486,6 @@ def translate_fixed(text: str) -> str:
     if not text: return text
     return FIXED_TRANS.get(text.strip().lower(), text)
 
-def call_ai_translation(prompt: str) -> str:
-    """Gọi HTTP API dịch thuật đa nền tảng"""
-    provider = get_config('ai_provider', 'google')
-    api_key = get_config('ai_api_key', '')
-
-    if provider == 'google' or not api_key:
-        return "" # Sẽ fallback xuống Google Translate
-
-    import requests
-    try:
-        if provider == 'groq':
-            headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-            data = {"model": "llama-3.3-70b-versatile", "messages": [{"role": "user", "content": prompt}], "temperature": 0.1, "max_tokens": 500}
-            resp = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=data, timeout=15)
-            if resp.status_code == 200: return resp.json()["choices"][0]["message"]["content"].strip()
-
-        elif provider == 'openai':
-            headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-            data = {"model": "gpt-4o-mini", "messages": [{"role": "user", "content": prompt}], "temperature": 0.1, "max_tokens": 500}
-            resp = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=data, timeout=15)
-            if resp.status_code == 200: return resp.json()["choices"][0]["message"]["content"].strip()
-
-        elif provider == 'gemini':
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
-            data = {"contents": [{"parts":[{"text": prompt}]}]}
-            resp = requests.post(url, json=data, timeout=15)
-            if resp.status_code == 200: return resp.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
-
-        elif provider == 'anthropic':
-            headers = {"x-api-key": api_key, "anthropic-version": "2023-06-01", "content-type": "application/json"}
-            data = {"model": "claude-3-haiku-20240307", "max_tokens": 500, "messages": [{"role": "user", "content": prompt}], "temperature": 0.1}
-            resp = requests.post("https://api.anthropic.com/v1/messages", headers=headers, json=data, timeout=15)
-            if resp.status_code == 200: return resp.json()["content"][0]["text"].strip()
-
-        elif provider == 'deepseek':
-            headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-            data = {"model": "deepseek-chat", "messages": [{"role": "user", "content": prompt}], "temperature": 0.1, "max_tokens": 500}
-            resp = requests.post("https://api.deepseek.com/chat/completions", headers=headers, json=data, timeout=15)
-            if resp.status_code == 200: return resp.json()["choices"][0]["message"]["content"].strip()
-
-        elif provider == 'openrouter':
-            headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-            data = {"model": "meta-llama/llama-3.3-70b-instruct", "messages": [{"role": "user", "content": prompt}], "temperature": 0.1, "max_tokens": 500}
-            resp = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=data, timeout=15)
-            if resp.status_code == 200: return resp.json()["choices"][0]["message"]["content"].strip()
-
-    except Exception as e:
-        print(f"AI Translation API Error ({provider}): {e}")
-    
-    return "" # Lỗi hoặc không khớp thì trả về chuỗi rỗng để Fallback
-
 def translate_name(text: str) -> str:
     """Dành riêng cho dịch Họ Tên: Ưu tiên từ điển tên để tránh nhầm với tiếng Anh"""
     if not text or not text.strip() or is_chinese(text): return text
@@ -594,13 +499,23 @@ def translate_name(text: str) -> str:
     if dict_result is not None:
         return dict_result
 
-    # 2. Nếu không có trong từ điển, dùng AI hoặc Google Translate
+    # 2. Nếu không có trong từ điển, dùng Groq hoặc Google Translate
     try:
-        prompt = f"Dịch tên tiếng Việt sau sang tiếng Trung Phồn Thể một cách tự nhiên nhất (âm Hán Việt nếu có thể), chỉ trả về đúng tên đã dịch, tuyệt đối không giải thích thêm: {text_normalized}"
-        result = call_ai_translation(prompt)
-        if not result:
+        if groq_client:
+            completion = groq_client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[{
+                    "role": "user",
+                    "content": f"Dịch tên tiếng Việt sau sang tiếng Trung Phồn Thể một cách tự nhiên nhất (âm Hán Việt nếu có thể), chỉ trả về đúng tên đã dịch, tuyệt đối không giải thích thêm: {text_normalized}"
+                }],
+                temperature=0.1,
+                max_tokens=100,
+            )
+            result = completion.choices[0].message.content.strip()
+            return result if result else text_normalized
+        else:
             result = GoogleTranslator(source='vi', target='zh-TW').translate(text_normalized)
-        return result if result else text_normalized
+            return result if result else text_normalized
     except Exception as e:
         print(f"Name translation error: {e}")
         try:
@@ -650,11 +565,20 @@ def translate_free(text: str) -> str:
         _FREE_TRANS_CACHE[text_lower] = res_val
         return res_val
 
-    # 3. Dùng AI hoặc Google Translate cho đoạn văn
+    # 3. Dùng Groq hoặc Google Translate cho đoạn văn
     try:
-        prompt = f"Bạn là chuyên gia dịch thuật CV xuất khẩu lao động Đài Loan. Hãy dịch đoạn kinh nghiệm làm việc sau sang tiếng Trung Phồn Thể. Yêu cầu: dịch sát nghĩa, chuẩn thuật ngữ nghề nghiệp (cơ khí, điện, xây dựng, nhà máy, dệt may...), giữ nguyên cách dòng và định dạng nếu có. Tuyệt đối KHÔNG kèm theo lời giải thích hay bình luận, chỉ trả về đúng kết quả dịch. Đoạn văn bản cần dịch: '{processed_text.strip()}'"
-        result = call_ai_translation(prompt)
-        if not result:
+        if groq_client:
+            completion = groq_client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[{
+                    "role": "user",
+                    "content": f"Bạn là chuyên gia dịch thuật CV xuất khẩu lao động Đài Loan. Hãy dịch đoạn kinh nghiệm làm việc sau sang tiếng Trung Phồn Thể. Yêu cầu: dịch sát nghĩa, chuẩn thuật ngữ nghề nghiệp (cơ khí, điện, xây dựng, nhà máy, dệt may...), giữ nguyên cách dòng và định dạng nếu có. Tuyệt đối KHÔNG kèm theo lời giải thích hay bình luận, chỉ trả về đúng kết quả dịch. Đoạn văn bản cần dịch: '{processed_text.strip()}'"
+                }],
+                temperature=0.1,
+                max_tokens=500,
+            )
+            result = completion.choices[0].message.content.strip()
+        else:
             result = GoogleTranslator(source='vi', target='zh-TW').translate(processed_text.strip())
 
         
@@ -2588,7 +2512,7 @@ def api_export_excel():
                 series.dLbls = DataLabelList()
                 series.dLbls.showVal = True
                 
-            ws_stat.add_chart(chart1, "D9")
+            ws_stat.add_chart(chart1, "D18")
             
         # Chart 2: Nhóm ngành nghề (PieChart)
         if job_type_count:
@@ -2606,7 +2530,7 @@ def api_export_excel():
             chart_job.dataLabels = DataLabelList()
             chart_job.dataLabels.showVal = True
             
-            ws_stat.add_chart(chart_job, "J9")
+            ws_stat.add_chart(chart_job, "J18")
             
         # Chart 3: Trình độ văn hóa (PieChart)
         if edu_count:
@@ -2624,14 +2548,14 @@ def api_export_excel():
             pie.dataLabels = DataLabelList()
             pie.dataLabels.showVal = True
             
-            ws_stat.add_chart(pie, "D23")
+            ws_stat.add_chart(pie, "D35")
             
-        # Chart 4: Nơi ở / Quê quán (PieChart SIÊU TO KHỔNG LỒ)
+        # Chart 4: Nơi ở / Quê quán (PieChart)
         if location_count:
             chart_loc = PieChart()
             chart_loc.title = "Phân bổ theo Nơi ở / Quê quán"
-            chart_loc.width = 24
-            chart_loc.height = 11
+            chart_loc.width = 17
+            chart_loc.height = 7.5
             chart_loc.legend.position = "b"
             
             data_loc = Reference(ws_stat, min_col=2, min_row=row_loc, max_row=row_loc_total-1)
@@ -2642,7 +2566,7 @@ def api_export_excel():
             chart_loc.dataLabels = DataLabelList()
             chart_loc.dataLabels.showVal = True
             
-            ws_stat.add_chart(chart_loc, f"D{row_loc}")
+            ws_stat.add_chart(chart_loc, "J35")
 
         # Cấu hình kích thước cột cho lưới
         ws_stat.column_dimensions['A'].width = 25
@@ -2943,9 +2867,6 @@ def api_export_progress():
                          mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                          as_attachment=True,
                          download_name=download_name)
-    except Exception as e:
-        print(traceback.format_exc())
-        return jsonify({'success': False, 'error': str(e)}), 500
     except Exception as e:
         print(traceback.format_exc())
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -3377,82 +3298,6 @@ def api_update_placement(record_id):
     db.session.commit()
     return jsonify({'success': True})
 
-# ==========================================
-# ─── SYSTEM SETTINGS API ─────────────────
-# ==========================================
-
-@app.route('/api/settings', methods=['GET'])
-@auth_required
-def api_get_settings():
-    """Trả về cài đặt hiện tại (ẩn key nhạy cảm)"""
-    api_key_stored = get_config('ai_api_key', '')
-    hint = (api_key_stored[:8] + '...' + api_key_stored[-4:]) if len(api_key_stored) > 12 else ('***' if api_key_stored else '')
-    provider = get_config('ai_provider', 'google')
-    return jsonify({
-        'ai_provider': provider,
-        'ai_key_hint': hint,
-        'has_ai_key': bool(api_key_stored),
-        'ai_active': bool(api_key_stored) and provider != 'google',
-    })
-
-@app.route('/api/settings/password', methods=['POST'])
-@auth_required
-def api_change_password():
-    """Đổi mật khẩu đăng nhập /fct-1503"""
-    global groq_client
-    data = request.get_json() or {}
-
-    # Kiểm tra PIN thiết lập
-    pin = str(data.get('pin', '')).strip()
-    settings_pin = get_config('settings_pin', '9595')
-    if pin != settings_pin:
-        return jsonify({'success': False, 'error': 'Mã PIN không đúng'}), 403
-
-    current_pw = str(data.get('current_password', '')).strip()
-    new_pw     = str(data.get('new_password', '')).strip()
-    confirm_pw = str(data.get('confirm_password', '')).strip()
-
-    # Xác minh mật khẩu hiện tại
-    real_current = get_config('admin_password', app.config.get('BASIC_AUTH_PASSWORD', ''))
-    if current_pw != real_current:
-        return jsonify({'success': False, 'error': 'Mật khẩu hiện tại không đúng'}), 400
-    if len(new_pw) < 4:
-        return jsonify({'success': False, 'error': 'Mật khẩu mới phải có ít nhất 4 ký tự'}), 400
-    if new_pw != confirm_pw:
-        return jsonify({'success': False, 'error': 'Xác nhận mật khẩu không khớp'}), 400
-
-    # Lưu & apply ngay
-    set_config('admin_password', new_pw)
-    app.config['BASIC_AUTH_PASSWORD'] = new_pw
-    return jsonify({'success': True, 'message': '✅ Đổi mật khẩu thành công! Vui lòng đăng nhập lại.'})
-
-@app.route('/api/settings/ai', methods=['POST'])
-@auth_required
-def api_change_ai():
-    """Đổi nhà cung cấp AI dịch thuật"""
-    data = request.get_json() or {}
-
-    # Kiểm tra PIN thiết lập
-    pin = str(data.get('pin', '')).strip()
-    settings_pin = get_config('settings_pin', '9595')
-    if pin != settings_pin:
-        return jsonify({'success': False, 'error': 'Mã PIN không đúng'}), 403
-
-    provider = data.get('provider', 'google')
-    api_key  = str(data.get('api_key', '')).strip()
-
-    set_config('ai_provider', provider)
-
-    if provider != 'google':
-        if not api_key:
-            return jsonify({'success': False, 'error': f'Vui lòng nhập API Key cho {provider}'}), 400
-        
-        set_config('ai_api_key', api_key)
-        return jsonify({'success': True, 'message': f'✅ Đã cấu hình {provider.capitalize()} thành công!'})
-    else:
-        # Chuyển sang Google Translate
-        return jsonify({'success': True, 'message': '✅ Đã chuyển sang Google Translate (miễn phí).'})
-
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port, debug=app.debug, use_reloader=False)
+    app.run(host='0.0.0.0', port=port, debug=app.debug, use_reloader=False)
