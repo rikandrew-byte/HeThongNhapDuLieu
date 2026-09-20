@@ -279,6 +279,61 @@
             -webkit-print-color-adjust: exact;
         }
 
+        /* KINH NGHIỆM LÀM VIỆC - THANH THOÁT, DỄ ĐỌC, ĐỒNG ĐIỀU */
+        .exp-timeline {
+            position: relative;
+            border-left: 2px solid #a5f3fc;
+            margin-left: 10px;
+            padding-top: 4px;
+            flex: 1;
+        }
+        .exp-item {
+            position: relative;
+            padding-left: 18px;
+            margin-bottom: 14px;
+        }
+        .exp-item:last-child {
+            margin-bottom: 0;
+        }
+        .exp-dot {
+            position: absolute;
+            width: 9px;
+            height: 9px;
+            background: #d4af37;
+            border-radius: 50%;
+            left: -5.5px;
+            top: 5px;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 0 1px #0891b2;
+        }
+        .exp-title {
+            font-size: 13.5px !important;
+            font-weight: 700 !important;
+            color: #0f172a !important;
+            line-height: 1.4 !important;
+            letter-spacing: 0.03em !important;
+            font-family: 'Be Vietnam Pro', 'Microsoft JhengHei', 'PingFang TC', sans-serif !important;
+            margin-bottom: 4px;
+        }
+        .exp-meta {
+            font-size: 12px !important;
+            font-weight: 600 !important;
+            color: #0891b2 !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Be Vietnam Pro', 'Microsoft JhengHei', sans-serif !important;
+            letter-spacing: 0.03em !important;
+        }
+        .exp-meta-badge {
+            background: #ecfeff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid #cffafe;
+            color: #0e7490;
+            font-weight: 700;
+        }
+
         /* VIDEO CLIP BUTTON - HOÀNG KIM & BÍCH NGỌC */
         .video-clip-btn {
             display: inline-flex;
@@ -554,10 +609,37 @@
                     <div class="section-title">
                         <span><span class="text-amber-500 mr-1">✦</span>Kinh nghiệm làm việc</span><span>工作經驗</span>
                     </div>
-                    <div class="space-y-1 relative border-l-2 border-cyan-100 ml-4 flex-1">
-                        {% if ndcv1 %}<div class="pl-6 relative mb-4"><div class="absolute w-2.5 h-2.5 bg-amber-500 rounded-full -left-[6px] border-2 border-white top-1.5 shadow-sm"></div><h3 class="text-[15px] font-bold text-slate-900 uppercase leading-snug">{{ndcv1}}</h3><p class="text-[14px] text-cyan-700 font-bold mt-1">{{QG1}} ({{N1}})</p></div>{% endif %}
-                        {% if ndcv2 %}<div class="pl-6 relative mb-4"><div class="absolute w-2.5 h-2.5 bg-amber-500 rounded-full -left-[6px] border-2 border-white top-1.5 shadow-sm"></div><h3 class="text-[15px] font-bold text-slate-900 uppercase leading-snug">{{ndcv2}}</h3><p class="text-[14px] text-cyan-700 font-bold mt-1">{{QG2}} ({{N2}})</p></div>{% endif %}
-                        {% if ndcv3 %}<div class="pl-6 relative mb-2"><div class="absolute w-2.5 h-2.5 bg-amber-500 rounded-full -left-[6px] border-2 border-white top-1.5 shadow-sm"></div><h3 class="text-[15px] font-bold text-slate-900 uppercase leading-snug">{{ndcv3}}</h3><p class="text-[14px] text-cyan-700 font-bold mt-1">{{QG3}} ({{N3}})</p></div>{% endif %}
+                    <div class="exp-timeline">
+                        {% if ndcv1 %}
+                        <div class="exp-item">
+                            <div class="exp-dot"></div>
+                            <div class="exp-title">{{ndcv1}}</div>
+                            <div class="exp-meta">
+                                <span class="exp-meta-badge">{{QG1}}</span>
+                                <span class="text-slate-600 font-semibold">({{N1}})</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if ndcv2 %}
+                        <div class="exp-item">
+                            <div class="exp-dot"></div>
+                            <div class="exp-title">{{ndcv2}}</div>
+                            <div class="exp-meta">
+                                <span class="exp-meta-badge">{{QG2}}</span>
+                                <span class="text-slate-600 font-semibold">({{N2}})</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if ndcv3 %}
+                        <div class="exp-item">
+                            <div class="exp-dot"></div>
+                            <div class="exp-title">{{ndcv3}}</div>
+                            <div class="exp-meta">
+                                <span class="exp-meta-badge">{{QG3}}</span>
+                                <span class="text-slate-600 font-semibold">({{N3}})</span>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
                 </section>
             </div>
