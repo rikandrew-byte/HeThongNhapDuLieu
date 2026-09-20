@@ -2512,7 +2512,7 @@ def api_export_excel():
                 series.dLbls = DataLabelList()
                 series.dLbls.showVal = True
                 
-            ws_stat.add_chart(chart1, "D9")
+            ws_stat.add_chart(chart1, "D18")
             
         # Chart 2: Nhóm ngành nghề (PieChart)
         if job_type_count:
@@ -2530,7 +2530,7 @@ def api_export_excel():
             chart_job.dataLabels = DataLabelList()
             chart_job.dataLabels.showVal = True
             
-            ws_stat.add_chart(chart_job, "J9")
+            ws_stat.add_chart(chart_job, "J18")
             
         # Chart 3: Trình độ văn hóa (PieChart)
         if edu_count:
@@ -2548,14 +2548,14 @@ def api_export_excel():
             pie.dataLabels = DataLabelList()
             pie.dataLabels.showVal = True
             
-            ws_stat.add_chart(pie, "D23")
+            ws_stat.add_chart(pie, "D35")
             
-        # Chart 4: Nơi ở / Quê quán (PieChart SIÊU TO KHỔNG LỒ)
+        # Chart 4: Nơi ở / Quê quán (PieChart)
         if location_count:
             chart_loc = PieChart()
             chart_loc.title = "Phân bổ theo Nơi ở / Quê quán"
-            chart_loc.width = 24
-            chart_loc.height = 11
+            chart_loc.width = 17
+            chart_loc.height = 7.5
             chart_loc.legend.position = "b"
             
             data_loc = Reference(ws_stat, min_col=2, min_row=row_loc, max_row=row_loc_total-1)
@@ -2566,7 +2566,7 @@ def api_export_excel():
             chart_loc.dataLabels = DataLabelList()
             chart_loc.dataLabels.showVal = True
             
-            ws_stat.add_chart(chart_loc, f"D{row_loc}")
+            ws_stat.add_chart(chart_loc, "J35")
 
         # Cấu hình kích thước cột cho lưới
         ws_stat.column_dimensions['A'].width = 25
@@ -2867,9 +2867,6 @@ def api_export_progress():
                          mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                          as_attachment=True,
                          download_name=download_name)
-    except Exception as e:
-        print(traceback.format_exc())
-        return jsonify({'success': False, 'error': str(e)}), 500
     except Exception as e:
         print(traceback.format_exc())
         return jsonify({'success': False, 'error': str(e)}), 500
