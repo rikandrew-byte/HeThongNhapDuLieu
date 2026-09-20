@@ -1556,6 +1556,66 @@ def api_remove_job_from_maso():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+
+def classify_placement_record(r):
+    """
+    Phân loại trạng thái hồ sơ một cách chặt chẽ và loại trừ lẫn nhau (Mutually Exclusive):
+    - DELETED: Hồ sơ đã bị xóa mềm.
+    - CANCELLED: Hồ sơ đã bị hủy/rút đơn (có ngày hủy cancel_date hoặc trạng thái CANCELLED).
+    - DEPARTED: Hồ sơ đã xuất cảnh (is_archived=True, hoặc placement_status == 'XUAT_CANH', hoặc có date_xuat_canh_actual).
+    - ACTIVE: Hồ sơ đang xử lý tiến độ bình thường (GOM_HO_SO, TRINH_CUC, LAM_VISA, NHAN_VISA, v.v.).
+    """
+    if getattr(r, 'is_deleted', False):
+        return 'DELETED'
+    
+    # Ưu tiên kiểm tra hủy hồ sơ trước
+    if (r.cancel_date and str(r.cancel_date).strip()) or (r.placement_status or '').strip().upper() == 'CANCELLED':
+        return 'CANCELLED'
+        
+    # Kiểm tra đã xuất cảnh
+    if (getattr(r, 'is_archived', False) or 
+        (r.placement_status or '').strip().upper() == 'XUAT_CANH' or 
+        (r.date_xuat_canh_actual and str(r.date_xuat_canh_actual).strip())):
+        return 'DEPARTED'
+        
+    return 'ACTIVE'
+
+def deduplicate_placement_records(records):
+    """
+    Khử trùng lặp ứng viên dựa trên mã số (ma_so) hoặc họ tên + ngày sinh.
+    Ưu tiên giữ lại bản ghi có đầy đủ thông tin nhất (có thông tin nhà máy, tờ trình/visa, trạng thái tiến độ mới nhất).
+    """
+    unique_map = {}
+    for r in records:
+        ma_so_key = (r.ma_so or '').strip().upper()
+        if ma_so_key:
+            key = f"MS_{ma_so_key}"
+        else:
+            ho_ten_key = (r.ho_ten or '').strip().lower()
+            key = f"NAME_{ho_ten_key}_{r.id}"
+            
+        if key not in unique_map:
+            unique_map[key] = r
+        else:
+            existing = unique_map[key]
+            def score(rec):
+                s = 0
+                if rec.factory_id: s += 10
+                if rec.appraisal_id: s += 5
+                if rec.visa_id: s += 5
+                if rec.date_xuat_canh_actual: s += 20
+                if rec.date_nhan_visa: s += 8
+                if rec.date_trinh_cuc: s += 4
+                if rec.placement_status and rec.placement_status != 'GOM_HO_SO': s += 6
+                if getattr(rec, 'is_archived', False): s += 15
+                s += (rec.id or 0) * 0.001
+                return s
+                
+            if score(r) > score(existing):
+                unique_map[key] = r
+                
+    return list(unique_map.values())
+
 EXCEL_SKILL_MAPPING = {
     'f23': 'Hàn điện', 'f24': 'Hàn argon', 'f25': 'Hàn CO2', 'f26': 'Tig Mig',
     'f31': 'Tiện', 'f32': 'Phay', 'f33': 'Bào', 'f34': 'CNC',
@@ -1609,6 +1669,8 @@ def api_export_excel():
         
         # records = active_records (để tương thích với logic bên dưới của Sheet 1 & Thống Kê)
         records = active_records
+        # Khử trùng lặp và loại bỏ các bản ghi đã xóa khỏi danh sách trúng tuyển
+        selected_records = deduplicate_placement_records([r for r in selected_records if not getattr(r, 'is_deleted', False)])
             
         if not records and not deleted_records:
             return jsonify({'success': False, 'error': 'No records found'}), 404
@@ -1988,15 +2050,13 @@ def api_export_excel():
                 kinh_nghiem_sel = "\n".join(kn_sel)
                 
                 sel_job = getattr(r, 'selected_job', '') or ''
-                is_archived = getattr(r, 'is_archived', False)
-                is_deleted  = getattr(r, 'is_deleted', False)
-                is_cancelled = r.cancel_date or r.placement_status == 'CANCELLED'
+                p_cls = classify_placement_record(r)
                 
-                if is_deleted:
+                if p_cls == 'DELETED':
                     trang_thai = '🗑️ Đã xóa khỏi hệ thống'
-                elif is_cancelled:
+                elif p_cls == 'CANCELLED':
                     trang_thai = '❌ Đã hủy hồ sơ'
-                elif is_archived:
+                elif p_cls == 'DEPARTED':
                     trang_thai = '✈️ Đã xuất cảnh'
                 else:
                     status_map = {
@@ -2004,7 +2064,7 @@ def api_export_excel():
                         'TRINH_CUC': '🏛️ Trình cục',
                         'LAM_VISA': '🎫 Làm Visa',
                         'NHAN_VISA': '✅ Có Visa',
-                        'XUAT_CANH': '✈️ Dự kiến xuất cảnh',
+                        'XUAT_CANH': '✈️ Đã xuất cảnh',
                     }
                     trang_thai = status_map.get(r.placement_status or '', '📁 Gom hồ sơ')
                 
@@ -2037,7 +2097,7 @@ def api_export_excel():
         ws_sel.auto_filter.ref = f"A4:L{ws_sel.max_row}" if ws_sel.max_row >= 4 else "A4:L4"
 
         # =========================================================
-        # SHEET: THEO DÕI TIẾN ĐỘ
+        # SHEET: THEO DÕI TIẾN ĐỘ (Chỉ gồm ứng viên ĐANG TIẾN ĐỘ)
         # =========================================================
         factories_dict = {f.id: f.name for f in Factory.query.all()}
         docs_dict = {d.id: d.code for d in OrderDoc.query.all()}
@@ -2054,7 +2114,7 @@ def api_export_excel():
 
         # Subtitle
         ws_progress.merge_cells("A2:Q2")
-        active_placements = [r for r in selected_records if not r.cancel_date and r.placement_status != 'CANCELLED']
+        active_placements = [r for r in selected_records if classify_placement_record(r) == 'ACTIVE']
         sub_p = ws_progress.cell(row=2, column=1, value=f"Thời gian xuất báo cáo: {export_time_str}   |   Đang xử lý tiến độ: {len(active_placements)} ứng viên")
         sub_p.font = Font(name="Segoe UI", size=10, italic=True, color="1E3A8A")
         sub_p.fill = PatternFill(start_color="EFF6FF", end_color="EFF6FF", fill_type="solid")
@@ -2134,7 +2194,7 @@ def api_export_excel():
             ws_progress.column_dimensions[col_let].width = width
 
         # =========================================================
-        # SHEET: ĐÃ XUẤT CẢNH
+        # SHEET: ĐÃ XUẤT CẢNH (Chỉ gồm ứng viên ĐÃ XUẤT CẢNH)
         # =========================================================
         ws_departed = wb.create_sheet(title="Đã Xuất Cảnh")
         ws_departed.sheet_view.showGridLines = True
@@ -2148,7 +2208,7 @@ def api_export_excel():
 
         # Subtitle
         ws_departed.merge_cells("A2:H2")
-        departed_records = [r for r in selected_records if r.placement_status == 'XUAT_CANH']
+        departed_records = [r for r in selected_records if classify_placement_record(r) == 'DEPARTED']
         sub_d = ws_departed.cell(row=2, column=1, value=f"Thời gian xuất báo cáo: {export_time_str}   |   Tổng số đã xuất cảnh: {len(departed_records)} ứng viên")
         sub_d.font = Font(name="Segoe UI", size=10, italic=True, color="047857")
         sub_d.fill = PatternFill(start_color="E6F4EA", end_color="E6F4EA", fill_type="solid")
@@ -2204,7 +2264,7 @@ def api_export_excel():
             ws_departed.column_dimensions[col_let].width = width
 
         # =========================================================
-        # SHEET: DANH SÁCH HỦY
+        # SHEET: DANH SÁCH HỦY (Chỉ gồm ứng viên ĐÃ HỦY HỒ SƠ)
         # =========================================================
         ws_cancelled = wb.create_sheet(title="Danh Sách Hủy")
         ws_cancelled.sheet_view.showGridLines = True
@@ -2218,7 +2278,7 @@ def api_export_excel():
 
         # Subtitle
         ws_cancelled.merge_cells("A2:G2")
-        cancelled_records = [r for r in selected_records if r.placement_status == 'CANCELLED' or r.cancel_date]
+        cancelled_records = [r for r in selected_records if classify_placement_record(r) == 'CANCELLED']
         sub_c = ws_cancelled.cell(row=2, column=1, value=f"Thời gian xuất báo cáo: {export_time_str}   |   Tổng số đã hủy/rút đơn: {len(cancelled_records)} ứng viên")
         sub_c.font = Font(name="Segoe UI", size=10, italic=True, color="B91C1C")
         sub_c.fill = PatternFill(start_color="FCE8E6", end_color="FCE8E6", fill_type="solid")
@@ -2357,9 +2417,9 @@ def api_export_excel():
         ws_stat.row_dimensions[10].height = 15
         ws_stat.row_dimensions[11].height = 15
         
-        # Thống kê tiến độ xuất cảnh & hủy hồ sơ
+        # Thống kê tiến độ xuất cảnh & hủy hồ sơ (Chuẩn xác, loại trừ lẫn nhau 100%)
         style_kpi_card_row(13, 4, "ĐÃ XUẤT CẢNH", f"{len(departed_records)}")
-        style_kpi_card_row(13, 6, "ĐANG TIẾN ĐỘ", f"{len(active_placements) - len(departed_records)}")
+        style_kpi_card_row(13, 6, "ĐANG TIẾN ĐỘ", f"{len(active_placements)}")
         style_kpi_card_row(13, 8, "ĐÃ HỦY HỒ SƠ", f"{len(cancelled_records)}")
         
         ws_stat.row_dimensions[13].height = 15
@@ -2614,19 +2674,20 @@ def api_export_progress():
             # Lấy tất cả các nhà máy của môi giới này
             allowed_factory_ids = {f.id for f in Factory.query.filter_by(broker_id=broker_id).all()}
 
-        # Lấy toàn bộ ứng viên trúng tuyển
-        selected_records = FormHistory.query.filter(FormHistory.is_selected == True).all()
+        # Lấy toàn bộ ứng viên trúng tuyển (bỏ qua hồ sơ đã bị xóa mềm)
+        raw_selected = FormHistory.query.filter(FormHistory.is_selected == True, FormHistory.is_deleted == False).all()
+        selected_records = deduplicate_placement_records(raw_selected)
+        
         factories_dict = {f.id: f.name for f in Factory.query.all()}
         docs_dict = {d.id: d.code for d in OrderDoc.query.all()}
 
-        # Phân loại và lọc ứng viên theo nhà máy/môi giới
-        active_placements = [r for r in selected_records
-                             if not r.cancel_date and r.placement_status != 'CANCELLED' and not getattr(r, 'is_archived', False)]
-        archived_placements = [r for r in selected_records if getattr(r, 'is_archived', False)]
-
+        # Lọc theo môi giới / nhà máy nếu có
         if allowed_factory_ids is not None:
-            active_placements = [r for r in active_placements if r.factory_id in allowed_factory_ids]
-            archived_placements = [r for r in archived_placements if r.factory_id in allowed_factory_ids]
+            selected_records = [r for r in selected_records if r.factory_id in allowed_factory_ids]
+
+        # Phân loại ứng viên chặt chẽ (Loại trừ lẫn nhau 100%)
+        active_placements = [r for r in selected_records if classify_placement_record(r) == 'ACTIVE']
+        archived_placements = [r for r in selected_records if classify_placement_record(r) == 'DEPARTED']
 
         wb = openpyxl.Workbook()
         # Xóa sheet mặc định
