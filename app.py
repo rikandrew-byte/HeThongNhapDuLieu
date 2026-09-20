@@ -382,6 +382,17 @@ FIXED_TRANS = {
     'chăn nuôi': '畜牧', 'thủy sản': '水產', 'nhựa': '塑膠',
     'lái xe': '駕駛', 'tài xế': '司機', 'xe nâng': '堆高機', 'lái xe nâng': '堆高機',
     'cnc': 'CNC', 'tig mig': 'Tig/Mig',
+    'khỏe mạnh': '身體健康', 'khoe manh': '身體健康', 'khoẻ mạnh': '身體健康',
+    'nhanh nhẹn': '動作敏捷', 'nhanh nhen': '動作敏捷',
+    'chăm chỉ': '勤勞', 'cham chi': '勤勞',
+    'thật thà': '誠實', 'that tha': '誠實',
+    'chịu khó': '肯吃苦', 'chiu kho': '肯吃苦',
+    'ngoan ngoãn': '乖巧', 'ngoan ngoan': '乖巧',
+    'khỏe mạnh, nhanh nhẹn': '身體健康，動作敏捷', 'khoẻ mạnh, nhanh nhẹn': '身體健康，動作敏捷',
+    'khoe manh, nhanh nhen': '身體健康，動作敏捷',
+    'chăm chỉ, chịu khó': '勤勞，肯吃苦', 'cham chi, chiu kho': '勤勞，肯吃苦',
+    'nhanh nhẹn, chịu khó': '動作敏捷，肯吃苦', 'nhanh nhen, chiu kho': '動作敏捷，肯吃苦',
+    'nhanh nhẹn, chăm chỉ': '動作敏捷，勤勞', 'nhanh nhen, cham chi': '動作敏捷，勤勞',
 }
 
 
@@ -479,6 +490,11 @@ ZH_TO_VI = {
 
 
 # --- HELPERS ---
+def is_date_or_numeric(text: str) -> bool:
+    if not text: return True
+    s = str(text).strip()
+    return bool(re.match(r'^[\d\s\-/.\–—年月日~:()]+$', s))
+
 def is_chinese(text: str) -> bool:
     if not text: return False
     cjk_count = sum(1 for c in text if '\u4e00' <= c <= '\u9fff' or '\u3400' <= c <= '\u4dbf' or '\uf900' <= c <= '\ufaff')
@@ -531,7 +547,7 @@ _FREE_TRANS_CACHE = {}
 
 def translate_free(text: str) -> str:
     """Dành cho dịch nội dung tự do (công việc, địa chỉ): Ưu tiên thuật ngữ nghề nghiệp"""
-    if not text or not text.strip() or is_chinese(text): return text
+    if not text or not text.strip() or is_chinese(text) or is_date_or_numeric(text): return text
     
     # Chuẩn hóa Unicode NFC để tránh lỗi so khớp do khác biệt Unicode encoding (NFC/NFD)
     text_normalized = normalize('NFC', text)
@@ -719,11 +735,14 @@ def prepare_render_data(raw_data: dict) -> dict:
     if not data['Tuoi'] and raw_data.get('Ngaysinh'): data['Tuoi'] = calc_age(raw_data.get('Ngaysinh'))
 
     # Dịch các trường nội dung tự do sang tiếng Trung
-    # translate_free() tự bỏ qua nếu nội dung đã là tiếng Trung (is_chinese() guard)
+    # translate_free() tự bỏ qua nếu nội dung đã là tiếng Trung hoặc là ngày tháng/số
     # → Hồ sơ mới: dữ liệu đã là tiếng Trung từ Frontend → 0 lần gọi API
     # → Hồ sơ cũ: dữ liệu là tiếng Việt → dịch qua ThreadPoolExecutor
-    fields_to_translate = ['Noio', 'ndcv1', 'ndcv2', 'ndcv3', 'loi_binh_1', 'N1', 'N2', 'N3']
-    non_empty = {f: data[f] for f in fields_to_translate if data.get(f, '').strip()}
+    fields_to_translate = ['Noio', 'ndcv1', 'ndcv2', 'ndcv3', 'loi_binh_1']
+    non_empty = {
+        f: data[f] for f in fields_to_translate 
+        if data.get(f, '').strip() and not is_chinese(data[f]) and not is_date_or_numeric(data[f])
+    }
     if non_empty:
         from concurrent.futures import ThreadPoolExecutor, as_completed
         with ThreadPoolExecutor(max_workers=min(len(non_empty), 4)) as executor:
@@ -1051,7 +1070,7 @@ def api_preview(record_id):
     try:
         record = FormHistory.query.get(record_id)
         if not record: return "Not found", 404
-        html_content = generate_html_resume(json.loads(record.data_json))
+        html_content = generate_html_resume(json.loads(record.data_json), skip_images=True)
         return Response(html_content, mimetype="text/html", headers={"Content-Type": "text/html; charset=utf-8"})
     except Exception as e: return str(e), 500
 
@@ -1095,7 +1114,7 @@ def secure_web_view(slug):
         # Kiểm tra maso trong slug (nếu có id/maso) để đảm bảo tính bảo mật/nhất quán
         # (Nếu dùng Maso từ slug thì record đã khớp rồi)
         
-        html_content = generate_html_resume(json.loads(record.data_json))
+        html_content = generate_html_resume(json.loads(record.data_json), skip_images=True)
         # Tạo tên file đẹp cho trình duyệt
         clean_name = sanitize_filename_master(record.ho_ten)
         filename = f"{record.ma_so}_{clean_name}.html"
