@@ -20,6 +20,91 @@
         @keyframes pulse-soft { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
         .animate-pulse-soft { animation: pulse-soft 3s infinite; }
         
+        /* HIỆU ỨNG ÁNH SÁNG RỌI & LẤP LÁNH CHO LOGO FCT */
+        @keyframes logo-shimmer {
+            0% { transform: translateX(-150%) translateY(-150%) rotate(35deg); opacity: 0; }
+            15% { opacity: 0.95; }
+            35% { transform: translateX(180%) translateY(180%) rotate(35deg); opacity: 0; }
+            100% { transform: translateX(180%) translateY(180%) rotate(35deg); opacity: 0; }
+        }
+
+        @keyframes logo-glow-pulse {
+            0%, 100% {
+                filter: brightness(1.15) contrast(1.1) 
+                        drop-shadow(0 0 16px rgba(255, 255, 255, 0.95)) 
+                        drop-shadow(0 0 28px rgba(8, 145, 178, 0.85)) 
+                        drop-shadow(0 4px 12px rgba(0, 0, 0, 0.9));
+            }
+            50% {
+                filter: brightness(1.35) contrast(1.18) 
+                        drop-shadow(0 0 25px rgba(255, 255, 255, 1)) 
+                        drop-shadow(0 0 45px rgba(6, 182, 212, 0.95)) 
+                        drop-shadow(0 0 18px rgba(254, 240, 138, 0.8)) 
+                        drop-shadow(0 5px 16px rgba(0, 0, 0, 0.95));
+            }
+        }
+
+        @keyframes sparkle-twinkle {
+            0%, 100% { opacity: 0; transform: scale(0.2) rotate(0deg); }
+            20% { opacity: 1; transform: scale(1.25) rotate(45deg); }
+            40% { opacity: 0; transform: scale(0.3) rotate(90deg); }
+        }
+
+        .logo-shimmer-wrapper {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border-radius: 50%;
+            padding: 2px;
+            animation: logo-glow-pulse 4s ease-in-out infinite;
+        }
+
+        .logo-shimmer-sweep {
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0) 30%,
+                rgba(255, 255, 255, 0.85) 50%,
+                rgba(254, 240, 138, 0.95) 52%,
+                rgba(255, 255, 255, 0) 70%
+            );
+            pointer-events-none;
+            z-index: 10;
+            animation: logo-shimmer 3.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+
+        .logo-sparkle-1 {
+            position: absolute;
+            top: 6px;
+            right: 12px;
+            color: #fffbeb;
+            font-size: 14px;
+            z-index: 15;
+            pointer-events-none;
+            text-shadow: 0 0 8px #ffffff, 0 0 15px #38bdf8;
+            animation: sparkle-twinkle 3.8s ease-in-out infinite;
+            animation-delay: 0.8s;
+        }
+
+        .logo-sparkle-2 {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            color: #fef08a;
+            font-size: 11px;
+            z-index: 15;
+            pointer-events-none;
+            text-shadow: 0 0 8px #ffffff, 0 0 15px #facc15;
+            animation: sparkle-twinkle 3.8s ease-in-out infinite;
+            animation-delay: 2.4s;
+        }
+        
         body { 
             font-family: 'Be Vietnam Pro', Tahoma, Arial, sans-serif; 
             background-color: #f8fafc; 
@@ -269,6 +354,8 @@
             }
             /* KHÔI PHỤC FILTER PHÁT SÁNG KHI IN PDF */
             .logo-platinum { filter: brightness(2.5) contrast(1.2) saturate(0) drop-shadow(0 0 10px rgba(255, 255, 255, 0.7)) !important; }
+            .logo-shimmer-sweep, .logo-sparkle-1, .logo-sparkle-2 { display: none !important; }
+            .logo-shimmer-wrapper { animation: none !important; }
             .a4-page-dynamic { 
                 box-shadow: none !important; margin: 0 !important; border: none !important;
                 width: 210mm !important; page-break-before: always !important;
@@ -300,15 +387,19 @@
             <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.22)_0%,rgba(6,182,212,0.18)_35%,rgba(14,116,144,0.4)_60%,rgba(0,0,0,0.7)_100%)] pointer-events-none z-[5]"></div>
             
             <div class="relative z-10 w-full h-full flex flex-col justify-center items-center">
-                <!-- Logo FCT Ánh Kim Bên Trái Lớn & Uy Nghi -->
+                <!-- Logo FCT Ánh Kim Bên Trái Lớn & Lấp Lánh Ánh Sáng -->
                 <div class="absolute left-3.5 sm:left-7 top-1/2 -translate-y-1/2 z-20 flex items-center">
-                    <img src="{{logo_base64}}" alt="FCT Logo" 
-                         style="height: 86px; width: auto; max-width: 150px; object-fit: contain; 
-                                filter: brightness(1.18) contrast(1.12) drop-shadow(0 0 20px rgba(255, 255, 255, 0.95)) drop-shadow(0 0 32px rgba(8, 145, 178, 0.95)) drop-shadow(0 4px 14px rgba(0, 0, 0, 0.95));">
+                    <div class="logo-shimmer-wrapper">
+                        <img src="{{logo_base64}}" alt="FCT Logo" 
+                             style="height: 86px; width: auto; max-width: 150px; object-fit: contain;">
+                        <div class="logo-shimmer-sweep"></div>
+                        <span class="logo-sparkle-1">✦</span>
+                        <span class="logo-sparkle-2">✦</span>
+                    </div>
                 </div>
 
-                <!-- Danh ngôn Bá Nhạc & Thiên Lý Mã bên phải gần hình ảnh Bá Nhạc & Tuấn Mã -->
-                <div class="absolute top-2 sm:top-3.5 right-2.5 sm:right-6 animate-pulse-soft z-20">
+                <!-- Danh ngôn Bá Nhạc & Thiên Lý Mã bên phải (Dưới góc phải, không che mặt cụ Bá Nhạc) -->
+                <div class="absolute bottom-2.5 sm:bottom-3.5 right-2.5 sm:right-6 animate-pulse-soft z-20">
                     <div class="px-2.5 sm:px-3 py-0.5 sm:py-1 bg-black/60 backdrop-blur-md rounded-full border border-amber-400/60 shadow-md flex items-center gap-1">
                         <span class="text-amber-400 text-[8px] sm:text-[9px]">✦</span>
                         <p class="text-[8.5px] sm:text-[9.5px] text-amber-200 font-bold uppercase tracking-widest" style="font-family: 'Microsoft JhengHei', sans-serif;">先 有 伯 樂 ， 後 有 千 里 馬</p>
