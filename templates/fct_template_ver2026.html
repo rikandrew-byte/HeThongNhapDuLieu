@@ -279,6 +279,63 @@
             -webkit-print-color-adjust: exact;
         }
 
+        /* VIDEO CLIP BUTTON - HOÀNG KIM & BÍCH NGỌC */
+        .video-clip-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 7px 10px;
+            background: linear-gradient(135deg, #083344 0%, #0e7490 50%, #0891b2 100%);
+            color: #ffffff !important;
+            font-size: 11px;
+            font-weight: 800;
+            border-radius: 8px;
+            border: 1.5px solid #d4af37;
+            box-shadow: 0 3px 8px rgba(8, 51, 68, 0.25), 0 0 10px rgba(212, 175, 55, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            text-decoration: none;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            animation: video-pulse-glow 3s infinite ease-in-out;
+        }
+
+        .video-clip-btn:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 6px 14px rgba(8, 51, 68, 0.35), 0 0 16px rgba(212, 175, 55, 0.5);
+            background: linear-gradient(135deg, #0e7490 0%, #0891b2 50%, #06b6d4 100%);
+            border-color: #fef08a;
+        }
+
+        .video-play-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 17px;
+            height: 17px;
+            background: #d4af37;
+            color: #083344;
+            border-radius: 50%;
+            font-size: 8.5px;
+            font-weight: 900;
+            padding-left: 1.5px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            flex-shrink: 0;
+        }
+
+        @keyframes video-pulse-glow {
+            0%, 100% {
+                box-shadow: 0 3px 8px rgba(8, 51, 68, 0.25), 0 0 6px rgba(212, 175, 55, 0.25);
+                border-color: #d4af37;
+            }
+            50% {
+                box-shadow: 0 4px 12px rgba(8, 51, 68, 0.35), 0 0 14px rgba(212, 175, 55, 0.6);
+                border-color: #fde047;
+            }
+        }
+
         /* TỐI GIẢN FILTER TRÊN MÀN HÌNH ĐỂ TRÁNH CRASH KHI ZOOM */
         .logo-platinum {
             filter: brightness(1.8) !important;
@@ -348,6 +405,7 @@
             /* KHÔI PHỤC FILTER PHÁT SÁNG KHI IN PDF */
             .logo-platinum { filter: brightness(2.5) contrast(1.2) saturate(0) drop-shadow(0 0 10px rgba(255, 255, 255, 0.7)) !important; }
             .logo-glisten-effect { animation: none !important; }
+            .video-clip-btn { animation: none !important; box-shadow: none !important; border: 1px solid #0891b2 !important; background: #0891b2 !important; }
             .a4-page-dynamic { 
                 box-shadow: none !important; margin: 0 !important; border: none !important;
                 width: 210mm !important; page-break-before: always !important;
@@ -413,12 +471,28 @@
 
                 <div class="sidebar-extra space-y-3 mb-5 px-1 flex-shrink-0">
                     {% if video_link_1 or video_link_2 %}
-                    <div class="grid grid-cols-2 gap-2">
-                        {% if video_link_1 %}
-                        <a href="{{video_link_1}}" target="_blank" class="flex items-center justify-center py-2 bg-cyan-700 hover:bg-cyan-800 text-white text-[10px] font-black rounded-lg shadow-sm uppercase tracking-tighter transition-all">▶ Video Clip</a>
-                        {% endif %}
-                        {% if video_link_2 %}
-                        <a href="{{video_link_2}}" target="_blank" class="flex items-center justify-center py-2 bg-cyan-700 hover:bg-cyan-800 text-white text-[10px] font-black rounded-lg shadow-sm uppercase tracking-tighter transition-all">▶ Skill Clip</a>
+                    <div class="w-full">
+                        {% if video_link_1 and video_link_2 %}
+                        <div class="grid grid-cols-2 gap-2 w-full">
+                            <a href="{{video_link_1}}" target="_blank" class="video-clip-btn" title="Xem Video Clip 1">
+                                <span class="video-play-icon">▶</span>
+                                <span>Video Clip</span>
+                            </a>
+                            <a href="{{video_link_2}}" target="_blank" class="video-clip-btn" title="Xem Video Tay Nghề / Clip 2">
+                                <span class="video-play-icon">▶</span>
+                                <span>Skill Clip</span>
+                            </a>
+                        </div>
+                        {% elif video_link_1 %}
+                        <a href="{{video_link_1}}" target="_blank" class="video-clip-btn w-full" title="Xem Video Clip Ứng Viên">
+                            <span class="video-play-icon">▶</span>
+                            <span>Xem Video Clip Ứng Viên</span>
+                        </a>
+                        {% elif video_link_2 %}
+                        <a href="{{video_link_2}}" target="_blank" class="video-clip-btn w-full" title="Xem Video Tay Nghề">
+                            <span class="video-play-icon">▶</span>
+                            <span>Xem Video Tay Nghề</span>
+                        </a>
                         {% endif %}
                     </div>
                     {% endif %}
