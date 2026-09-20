@@ -300,26 +300,24 @@
             <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.22)_0%,rgba(6,182,212,0.18)_35%,rgba(14,116,144,0.4)_60%,rgba(0,0,0,0.7)_100%)] pointer-events-none z-[5]"></div>
             
             <div class="relative z-10 w-full h-full flex flex-col justify-center items-center">
-                <!-- Danh ngôn Bá Nhạc & Thiên Lý Mã đóng khung kính mờ cao cấp (Hiển thị nhấp nháy cả mobile & desktop) -->
-                <div class="absolute top-2 sm:top-3.5 left-2.5 sm:left-6 animate-pulse-soft z-20">
+                <!-- Logo FCT Ánh Kim Bên Trái Lớn & Uy Nghi -->
+                <div class="absolute left-3.5 sm:left-7 top-1/2 -translate-y-1/2 z-20 flex items-center">
+                    <img src="{{logo_base64}}" alt="FCT Logo" 
+                         style="height: 86px; width: auto; max-width: 150px; object-fit: contain; 
+                                filter: brightness(1.18) contrast(1.12) drop-shadow(0 0 20px rgba(255, 255, 255, 0.95)) drop-shadow(0 0 32px rgba(8, 145, 178, 0.95)) drop-shadow(0 4px 14px rgba(0, 0, 0, 0.95));">
+                </div>
+
+                <!-- Danh ngôn Bá Nhạc & Thiên Lý Mã bên phải gần hình ảnh Bá Nhạc & Tuấn Mã -->
+                <div class="absolute top-2 sm:top-3.5 right-2.5 sm:right-6 animate-pulse-soft z-20">
                     <div class="px-2.5 sm:px-3 py-0.5 sm:py-1 bg-black/60 backdrop-blur-md rounded-full border border-amber-400/60 shadow-md flex items-center gap-1">
                         <span class="text-amber-400 text-[8px] sm:text-[9px]">✦</span>
                         <p class="text-[8.5px] sm:text-[9.5px] text-amber-200 font-bold uppercase tracking-widest" style="font-family: 'Microsoft JhengHei', sans-serif;">先 有 伯 樂 ， 後 有 千 里 馬</p>
                     </div>
                 </div>
-                
-                <!-- Logo FCT Ánh Kim 3D Watermark Chìm Hào Quang Lớn Phía Sau -->
-                <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                    <img src="{{logo_base64}}" alt="Logo" 
-                         style="height: 108px; width: auto; max-width: 200px; object-fit: contain; 
-                                opacity: 0.68; 
-                                filter: brightness(1.2) contrast(1.15) drop-shadow(0 0 25px rgba(8, 145, 178, 0.95)) drop-shadow(0 0 45px rgba(6, 182, 212, 0.8)) drop-shadow(0 4px 16px rgba(0, 0, 0, 0.95));
-                                transform: translateY(-4px);">
-                </div>
 
-                <!-- Tiêu đề 履歷表 Hoàng Kim Nổi Bật Lớp Trước -->
+                <!-- Tiêu đề 履歷表 Hoàng Kim Nổi Bật Chính Diện Trung Tâm -->
                 <div class="flex flex-col items-center z-20">
-                    <h2 class="text-[30px] sm:text-[32px] font-black uppercase text-center" 
+                    <h2 class="text-[32px] sm:text-[34px] font-black uppercase text-center" 
                         style="background: linear-gradient(180deg, #ffffff 0%, #fffbeb 20%, #fef08a 50%, #eab308 85%, #b45309 100%);
                                -webkit-background-clip: text;
                                -webkit-text-fill-color: transparent;
@@ -330,8 +328,8 @@
                                padding-left: 0.38em;">
                         履 歷 表
                     </h2>
-                    <span class="text-[10px] sm:text-[10.5px] font-black uppercase tracking-[0.5em] text-amber-200 mt-1" 
-                          style="text-shadow: 0 2px 6px rgba(0,0,0,0.95), 0 0 14px rgba(8, 145, 178, 0.85); font-family: 'Playfair Display', serif; padding-left: 0.5em;">
+                    <span class="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.55em] text-amber-200 mt-1" 
+                          style="text-shadow: 0 2px 6px rgba(0,0,0,0.95), 0 0 14px rgba(8, 145, 178, 0.85); font-family: 'Playfair Display', serif; padding-left: 0.55em;">
                         CURRICULUM VITAE
                     </span>
                 </div>
