@@ -42,6 +42,36 @@
             max-width: 150px;
             object-fit: contain;
             animation: logo-glisten 3.6s ease-in-out infinite;
+            -webkit-transform: translateZ(0);
+            transform: translateZ(0);
+            will-change: filter;
+        }
+
+        .doc-title-chinese {
+            font-size: 32px;
+            font-weight: 900;
+            text-transform: uppercase;
+            text-align: center;
+            background: linear-gradient(180deg, #ffffff 0%, #fffbeb 20%, #fef08a 50%, #eab308 85%, #b45309 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.95)) drop-shadow(0 4px 14px rgba(0,0,0,0.9)) drop-shadow(0 0 28px rgba(234, 179, 8, 0.75));
+            font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            letter-spacing: 0.38em;
+            line-height: 1.15;
+            padding-left: 0.38em;
+        }
+
+        .doc-title-latin {
+            font-size: 10.5px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.55em;
+            color: #fde68a;
+            margin-top: 4px;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.95), 0 0 14px rgba(8, 145, 178, 0.85);
+            font-family: 'Playfair Display', serif;
+            padding-left: 0.55em;
         }
         
         body { 
@@ -243,13 +273,16 @@
 
         @page { size: A4; margin: 0 !important; }
         
-        /* XỬ LÝ ZOOM CAO (≥125%) */
+        /* XỬ LÝ ZOOM CAO (≥125%) & MOBILE/TABLET */
         @media screen and (max-width: 900px) {
             .a4-page, .a4-page-dynamic, .no-print-header {
                 width: 95vw !important;
                 max-width: 95vw !important;
             }
-            .fct-visual-header { height: 120px; }
+            .fct-visual-header { height: 125px; }
+            .logo-glisten-effect { height: 68px; max-width: 100px; }
+            .doc-title-chinese { font-size: 26px; letter-spacing: 0.3em; padding-left: 0.3em; }
+            .doc-title-latin { font-size: 9px; letter-spacing: 0.4em; padding-left: 0.4em; }
             
             /* Mobile Layout: Grid System to interleave items */
             .content-wrapper { 
@@ -272,6 +305,13 @@
             .sidebar-npt { grid-row: 8; width: 100%; background: #f8fafc; padding: 15px 20px; border-top: 1px solid #e2e8f0; }
             
             .info-grid { grid-template-columns: 1fr !important; }
+        }
+
+        @media screen and (max-width: 640px) {
+            .fct-visual-header { height: 110px; }
+            .logo-glisten-effect { height: 48px; max-width: 60px; }
+            .doc-title-chinese { font-size: 18px; letter-spacing: 0.2em; padding-left: 0.2em; }
+            .doc-title-latin { font-size: 7px; letter-spacing: 0.22em; padding-left: 0.22em; margin-top: 2px; }
         }
         
         @media print {
@@ -326,35 +366,22 @@
             
             <div class="relative z-10 w-full h-full flex flex-col justify-center items-center">
                 <!-- Logo FCT Ánh Kim Bên Trái Lớn & Lấp Lánh Độ Sáng Tinh Tế (Không cắt viền) -->
-                <div class="absolute left-3.5 sm:left-7 top-1/2 -translate-y-1/2 z-20 flex items-center">
+                <div class="absolute left-2.5 sm:left-6 md:left-8 top-1/2 -translate-y-1/2 z-20 flex items-center">
                     <img src="{{logo_base64}}" alt="FCT Logo" class="logo-glisten-effect">
                 </div>
 
                 <!-- Danh ngôn Bá Nhạc & Thiên Lý Mã bên phải (Dưới góc phải, không che mặt cụ Bá Nhạc) -->
-                <div class="absolute bottom-2.5 sm:bottom-3.5 right-2.5 sm:right-6 animate-pulse-soft z-20">
-                    <div class="px-2.5 sm:px-3 py-0.5 sm:py-1 bg-black/60 backdrop-blur-md rounded-full border border-amber-400/60 shadow-md flex items-center gap-1">
-                        <span class="text-amber-400 text-[8px] sm:text-[9px]">✦</span>
-                        <p class="text-[8.5px] sm:text-[9.5px] text-amber-200 font-bold uppercase tracking-widest" style="font-family: 'Microsoft JhengHei', sans-serif;">先 有 伯 樂 ， 後 有 千 里 馬</p>
+                <div class="absolute bottom-1.5 sm:bottom-3 right-1.5 sm:right-6 animate-pulse-soft z-20">
+                    <div class="px-2 sm:px-3 py-0.5 sm:py-1 bg-black/60 backdrop-blur-md rounded-full border border-amber-400/60 shadow-md flex items-center gap-1">
+                        <span class="text-amber-400 text-[7px] sm:text-[9px]">✦</span>
+                        <p class="text-[7.5px] sm:text-[9.5px] text-amber-200 font-bold uppercase tracking-widest" style="font-family: 'Microsoft JhengHei', sans-serif;">先 有 伯 樂 ， 後 有 千 里 馬</p>
                     </div>
                 </div>
 
                 <!-- Tiêu đề 履歷表 Hoàng Kim Nổi Bật Chính Diện Trung Tâm -->
                 <div class="flex flex-col items-center z-20">
-                    <h2 class="text-[32px] sm:text-[34px] font-black uppercase text-center" 
-                        style="background: linear-gradient(180deg, #ffffff 0%, #fffbeb 20%, #fef08a 50%, #eab308 85%, #b45309 100%);
-                               -webkit-background-clip: text;
-                               -webkit-text-fill-color: transparent;
-                               filter: drop-shadow(0 2px 4px rgba(0,0,0,0.95)) drop-shadow(0 4px 14px rgba(0,0,0,0.9)) drop-shadow(0 0 28px rgba(234, 179, 8, 0.75));
-                               font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
-                               letter-spacing: 0.38em;
-                               line-height: 1.15;
-                               padding-left: 0.38em;">
-                        履 歷 表
-                    </h2>
-                    <span class="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.55em] text-amber-200 mt-1" 
-                          style="text-shadow: 0 2px 6px rgba(0,0,0,0.95), 0 0 14px rgba(8, 145, 178, 0.85); font-family: 'Playfair Display', serif; padding-left: 0.55em;">
-                        CURRICULUM VITAE
-                    </span>
+                    <h2 class="doc-title-chinese">履 歷 表</h2>
+                    <span class="doc-title-latin">CURRICULUM VITAE</span>
                 </div>
             </div>
         </div>
