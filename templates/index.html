@@ -460,13 +460,13 @@
             color: #0f172a;
         }
         .modal-header-btn-green {
-            background: #dcfce7;
-            color: #15803d;
-            border-color: #bbf7d0;
+            background: #ecfeff;
+            color: #0e7490;
+            border-color: #a5f3fc;
         }
         .modal-header-btn-green:hover {
-            background: #bbf7d0;
-            color: #166534;
+            background: #cffafe;
+            color: #083344;
         }
         .modal-header-btn-red {
             background: #fee2e2;
@@ -909,7 +909,7 @@
                             <span style="font-size: 16px;">🏆</span>
                             <span class="font-semibold text-slate-600" style="font-size: 13px;">Đã trúng tuyển</span>
                         </div>
-                        <span id="sidebarPassedCount" class="font-bold text-emerald-600 bg-emerald-50 rounded-full" style="font-size: 13px; padding: 3px 8px;">0</span>
+                        <span id="sidebarPassedCount" class="font-bold text-teal-700 bg-teal-50 rounded-full" style="font-size: 13px; padding: 3px 8px;">0</span>
                     </div>
                     <div class="flex items-center justify-between bg-white border border-slate-100 rounded-xl shadow-sm" style="padding: 13px;">
                         <div class="flex items-center gap-2">
@@ -1096,8 +1096,8 @@
 
         <!-- Tab 1.5: Passed Candidates Content Area -->
         <div id="tabContent-passed" style="display: none; padding:16px 20px;">
-            <div id="passedSummaryPanel" style="display:block; padding:10px 18px; background:linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-top:1px solid #bbf7d0; border-bottom:2px solid #86efac; animation: fadeIn 0.2s ease-out; box-shadow:inset 0 4px 10px rgba(0,0,0,0.02); margin-bottom:12px;">
-                <div style="font-size:14px; font-weight:850; color:#166534; display:flex; align-items:center; gap:8px;">
+            <div id="passedSummaryPanel" style="display:block; padding:10px 18px; background:linear-gradient(135deg, #ecfeff 0%, #cffafe 100%); border-top:1px solid #a5f3fc; border-bottom:2px solid #67e8f9; animation: fadeIn 0.2s ease-out; box-shadow:inset 0 4px 10px rgba(0,0,0,0.02); margin-bottom:12px;">
+                <div style="font-size:14px; font-weight:850; color:#0e7490; display:flex; align-items:center; gap:8px;">
                     <span style="font-size:16px;">🏆</span> Danh sách ứng viên trúng tuyển
                 </div>
             </div>
@@ -1120,9 +1120,9 @@
                 </div>
                 
                 <!-- Nút xuất báo cáo tiến độ Excel giống bên B -->
-                <button type="button" onclick="exportPassedHistoryExcel(event)" style="padding:8px 16px; background:#10b981; color:#ffffff; border:none; border-radius:8px; font-size:12px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.15s ease;"
-                    onmouseover="this.style.background='#059669'; this.style.transform='translateY(-1px)';"
-                    onmouseout="this.style.background='#10b981'; this.style.transform='none';">
+                <button type="button" onclick="exportPassedHistoryExcel(event)" style="padding:8px 16px; background:linear-gradient(135deg, #0891b2, #0e7490); color:#ffffff; border:none; border-radius:8px; font-size:12px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.15s ease; box-shadow:0 2px 6px rgba(8,145,178,0.25);"
+                    onmouseover="this.style.background='linear-gradient(135deg, #06b6d4, #0891b2)'; this.style.transform='translateY(-1px)';"
+                    onmouseout="this.style.background='linear-gradient(135deg, #0891b2, #0e7490)'; this.style.transform='none';">
                     <span>📊</span> Xuất Excel Tiến Độ
                 </button>
 
@@ -1189,12 +1189,12 @@
         <!-- Tab Archived: Đã xuất cảnh -->
         <div id="tabContent-archived" style="display: none; padding:16px 20px;">
             <!-- Header -->
-            <div style="padding:10px 18px; background:linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border-top:1px solid #a7f3d0; border-bottom:2px solid #6ee7b7; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; border-radius:10px;">
-                <div style="font-size:14px; font-weight:850; color:#065f46; display:flex; align-items:center; gap:8px;">
+            <div style="padding:10px 18px; background:linear-gradient(135deg, #ecfeff 0%, #cffafe 100%); border-top:1px solid #a5f3fc; border-bottom:2px solid #67e8f9; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; border-radius:10px;">
+                <div style="font-size:14px; font-weight:850; color:#0e7490; display:flex; align-items:center; gap:8px;">
                     <span style="font-size:16px;">✈️</span> Ứng viên đã xuất cảnh
-                    <span id="archivedCountBadge" style="background:#6ee7b7; color:#065f46; font-size:11px; font-weight:800; padding:2px 8px; border-radius:20px;">0</span>
+                    <span id="archivedCountBadge" style="background:#a5f3fc; color:#0e7490; font-size:11px; font-weight:800; padding:2px 8px; border-radius:20px;">0</span>
                 </div>
-                <div style="font-size:12px; color:#047857; font-style:italic;">Nhấn "↩️ Phục hồi" để đưa ứng viên trở lại bảng Kanban</div>
+                <div style="font-size:12px; color:#0891b2; font-style:italic;">Nhấn "↩️ Phục hồi" để đưa ứng viên trở lại bảng Kanban</div>
             </div>
             <!-- Tìm kiếm -->
             <div style="margin-bottom:12px;">
@@ -1265,8 +1265,8 @@
         <!-- Tab 2.5: Cấu hình Đơn hàng Content Area (Thẩm định & Visa) -->
         <div id="tabContent-configs" style="display: none; padding:16px 20px;">
             <!-- Cấu hình Nhà máy & Giấy tờ Đơn hàng (Gom từ Dự án B) -->
-            <div style="padding:18px 24px; background:linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%); border:1px solid #bbf7d0; border-radius:14px; box-shadow:0 4px 14px -2px rgba(16,185,129,0.06);">
-                <div style="font-size:15px; font-weight:850; color:#15803d; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+            <div style="padding:18px 24px; background:linear-gradient(135deg, #ecfeff 0%, #f0fdfa 100%); border:1px solid #a5f3fc; border-radius:14px; box-shadow:0 4px 14px -2px rgba(8,145,178,0.06);">
+                <div style="font-size:15px; font-weight:850; color:#0e7490; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
                     <span style="font-size:18px;">🏗️</span> Cấu hình Nhà máy & Giấy tờ Đơn hàng
                 </div>
                 
