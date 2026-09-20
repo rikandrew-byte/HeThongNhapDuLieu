@@ -22,13 +22,16 @@ from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 from openpyxl.chart import BarChart, PieChart, Reference
 from openpyxl.chart.label import DataLabelList
 from openpyxl.utils import get_column_letter
-from groq import Groq
+try:
+    from groq import Groq
+except ImportError:
+    Groq = None
 
 load_dotenv()
 
 # Configure Groq (thay thế Gemini)
 groq_api_key = os.environ.get('GROQ_API_KEY')
-groq_client = Groq(api_key=groq_api_key) if groq_api_key else None
+groq_client = Groq(api_key=groq_api_key) if (Groq and groq_api_key) else None
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 app.debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
