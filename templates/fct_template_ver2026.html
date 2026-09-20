@@ -145,7 +145,8 @@
             height: 151px; /* 40mm */
             overflow: hidden; 
             color: white; 
-            border-bottom: 4px solid var(--accent-gold);
+            border-bottom: 2.5px solid var(--accent-gold);
+            box-shadow: 0 4px 14px rgba(8, 51, 68, 0.2);
             flex-shrink: 0;
             z-index: 10;
         }
@@ -197,7 +198,17 @@
             gap: 6px;
         }
 
-        .section-title span:last-child { font-size: 14px; color: #b45309; font-family: 'Be Vietnam Pro', 'Microsoft JhengHei', sans-serif; font-weight: 800; }
+        .section-title span:last-child { 
+            font-size: 12px; 
+            color: #0e7490; 
+            font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif; 
+            font-weight: 800; 
+            background: #ecfeff;
+            border: 1px solid #a5f3fc;
+            padding: 2px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.05em;
+        }
 
         .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
         .info-item {
@@ -234,9 +245,9 @@
             margin: 0 1px;
         }
         .label-zh {
-            font-size: 11.5px;
+            font-size: 11px;
             font-weight: 700;
-            color: #b45309;
+            color: #0891b2;
             font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
             letter-spacing: 0.02em;
             white-space: nowrap;
@@ -389,7 +400,7 @@
         <div class="content-wrapper">
             <div class="sidebar border-r border-cyan-100 flex flex-col">
                 <div class="sidebar-top mb-5 text-center border-b-2 border-cyan-200 pb-4 flex-shrink-0">
-                    <p class="text-[14px] font-bold text-amber-600 mb-1.5 uppercase tracking-[0.1em]">ID: {{Maso}}</p>
+                    <p class="text-[13px] font-black text-cyan-900 mb-2 uppercase tracking-[0.12em] inline-block px-3 py-0.5 bg-cyan-100/90 border border-cyan-300 rounded-full shadow-sm">ID: {{Maso}}</p>
                     <h1 class="text-[20px] font-bold text-slate-900 leading-tight mb-2 pb-1" style="font-family: 'Be Vietnam Pro', 'Outfit', sans-serif; font-weight: 800; letter-spacing: -0.01em; white-space: nowrap; text-align: center; width: 100%;" title="{{Hoten}}">{{Hoten}}</h1>
                     <p class="text-[18px] font-bold text-cyan-800 tracking-[0.15em] mt-1" style="font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;">{{TentiengTrung}}</p>
                 </div>
@@ -418,9 +429,9 @@
                     {% endif %}
                 </div>
 
-                <div class="sidebar-notes mt-auto bg-white p-4 rounded-xl border border-slate-100 border-l-4 border-l-amber-500 flex flex-col min-h-[180px] shadow-sm overflow-hidden">
-                    <h2 class="text-[14px] font-black text-cyan-900 border-b border-cyan-100 pb-1 mb-2 uppercase flex justify-between items-center flex-shrink-0">
-                        <span>Ghi chú / 備註</span><span class="text-amber-500">✒</span>
+                <div class="sidebar-notes mt-auto bg-white p-4 rounded-xl border border-cyan-100 border-l-4 border-l-cyan-600 flex flex-col min-h-[180px] shadow-sm overflow-hidden">
+                    <h2 class="text-[13.5px] font-black text-cyan-900 border-b border-cyan-100 pb-1 mb-2 uppercase flex justify-between items-center flex-shrink-0">
+                        <span>Ghi chú / 備註</span><span class="text-cyan-700">✒</span>
                     </h2>
                     <div class="text-[13px] text-slate-700 leading-relaxed font-medium overflow-hidden">{{loi_binh_1}}</div>
                 </div>
