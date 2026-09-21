@@ -2707,10 +2707,16 @@
                 });
                 const result = await response.json();
                 if (result.success && result.translated && result.translated.trim()) {
-                    el.value = result.translated.trim();
-                    // Hiệu ứng thành công: viền xanh lá trong 1.5 giây
-                    el.style.borderColor = '#22c55e';
-                    setTimeout(() => { el.style.borderColor = originalBorder; }, 1500);
+                    const trans = result.translated.trim();
+                    const transHasChinese = /[\u4e00-\u9fff\u3400-\u4dbf]/.test(trans);
+                    if (transHasChinese || trans !== text) {
+                        el.value = trans;
+                        // Hiệu ứng thành công: viền xanh lá trong 1.5 giây
+                        el.style.borderColor = '#22c55e';
+                        setTimeout(() => { el.style.borderColor = originalBorder; }, 1500);
+                    } else {
+                        el.style.borderColor = originalBorder;
+                    }
                 } else {
                     el.style.borderColor = originalBorder;
                 }
@@ -3131,17 +3137,27 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             }
 
             
-            // Cập nhật hiển thị bản gốc tiếng Việt
+            // Cập nhật hiển thị bản gốc tiếng Việt và tự động dịch nếu vẫn còn là tiếng Việt
             ['N1', 'ndcv1', 'N2', 'ndcv2', 'N3', 'ndcv3', 'loi_binh_1'].forEach(name => {
                 let viVal = data[name + '_vi'] || '';
+                const currentVal = data[name] || '';
                 // Nếu chưa có bản gốc lưu riêng, nhưng giá trị hiện tại không chứa tiếng Trung (là tiếng Việt gốc), ta lấy giá trị hiện tại làm bản gốc
-                if (!viVal && data[name]) {
-                    const hasChinese = /[\u4e00-\u9fff\u3400-\u4dbf]/.test(data[name]);
+                if (!viVal && currentVal) {
+                    const hasChinese = /[\u4e00-\u9fff\u3400-\u4dbf]/.test(currentVal);
                     if (!hasChinese) {
-                        viVal = data[name];
+                        viVal = currentVal;
                     }
                 }
                 updateOriginalDisplay(name, viVal);
+
+                // Nếu ô hiện tại có dữ liệu nhưng chưa được dịch sang tiếng Trung (vẫn là tiếng Việt), tự động dịch ngay
+                if (currentVal && !/[\u4e00-\u9fff\u3400-\u4dbf]/.test(currentVal)) {
+                    const isDateOrNum = /^[\d\s\/\-\.\~～]+$/.test(currentVal.trim());
+                    if (!isDateOrNum) {
+                        const el = document.getElementsByName(name)[0];
+                        if (el) translateField(el);
+                    }
+                }
             });
             
             // Ảnh chân dung: hiển thị preview & nút tải nếu có ảnh
@@ -5914,6 +5930,17 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                         document.getElementById('qrDropzoneText').innerHTML = "<span class='text-amber-600 font-bold'>⚠ QR cũ không thể nạp từ file. Upload lại nếu cần.</span>";
                     }
                     
+                    ['N1', 'ndcv1', 'N2', 'ndcv2', 'N3', 'ndcv3', 'loi_binh_1'].forEach(name => {
+                        let viVal = data[name + '_vi'] || '';
+                        const currentVal = data[name] || '';
+                        if (!viVal && currentVal) {
+                            if (!/[\u4e00-\u9fff\u3400-\u4dbf]/.test(currentVal)) {
+                                viVal = currentVal;
+                            }
+                        }
+                        updateOriginalDisplay(name, viVal);
+                    });
+
                     calcAge();
                     
                     // Đóng modal và cuộn lên đầu

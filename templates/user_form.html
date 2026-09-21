@@ -383,11 +383,13 @@
                                 class="block text-xs font-bold text-slate-400 uppercase mb-1">Năm</label><input
                                 type="text" name="N1"
                                 class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none">
+                            <input type="hidden" name="N1_vi">
                         </div>
                         <div class="col-span-2"><label
                                 class="block text-xs font-bold text-slate-400 uppercase mb-1">Công việc</label><input
                                 type="text" name="ndcv1" onblur="translateField(this)"
                                 class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none">
+                            <input type="hidden" name="ndcv1_vi">
                         </div>
                     </div>
 
@@ -413,11 +415,13 @@
                                 class="block text-xs font-bold text-slate-400 uppercase mb-1">Năm</label><input
                                 type="text" name="N2"
                                 class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none">
+                            <input type="hidden" name="N2_vi">
                         </div>
                         <div class="col-span-2"><label
                                 class="block text-xs font-bold text-slate-400 uppercase mb-1">Công việc 2</label><input
                                 type="text" name="ndcv2" onblur="translateField(this)"
                                 class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none">
+                            <input type="hidden" name="ndcv2_vi">
                         </div>
                     </div>
 
@@ -443,11 +447,13 @@
                                 class="block text-xs font-bold text-slate-400 uppercase mb-1">Năm</label><input
                                 type="text" name="N3"
                                 class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none">
+                            <input type="hidden" name="N3_vi">
                         </div>
                         <div class="col-span-2"><label
                                 class="block text-xs font-bold text-slate-400 uppercase mb-1">Công việc 3</label><input
                                 type="text" name="ndcv3" onblur="translateField(this)"
                                 class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none">
+                            <input type="hidden" name="ndcv3_vi">
                         </div>
                     </div>
 
@@ -455,6 +461,7 @@
                         <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Ghi chú, Lời bình</label>
                         <textarea name="loi_binh_1" onblur="translateField(this)"
                             class="w-full border-2 border-gray-200 rounded-xl p-3 text-sm focus:border-blue-600 focus:outline-none h-24 bg-gray-50"></textarea>
+                        <input type="hidden" name="loi_binh_1_vi">
                     </div>
                     <div class="mt-4">
                         <label class="block text-xs font-bold text-slate-400 uppercase mb-1">
@@ -619,6 +626,12 @@
             // Bỏ qua nếu đã chứa chữ Hán
             if (/[\u4e00-\u9fff\u3400-\u4dbf]/.test(text)) return;
 
+            // Lưu lại bản gốc tiếng Việt trước khi dịch
+            const viEl = document.getElementsByName(el.name + '_vi')[0];
+            if (viEl && !viEl.value) {
+                viEl.value = text;
+            }
+
             const originalBorder = el.style.borderColor;
             el.style.opacity = '0.5';
             el.disabled = true;
@@ -631,9 +644,15 @@
                 });
                 const result = await response.json();
                 if (result.success && result.translated && result.translated.trim()) {
-                    el.value = result.translated.trim();
-                    el.style.borderColor = '#22c55e';
-                    setTimeout(() => { el.style.borderColor = originalBorder; }, 1500);
+                    const trans = result.translated.trim();
+                    const transHasChinese = /[\u4e00-\u9fff\u3400-\u4dbf]/.test(trans);
+                    if (transHasChinese || trans !== text) {
+                        el.value = trans;
+                        el.style.borderColor = '#22c55e';
+                        setTimeout(() => { el.style.borderColor = originalBorder; }, 1500);
+                    } else {
+                        el.style.borderColor = originalBorder;
+                    }
                 }
             } catch (error) {
                 console.error("Lỗi dịch ô:", error);

@@ -809,7 +809,7 @@ def _fetch_r2_image_as_base64(url: str) -> str:
         return ""
 
 # --- LOGIC PREPARE ---
-def prepare_render_data(raw_data: dict) -> dict:
+def prepare_render_data(raw_data: dict, record=None) -> dict:
     data = {}
     fields = [
         'Maso', 'Hoten', 'TentiengTrung', 'Ngaysinh', 'Tuoi', 'Chieucao', 'Cannang', 
@@ -848,6 +848,25 @@ def prepare_render_data(raw_data: dict) -> dict:
                 field = future_map[future]
                 try: data[field] = future.result()
                 except: pass
+
+        # Tự động lưu bản dịch tiếng Trung và bảo lưu bản gốc tiếng Việt vào DB ngay lập tức
+        # Giúp lần sau mở CV không phải gọi lại API dịch nữa (0ms)
+        if record and hasattr(record, 'data_json') and record.data_json:
+            try:
+                rec_dict = json.loads(record.data_json)
+                updated = False
+                for f, orig_val in non_empty.items():
+                    trans_val = data.get(f)
+                    if trans_val and trans_val != orig_val and is_chinese(trans_val):
+                        if f"{f}_vi" not in rec_dict or not rec_dict[f"{f}_vi"]:
+                            rec_dict[f"{f}_vi"] = orig_val
+                        rec_dict[f] = trans_val
+                        updated = True
+                if updated:
+                    record.data_json = json.dumps(rec_dict, ensure_ascii=False)
+                    db.session.commit()
+            except Exception as e:
+                print(f"Lỗi khi lưu kết quả dịch vào DB: {e}")
 
 
     yellow_alerts = []
@@ -938,11 +957,11 @@ def _protect_html(html: str) -> str:
     )
     return html.replace('</body>', anti_devtools + '</body>')
 
-def generate_html_resume(form_data: dict, template_name='fct_template_v6.18.html', skip_images: bool = False) -> str:
+def generate_html_resume(form_data: dict, template_name='fct_template_v6.18.html', skip_images: bool = False, record=None, **kwargs) -> str:
     render_data = dict(form_data)
     if skip_images:
         render_data['__skip_images__'] = True
-    processed_data = prepare_render_data(render_data)
+    processed_data = prepare_render_data(render_data, record=record)
     processed_data['logo_base64'] = _LOGO_B64_CACHE or get_base64_image(os.path.join(BASE_DIR, 'static', 'logo.png'))
     bg_path = os.path.join(BASE_DIR, 'static', 'banner_bole_qianlima.jpg')
     if not os.path.exists(bg_path): bg_path = os.path.join(BASE_DIR, 'static', 'fct_bg.png')
@@ -1021,13 +1040,15 @@ def _prepare_data_for_db(data: dict) -> dict:
     for key in ('Noio', 'ndcv1', 'ndcv2', 'ndcv3', 'loi_binh_1', 'N1', 'N2', 'N3'):
         val = clean.get(key)
         if val and isinstance(val, str) and val.strip():
-            # Nếu chuỗi không chứa ký tự tiếng Trung → đây là văn bản tiếng Việt
-            if not any(ord(c) >= 0x4e00 and ord(c) <= 0x9fff for c in val):
+            # Nếu chuỗi không chứa ký tự tiếng Trung và không phải ngày tháng/số → đây là văn bản tiếng Việt
+            if not is_chinese(val) and not is_date_or_numeric(val):
                 # Lưu bản gốc tiếng Việt vào trường _vi nếu chưa có
                 if f"{key}_vi" not in clean or not clean[f"{key}_vi"]:
                     clean[f"{key}_vi"] = val
                 # Dịch trường chính sang tiếng Trung ngay tại thời điểm lưu DB
-                clean[key] = translate_free(val)
+                trans = translate_free(val)
+                if trans and is_chinese(trans):
+                    clean[key] = trans
     return clean
 
 # --- API ROUTES ---
@@ -1331,7 +1352,7 @@ def download_history(maso):
     try:
         record = FormHistory.query.filter_by(ma_so=maso).order_by(FormHistory.ngay_tao.desc()).first()
         if not record: return jsonify({"error": "Not found"}), 404
-        html_content = generate_html_resume(json.loads(record.data_json))
+        html_content = generate_html_resume(json.loads(record.data_json), record=record)
         filename = f"{maso}_{sanitize_filename_master(record.ho_ten)}.html"
         return send_file(io.BytesIO(html_content.encode('utf-8')), mimetype='text/html', as_attachment=True, download_name=filename)
     except: return jsonify({"error": "Error"}), 400
@@ -1342,7 +1363,7 @@ def api_preview(record_id):
     try:
         record = FormHistory.query.get(record_id)
         if not record: return "Not found", 404
-        html_content = generate_html_resume(json.loads(record.data_json), skip_images=True)
+        html_content = generate_html_resume(json.loads(record.data_json), skip_images=True, record=record)
         return Response(html_content, mimetype="text/html", headers={"Content-Type": "text/html; charset=utf-8"})
     except Exception as e: return str(e), 500
 
@@ -1386,7 +1407,7 @@ def secure_web_view(slug):
         # Kiểm tra maso trong slug (nếu có id/maso) để đảm bảo tính bảo mật/nhất quán
         # (Nếu dùng Maso từ slug thì record đã khớp rồi)
         
-        html_content = generate_html_resume(json.loads(record.data_json), skip_images=True)
+        html_content = generate_html_resume(json.loads(record.data_json), skip_images=True, record=record)
         # Tạo tên file đẹp cho trình duyệt
         clean_name = sanitize_filename_master(record.ho_ten)
         filename = f"{record.ma_so}_{clean_name}.html"
