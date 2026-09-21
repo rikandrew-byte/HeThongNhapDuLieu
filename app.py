@@ -356,6 +356,21 @@ with app.app_context():
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+AI_CONFIG_FILE = os.path.join(BASE_DIR, 'ai_config.json')
+
+# Nạp cấu hình AI đã lưu trước đó nếu có
+try:
+    if os.path.exists(AI_CONFIG_FILE):
+        with open(AI_CONFIG_FILE, 'r', encoding='utf-8') as _f_ai:
+            _cfg = json.load(_f_ai)
+            if _cfg.get('provider') and 'AI_PROVIDER' not in os.environ:
+                os.environ['AI_PROVIDER'] = _cfg['provider']
+            if _cfg.get('api_key') and 'AI_API_KEY' not in os.environ:
+                os.environ['AI_API_KEY'] = _cfg['api_key']
+                if _cfg.get('provider') == 'groq' and 'GROQ_API_KEY' not in os.environ:
+                    os.environ['GROQ_API_KEY'] = _cfg['api_key']
+except Exception:
+    pass
 
 # --- TRANSLATION MAPS ---
 FIXED_TRANS = {
@@ -520,46 +535,71 @@ def translate_name(text: str) -> str:
 
 def call_ai_llm_translate(prompt: str) -> str:
     """Gọi trực tiếp AI (Groq, OpenAI, DeepSeek, OpenRouter, Gemini) qua SDK hoặc REST API"""
-    provider = os.environ.get('AI_PROVIDER', 'groq').lower()
+    provider = (os.environ.get('AI_PROVIDER') or '').lower()
     key = os.environ.get('AI_API_KEY') or os.environ.get('GROQ_API_KEY') or ''
+    if (not key or not provider) and os.path.exists(AI_CONFIG_FILE):
+        try:
+            with open(AI_CONFIG_FILE, 'r', encoding='utf-8') as _f:
+                _cfg = json.load(_f)
+                if not provider or provider == 'google':
+                    provider = _cfg.get('provider', provider)
+                if not key:
+                    key = _cfg.get('api_key', '')
+        except Exception:
+            pass
+    if not provider: provider = 'groq'
     
     # 1. Groq
     if provider == 'groq':
         global groq_client
-        if groq_client:
-            try:
-                comp = groq_client.chat.completions.create(
-                    model="llama-3.3-70b-versatile",
-                    messages=[{"role": "user", "content": prompt}],
-                    temperature=0.1,
-                    max_tokens=500
-                )
-                res = comp.choices[0].message.content.strip()
-                if res: return res
-            except Exception as e:
-                print(f"Groq SDK translation error: {e}")
+        GROQ_MODELS = [
+            "qwen/qwen3.8-27b",
+            "openai/gpt-oss-120b",
+            "openai/gpt-oss-20b",
+            "groq/compound",
+            "groq/compound-mini",
+            "llama-3.3-70b-versatile"
+        ]
         
-        # Fallback trực tiếp gọi Groq REST API bằng requests (không phụ thuộc SDK)
+        # Thử gọi trực tiếp Groq REST API bằng requests (nhanh & hỗ trợ các model mới nhất)
         if key:
-            try:
-                resp = requests.post(
-                    "https://api.groq.com/openai/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
-                    json={
-                        "model": "llama-3.3-70b-versatile",
-                        "messages": [{"role": "user", "content": prompt}],
-                        "temperature": 0.1,
-                        "max_tokens": 500
-                    },
-                    timeout=15
-                )
-                if resp.status_code == 200:
-                    res = resp.json()['choices'][0]['message']['content'].strip()
+            for g_model in GROQ_MODELS:
+                try:
+                    resp = requests.post(
+                        "https://api.groq.com/openai/v1/chat/completions",
+                        headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+                        json={
+                            "model": g_model,
+                            "messages": [{"role": "user", "content": prompt}],
+                            "temperature": 0.1,
+                            "max_tokens": 500
+                        },
+                        timeout=12
+                    )
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        if 'choices' in data and len(data['choices']) > 0:
+                            res = data['choices'][0]['message']['content'].strip()
+                            if res: return res
+                    else:
+                        print(f"Groq REST model {g_model} returned {resp.status_code}: {resp.text}")
+                except Exception as e:
+                    print(f"Groq REST request error for {g_model}: {e}")
+
+        # Thử qua SDK nếu có
+        if groq_client:
+            for g_model in GROQ_MODELS:
+                try:
+                    comp = groq_client.chat.completions.create(
+                        model=g_model,
+                        messages=[{"role": "user", "content": prompt}],
+                        temperature=0.1,
+                        max_tokens=500
+                    )
+                    res = comp.choices[0].message.content.strip()
                     if res: return res
-                else:
-                    print(f"Groq REST error {resp.status_code}: {resp.text}")
-            except Exception as e:
-                print(f"Groq REST request error: {e}")
+                except Exception:
+                    pass
 
     # 2. OpenAI
     elif provider == 'openai' and key:
@@ -1156,10 +1196,17 @@ def api_verify_admin_pin():
 @app.route('/api/settings', methods=['GET'])
 @auth_required
 def api_get_settings():
-    provider = os.environ.get('AI_PROVIDER', 'google')
-    key = os.environ.get('AI_API_KEY', '')
-    if provider == 'groq' and not key:
-        key = os.environ.get('GROQ_API_KEY', '')
+    provider = (os.environ.get('AI_PROVIDER') or '').lower()
+    key = os.environ.get('AI_API_KEY', '') or os.environ.get('GROQ_API_KEY', '')
+    if (not key or not provider) and os.path.exists(AI_CONFIG_FILE):
+        try:
+            with open(AI_CONFIG_FILE, 'r', encoding='utf-8') as _f:
+                cfg = json.load(_f)
+                if not provider: provider = cfg.get('provider', '')
+                if not key: key = cfg.get('api_key', '')
+        except Exception:
+            pass
+    if not provider: provider = 'groq'
         
     is_active = (provider != 'google' and bool(key))
     return jsonify({
@@ -1174,22 +1221,35 @@ def api_get_settings():
 def api_update_ai_settings():
     try:
         req = request.get_json() or {}
-        provider = str(req.get('provider', 'google')).strip()
+        provider = str(req.get('provider', 'google')).strip().lower()
         api_key = str(req.get('api_key', '')).strip()
         
         os.environ['AI_PROVIDER'] = provider
-        os.environ['AI_API_KEY'] = api_key
-        
-        # If groq, also update the existing groq client logic for backward compatibility
-        if provider == 'groq':
-            os.environ['GROQ_API_KEY'] = api_key
-            global groq_api_key, groq_client
-            groq_api_key = api_key
-            try:
-                if 'Groq' in globals() and groq_api_key:
-                    groq_client = Groq(api_key=groq_api_key)
-            except Exception:
-                pass
+        if api_key:
+            os.environ['AI_API_KEY'] = api_key
+            if provider == 'groq':
+                os.environ['GROQ_API_KEY'] = api_key
+                global groq_api_key, groq_client
+                groq_api_key = api_key
+                try:
+                    if 'Groq' in globals() and groq_api_key:
+                        groq_client = Groq(api_key=groq_api_key)
+                except Exception:
+                    pass
+                    
+        # Lưu vào file ai_config.json để giữ cấu hình bền vững
+        try:
+            cfg = {'provider': provider}
+            if api_key:
+                cfg['api_key'] = api_key
+            elif os.path.exists(AI_CONFIG_FILE):
+                with open(AI_CONFIG_FILE, 'r', encoding='utf-8') as _f:
+                    old_cfg = json.load(_f)
+                    if 'api_key' in old_cfg: cfg['api_key'] = old_cfg['api_key']
+            with open(AI_CONFIG_FILE, 'w', encoding='utf-8') as _f:
+                json.dump(cfg, _f, ensure_ascii=False)
+        except Exception as e:
+            print(f"Lưu ai_config.json thất bại: {e}")
                 
         return jsonify({'success': True, 'message': f'Đã cập nhật cấu hình AI: {provider.upper()}'})
     except Exception as e:
@@ -1203,17 +1263,30 @@ def api_test_ai():
         t0 = time.time()
         test_text = "Thợ cơ khí CNC kinh nghiệm 3 năm, sức khỏe tốt, chăm chỉ"
         prompt = f"Dịch đoạn sau sang tiếng Trung Phồn Thể chuẩn Đài Loan, chỉ trả về kết quả dịch: '{test_text}'"
+        provider = (os.environ.get('AI_PROVIDER') or 'groq').lower()
         res_text = call_ai_llm_translate(prompt)
-        provider = os.environ.get('AI_PROVIDER', 'groq').upper()
+        
         if res_text:
-            engine_name = f"{provider} AI"
-        else:
-            res_text = GoogleTranslator(source='vi', target='zh-TW').translate(test_text)
-            engine_name = "Google Translate (Dự phòng)"
+            elapsed_ms = round((time.time() - t0) * 1000, 1)
+            return jsonify({
+                'success': True,
+                'engine': f"{provider.upper()} AI",
+                'original': test_text,
+                'translated': res_text,
+                'elapsed_ms': elapsed_ms
+            })
+            
+        if provider != 'google':
+            return jsonify({
+                'success': False,
+                'error': f"Không nhận được phản hồi từ {provider.upper()}. Vui lòng kiểm tra lại API Key hoặc hạn ngạch tài khoản {provider.upper()}."
+            }), 400
+
+        res_text = GoogleTranslator(source='vi', target='zh-TW').translate(test_text)
         elapsed_ms = round((time.time() - t0) * 1000, 1)
         return jsonify({
             'success': True,
-            'engine': engine_name,
+            'engine': "Google Translate (Dự phòng)",
             'original': test_text,
             'translated': res_text,
             'elapsed_ms': elapsed_ms
