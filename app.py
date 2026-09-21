@@ -949,6 +949,78 @@ def index():
 @app.route('/api/health')
 def health(): return jsonify({'ok': True, 'msg': 'DAS V3.0 running'})
 
+@app.route('/api/quota/status', methods=['GET'])
+@auth_required
+def get_system_quota():
+    """Kiểm tra dung lượng Neon Database (hoặc SQLite local) và Cloudflare R2 (Free Tier)"""
+    quota_data = {
+        "success": True,
+        "database": {
+            "provider": "Neon PostgreSQL" if os.environ.get('DATABASE_URL') else "SQLite Database",
+            "used_mb": 0.0,
+            "limit_mb": 512.0,  # Mức giới hạn Free Tier của Neon (512 MB)
+            "percent": 0.0,
+            "unit": "MB"
+        },
+        "cloudflare": {
+            "provider": "Cloudflare R2 Storage",
+            "used_mb": 0.0,
+            "limit_mb": 10240.0, # Mức giới hạn Free Tier của Cloudflare R2 (10 GB = 10240 MB)
+            "percent": 0.0,
+            "unit": "MB",
+            "note": "Hạn mức miễn phí 10GB lưu trữ và 0đ băng thông tải ra."
+        },
+        "ai": {
+            "provider": "Groq Llama 3.3 (70B)",
+            "status": "Hoạt động" if groq_client else "Chưa cấu hình (Google Translate fallback)",
+            "has_key": bool(groq_api_key)
+        }
+    }
+
+    try:
+        from sqlalchemy import text
+        db_uri = app.config.get('SQLALCHEMY_DATABASE_URI', '')
+        if db_uri.startswith('postgres://') or db_uri.startswith('postgresql://'):
+            result = db.session.execute(text("SELECT pg_database_size(current_database());")).scalar()
+            if result:
+                used_mb = round(result / (1024 * 1024), 2)
+                quota_data["database"]["used_mb"] = used_mb
+                quota_data["database"]["percent"] = round((used_mb / quota_data["database"]["limit_mb"]) * 100, 1)
+        else:
+            db_path = os.path.join(BASE_DIR, 'database.db')
+            if not os.path.exists(db_path):
+                db_path = db_uri.replace('sqlite:///', '')
+            if os.path.exists(db_path):
+                file_size_bytes = os.path.getsize(db_path)
+                used_mb = round(file_size_bytes / (1024 * 1024), 2)
+                quota_data["database"]["used_mb"] = used_mb
+                quota_data["database"]["percent"] = round((used_mb / quota_data["database"]["limit_mb"]) * 100, 1)
+    except Exception as db_err:
+        print(f"Lỗi đọc dung lượng Database: {db_err}")
+
+    try:
+        # Tính dung lượng thực tế của các tệp ảnh và tài liệu
+        uploads_dir = os.path.join(BASE_DIR, 'uploads')
+        total_upload_bytes = 0
+        if os.path.exists(uploads_dir):
+            for root, _, files in os.walk(uploads_dir):
+                for f in files:
+                    fp = os.path.join(root, f)
+                    if os.path.exists(fp):
+                        total_upload_bytes += os.path.getsize(fp)
+        
+        if total_upload_bytes == 0:
+            count = FormHistory.query.filter_by(is_deleted=False).count()
+            total_upload_bytes = count * 250 * 1024  # Ước tính ~250KB/hồ sơ
+
+        used_cf_mb = round(total_upload_bytes / (1024 * 1024), 2)
+        quota_data["cloudflare"]["used_mb"] = used_cf_mb
+        quota_data["cloudflare"]["percent"] = round((used_cf_mb / quota_data["cloudflare"]["limit_mb"]) * 100, 2)
+    except Exception as cf_err:
+        print(f"Lỗi đọc dung lượng Cloudflare/Uploads: {cf_err}")
+
+    return jsonify(quota_data)
+
 def _process_form_data(request):
     if request.content_type and 'multipart/form-data' in request.content_type:
         data = json.loads(request.form.get('data', '{}'))
