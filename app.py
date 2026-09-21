@@ -1027,7 +1027,8 @@ def api_verify_admin_pin():
     try:
         req = request.get_json() or {}
         pin = str(req.get('pin', '')).strip()
-        correct_pin = str(os.environ.get('ADMIN_PASSWORD', '1503')).strip()
+        # Mã PIN vào Cài đặt hệ thống cố định là 9595 (hoặc biến SYSTEM_SETTINGS_PIN)
+        correct_pin = str(os.environ.get('SYSTEM_SETTINGS_PIN', '9595')).strip()
         if pin == correct_pin:
             return jsonify({'success': True, 'message': 'Xác thực thành công'})
         return jsonify({'success': False, 'message': 'Mã PIN bảo mật không chính xác'}), 403
@@ -1049,25 +1050,6 @@ def api_get_settings():
         'ai_active': is_active,
         'ai_key_hint': f"{key[:4]}...{key[-4:]}" if (key and len(key)>8) else '(chưa có)'
     })
-
-@app.route('/api/settings/password', methods=['POST'])
-@auth_required
-def api_update_password():
-    try:
-        req = request.get_json() or {}
-        cur_pw = str(req.get('current_password', '')).strip()
-        new_pw = str(req.get('new_password', '')).strip()
-        
-        correct_pw = app.config.get('BASIC_AUTH_PASSWORD', '1503')
-        if cur_pw != correct_pw:
-            return jsonify({'success': False, 'message': 'Mật khẩu hiện tại không đúng'}), 403
-            
-        # Update both memory and environment variable for current session
-        app.config['BASIC_AUTH_PASSWORD'] = new_pw
-        os.environ['ADMIN_PASSWORD'] = new_pw
-        return jsonify({'success': True, 'message': 'Đổi mật khẩu thành công (áp dụng đến khi khởi động lại máy chủ)'})
-    except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
 
 @app.route('/api/settings/ai', methods=['POST'])
 @auth_required
