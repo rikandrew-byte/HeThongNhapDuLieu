@@ -1533,14 +1533,30 @@
         </div>
     </div>
 
+    <!-- Modal Xác thực Quản trị viên (Admin PIN Protection) -->
+    <div id="adminAuthModal" class="glass-modal" style="display:none; position:fixed; top:25%; left:5%; width:90%; max-width:420px; margin: 0 auto; z-index:25000; border-radius:20px; background:#ffffff; padding:24px; box-shadow:0 25px 60px rgba(0,0,0,0.3); border:1px solid #cbd5e1; font-family:'Inter',sans-serif; text-align:center;">
+        <div style="font-size:36px; margin-bottom:8px;">🔐</div>
+        <h3 style="font-size:16px; font-weight:850; color:#0f172a; margin:0 0 6px 0;">Xác thực Quản trị viên</h3>
+        <p style="font-size:12px; color:#64748b; margin:0 0 18px 0;">Khu vực bảo mật cấu hình API và Quản trị hệ thống.</p>
+        
+        <form onsubmit="event.preventDefault(); submitAdminPin();" style="display:flex; flex-direction:column; gap:12px;">
+            <input type="password" id="adminPinInput" placeholder="Nhập mã PIN / Mật khẩu..." autocomplete="current-password" style="width:100%; padding:10px 14px; border:2px solid #cbd5e1; border-radius:10px; font-size:14px; text-align:center; font-weight:700; letter-spacing:0.1em; outline:none; transition:border-color 0.15s;" onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#cbd5e1'">
+            <div id="adminPinError" style="display:none; color:#dc2626; font-size:11.5px; font-weight:700;"></div>
+            <div style="display:flex; gap:8px; justify-content:center; margin-top:6px;">
+                <button type="button" onclick="closeAdminAuthModal()" style="flex:1; padding:9px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer;">Hủy bỏ</button>
+                <button type="submit" style="flex:1; padding:9px; background:#0f172a; color:#fff; border:none; border-radius:8px; font-size:12.5px; font-weight:800; cursor:pointer; box-shadow:0 2px 6px rgba(15,23,42,0.2);">Mở khóa</button>
+            </div>
+        </form>
+    </div>
+
     <!-- Modal Cài đặt hệ thống & Giám sát tài nguyên (System Settings & Resource Quota) -->
-    <div id="systemSettingsModal" class="glass-modal" style="display:none; position:fixed; top:8%; left:5%; width:90%; max-width:680px; margin: 0 auto; z-index:20000; border-radius:20px; background:#ffffff; padding:24px; box-shadow:0 20px 50px rgba(0,0,0,0.25); border:1px solid #cbd5e1; font-family:'Inter',sans-serif; max-height:85vh; overflow-y:auto;">
+    <div id="systemSettingsModal" class="glass-modal" style="display:none; position:fixed; top:6%; left:5%; width:90%; max-width:720px; margin: 0 auto; z-index:20000; border-radius:20px; background:#ffffff; padding:24px; box-shadow:0 25px 60px rgba(0,0,0,0.25); border:1px solid #cbd5e1; font-family:'Inter',sans-serif; max-height:88vh; overflow-y:auto;">
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1.5px solid #e2e8f0; padding-bottom:14px; margin-bottom:20px;">
             <div style="display:flex; align-items:center; gap:10px;">
-                <span style="font-size:22px;">⚙️</span>
+                <span style="font-size:24px;">⚙️</span>
                 <div>
-                    <h3 style="font-size:16px; font-weight:850; color:#0f172a; margin:0;">Cài đặt hệ thống & Giám sát tài nguyên</h3>
-                    <p style="font-size:12px; color:#64748b; margin:2px 0 0 0;">Quản lý API dịch tự động & Theo dõi hạn mức lưu trữ miễn phí</p>
+                    <h3 style="font-size:16.5px; font-weight:850; color:#0f172a; margin:0;">Cài đặt hệ thống & Giám sát tài nguyên</h3>
+                    <p style="font-size:12px; color:#64748b; margin:2px 0 0 0;">Dành riêng cho Quản trị viên (Master Access)</p>
                 </div>
             </div>
             <button type="button" onclick="closeSystemSettingsModal()" style="background:#f1f5f9; border:none; color:#64748b; width:32px; height:32px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center; transition:all 0.15s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">✕</button>
@@ -1584,27 +1600,40 @@
             </div>
         </div>
 
-        <!-- Khung 2: Cấu hình AI Dịch thuật (AI Engine Status) -->
+        <!-- Khung 2: Cấu hình API AI Dịch thuật (AI Engine Configuration) -->
         <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:18px; margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,0.03);">
-            <h4 style="font-size:13.5px; font-weight:800; color:#1e293b; display:flex; align-items:center; gap:6px; margin:0 0 12px 0;">
-                <span>🤖</span> Trạng thái API AI Dịch tự động
-            </h4>
-            <div style="display:flex; flex-direction:column; gap:10px;">
-                <div style="display:flex; align-items:center; justify-content:space-between; background:#f8fafc; border:1px solid #e2e8f0; padding:12px 14px; border-radius:10px;">
-                    <div>
-                        <div style="font-size:12.5px; font-weight:700; color:#0f172a;">Groq AI (Llama 3.3 70B Versatile)</div>
-                        <div style="font-size:11.5px; color:#64748b;">Dịch chuẩn thuật ngữ nghề nghiệp, công xưởng Đài Loan</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h4 style="font-size:13.5px; font-weight:800; color:#1e293b; display:flex; align-items:center; gap:6px; margin:0;">
+                    <span>🤖</span> Cấu hình API AI Dịch tự động (Groq)
+                </h4>
+                <span id="ai-status-badge" style="font-size:11.5px; font-weight:800; padding:4px 10px; border-radius:9999px; background:#dcfce7; color:#15803d; border:1px solid #bbf7d0;">Đang hoạt động</span>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <div>
+                    <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Groq API Key (Llama 3.3 70B Versatile):</label>
+                    <div style="display:flex; gap:8px;">
+                        <input type="password" id="groqApiKeyInput" placeholder="Nhập API Key: gsk_..." style="flex:1; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:12.5px; font-family:monospace;">
+                        <button type="button" onclick="toggleApiKeyVisibility()" style="padding:8px 12px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:8px; font-size:12px; cursor:pointer; font-weight:600;">👁️</button>
+                        <button type="button" onclick="saveAiApiKey()" style="padding:8px 16px; background:#2563eb; color:#fff; border:none; border-radius:8px; font-size:12px; font-weight:800; cursor:pointer; white-space:nowrap; transition:all 0.15s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">💾 Lưu Key</button>
                     </div>
-                    <span id="ai-status-badge" style="font-size:11.5px; font-weight:800; padding:4px 10px; border-radius:9999px; background:#dcfce7; color:#15803d; border:1px solid #bbf7d0;">Đang hoạt động</span>
                 </div>
+
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <button type="button" onclick="testAiTranslation()" style="padding:7px 14px; background:#f8fafc; color:#0f172a; border:1.5px solid #cbd5e1; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.15s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
+                        <span>🧪</span> Dịch thử nghiệm (Test API)
+                    </button>
+                    <span id="aiTestResult" style="font-size:11.5px; color:#64748b;"></span>
+                </div>
+
                 <div style="font-size:11.5px; color:#64748b; background:#fffbeb; border:1px solid #fef3c7; padding:10px 12px; border-radius:8px; line-height:1.5;">
-                    💡 <strong>Ghi chú:</strong> Hệ thống tự động dịch thuật các trường tên tiếng Trung, kinh nghiệm làm việc và nơi ở sang <strong>Tiếng Trung Phồn Thể (Đài Loan)</strong>. Nếu hệ thống AI bận, chế độ Google Translate tự động kích hoạt dự phòng.
+                    💡 <strong>Cơ chế tự động:</strong> AI Groq ưu tiên dịch thuật các trường tên tiếng Trung, kinh nghiệm làm việc và nơi ở sang <strong>Tiếng Trung Phồn Thể chuẩn Đài Loan</strong>. Nếu hết hạn ngạch hoặc chưa cài Key, hệ thống tự động kích hoạt Google Translate làm phương án dự phòng an toàn.
                 </div>
             </div>
         </div>
 
         <div style="display:flex; justify-content:flex-end;">
-            <button type="button" onclick="closeSystemSettingsModal()" style="padding:9px 22px; background:#0f172a; color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; transition:all 0.15s;" onmouseover="this.style.background='#334155'" onmouseout="this.style.background='#0f172a'">Đóng</button>
+            <button type="button" onclick="closeSystemSettingsModal()" style="padding:9px 24px; background:#0f172a; color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; transition:all 0.15s;" onmouseover="this.style.background='#334155'" onmouseout="this.style.background='#0f172a'">Đóng</button>
         </div>
     </div>
 
@@ -2102,18 +2131,137 @@
     </div>
 
     <script>
-        // ── Cài đặt hệ thống & Giám sát tài nguyên ──
+        // ── Cài đặt hệ thống & Giám sát tài nguyên (Admin PIN Protected) ──
         function openSystemSettingsModal() {
-            const m = document.getElementById('systemSettingsModal');
+            // Kiểm tra xem quản trị viên đã mở khóa trong phiên làm việc này chưa
+            const isAuthed = sessionStorage.getItem('admin_master_authed') === 'true';
+            if (isAuthed) {
+                const m = document.getElementById('systemSettingsModal');
+                if (m) {
+                    m.style.display = 'block';
+                    loadQuotaStatus();
+                }
+            } else {
+                openAdminAuthModal();
+            }
+        }
+
+        function openAdminAuthModal() {
+            const m = document.getElementById('adminAuthModal');
+            const err = document.getElementById('adminPinError');
+            const input = document.getElementById('adminPinInput');
+            if (err) err.style.display = 'none';
+            if (input) input.value = '';
             if (m) {
                 m.style.display = 'block';
-                loadQuotaStatus();
+                setTimeout(() => { if (input) input.focus(); }, 100);
+            }
+        }
+
+        function closeAdminAuthModal() {
+            const m = document.getElementById('adminAuthModal');
+            if (m) m.style.display = 'none';
+        }
+
+        async function submitAdminPin() {
+            const input = document.getElementById('adminPinInput');
+            const err = document.getElementById('adminPinError');
+            const pin = input ? input.value.trim() : '';
+            if (!pin) {
+                if (err) {
+                    err.innerText = 'Vui lòng nhập mã PIN bảo mật.';
+                    err.style.display = 'block';
+                }
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/admin/verify-pin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin: pin })
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    sessionStorage.setItem('admin_master_authed', 'true');
+                    closeAdminAuthModal();
+                    const sm = document.getElementById('systemSettingsModal');
+                    if (sm) {
+                        sm.style.display = 'block';
+                        loadQuotaStatus();
+                    }
+                } else {
+                    if (err) {
+                        err.innerText = data.message || 'Mã PIN bảo mật không chính xác!';
+                        err.style.display = 'block';
+                    }
+                }
+            } catch (e) {
+                if (err) {
+                    err.innerText = 'Lỗi kết nối xác thực.';
+                    err.style.display = 'block';
+                }
             }
         }
 
         function closeSystemSettingsModal() {
             const m = document.getElementById('systemSettingsModal');
             if (m) m.style.display = 'none';
+        }
+
+        function toggleApiKeyVisibility() {
+            const inp = document.getElementById('groqApiKeyInput');
+            if (inp) {
+                inp.type = inp.type === 'password' ? 'text' : 'password';
+            }
+        }
+
+        async function saveAiApiKey() {
+            const inp = document.getElementById('groqApiKeyInput');
+            const key = inp ? inp.value.trim() : '';
+            if (!key) {
+                alert('Vui lòng nhập API Key trước khi lưu.');
+                return;
+            }
+            try {
+                const res = await fetch('/api/ai/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ groq_api_key: key })
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    alert('✅ ' + data.message);
+                    loadQuotaStatus();
+                } else {
+                    alert('❌ Lỗi: ' + (data.message || 'Không thể cập nhật'));
+                }
+            } catch (e) {
+                alert('❌ Lỗi kết nối máy chủ');
+            }
+        }
+
+        async function testAiTranslation() {
+            const resSpan = document.getElementById('aiTestResult');
+            if (resSpan) resSpan.innerHTML = '<span style="color:#0284c7;">⏳ Đang gửi yêu cầu dịch thử nghiệm...</span>';
+            try {
+                const res = await fetch('/api/ai/test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    if (resSpan) {
+                        resSpan.innerHTML = `✅ <strong>${data.engine}</strong> (${data.elapsed_ms}ms): <span style="color:#059669;">"${data.translated}"</span>`;
+                    }
+                } else {
+                    if (resSpan) {
+                        resSpan.innerHTML = `<span style="color:#dc2626;">❌ Lỗi: ${data.error || 'Thử nghiệm thất bại'}</span>`;
+                    }
+                }
+            } catch (e) {
+                if (resSpan) resSpan.innerHTML = '<span style="color:#dc2626;">❌ Lỗi kết nối thử nghiệm.</span>';
+            }
         }
 
         async function loadQuotaStatus() {

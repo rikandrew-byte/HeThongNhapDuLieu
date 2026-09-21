@@ -1021,6 +1021,70 @@ def get_system_quota():
 
     return jsonify(quota_data)
 
+@app.route('/api/admin/verify-pin', methods=['POST'])
+@auth_required
+def api_verify_admin_pin():
+    try:
+        req = request.get_json() or {}
+        pin = str(req.get('pin', '')).strip()
+        correct_pin = str(os.environ.get('ADMIN_PASSWORD', '1503')).strip()
+        if pin == correct_pin:
+            return jsonify({'success': True, 'message': 'Xác thực thành công'})
+        return jsonify({'success': False, 'message': 'Mã PIN bảo mật không chính xác'}), 403
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/ai/test', methods=['POST'])
+@auth_required
+def api_test_ai():
+    try:
+        import time
+        t0 = time.time()
+        test_text = "Thợ cơ khí CNC kinh nghiệm 3 năm, sức khỏe tốt, chăm chỉ"
+        global groq_client, groq_api_key
+        if groq_client:
+            completion = groq_client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[{
+                    "role": "user",
+                    "content": f"Dịch đoạn sau sang tiếng Trung Phồn Thể, chỉ trả về kết quả dịch: '{test_text}'"
+                }],
+                temperature=0.1,
+                max_tokens=100,
+            )
+            res_text = completion.choices[0].message.content.strip()
+            engine_name = "Groq Llama 3.3 (70B)"
+        else:
+            res_text = GoogleTranslator(source='vi', target='zh-TW').translate(test_text)
+            engine_name = "Google Translate (Dự phòng)"
+        elapsed_ms = round((time.time() - t0) * 1000, 1)
+        return jsonify({
+            'success': True,
+            'engine': engine_name,
+            'original': test_text,
+            'translated': res_text,
+            'elapsed_ms': elapsed_ms
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/ai/config', methods=['POST'])
+@auth_required
+def api_update_ai_config():
+    try:
+        req = request.get_json() or {}
+        new_key = str(req.get('groq_api_key', '')).strip()
+        global groq_api_key, groq_client, Groq
+        if new_key:
+            groq_api_key = new_key
+            os.environ['GROQ_API_KEY'] = new_key
+            if Groq:
+                groq_client = Groq(api_key=new_key)
+            return jsonify({'success': True, 'message': 'Đã cập nhật Groq API Key thành công!'})
+        return jsonify({'success': False, 'message': 'API Key không được để trống'}), 400
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 def _process_form_data(request):
     if request.content_type and 'multipart/form-data' in request.content_type:
         data = json.loads(request.form.get('data', '{}'))
