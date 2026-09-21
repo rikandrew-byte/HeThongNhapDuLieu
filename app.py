@@ -1034,6 +1034,67 @@ def api_verify_admin_pin():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
+@app.route('/api/settings', methods=['GET'])
+@auth_required
+def api_get_settings():
+    provider = os.environ.get('AI_PROVIDER', 'google')
+    key = os.environ.get('AI_API_KEY', '')
+    if provider == 'groq' and not key:
+        key = os.environ.get('GROQ_API_KEY', '')
+        
+    is_active = (provider != 'google' and bool(key))
+    return jsonify({
+        'success': True,
+        'ai_provider': provider,
+        'ai_active': is_active,
+        'ai_key_hint': f"{key[:4]}...{key[-4:]}" if (key and len(key)>8) else '(chưa có)'
+    })
+
+@app.route('/api/settings/password', methods=['POST'])
+@auth_required
+def api_update_password():
+    try:
+        req = request.get_json() or {}
+        cur_pw = str(req.get('current_password', '')).strip()
+        new_pw = str(req.get('new_password', '')).strip()
+        
+        correct_pw = app.config.get('BASIC_AUTH_PASSWORD', '1503')
+        if cur_pw != correct_pw:
+            return jsonify({'success': False, 'message': 'Mật khẩu hiện tại không đúng'}), 403
+            
+        # Update both memory and environment variable for current session
+        app.config['BASIC_AUTH_PASSWORD'] = new_pw
+        os.environ['ADMIN_PASSWORD'] = new_pw
+        return jsonify({'success': True, 'message': 'Đổi mật khẩu thành công (áp dụng đến khi khởi động lại máy chủ)'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/settings/ai', methods=['POST'])
+@auth_required
+def api_update_ai_settings():
+    try:
+        req = request.get_json() or {}
+        provider = str(req.get('provider', 'google')).strip()
+        api_key = str(req.get('api_key', '')).strip()
+        
+        os.environ['AI_PROVIDER'] = provider
+        os.environ['AI_API_KEY'] = api_key
+        
+        # If groq, also update the existing groq client logic for backward compatibility
+        if provider == 'groq':
+            os.environ['GROQ_API_KEY'] = api_key
+            global groq_api_key, groq_client
+            groq_api_key = api_key
+            try:
+                if 'Groq' in globals() and groq_api_key:
+                    groq_client = Groq(api_key=groq_api_key)
+            except Exception:
+                pass
+                
+        return jsonify({'success': True, 'message': f'Đã cập nhật cấu hình AI: {provider.upper()}'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 @app.route('/api/ai/test', methods=['POST'])
 @auth_required
 def api_test_ai():
