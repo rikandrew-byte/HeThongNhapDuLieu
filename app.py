@@ -518,30 +518,142 @@ def translate_name(text: str) -> str:
     if dict_result is not None:
         return dict_result
 
-    # 2. Nếu không có trong từ điển, dùng Groq hoặc Google Translate
-    try:
+def call_ai_llm_translate(prompt: str) -> str:
+    """Gọi trực tiếp AI (Groq, OpenAI, DeepSeek, OpenRouter, Gemini) qua SDK hoặc REST API"""
+    provider = os.environ.get('AI_PROVIDER', 'groq').lower()
+    key = os.environ.get('AI_API_KEY') or os.environ.get('GROQ_API_KEY') or ''
+    
+    # 1. Groq
+    if provider == 'groq':
+        global groq_client
         if groq_client:
-            completion = groq_client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=[{
-                    "role": "user",
-                    "content": f"Dịch tên tiếng Việt sau sang tiếng Trung Phồn Thể một cách tự nhiên nhất (âm Hán Việt nếu có thể), chỉ trả về đúng tên đã dịch, tuyệt đối không giải thích thêm: {text_normalized}"
-                }],
-                temperature=0.1,
-                max_tokens=100,
+            try:
+                comp = groq_client.chat.completions.create(
+                    model="llama-3.3-70b-versatile",
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=0.1,
+                    max_tokens=500
+                )
+                res = comp.choices[0].message.content.strip()
+                if res: return res
+            except Exception as e:
+                print(f"Groq SDK translation error: {e}")
+        
+        # Fallback trực tiếp gọi Groq REST API bằng requests (không phụ thuộc SDK)
+        if key:
+            try:
+                resp = requests.post(
+                    "https://api.groq.com/openai/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+                    json={
+                        "model": "llama-3.3-70b-versatile",
+                        "messages": [{"role": "user", "content": prompt}],
+                        "temperature": 0.1,
+                        "max_tokens": 500
+                    },
+                    timeout=15
+                )
+                if resp.status_code == 200:
+                    res = resp.json()['choices'][0]['message']['content'].strip()
+                    if res: return res
+                else:
+                    print(f"Groq REST error {resp.status_code}: {resp.text}")
+            except Exception as e:
+                print(f"Groq REST request error: {e}")
+
+    # 2. OpenAI
+    elif provider == 'openai' and key:
+        try:
+            resp = requests.post(
+                "https://api.openai.com/v1/chat/completions",
+                headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+                json={"model": "gpt-4o-mini", "messages": [{"role": "user", "content": prompt}], "temperature": 0.1, "max_tokens": 500},
+                timeout=15
             )
-            result = completion.choices[0].message.content.strip()
-            return result if result else text_normalized
-        else:
-            result = GoogleTranslator(source='vi', target='zh-TW').translate(text_normalized)
-            return result if result else text_normalized
+            if resp.status_code == 200:
+                res = resp.json()['choices'][0]['message']['content'].strip()
+                if res: return res
+        except Exception as e:
+            print(f"OpenAI error: {e}")
+
+    # 3. DeepSeek
+    elif provider == 'deepseek' and key:
+        try:
+            resp = requests.post(
+                "https://api.deepseek.com/chat/completions",
+                headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+                json={"model": "deepseek-chat", "messages": [{"role": "user", "content": prompt}], "temperature": 0.1, "max_tokens": 500},
+                timeout=15
+            )
+            if resp.status_code == 200:
+                res = resp.json()['choices'][0]['message']['content'].strip()
+                if res: return res
+        except Exception as e:
+            print(f"DeepSeek error: {e}")
+
+    # 4. OpenRouter
+    elif provider == 'openrouter' and key:
+        try:
+            resp = requests.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+                json={"model": "google/gemini-2.0-flash-001", "messages": [{"role": "user", "content": prompt}], "temperature": 0.1, "max_tokens": 500},
+                timeout=15
+            )
+            if resp.status_code == 200:
+                res = resp.json()['choices'][0]['message']['content'].strip()
+                if res: return res
+        except Exception as e:
+            print(f"OpenRouter error: {e}")
+
+    # 5. Gemini
+    elif provider == 'gemini' and key:
+        try:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={key}"
+            resp = requests.post(
+                url,
+                headers={"Content-Type": "application/json"},
+                json={"contents": [{"parts": [{"text": prompt}]}]},
+                timeout=15
+            )
+            if resp.status_code == 200:
+                res = resp.json()['candidates'][0]['content']['parts'][0]['text'].strip()
+                if res: return res
+        except Exception as e:
+            print(f"Gemini error: {e}")
+
+    # Fallback cuối cùng: Google Translate miễn phí
+    try:
+        res = GoogleTranslator(source='vi', target='zh-TW').translate(prompt)
+        if res: return res
+    except Exception as e:
+        print(f"GoogleTranslator fallback error: {e}")
+
+    return ""
+
+def translate_name(text: str) -> str:
+    """Dành riêng cho dịch Họ Tên: Ưu tiên từ điển tên để tránh nhầm với tiếng Anh"""
+    if not text or not text.strip() or is_chinese(text): return text
+
+    # Chuẩn hóa Unicode NFC đầu vào để khớp chính xác từ điển nội bộ
+    text_normalized = normalize('NFC', text).strip()
+
+    # 1. Thử dịch từ từ điển tên riêng
+    dict_result = get_vietnamese_name_in_chinese(text_normalized)
+    if dict_result is not None:
+        return dict_result
+
+    # 2. Nếu không có trong từ điển, dùng AI dịch
+    try:
+        prompt = f"Dịch tên tiếng Việt sau sang tiếng Trung Phồn Thể một cách tự nhiên nhất (âm Hán Việt nếu có thể), chỉ trả về đúng tên đã dịch, tuyệt đối không giải thích thêm: {text_normalized}"
+        res = call_ai_llm_translate(prompt)
+        if res and res != text_normalized:
+            return res.strip().replace('"', '').replace("'", "")
+        # Fallback Google Translate
+        return GoogleTranslator(source='vi', target='zh-TW').translate(text_normalized) or text_normalized
     except Exception as e:
         print(f"Name translation error: {e}")
-        try:
-            # Fallback to Google Translate if Groq fails
-            return GoogleTranslator(source='vi', target='zh-TW').translate(text_normalized) or text_normalized
-        except:
-            return text_normalized
+        return text_normalized
 
 _FREE_TRANS_CACHE = {}
 
@@ -564,9 +676,7 @@ def translate_free(text: str) -> str:
         return fixed
     
     # 2. Xử lý các từ khóa quan trọng TRONG câu (ví dụ: "may" -> "縫紉")
-    # Để tránh Google dịch nhầm "may" thành "có lẽ/có thể" (possibly)
     processed_text = text_normalized
-    # Các từ khóa cần bảo vệ (case insensitive)
     protected_terms = {
         'may': '縫紉',
         'thợ may': '縫紉',
@@ -584,53 +694,40 @@ def translate_free(text: str) -> str:
         _FREE_TRANS_CACHE[text_lower] = res_val
         return res_val
 
-    # 3. Dùng Groq hoặc Google Translate cho đoạn văn
+    # 3. Dùng AI hoặc Google Translate cho đoạn văn
     try:
-        if groq_client:
-            completion = groq_client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=[{
-                    "role": "user",
-                    "content": f"Bạn là chuyên gia dịch thuật CV xuất khẩu lao động Đài Loan. Hãy dịch đoạn kinh nghiệm làm việc sau sang tiếng Trung Phồn Thể. Yêu cầu: dịch sát nghĩa, chuẩn thuật ngữ nghề nghiệp (cơ khí, điện, xây dựng, nhà máy, dệt may...), giữ nguyên cách dòng và định dạng nếu có. Tuyệt đối KHÔNG kèm theo lời giải thích hay bình luận, chỉ trả về đúng kết quả dịch. Đoạn văn bản cần dịch: '{processed_text.strip()}'"
-                }],
-                temperature=0.1,
-                max_tokens=500,
-            )
-            result = completion.choices[0].message.content.strip()
-        else:
-            result = GoogleTranslator(source='vi', target='zh-TW').translate(processed_text.strip())
-
+        prompt = f"Bạn là chuyên gia dịch thuật CV xuất khẩu lao động Đài Loan. Hãy dịch đoạn kinh nghiệm làm việc sau sang tiếng Trung Phồn Thể. Yêu cầu: dịch sát nghĩa, chuẩn thuật ngữ nghề nghiệp (cơ khí, điện, xây dựng, nhà máy, dệt may...), giữ nguyên cách dòng và định dạng nếu có. Tuyệt đối KHÔNG kèm theo lời giải thích hay bình luận, chỉ trả về đúng kết quả dịch. Đoạn văn bản cần dịch: '{processed_text.strip()}'"
+        result = call_ai_llm_translate(prompt)
         
-        # Sửa lại nếu Google dịch nhầm "may" -> "可能"
-        if '可能' in result and 'may' in text_lower:
-            result = result.replace('可能', '縫紉')
-            
-        # Chuẩn hóa bỏ dấu để kiểm tra Nghệ An chính xác (bao phủ NFC, NFD, không dấu)
-        import unicodedata
-        clean_text = ''.join(c for c in unicodedata.normalize('NFKD', text_normalized).lower() if not unicodedata.combining(c))
-        if 'nghe an' in clean_text:
-            # Thay thế tất cả các dạng dịch sai thường gặp (Giản thể/Phồn thể/乂安) sang 藝安
-            for bad_trans in ('义安', '義安', '乂安'):
-                if bad_trans in result:
-                    result = result.replace(bad_trans, '藝安')
-            # Thay thế cả chuỗi tiếng Việt/tiếng Anh chưa dịch được còn sót lại
-            import re
-            result = re.sub(r'(?i)nghệ\s+an', '藝安', result)
-            result = re.sub(r'(?i)nghe\s+an', '藝安', result)
-                    
-        final_res = result if result else text_normalized
-        _FREE_TRANS_CACHE[text_lower] = final_res
-        return final_res
-    except Exception as e:
-        print(f"Free text translation error: {e}")
-        try:
-            # Fallback to Google Translate if Groq fails
-            final_res = GoogleTranslator(source='vi', target='zh-TW').translate(processed_text.strip()) or text_normalized
+        if not result or result == processed_text.strip():
+            # Thử Google Translate nếu AI không phản hồi
+            result = GoogleTranslator(source='vi', target='zh-TW').translate(processed_text.strip()) or ""
+
+        if result:
+            # Sửa lại nếu Google dịch nhầm "may" -> "可能"
+            if '可能' in result and 'may' in text_lower:
+                result = result.replace('可能', '縫紉')
+                
+            # Chuẩn hóa bỏ dấu để kiểm tra Nghệ An chính xác
+            import unicodedata
+            clean_text = ''.join(c for c in unicodedata.normalize('NFKD', text_normalized).lower() if not unicodedata.combining(c))
+            if 'nghe an' in clean_text:
+                for bad_trans in ('义安', '義安', '乂安'):
+                    if bad_trans in result:
+                        result = result.replace(bad_trans, '藝安')
+                import re
+                result = re.sub(r'(?i)nghệ\s+an', '藝安', result)
+                result = re.sub(r'(?i)nghe\s+an', '藝安', result)
+                        
+            final_res = result.strip().strip('"').strip("'")
             _FREE_TRANS_CACHE[text_lower] = final_res
             return final_res
-        except:
-            _FREE_TRANS_CACHE[text_lower] = text_normalized
-            return text_normalized
+        
+        # Nếu hoàn toàn không dịch được thì không cache để lần sau thử lại
+        return text_normalized
+    except Exception as e:
+        print(f"Free text translation error: {e}")
+        return text_normalized
 
 def sanitize_filename_master(name):
     if not name: return "UnNamed"
@@ -1084,19 +1181,11 @@ def api_test_ai():
         import time
         t0 = time.time()
         test_text = "Thợ cơ khí CNC kinh nghiệm 3 năm, sức khỏe tốt, chăm chỉ"
-        global groq_client, groq_api_key
-        if groq_client:
-            completion = groq_client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=[{
-                    "role": "user",
-                    "content": f"Dịch đoạn sau sang tiếng Trung Phồn Thể, chỉ trả về kết quả dịch: '{test_text}'"
-                }],
-                temperature=0.1,
-                max_tokens=100,
-            )
-            res_text = completion.choices[0].message.content.strip()
-            engine_name = "Groq Llama 3.3 (70B)"
+        prompt = f"Dịch đoạn sau sang tiếng Trung Phồn Thể chuẩn Đài Loan, chỉ trả về kết quả dịch: '{test_text}'"
+        res_text = call_ai_llm_translate(prompt)
+        provider = os.environ.get('AI_PROVIDER', 'groq').upper()
+        if res_text:
+            engine_name = f"{provider} AI"
         else:
             res_text = GoogleTranslator(source='vi', target='zh-TW').translate(test_text)
             engine_name = "Google Translate (Dự phòng)"

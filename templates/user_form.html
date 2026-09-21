@@ -386,7 +386,7 @@
                         </div>
                         <div class="col-span-2"><label
                                 class="block text-xs font-bold text-slate-400 uppercase mb-1">Công việc</label><input
-                                type="text" name="ndcv1"
+                                type="text" name="ndcv1" onblur="translateField(this)"
                                 class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none">
                         </div>
                     </div>
@@ -416,7 +416,7 @@
                         </div>
                         <div class="col-span-2"><label
                                 class="block text-xs font-bold text-slate-400 uppercase mb-1">Công việc 2</label><input
-                                type="text" name="ndcv2"
+                                type="text" name="ndcv2" onblur="translateField(this)"
                                 class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none">
                         </div>
                     </div>
@@ -446,14 +446,14 @@
                         </div>
                         <div class="col-span-2"><label
                                 class="block text-xs font-bold text-slate-400 uppercase mb-1">Công việc 3</label><input
-                                type="text" name="ndcv3"
+                                type="text" name="ndcv3" onblur="translateField(this)"
                                 class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none">
                         </div>
                     </div>
 
                     <div class="pt-4 mt-4">
                         <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Ghi chú, Lời bình</label>
-                        <textarea name="loi_binh_1"
+                        <textarea name="loi_binh_1" onblur="translateField(this)"
                             class="w-full border-2 border-gray-200 rounded-xl p-3 text-sm focus:border-blue-600 focus:outline-none h-24 bg-gray-50"></textarea>
                     </div>
                     <div class="mt-4">
@@ -612,6 +612,37 @@
                 console.error("Lỗi khi dịch tên:", error);
             }
         }
+
+        async function translateField(el) {
+            const text = el.value ? el.value.trim() : '';
+            if (!text) return;
+            // Bỏ qua nếu đã chứa chữ Hán
+            if (/[\u4e00-\u9fff\u3400-\u4dbf]/.test(text)) return;
+
+            const originalBorder = el.style.borderColor;
+            el.style.opacity = '0.5';
+            el.disabled = true;
+
+            try {
+                const response = await fetch('/api/translate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text, type: 'free' })
+                });
+                const result = await response.json();
+                if (result.success && result.translated && result.translated.trim()) {
+                    el.value = result.translated.trim();
+                    el.style.borderColor = '#22c55e';
+                    setTimeout(() => { el.style.borderColor = originalBorder; }, 1500);
+                }
+            } catch (error) {
+                console.error("Lỗi dịch ô:", error);
+            } finally {
+                el.style.opacity = '1';
+                el.disabled = false;
+            }
+        }
+
 
         function calcAge() {
             const birthValue = document.getElementById('birthDate').value;
