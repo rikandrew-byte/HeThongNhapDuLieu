@@ -894,29 +894,20 @@
             </div>
 
             <!-- Milo AI Assistant Staff Card (Trợ lý Hành chính) -->
-            <div class="hidden lg:block w-full" style="margin-top: 22px; position:relative; z-index:3;">
-                <div class="milo-sidebar-card" onclick="toggleMiloPanel()" style="background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%); border: 1.5px solid #a5f3fc; border-radius: 16px; padding: 12px 14px; box-shadow: 0 4px 14px rgba(8, 145, 178, 0.08); cursor: pointer; transition: all 0.2s ease;">
+            <div class="hidden lg:block w-full" style="margin-top: 14px; position:relative; z-index:3;">
+                <div class="milo-sidebar-card" onclick="toggleMiloPanel()" style="background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%); border: 1.5px solid #a5f3fc; border-radius: 14px; padding: 9px 12px; box-shadow: 0 2px 8px rgba(8, 145, 178, 0.08); cursor: pointer; transition: all 0.2s ease;">
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="position: relative; width: 44px; height: 44px; flex-shrink: 0;">
-                            <img src="{{ url_for('static', filename='milo_avatar.jpg') }}" alt="Milo" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(8, 145, 178, 0.25);">
-                            <span style="position: absolute; bottom: 0; right: 0; width: 11px; height: 11px; background: #22c55e; border: 2px solid #ffffff; border-radius: 50%;"></span>
+                        <div style="position: relative; width: 38px; height: 38px; flex-shrink: 0;">
+                            <img src="{{ url_for('static', filename='milo_avatar.jpg') }}" alt="Milo" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 6px rgba(8, 145, 178, 0.2);">
+                            <span style="position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; background: #22c55e; border: 2px solid #ffffff; border-radius: 50%;"></span>
                         </div>
                         <div style="flex: 1; min-width: 0;">
-                            <div style="font-size: 13px; font-weight: 800; color: #0f766e; display: flex; align-items: center; gap: 4px;">
-                                Milo <span style="font-size: 10px; font-weight: 700; background: #ccfbf1; color: #0d9488; padding: 1px 6px; border-radius: 999px;">Trợ lý AI</span>
+                            <div style="font-size: 13px; font-weight: 800; color: #0f766e; display: flex; align-items: center; gap: 5px;">
+                                Milo <span style="font-size: 9px; font-weight: 700; background: #ccfbf1; color: #0d9488; padding: 1px 5px; border-radius: 999px;">Trợ lý AI</span>
                             </div>
                             <div style="font-size: 11px; color: #64748b; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Hỗ trợ nghiệp vụ DAS</div>
                         </div>
-                        <div style="font-size: 14px; color: #0891b2; font-weight: 800;">→</div>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px;" onclick="event.stopPropagation();">
-                        <button type="button" onclick="openMiloChat()" style="display: flex; align-items: center; justify-content: center; gap: 4px; padding: 6px 8px; background: #ffffff; border: 1px solid #99f6e4; border-radius: 8px; font-size: 11px; font-weight: 700; color: #0e7490; cursor: pointer; transition: all 0.15s ease;" onmouseover="this.style.background='#ecfeff'" onmouseout="this.style.background='#ffffff'">
-                            <span>💬</span> Hỏi Milo
-                        </button>
-                        <button type="button" onclick="openMiloTour()" style="display: flex; align-items: center; justify-content: center; gap: 4px; padding: 6px 8px; background: #0891b2; border: none; border-radius: 8px; font-size: 11px; font-weight: 700; color: #ffffff; cursor: pointer; transition: all 0.15s ease; box-shadow: 0 2px 6px rgba(8,145,178,0.25);" onmouseover="this.style.background='#0e7490'" onmouseout="this.style.background='#0891b2'">
-                            <span>🎯</span> Chỉ việc
-                        </button>
+                        <div style="font-size: 12px; color: #0891b2; font-weight: 700; display:flex; align-items:center; gap:2px; background:#ffffff; padding:3px 7px; border-radius:8px; border:1px solid #cffafe;">💬 Hỏi</div>
                     </div>
                 </div>
             </div>
@@ -7100,6 +7091,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
 
             <!-- Quick Suggestions -->
             <div class="milo-chips-wrapper">
+                <div class="milo-chip" onclick="sendMiloQuickPrompt('Có những cách lọc form và tìm kiếm hồ sơ như thế nào?')">🔍 Cách lọc hồ sơ</div>
                 <div class="milo-chip" onclick="sendMiloQuickPrompt('Hướng dẫn cách nhập hồ sơ mới và tự động dịch tiếng Trung?')">📝 Nhập hồ sơ mới</div>
                 <div class="milo-chip" onclick="sendMiloQuickPrompt('Cách ghép đơn hàng và phân bổ ứng viên?')">💼 Ghép đơn hàng</div>
                 <div class="milo-chip" onclick="sendMiloQuickPrompt('Quy trình 5 giai đoạn tại Danh sách trúng tuyển?')">🏆 Quản lý trúng tuyển</div>
