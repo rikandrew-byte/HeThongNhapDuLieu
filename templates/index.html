@@ -1097,14 +1097,22 @@
             <div class="history-container" style="padding:16px 20px;">
                 <table class="history-table" style="width:100%; border-collapse:collapse; background:transparent;">
                     <thead>
-                        <tr style="background:#f8fafc; border-bottom:2px solid #e2e8f0;">
-                            <th style="padding:10px 12px; width:36px; white-space:nowrap;">
-                                <input type="checkbox" id="historySelectAll" onchange="toggleHistorySelectAll(this)" style="accent-color:#0891b2; width:15px; height:15px; cursor:pointer;">
+                        <tr style="background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 50%, #ecfeff 100%); border-top: 1.5px solid #a5f3fc; border-bottom: 2.5px solid #0891b2; box-shadow: 0 2px 8px rgba(8, 145, 178, 0.08);">
+                            <th style="padding:11px 12px; width:36px; white-space:nowrap; border-top-left-radius: 10px; border-bottom-left-radius: 10px;">
+                                <input type="checkbox" id="historySelectAll" onchange="toggleHistorySelectAll(this)" style="accent-color:#0891b2; width:16px; height:16px; cursor:pointer;" title="Chọn tất cả">
                             </th>
-                            <th style="padding:10px 8px; text-align:left; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8; width:120px; white-space:nowrap;">Mã Số</th>
-                            <th style="padding:10px 8px; text-align:left; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8; min-width:150px; max-width:320px; white-space:nowrap;">Họ Tên</th>
-                            <th style="padding:10px 8px; text-align:left; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8; width:120px; white-space:nowrap;">Thời Gian Tạo</th>
-                            <th style="padding:10px 8px; text-align:center; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8; white-space:nowrap;">Thao Tác</th>
+                            <th style="padding:11px 10px; text-align:left; font-size:11px; font-weight:850; text-transform:uppercase; letter-spacing:.05em; color:#0e7490; width:120px; white-space:nowrap;">
+                                <span style="display:inline-flex; align-items:center; gap:5px;"><span style="color:#0891b2; font-size:12px;">🔖</span> Mã Số</span>
+                            </th>
+                            <th style="padding:11px 10px; text-align:left; font-size:11px; font-weight:850; text-transform:uppercase; letter-spacing:.05em; color:#0e7490; min-width:150px; max-width:320px; white-space:nowrap;">
+                                <span style="display:inline-flex; align-items:center; gap:5px;"><span style="color:#0891b2; font-size:12px;">👤</span> Họ Tên</span>
+                            </th>
+                            <th style="padding:11px 10px; text-align:left; font-size:11px; font-weight:850; text-transform:uppercase; letter-spacing:.05em; color:#0e7490; width:130px; white-space:nowrap;">
+                                <span style="display:inline-flex; align-items:center; gap:5px;"><span style="color:#0891b2; font-size:12px;">🕒</span> Thời Gian Tạo</span>
+                            </th>
+                            <th style="padding:11px 10px; text-align:center; font-size:11px; font-weight:850; text-transform:uppercase; letter-spacing:.05em; color:#0e7490; white-space:nowrap; border-top-right-radius: 10px; border-bottom-right-radius: 10px;">
+                                <span style="display:inline-flex; align-items:center; justify-content:center; gap:5px;"><span style="color:#0891b2; font-size:12px;">⚡</span> Thao Tác</span>
+                            </th>
                         </tr>
                     </thead>
                     <tbody id="historyTableBody"></tbody>
