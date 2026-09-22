@@ -893,8 +893,36 @@
                 </div>
             </div>
 
-            <!-- Thống kê hệ thống - Pushed down using Golden Ratio (89px) margin -->
-            <div class="hidden lg:block w-full" style="margin-top: 89px; position:relative; z-index:2;">
+            <!-- Milo AI Assistant Staff Card (Trợ lý Hành chính) -->
+            <div class="hidden lg:block w-full" style="margin-top: 22px; position:relative; z-index:3;">
+                <div class="milo-sidebar-card" onclick="toggleMiloPanel()" style="background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%); border: 1.5px solid #a5f3fc; border-radius: 16px; padding: 12px 14px; box-shadow: 0 4px 14px rgba(8, 145, 178, 0.08); cursor: pointer; transition: all 0.2s ease;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="position: relative; width: 44px; height: 44px; flex-shrink: 0;">
+                            <img src="{{ url_for('static', filename='milo_avatar.jpg') }}" alt="Milo" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(8, 145, 178, 0.25);">
+                            <span style="position: absolute; bottom: 0; right: 0; width: 11px; height: 11px; background: #22c55e; border: 2px solid #ffffff; border-radius: 50%;"></span>
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-size: 13px; font-weight: 800; color: #0f766e; display: flex; align-items: center; gap: 4px;">
+                                Milo <span style="font-size: 10px; font-weight: 700; background: #ccfbf1; color: #0d9488; padding: 1px 6px; border-radius: 999px;">Trợ lý AI</span>
+                            </div>
+                            <div style="font-size: 11px; color: #64748b; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Hỗ trợ nghiệp vụ DAS</div>
+                        </div>
+                        <div style="font-size: 14px; color: #0891b2; font-weight: 800;">→</div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px;" onclick="event.stopPropagation();">
+                        <button type="button" onclick="openMiloChat()" style="display: flex; align-items: center; justify-content: center; gap: 4px; padding: 6px 8px; background: #ffffff; border: 1px solid #99f6e4; border-radius: 8px; font-size: 11px; font-weight: 700; color: #0e7490; cursor: pointer; transition: all 0.15s ease;" onmouseover="this.style.background='#ecfeff'" onmouseout="this.style.background='#ffffff'">
+                            <span>💬</span> Hỏi Milo
+                        </button>
+                        <button type="button" onclick="openMiloTour()" style="display: flex; align-items: center; justify-content: center; gap: 4px; padding: 6px 8px; background: #0891b2; border: none; border-radius: 8px; font-size: 11px; font-weight: 700; color: #ffffff; cursor: pointer; transition: all 0.15s ease; box-shadow: 0 2px 6px rgba(8,145,178,0.25);" onmouseover="this.style.background='#0e7490'" onmouseout="this.style.background='#0891b2'">
+                            <span>🎯</span> Chỉ việc
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thống kê hệ thống -->
+            <div class="hidden lg:block w-full" style="margin-top: 20px; position:relative; z-index:2;">
                 <p class="font-bold text-slate-400 uppercase tracking-widest" style="font-size: 10px; margin-bottom: 13px;">Thống kê hệ thống</p>
                 <div style="display: flex; flex-direction: column; gap: 13px;">
                     <div class="flex items-center justify-between bg-white border border-slate-100 rounded-xl shadow-sm" style="padding: 13px;">
@@ -6496,11 +6524,11 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
     </style>
 
     <!-- ═══════════════════════════════════════════════════════════════
-         TRỢ LÝ ẢO HÀNH CHÍNH BOBO (3D AI ASSISTANT & SPOTLIGHT TOURS)
+         TRỢ LÝ ẢO HÀNH CHÍNH MILO (3D AI ASSISTANT & SPOTLIGHT TOURS)
          ═══════════════════════════════════════════════════════════════ -->
     <style>
         /* Floating Avatar Widget */
-        #boboWidgetWrapper {
+        #miloWidgetWrapper {
             position: fixed;
             bottom: 22px;
             right: 24px;
@@ -6510,7 +6538,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             gap: 12px;
             pointer-events: none;
         }
-        #boboAvatarBtn {
+        #miloAvatarBtn {
             pointer-events: auto;
             width: 62px;
             height: 62px;
@@ -6524,18 +6552,18 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
             outline: none;
         }
-        #boboAvatarBtn:hover {
+        #miloAvatarBtn:hover {
             transform: scale(1.08) translateY(-3px);
             box-shadow: 0 14px 30px rgba(2, 132, 199, 0.55), 0 0 0 3px rgba(6, 182, 212, 0.6);
         }
-        #boboAvatarImg {
+        #miloAvatarImg {
             width: 100%;
             height: 100%;
             border-radius: 50%;
             object-fit: cover;
             display: block;
         }
-        .bobo-status-dot {
+        .milo-status-dot {
             position: absolute;
             bottom: 2px;
             right: 2px;
@@ -6545,16 +6573,16 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             border: 2.5px solid #ffffff;
             border-radius: 50%;
             box-shadow: 0 0 8px rgba(34, 197, 94, 0.8);
-            animation: boboPulse 2s infinite;
+            animation: miloPulse 2s infinite;
         }
-        @keyframes boboPulse {
+        @keyframes miloPulse {
             0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
             70% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
             100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
         }
 
         /* Greeting Bubble */
-        #boboGreetingBubble {
+        #miloGreetingBubble {
             pointer-events: auto;
             background: #ffffff;
             border-radius: 16px;
@@ -6569,12 +6597,12 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             display: flex;
             align-items: center;
             gap: 8px;
-            animation: boboSlideIn 0.3s ease-out;
+            animation: miloSlideIn 0.3s ease-out;
             cursor: pointer;
             margin-bottom: 8px;
             position: relative;
         }
-        #boboGreetingBubble::after {
+        #miloGreetingBubble::after {
             content: '';
             position: absolute;
             bottom: 12px;
@@ -6585,13 +6613,13 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             border-bottom: 6px solid transparent;
             border-left: 8px solid #ffffff;
         }
-        @keyframes boboSlideIn {
+        @keyframes miloSlideIn {
             from { opacity: 0; transform: translateX(10px) scale(0.95); }
             to { opacity: 1; transform: translateX(0) scale(1); }
         }
 
-        /* Bobo Assistant Panel */
-        #boboPanel {
+        /* Milo Assistant Panel */
+        #miloPanel {
             display: none;
             position: fixed;
             bottom: 96px;
@@ -6607,15 +6635,15 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             flex-direction: column;
             overflow: hidden;
             font-family: 'Inter', sans-serif;
-            animation: boboFadeUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: miloFadeUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        @keyframes boboFadeUp {
+        @keyframes miloFadeUp {
             from { opacity: 0; transform: translateY(16px) scale(0.97); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         /* Panel Header */
-        .bobo-panel-header {
+        .milo-panel-header {
             background: linear-gradient(135deg, #0e7490 0%, #0891b2 50%, #0284c7 100%);
             color: #ffffff;
             padding: 14px 18px;
@@ -6624,12 +6652,12 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             justify-content: space-between;
             box-shadow: 0 4px 12px rgba(8, 145, 178, 0.2);
         }
-        .bobo-header-info {
+        .milo-header-info {
             display: flex;
             align-items: center;
             gap: 12px;
         }
-        .bobo-header-avatar {
+        .milo-header-avatar {
             width: 40px;
             height: 40px;
             border-radius: 50%;
@@ -6637,13 +6665,13 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             object-fit: cover;
             box-shadow: 0 2px 6px rgba(0,0,0,0.2);
         }
-        .bobo-header-title {
+        .milo-header-title {
             font-size: 15px;
             font-weight: 850;
             line-height: 1.2;
             letter-spacing: -0.01em;
         }
-        .bobo-header-status {
+        .milo-header-status {
             font-size: 11.5px;
             color: #cffafe;
             display: flex;
@@ -6653,14 +6681,14 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
         }
 
         /* Tabs Bar */
-        .bobo-tab-bar {
+        .milo-tab-bar {
             display: flex;
             background: #f1f5f9;
             border-bottom: 1px solid #e2e8f0;
             padding: 6px 8px;
             gap: 6px;
         }
-        .bobo-tab-btn {
+        .milo-tab-btn {
             flex: 1;
             padding: 8px 12px;
             border: none;
@@ -6676,14 +6704,14 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             justify-content: center;
             gap: 6px;
         }
-        .bobo-tab-btn.active {
+        .milo-tab-btn.active {
             background: #ffffff;
             color: #0891b2;
             box-shadow: 0 2px 5px rgba(0,0,0,0.06);
         }
 
         /* Tour Tab Body */
-        .bobo-tab-content {
+        .milo-tab-content {
             flex: 1;
             overflow-y: auto;
             padding: 16px;
@@ -6692,7 +6720,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             gap: 10px;
             background: #f8fafc;
         }
-        .bobo-tour-card {
+        .milo-tour-card {
             background: #ffffff;
             border: 1.5px solid #e2e8f0;
             border-radius: 14px;
@@ -6703,13 +6731,13 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             align-items: center;
             gap: 12px;
         }
-        .bobo-tour-card:hover {
+        .milo-tour-card:hover {
             border-color: #0891b2;
             transform: translateY(-2px);
             box-shadow: 0 6px 16px rgba(8, 145, 178, 0.12);
             background: #f0fdfa;
         }
-        .bobo-tour-icon {
+        .milo-tour-icon {
             width: 38px;
             height: 38px;
             border-radius: 10px;
@@ -6722,24 +6750,24 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             flex-shrink: 0;
             border: 1px solid #cffafe;
         }
-        .bobo-tour-info {
+        .milo-tour-info {
             flex: 1;
             overflow: hidden;
         }
-        .bobo-tour-title {
+        .milo-tour-title {
             font-size: 13px;
             font-weight: 800;
             color: #0f172a;
             margin-bottom: 2px;
         }
-        .bobo-tour-desc {
+        .milo-tour-desc {
             font-size: 11px;
             color: #64748b;
             line-height: 1.35;
         }
 
         /* Chat Tab Body */
-        .bobo-chat-messages {
+        .milo-chat-messages {
             flex: 1;
             overflow-y: auto;
             padding: 14px;
@@ -6748,39 +6776,39 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             gap: 12px;
             background: #f8fafc;
         }
-        .bobo-msg {
+        .milo-msg {
             display: flex;
             gap: 8px;
             max-width: 92%;
             animation: fadeIn 0.2s ease;
         }
-        .bobo-msg.bobo-user {
+        .milo-msg.milo-user {
             align-self: flex-end;
             flex-direction: row-reverse;
         }
-        .bobo-msg.bobo-bot {
+        .milo-msg.milo-bot {
             align-self: flex-start;
         }
-        .bobo-msg-avatar {
+        .milo-msg-avatar {
             width: 28px;
             height: 28px;
             border-radius: 50%;
             object-fit: cover;
             flex-shrink: 0;
         }
-        .bobo-msg-bubble {
+        .milo-msg-bubble {
             padding: 10px 14px;
             border-radius: 14px;
             font-size: 12.5px;
             line-height: 1.5;
             word-break: break-word;
         }
-        .bobo-user .bobo-msg-bubble {
+        .milo-user .milo-msg-bubble {
             background: #0891b2;
             color: #ffffff;
             border-bottom-right-radius: 4px;
         }
-        .bobo-bot .bobo-msg-bubble {
+        .milo-bot .milo-msg-bubble {
             background: #ffffff;
             color: #1e293b;
             border: 1px solid #e2e8f0;
@@ -6789,7 +6817,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
         }
 
         /* Suggestion Chips */
-        .bobo-chips-wrapper {
+        .milo-chips-wrapper {
             padding: 8px 12px;
             background: #ffffff;
             border-top: 1px solid #e2e8f0;
@@ -6798,8 +6826,8 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             overflow-x: auto;
             scrollbar-width: none;
         }
-        .bobo-chips-wrapper::-webkit-scrollbar { display: none; }
-        .bobo-chip {
+        .milo-chips-wrapper::-webkit-scrollbar { display: none; }
+        .milo-chip {
             white-space: nowrap;
             padding: 5px 10px;
             border-radius: 999px;
@@ -6811,14 +6839,14 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             cursor: pointer;
             transition: all 0.15s ease;
         }
-        .bobo-chip:hover {
+        .milo-chip:hover {
             background: #e0f2fe;
             color: #0369a1;
             border-color: #7dd3fc;
         }
 
         /* Chat Input Bar */
-        .bobo-chat-input-bar {
+        .milo-chat-input-bar {
             padding: 10px 12px;
             background: #ffffff;
             border-top: 1px solid #e2e8f0;
@@ -6826,7 +6854,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             align-items: center;
             gap: 8px;
         }
-        .bobo-input {
+        .milo-input {
             flex: 1;
             border: 1.5px solid #cbd5e1;
             border-radius: 12px;
@@ -6836,10 +6864,10 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             transition: border-color 0.15s ease;
             font-family: inherit;
         }
-        .bobo-input:focus {
+        .milo-input:focus {
             border-color: #0891b2;
         }
-        .bobo-send-btn {
+        .milo-send-btn {
             background: #0891b2;
             color: #ffffff;
             border: none;
@@ -6853,13 +6881,13 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             transition: all 0.15s ease;
             flex-shrink: 0;
         }
-        .bobo-send-btn:hover {
+        .milo-send-btn:hover {
             background: #0e7490;
             transform: scale(1.05);
         }
 
         /* Action Buttons inside Bot Message */
-        .bobo-action-btn {
+        .milo-action-btn {
             display: inline-flex;
             align-items: center;
             gap: 6px;
@@ -6875,14 +6903,14 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             border: none;
             transition: all 0.15s ease;
         }
-        .bobo-action-btn:hover {
+        .milo-action-btn:hover {
             background: #0e7490;
             transform: translateY(-1px);
             box-shadow: 0 3px 8px rgba(8, 145, 178, 0.25);
         }
 
         /* ── Spotlight Tour Overlay ── */
-        #boboTourOverlay {
+        #miloTourOverlay {
             display: none;
             position: fixed;
             top: 0;
@@ -6892,7 +6920,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             z-index: 100050;
             pointer-events: auto;
         }
-        #boboSpotlightSvg {
+        #miloSpotlightSvg {
             position: absolute;
             top: 0;
             left: 0;
@@ -6900,10 +6928,10 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             height: 100%;
             pointer-events: none;
         }
-        #boboSpotlightMask {
+        #miloSpotlightMask {
             fill: rgba(15, 23, 42, 0.65);
         }
-        #boboTourCard {
+        #miloTourCard {
             position: absolute;
             z-index: 100055;
             width: 320px;
@@ -6916,154 +6944,174 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
             animation: fadeIn 0.2s ease;
         }
-    </style>
+    
+        /* Desktop: Ẩn nút tròn nổi góc phải dưới, hiển thị Milo Card trên Sidebar */
+        @media (min-width: 1024px) {
+            #miloWidgetWrapper {
+                display: none !important;
+            }
+            #miloPanel {
+                left: calc(23.6% + 16px) !important;
+                right: auto !important;
+                bottom: 24px !important;
+                width: 420px !important;
+                height: 600px !important;
+                box-shadow: 0 25px 60px rgba(15, 23, 42, 0.25), 0 0 0 1.5px rgba(8, 145, 178, 0.3) !important;
+            }
+        }
+        .milo-sidebar-card:hover {
+            transform: translateY(-2px);
+            border-color: #06b6d4 !important;
+            box-shadow: 0 8px 20px rgba(8, 145, 178, 0.16) !important;
+        }
+</style>
 
-    <!-- Bobo Floating Widget -->
-    <div id="boboWidgetWrapper">
-        <div id="boboGreetingBubble" onclick="toggleBoboPanel()">
+    <!-- Milo Floating Widget -->
+    <div id="miloWidgetWrapper">
+        <div id="miloGreetingBubble" onclick="toggleMiloPanel()">
             <span>👋</span>
             <div>
-                <div>Chào anh/chị, em là <strong>Bobo</strong>!</div>
+                <div>Chào anh/chị, em là <strong>Milo</strong>!</div>
                 <div style="font-size:11px; color:#0891b2; font-weight:600;">Cần em hỗ trợ nghiệp vụ nào không ạ? 😊</div>
             </div>
-            <span onclick="event.stopPropagation(); document.getElementById('boboGreetingBubble').style.display='none'" style="font-size:12px; color:#94a3b8; margin-left:4px; padding:2px 4px;">✕</span>
+            <span onclick="event.stopPropagation(); document.getElementById('miloGreetingBubble').style.display='none'" style="font-size:12px; color:#94a3b8; margin-left:4px; padding:2px 4px;">✕</span>
         </div>
-        <button type="button" id="boboAvatarBtn" onclick="toggleBoboPanel()" title="Trợ lý Hành chính Bobo">
-            <img id="boboAvatarImg" src="{{ url_for('static', filename='bobo_avatar.jpg') }}" alt="Bobo Avatar" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
-            <div class="bobo-status-dot"></div>
+        <button type="button" id="miloAvatarBtn" onclick="toggleMiloPanel()" title="Trợ lý Hành chính Milo">
+            <img id="miloAvatarImg" src="{{ url_for('static', filename='milo_avatar.jpg') }}" alt="Milo Avatar" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
+            <div class="milo-status-dot"></div>
         </button>
     </div>
 
-    <!-- Bobo Assistant Panel -->
-    <div id="boboPanel">
+    <!-- Milo Assistant Panel -->
+    <div id="miloPanel">
         <!-- Header -->
-        <div class="bobo-panel-header">
-            <div class="bobo-header-info">
-                <img class="bobo-header-avatar" src="{{ url_for('static', filename='bobo_avatar.jpg') }}" alt="Bobo" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
+        <div class="milo-panel-header">
+            <div class="milo-header-info">
+                <img class="milo-header-avatar" src="{{ url_for('static', filename='milo_avatar.jpg') }}" alt="Milo" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
                 <div>
-                    <div class="bobo-header-title">Bobo · Trợ lý Hành chính</div>
-                    <div class="bobo-header-status">
+                    <div class="milo-header-title">Milo · Trợ lý Hành chính</div>
+                    <div class="milo-header-status">
                         <span style="display:inline-block; width:7px; height:7px; background:#4ade80; border-radius:50%;"></span>
                         Hệ thống FCT HR · Luôn sẵn sàng
                     </div>
                 </div>
             </div>
-            <button type="button" onclick="closeBoboPanel()" style="background:transparent; border:none; color:#ffffff; font-size:18px; font-weight:bold; cursor:pointer; opacity:0.8; padding:4px;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">✕</button>
+            <button type="button" onclick="closeMiloPanel()" style="background:transparent; border:none; color:#ffffff; font-size:18px; font-weight:bold; cursor:pointer; opacity:0.8; padding:4px;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">✕</button>
         </div>
 
         <!-- Tab Bar -->
-        <div class="bobo-tab-bar">
-            <button type="button" id="boboTabBtnTour" class="bobo-tab-btn active" onclick="switchBoboTab('tour')">
+        <div class="milo-tab-bar">
+            <button type="button" id="miloTabBtnTour" class="milo-tab-btn active" onclick="switchMiloTab('tour')">
                 <span>🎯</span> Cầm tay chỉ việc
             </button>
-            <button type="button" id="boboTabBtnChat" class="bobo-tab-btn" onclick="switchBoboTab('chat')">
-                <span>💬</span> Hỏi Bobo
+            <button type="button" id="miloTabBtnChat" class="milo-tab-btn" onclick="switchMiloTab('chat')">
+                <span>💬</span> Hỏi Milo
             </button>
         </div>
 
         <!-- Tab 1: Interactive Tours -->
-        <div id="boboTourTab" class="bobo-tab-content">
+        <div id="miloTourTab" class="milo-tab-content">
             <div style="font-size:12px; font-weight:700; color:#475569; margin-bottom:4px;">
                 Chọn nghiệp vụ bạn muốn em hướng dẫn trực quan:
             </div>
 
             <!-- Tour 1 -->
-            <div class="bobo-tour-card" onclick="startBoboTour('tour_new_candidate')">
-                <div class="bobo-tour-icon">📝</div>
-                <div class="bobo-tour-info">
-                    <div class="bobo-tour-title">1. Nhập hồ sơ & Dịch tiếng Trung</div>
-                    <div class="bobo-tour-desc">Điền tiếng Việt, tự động dịch Phồn Thể, chụp & dán ảnh 4x6, mã QR Line.</div>
+            <div class="milo-tour-card" onclick="startMiloTour('tour_new_candidate')">
+                <div class="milo-tour-icon">📝</div>
+                <div class="milo-tour-info">
+                    <div class="milo-tour-title">1. Nhập hồ sơ & Dịch tiếng Trung</div>
+                    <div class="milo-tour-desc">Điền tiếng Việt, tự động dịch Phồn Thể, chụp & dán ảnh 4x6, mã QR Line.</div>
                 </div>
                 <div style="font-size:12px; color:#0891b2; font-weight:800;">Xem →</div>
             </div>
 
             <!-- Tour 2 -->
-            <div class="bobo-tour-card" onclick="startBoboTour('tour_search_filter')">
-                <div class="bobo-tour-icon">🔍</div>
-                <div class="bobo-tour-info">
-                    <div class="bobo-tour-title">2. Tìm kiếm & Bộ lọc nhanh</div>
-                    <div class="bobo-tour-desc">Tìm theo tên, mã số, lọc giới tính Nam (MD), Nữ (FD), Điều dưỡng (KD).</div>
+            <div class="milo-tour-card" onclick="startMiloTour('tour_search_filter')">
+                <div class="milo-tour-icon">🔍</div>
+                <div class="milo-tour-info">
+                    <div class="milo-tour-title">2. Tìm kiếm & Bộ lọc nhanh</div>
+                    <div class="milo-tour-desc">Tìm theo tên, mã số, lọc giới tính Nam (MD), Nữ (FD), Điều dưỡng (KD).</div>
                 </div>
                 <div style="font-size:12px; color:#0891b2; font-weight:800;">Xem →</div>
             </div>
 
             <!-- Tour 3 -->
-            <div class="bobo-tour-card" onclick="startBoboTour('tour_job_management')">
-                <div class="bobo-tour-icon">💼</div>
-                <div class="bobo-tour-info">
-                    <div class="bobo-tour-title">3. Ghép đơn hàng & Công xưởng</div>
-                    <div class="bobo-tour-desc">Phân bổ đơn hàng hàng loạt hoặc gán nhanh theo danh sách mã số.</div>
+            <div class="milo-tour-card" onclick="startMiloTour('tour_job_management')">
+                <div class="milo-tour-icon">💼</div>
+                <div class="milo-tour-info">
+                    <div class="milo-tour-title">3. Ghép đơn hàng & Công xưởng</div>
+                    <div class="milo-tour-desc">Phân bổ đơn hàng hàng loạt hoặc gán nhanh theo danh sách mã số.</div>
                 </div>
                 <div style="font-size:12px; color:#0891b2; font-weight:800;">Xem →</div>
             </div>
 
             <!-- Tour 4 -->
-            <div class="bobo-tour-card" onclick="startBoboTour('tour_passed_kanban')">
-                <div class="bobo-tour-icon">🏆</div>
-                <div class="bobo-tour-info">
-                    <div class="bobo-tour-title">4. Quản lý trúng tuyển & Tiến độ 5 giai đoạn</div>
-                    <div class="bobo-tour-desc">Gom hồ sơ ➔ Trình cục ➔ Làm visa ➔ Nhận visa ➔ Xuất cảnh.</div>
+            <div class="milo-tour-card" onclick="startMiloTour('tour_passed_kanban')">
+                <div class="milo-tour-icon">🏆</div>
+                <div class="milo-tour-info">
+                    <div class="milo-tour-title">4. Quản lý trúng tuyển & Tiến độ 5 giai đoạn</div>
+                    <div class="milo-tour-desc">Gom hồ sơ ➔ Trình cục ➔ Làm visa ➔ Nhận visa ➔ Xuất cảnh.</div>
                 </div>
                 <div style="font-size:12px; color:#0891b2; font-weight:800;">Xem →</div>
             </div>
 
             <!-- Tour 5 -->
-            <div class="bobo-tour-card" onclick="startBoboTour('tour_expiry_warning')">
-                <div class="bobo-tour-icon">⚠️</div>
-                <div class="bobo-tour-info">
-                    <div class="bobo-tour-title">5. Cảnh báo thời hạn 4 loại giấy tờ</div>
-                    <div class="bobo-tour-desc">Kiểm tra hạn Hộ chiếu, CCCD, Khám sức khỏe, Lý lịch tư pháp số 2.</div>
+            <div class="milo-tour-card" onclick="startMiloTour('tour_expiry_warning')">
+                <div class="milo-tour-icon">⚠️</div>
+                <div class="milo-tour-info">
+                    <div class="milo-tour-title">5. Cảnh báo thời hạn 4 loại giấy tờ</div>
+                    <div class="milo-tour-desc">Kiểm tra hạn Hộ chiếu, CCCD, Khám sức khỏe, Lý lịch tư pháp số 2.</div>
                 </div>
                 <div style="font-size:12px; color:#0891b2; font-weight:800;">Xem →</div>
             </div>
 
             <!-- Tour 6 -->
-            <div class="bobo-tour-card" onclick="startBoboTour('tour_export_cv')">
-                <div class="bobo-tour-icon">📊</div>
-                <div class="bobo-tour-info">
-                    <div class="bobo-tour-title">6. Xuất Excel, In PDF & Tải ZIP</div>
-                    <div class="bobo-tour-desc">Tải bảng tính Excel thống kê, in PDF hàng loạt hoặc đóng gói hồ sơ ZIP.</div>
+            <div class="milo-tour-card" onclick="startMiloTour('tour_export_cv')">
+                <div class="milo-tour-icon">📊</div>
+                <div class="milo-tour-info">
+                    <div class="milo-tour-title">6. Xuất Excel, In PDF & Tải ZIP</div>
+                    <div class="milo-tour-desc">Tải bảng tính Excel thống kê, in PDF hàng loạt hoặc đóng gói hồ sơ ZIP.</div>
                 </div>
                 <div style="font-size:12px; color:#0891b2; font-weight:800;">Xem →</div>
             </div>
 
             <!-- Tour 7 -->
-            <div class="bobo-tour-card" onclick="startBoboTour('tour_factory_config')">
-                <div class="bobo-tour-icon">🏭</div>
-                <div class="bobo-tour-info">
-                    <div class="bobo-tour-title">7. Cấu hình Nhà máy & Quota Giấy tờ</div>
-                    <div class="bobo-tour-desc">Khai báo nhà máy, tờ thẩm định, tờ visa và theo dõi chỉ tiêu slots.</div>
+            <div class="milo-tour-card" onclick="startMiloTour('tour_factory_config')">
+                <div class="milo-tour-icon">🏭</div>
+                <div class="milo-tour-info">
+                    <div class="milo-tour-title">7. Cấu hình Nhà máy & Quota Giấy tờ</div>
+                    <div class="milo-tour-desc">Khai báo nhà máy, tờ thẩm định, tờ visa và theo dõi chỉ tiêu slots.</div>
                 </div>
                 <div style="font-size:12px; color:#0891b2; font-weight:800;">Xem →</div>
             </div>
         </div>
 
         <!-- Tab 2: AI Chat Helpdesk -->
-        <div id="boboChatTab" class="bobo-tab-content" style="display:none; padding:0; gap:0;">
-            <div id="boboChatMessages" class="bobo-chat-messages">
-                <!-- Welcome message from Bobo -->
-                <div class="bobo-msg bobo-bot">
-                    <img class="bobo-msg-avatar" src="{{ url_for('static', filename='bobo_avatar.jpg') }}" alt="Bobo" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
-                    <div class="bobo-msg-bubble">
-                        Dạ em chào anh/chị! Em là <strong>Bobo</strong> - trợ lý hành chính FCT. Em có thể hướng dẫn mọi thao tác quản lý hồ sơ, ghép đơn hàng, theo dõi tiến độ và in ấn. Anh/chị cần em hỗ trợ nghiệp vụ nào cứ nhắn cho em nhé! 😊
+        <div id="miloChatTab" class="milo-tab-content" style="display:none; padding:0; gap:0;">
+            <div id="miloChatMessages" class="milo-chat-messages">
+                <!-- Welcome message from Milo -->
+                <div class="milo-msg milo-bot">
+                    <img class="milo-msg-avatar" src="{{ url_for('static', filename='milo_avatar.jpg') }}" alt="Milo" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
+                    <div class="milo-msg-bubble">
+                        Dạ em chào anh/chị! Em là <strong>Milo</strong> - trợ lý hành chính FCT. Em có thể hướng dẫn mọi thao tác quản lý hồ sơ, ghép đơn hàng, theo dõi tiến độ và in ấn. Anh/chị cần em hỗ trợ nghiệp vụ nào cứ nhắn cho em nhé! 😊
                     </div>
                 </div>
             </div>
 
             <!-- Quick Suggestions -->
-            <div class="bobo-chips-wrapper">
-                <div class="bobo-chip" onclick="sendBoboQuickPrompt('Hướng dẫn cách nhập hồ sơ mới và tự động dịch tiếng Trung?')">📝 Nhập hồ sơ mới</div>
-                <div class="bobo-chip" onclick="sendBoboQuickPrompt('Cách ghép đơn hàng và phân bổ ứng viên?')">💼 Ghép đơn hàng</div>
-                <div class="bobo-chip" onclick="sendBoboQuickPrompt('Quy trình 5 giai đoạn tại Danh sách trúng tuyển?')">🏆 Quản lý trúng tuyển</div>
-                <div class="bobo-chip" onclick="sendBoboQuickPrompt('Cách xuất file Excel và in ấn CV phỏng vấn?')">📊 Xuất Excel & In CV</div>
-                <div class="bobo-chip" onclick="sendBoboQuickPrompt('Hệ thống cảnh báo những giấy tờ nào sắp hết hạn?')">⚠️ Cảnh báo giấy tờ</div>
-                <div class="bobo-chip" onclick="sendBoboQuickPrompt('Cách quản lý nhà máy và tờ thẩm định visa?')">🏭 Cấu hình nhà máy</div>
+            <div class="milo-chips-wrapper">
+                <div class="milo-chip" onclick="sendMiloQuickPrompt('Hướng dẫn cách nhập hồ sơ mới và tự động dịch tiếng Trung?')">📝 Nhập hồ sơ mới</div>
+                <div class="milo-chip" onclick="sendMiloQuickPrompt('Cách ghép đơn hàng và phân bổ ứng viên?')">💼 Ghép đơn hàng</div>
+                <div class="milo-chip" onclick="sendMiloQuickPrompt('Quy trình 5 giai đoạn tại Danh sách trúng tuyển?')">🏆 Quản lý trúng tuyển</div>
+                <div class="milo-chip" onclick="sendMiloQuickPrompt('Cách xuất file Excel và in ấn CV phỏng vấn?')">📊 Xuất Excel & In CV</div>
+                <div class="milo-chip" onclick="sendMiloQuickPrompt('Hệ thống cảnh báo những giấy tờ nào sắp hết hạn?')">⚠️ Cảnh báo giấy tờ</div>
+                <div class="milo-chip" onclick="sendMiloQuickPrompt('Cách quản lý nhà máy và tờ thẩm định visa?')">🏭 Cấu hình nhà máy</div>
             </div>
 
             <!-- Input Bar -->
-            <div class="bobo-chat-input-bar">
-                <input type="text" id="boboChatInput" class="bobo-input" placeholder="Hỏi Bobo bất kỳ điều gì..." onkeydown="if(event.key==='Enter') sendBoboChatMessage()">
-                <button type="button" class="bobo-send-btn" onclick="sendBoboChatMessage()" title="Gửi tin nhắn">
+            <div class="milo-chat-input-bar">
+                <input type="text" id="miloChatInput" class="milo-input" placeholder="Hỏi Milo bất kỳ điều gì..." onkeydown="if(event.key==='Enter') sendMiloChatMessage()">
+                <button type="button" class="milo-send-btn" onclick="sendMiloChatMessage()" title="Gửi tin nhắn">
                     <svg style="width:16px; height:16px; fill:currentColor;" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
                 </button>
             </div>
@@ -7071,57 +7119,57 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
     </div>
 
     <!-- Spotlight Tour Overlay & Card -->
-    <div id="boboTourOverlay">
-        <svg id="boboSpotlightSvg">
+    <div id="miloTourOverlay">
+        <svg id="miloSpotlightSvg">
             <defs>
-                <mask id="boboSpotlightMask">
+                <mask id="miloSpotlightMask">
                     <rect width="100%" height="100%" fill="white" />
-                    <rect id="boboHole" x="0" y="0" width="0" height="0" rx="10" fill="black" />
+                    <rect id="miloHole" x="0" y="0" width="0" height="0" rx="10" fill="black" />
                 </mask>
             </defs>
-            <rect width="100%" height="100%" fill="rgba(15, 23, 42, 0.72)" mask="url(#boboSpotlightMask)" />
+            <rect width="100%" height="100%" fill="rgba(15, 23, 42, 0.72)" mask="url(#miloSpotlightMask)" />
             <!-- Glowing stroke around target -->
-            <rect id="boboGlowBorder" x="0" y="0" width="0" height="0" rx="10" fill="none" stroke="#06b6d4" stroke-width="3" style="filter: drop-shadow(0 0 8px rgba(6,182,212,0.8)); transition: all 0.25s ease;" />
+            <rect id="miloGlowBorder" x="0" y="0" width="0" height="0" rx="10" fill="none" stroke="#06b6d4" stroke-width="3" style="filter: drop-shadow(0 0 8px rgba(6,182,212,0.8)); transition: all 0.25s ease;" />
         </svg>
 
-        <div id="boboTourCard">
+        <div id="miloTourCard">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">
                 <div style="display:flex; align-items:center; gap:8px;">
-                    <img src="{{ url_for('static', filename='bobo_avatar.jpg') }}" style="width:24px; height:24px; border-radius:50%; object-fit:cover;" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
-                    <span id="boboTourStepBadge" style="font-size:12px; font-weight:800; color:#0891b2; background:#ecfeff; padding:2px 8px; border-radius:999px;">Bước 1/3</span>
+                    <img src="{{ url_for('static', filename='milo_avatar.jpg') }}" style="width:24px; height:24px; border-radius:50%; object-fit:cover;" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
+                    <span id="miloTourStepBadge" style="font-size:12px; font-weight:800; color:#0891b2; background:#ecfeff; padding:2px 8px; border-radius:999px;">Bước 1/3</span>
                 </div>
-                <button type="button" onclick="endBoboTour()" style="background:transparent; border:none; color:#94a3b8; font-size:14px; font-weight:bold; cursor:pointer;" title="Đóng tour">✕</button>
+                <button type="button" onclick="endMiloTour()" style="background:transparent; border:none; color:#94a3b8; font-size:14px; font-weight:bold; cursor:pointer;" title="Đóng tour">✕</button>
             </div>
 
-            <div id="boboTourStepText" style="font-size:13px; color:#1e293b; line-height:1.55; margin-bottom:14px; font-weight:600;">
+            <div id="miloTourStepText" style="font-size:13px; color:#1e293b; line-height:1.55; margin-bottom:14px; font-weight:600;">
                 Nội dung hướng dẫn...
             </div>
 
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <button type="button" id="boboTourPrevBtn" onclick="prevBoboStep()" style="padding:6px 12px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:8px; font-size:11.5px; font-weight:700; color:#475569; cursor:pointer;">← Quay lại</button>
+                <button type="button" id="miloTourPrevBtn" onclick="prevMiloStep()" style="padding:6px 12px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:8px; font-size:11.5px; font-weight:700; color:#475569; cursor:pointer;">← Quay lại</button>
                 <div style="display:flex; gap:6px;">
-                    <button type="button" onclick="endBoboTour()" style="padding:6px 12px; background:transparent; border:none; font-size:11.5px; font-weight:600; color:#64748b; cursor:pointer;">Bỏ qua</button>
-                    <button type="button" id="boboTourNextBtn" onclick="nextBoboStep()" style="padding:6px 16px; background:#0891b2; border:none; border-radius:8px; font-size:11.5px; font-weight:800; color:#ffffff; cursor:pointer; box-shadow:0 2px 6px rgba(8,145,178,0.3);">Tiếp tục →</button>
+                    <button type="button" onclick="endMiloTour()" style="padding:6px 12px; background:transparent; border:none; font-size:11.5px; font-weight:600; color:#64748b; cursor:pointer;">Bỏ qua</button>
+                    <button type="button" id="miloTourNextBtn" onclick="nextMiloStep()" style="padding:6px 16px; background:#0891b2; border:none; border-radius:8px; font-size:11.5px; font-weight:800; color:#ffffff; cursor:pointer; box-shadow:0 2px 6px rgba(8,145,178,0.3);">Tiếp tục →</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Bobo Assistant Engine Script -->
+    <!-- Milo Assistant Engine Script -->
     <script>
-        // ── Trạng thái Bobo ──
-        let boboCurrentTour = null;
-        let boboTourStepIndex = 0;
+        // ── Trạng thái Milo ──
+        let miloCurrentTour = null;
+        let miloTourStepIndex = 0;
 
         // Tự động chào nhẹ sau 1.5 giây khi tải trang
         window.addEventListener('load', () => {
             setTimeout(() => {
-                const bubble = document.getElementById('boboGreetingBubble');
-                if (bubble && !sessionStorage.getItem('bobo_greeted')) {
+                const bubble = document.getElementById('miloGreetingBubble');
+                if (bubble && !sessionStorage.getItem('milo_greeted')) {
                     bubble.style.display = 'flex';
-                    sessionStorage.setItem('bobo_greeted', 'true');
+                    sessionStorage.setItem('milo_greeted', 'true');
                     setTimeout(() => {
-                        if (bubble && document.getElementById('boboPanel').style.display !== 'flex') {
+                        if (bubble && document.getElementById('miloPanel').style.display !== 'flex') {
                             bubble.style.display = 'none';
                         }
                     }, 8000);
@@ -7129,9 +7177,22 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             }, 1500);
         });
 
-        function toggleBoboPanel() {
-            const p = document.getElementById('boboPanel');
-            const b = document.getElementById('boboGreetingBubble');
+        
+        function openMiloChat() {
+            const p = document.getElementById('miloPanel');
+            if (p) p.style.display = 'flex';
+            switchMiloTab('chat');
+        }
+
+        function openMiloTour() {
+            const p = document.getElementById('miloPanel');
+            if (p) p.style.display = 'flex';
+            switchMiloTab('tour');
+        }
+
+        function toggleMiloPanel() {
+            const p = document.getElementById('miloPanel');
+            const b = document.getElementById('miloGreetingBubble');
             if (b) b.style.display = 'none';
             if (p.style.display === 'flex') {
                 p.style.display = 'none';
@@ -7140,16 +7201,16 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             }
         }
 
-        function closeBoboPanel() {
-            const p = document.getElementById('boboPanel');
+        function closeMiloPanel() {
+            const p = document.getElementById('miloPanel');
             if (p) p.style.display = 'none';
         }
 
-        function switchBoboTab(tab) {
-            const tourTab = document.getElementById('boboTourTab');
-            const chatTab = document.getElementById('boboChatTab');
-            const btnTour = document.getElementById('boboTabBtnTour');
-            const btnChat = document.getElementById('boboTabBtnChat');
+        function switchMiloTab(tab) {
+            const tourTab = document.getElementById('miloTourTab');
+            const chatTab = document.getElementById('miloChatTab');
+            const btnTour = document.getElementById('miloTabBtnTour');
+            const btnChat = document.getElementById('miloTabBtnChat');
 
             if (tab === 'tour') {
                 tourTab.style.display = 'flex';
@@ -7162,7 +7223,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 btnChat.classList.add('active');
                 btnTour.classList.remove('active');
                 setTimeout(() => {
-                    const inp = document.getElementById('boboChatInput');
+                    const inp = document.getElementById('miloChatInput');
                     if (inp) inp.focus();
                 }, 100);
             }
@@ -7171,7 +7232,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
         // ═══════════════════════════════════════════════════════════════
         // KỊCH BẢN TOUR CẦM TAY CHỈ VIỆC (SPOTLIGHT TOURS)
         // ═══════════════════════════════════════════════════════════════
-        const BOBO_TOURS = {
+        const MILO_TOURS = {
             'tour_new_candidate': [
                 {
                     target: '#btnNewCandidateHeader',
@@ -7272,37 +7333,37 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             ]
         };
 
-        function startBoboTour(tourKey) {
-            boboCurrentTour = BOBO_TOURS[tourKey];
-            if (!boboCurrentTour || boboCurrentTour.length === 0) return;
-            boboTourStepIndex = 0;
-            closeBoboPanel();
-            document.getElementById('boboTourOverlay').style.display = 'block';
-            renderBoboTourStep();
+        function startMiloTour(tourKey) {
+            miloCurrentTour = MILO_TOURS[tourKey];
+            if (!miloCurrentTour || miloCurrentTour.length === 0) return;
+            miloTourStepIndex = 0;
+            closeMiloPanel();
+            document.getElementById('miloTourOverlay').style.display = 'block';
+            renderMiloTourStep();
         }
 
-        function renderBoboTourStep() {
-            if (!boboCurrentTour) return;
-            const step = boboCurrentTour[boboTourStepIndex];
-            if (!step) { endBoboTour(); return; }
+        function renderMiloTourStep() {
+            if (!miloCurrentTour) return;
+            const step = miloCurrentTour[miloTourStepIndex];
+            if (!step) { endMiloTour(); return; }
 
             if (typeof step.before === 'function') step.before();
 
             setTimeout(() => {
                 const el = document.querySelector(step.target);
-                const overlay = document.getElementById('boboTourOverlay');
-                const hole = document.getElementById('boboHole');
-                const glow = document.getElementById('boboGlowBorder');
-                const card = document.getElementById('boboTourCard');
-                const badge = document.getElementById('boboTourStepBadge');
-                const text = document.getElementById('boboTourStepText');
-                const prevBtn = document.getElementById('boboTourPrevBtn');
-                const nextBtn = document.getElementById('boboTourNextBtn');
+                const overlay = document.getElementById('miloTourOverlay');
+                const hole = document.getElementById('miloHole');
+                const glow = document.getElementById('miloGlowBorder');
+                const card = document.getElementById('miloTourCard');
+                const badge = document.getElementById('miloTourStepBadge');
+                const text = document.getElementById('miloTourStepText');
+                const prevBtn = document.getElementById('miloTourPrevBtn');
+                const nextBtn = document.getElementById('miloTourNextBtn');
 
-                badge.textContent = `Bước ${boboTourStepIndex + 1}/${boboCurrentTour.length}`;
+                badge.textContent = `Bước ${miloTourStepIndex + 1}/${miloCurrentTour.length}`;
                 text.innerHTML = step.text;
-                prevBtn.style.display = boboTourStepIndex > 0 ? 'inline-block' : 'none';
-                nextBtn.textContent = (boboTourStepIndex === boboCurrentTour.length - 1) ? 'Hoàn tất 👏' : 'Tiếp tục →';
+                prevBtn.style.display = miloTourStepIndex > 0 ? 'inline-block' : 'none';
+                nextBtn.textContent = (miloTourStepIndex === miloCurrentTour.length - 1) ? 'Hoàn tất 👏' : 'Tiếp tục →';
 
                 if (el) {
                     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -7342,62 +7403,62 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             }, 100);
         }
 
-        function nextBoboStep() {
-            if (!boboCurrentTour) return;
-            if (boboTourStepIndex < boboCurrentTour.length - 1) {
-                boboTourStepIndex++;
-                renderBoboTourStep();
+        function nextMiloStep() {
+            if (!miloCurrentTour) return;
+            if (miloTourStepIndex < miloCurrentTour.length - 1) {
+                miloTourStepIndex++;
+                renderMiloTourStep();
             } else {
-                endBoboTour();
-                // Re-open Bobo to say congrats
-                toggleBoboPanel();
+                endMiloTour();
+                // Re-open Milo to say congrats
+                toggleMiloPanel();
             }
         }
 
-        function prevBoboStep() {
-            if (!boboCurrentTour) return;
-            if (boboTourStepIndex > 0) {
-                boboTourStepIndex--;
-                renderBoboTourStep();
+        function prevMiloStep() {
+            if (!miloCurrentTour) return;
+            if (miloTourStepIndex > 0) {
+                miloTourStepIndex--;
+                renderMiloTourStep();
             }
         }
 
-        function endBoboTour() {
-            boboCurrentTour = null;
-            document.getElementById('boboTourOverlay').style.display = 'none';
+        function endMiloTour() {
+            miloCurrentTour = null;
+            document.getElementById('miloTourOverlay').style.display = 'none';
         }
 
         // ═══════════════════════════════════════════════════════════════
         // AI CHAT HELPDESK
         // ═══════════════════════════════════════════════════════════════
-        function sendBoboQuickPrompt(txt) {
-            const inp = document.getElementById('boboChatInput');
+        function sendMiloQuickPrompt(txt) {
+            const inp = document.getElementById('miloChatInput');
             if (inp) inp.value = txt;
-            sendBoboChatMessage();
+            sendMiloChatMessage();
         }
 
-        async function sendBoboChatMessage() {
-            const inp = document.getElementById('boboChatInput');
+        async function sendMiloChatMessage() {
+            const inp = document.getElementById('miloChatInput');
             const msg = inp ? inp.value.trim() : '';
             if (!msg) return;
             inp.value = '';
 
-            const container = document.getElementById('boboChatMessages');
+            const container = document.getElementById('miloChatMessages');
 
             // Render User Bubble
             const userDiv = document.createElement('div');
-            userDiv.className = 'bobo-msg bobo-user';
-            userDiv.innerHTML = `<div class="bobo-msg-bubble">${escapeHtml(msg)}</div>`;
+            userDiv.className = 'milo-msg milo-user';
+            userDiv.innerHTML = `<div class="milo-msg-bubble">${escapeHtml(msg)}</div>`;
             container.appendChild(userDiv);
             container.scrollTop = container.scrollHeight;
 
             // Render Bot Typing indicator
             const typingDiv = document.createElement('div');
-            typingDiv.className = 'bobo-msg bobo-bot';
+            typingDiv.className = 'milo-msg milo-bot';
             typingDiv.innerHTML = `
-                <img class="bobo-msg-avatar" src="{{ url_for('static', filename='bobo_avatar.jpg') }}" alt="Bobo" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
-                <div class="bobo-msg-bubble" style="color:#64748b;">
-                    <em>Bobo đang suy nghĩ...</em>
+                <img class="milo-msg-avatar" src="{{ url_for('static', filename='milo_avatar.jpg') }}" alt="Milo" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
+                <div class="milo-msg-bubble" style="color:#64748b;">
+                    <em>Milo đang suy nghĩ...</em>
                 </div>
             `;
             container.appendChild(typingDiv);
@@ -7413,31 +7474,31 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 typingDiv.remove();
 
                 const botDiv = document.createElement('div');
-                botDiv.className = 'bobo-msg bobo-bot';
+                botDiv.className = 'milo-msg milo-bot';
 
                 let rawReply = (data.success && data.reply) ? data.reply : 'Dạ em chưa thể trả lời câu hỏi này, anh/chị thử lại sau nhé!';
-                let formattedReply = formatBoboReply(rawReply);
+                let formattedReply = formatMiloReply(rawReply);
 
                 botDiv.innerHTML = `
-                    <img class="bobo-msg-avatar" src="{{ url_for('static', filename='bobo_avatar.jpg') }}" alt="Bobo" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
-                    <div class="bobo-msg-bubble">${formattedReply}</div>
+                    <img class="milo-msg-avatar" src="{{ url_for('static', filename='milo_avatar.jpg') }}" alt="Milo" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
+                    <div class="milo-msg-bubble">${formattedReply}</div>
                 `;
                 container.appendChild(botDiv);
                 container.scrollTop = container.scrollHeight;
             } catch (e) {
                 typingDiv.remove();
                 const errDiv = document.createElement('div');
-                errDiv.className = 'bobo-msg bobo-bot';
+                errDiv.className = 'milo-msg milo-bot';
                 errDiv.innerHTML = `
-                    <img class="bobo-msg-avatar" src="{{ url_for('static', filename='bobo_avatar.jpg') }}" alt="Bobo" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
-                    <div class="bobo-msg-bubble" style="color:#dc2626;">Dạ kết nối máy chủ đang bận, anh/chị vui lòng thử lại ạ!</div>
+                    <img class="milo-msg-avatar" src="{{ url_for('static', filename='milo_avatar.jpg') }}" alt="Milo" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
+                    <div class="milo-msg-bubble" style="color:#dc2626;">Dạ kết nối máy chủ đang bận, anh/chị vui lòng thử lại ạ!</div>
                 `;
                 container.appendChild(errDiv);
                 container.scrollTop = container.scrollHeight;
             }
         }
 
-        function formatBoboReply(txt) {
+        function formatMiloReply(txt) {
             let out = escapeHtml(txt);
             // Bold **text**
             out = out.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
@@ -7445,12 +7506,12 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             out = out.replace(/\n/g, '<br>');
 
             // Convert [ACTION:...] tags into clickable action buttons
-            out = out.replace(/\[ACTION:OPEN_FORM\]/g, `<br><button type="button" class="bobo-action-btn" onclick="document.getElementById('historyModal').style.display='none'; closeBoboPanel();">➕ Mở form Nhập hồ sơ</button>`);
-            out = out.replace(/\[ACTION:EXPORT_EXCEL\]/g, `<br><button type="button" class="bobo-action-btn" onclick="bulkExportExcelHistory(true, event);">📊 Tải file Excel danh sách</button>`);
-            out = out.replace(/\[ACTION:OPEN_PASSED\]/g, `<br><button type="button" class="bobo-action-btn" onclick="switchHistoryTab('passed'); closeBoboPanel();">🏆 Mở Danh sách trúng tuyển</button>`);
-            out = out.replace(/\[ACTION:OPEN_JOBS\]/g, `<br><button type="button" class="bobo-action-btn" onclick="switchHistoryTab('jobs'); closeBoboPanel();">💼 Mở Ghép đơn & Theo dõi</button>`);
-            out = out.replace(/\[ACTION:OPEN_SETTINGS\]/g, `<br><button type="button" class="bobo-action-btn" onclick="openSystemSettingsModal(); closeBoboPanel();">⚙️ Mở Cài đặt hệ thống</button>`);
-            out = out.replace(/\[ACTION:START_TOUR\]/g, `<br><button type="button" class="bobo-action-btn" onclick="switchBoboTab('tour');">🎯 Xem các tour hướng dẫn</button>`);
+            out = out.replace(/\[ACTION:OPEN_FORM\]/g, `<br><button type="button" class="milo-action-btn" onclick="document.getElementById('historyModal').style.display='none'; closeMiloPanel();">➕ Mở form Nhập hồ sơ</button>`);
+            out = out.replace(/\[ACTION:EXPORT_EXCEL\]/g, `<br><button type="button" class="milo-action-btn" onclick="bulkExportExcelHistory(true, event);">📊 Tải file Excel danh sách</button>`);
+            out = out.replace(/\[ACTION:OPEN_PASSED\]/g, `<br><button type="button" class="milo-action-btn" onclick="switchHistoryTab('passed'); closeMiloPanel();">🏆 Mở Danh sách trúng tuyển</button>`);
+            out = out.replace(/\[ACTION:OPEN_JOBS\]/g, `<br><button type="button" class="milo-action-btn" onclick="switchHistoryTab('jobs'); closeMiloPanel();">💼 Mở Ghép đơn & Theo dõi</button>`);
+            out = out.replace(/\[ACTION:OPEN_SETTINGS\]/g, `<br><button type="button" class="milo-action-btn" onclick="openSystemSettingsModal(); closeMiloPanel();">⚙️ Mở Cài đặt hệ thống</button>`);
+            out = out.replace(/\[ACTION:START_TOUR\]/g, `<br><button type="button" class="milo-action-btn" onclick="switchMiloTab('tour');">🎯 Xem các tour hướng dẫn</button>`);
 
             return out;
         }

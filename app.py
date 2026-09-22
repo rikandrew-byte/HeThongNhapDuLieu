@@ -1297,12 +1297,12 @@ def api_test_ai():
 
 
 # ═══════════════════════════════════════════════════════════
-# TRỢ LÝ ẢO HÀNH CHÍNH BOBO (FCT AI ASSISTANT)
+# TRỢ LÝ ẢO HÀNH CHÍNH MILO (FCT AI ASSISTANT)
 # ═══════════════════════════════════════════════════════════
 
-BOBO_SYSTEM_PROMPT = """Bạn là Bobo - nữ trợ lý hành chính ảo 3D thông minh, chu đáo và lịch thiệp của Hệ thống Quản trị Nhân sự FCT (FCT HR & DAS System).
+MILO_SYSTEM_PROMPT = """Bạn là Milo - nữ trợ lý hành chính ảo 3D thông minh, chu đáo và lịch thiệp của Hệ thống Quản trị Nhân sự FCT (FCT HR & DAS System).
 Phong cách giao tiếp:
-- Luôn xưng là "em" hoặc "Bobo", gọi người dùng là "anh/chị".
+- Luôn xưng là "em" hoặc "Milo", gọi người dùng là "anh/chị".
 - Ngữ điệu chuyên nghiệp, nhã nhặn, giải thích rõ ràng từng bước thao tác.
 
 NGUYÊN TẮC BẢO MẬT BẮT BUỘC:
@@ -1350,7 +1350,7 @@ Thẻ hành động tắt (đặt ở cuối câu trả lời khi người dùng
 - Bắt đầu xem tour hướng dẫn: [ACTION:START_TOUR]
 """
 
-def get_bobo_fallback_response(user_msg: str) -> str:
+def get_milo_fallback_response(user_msg: str) -> str:
     msg = user_msg.lower().strip()
     
     # Kiểm tra bảo mật PIN / Mật khẩu trước tiên
@@ -1388,7 +1388,7 @@ def get_bobo_fallback_response(user_msg: str) -> str:
         return "Dạ, anh/chị có thể sao lưu toàn bộ dữ liệu ra file JSON bằng cách bấm vào nút sao lưu dữ liệu, và có thể nạp lại dữ liệu bất cứ lúc nào khi cần thiết ạ!"
         
     else:
-        return "Dạ, em là Bobo - Trợ lý Hành chính FCT! Em có thể hướng dẫn anh/chị các nghiệp vụ: Nhập hồ sơ mới, Lọc và tìm kiếm ứng viên, Ghép đơn hàng, Quản lý tiến độ trúng tuyển 5 giai đoạn, Theo dõi giấy tờ hết hạn, Cấu hình nhà máy và Xuất Excel / In ấn. Anh/chị hãy bấm sang tab **'Cầm tay chỉ việc'** để em dẫn đi xem trực tiếp từng thao tác trên màn hình nhé!\n\n[ACTION:START_TOUR]"
+        return "Dạ, em là Milo - Trợ lý Hành chính FCT! Em có thể hướng dẫn anh/chị các nghiệp vụ: Nhập hồ sơ mới, Lọc và tìm kiếm ứng viên, Ghép đơn hàng, Quản lý tiến độ trúng tuyển 5 giai đoạn, Theo dõi giấy tờ hết hạn, Cấu hình nhà máy và Xuất Excel / In ấn. Anh/chị hãy bấm sang tab **'Cầm tay chỉ việc'** để em dẫn đi xem trực tiếp từng thao tác trên màn hình nhé!\n\n[ACTION:START_TOUR]"
 
 @app.route('/api/ai/assistant-chat', methods=['POST'])
 @auth_required
@@ -1413,17 +1413,17 @@ def api_assistant_chat():
 
         reply = None
         if key and provider in ('groq', 'openai', 'gemini', 'anthropic', 'deepseek', 'openrouter'):
-            prompt = f"{BOBO_SYSTEM_PROMPT}\n\nNgười dùng hỏi: '{user_msg}'\nHãy trả lời bằng tiếng Việt thân thiện, súc tích và đúng quy trình nghiệp vụ của FCT:"
+            prompt = f"{MILO_SYSTEM_PROMPT}\n\nNgười dùng hỏi: '{user_msg}'\nHãy trả lời bằng tiếng Việt thân thiện, súc tích và đúng quy trình nghiệp vụ của FCT:"
             try:
                 res = call_ai_llm_translate(prompt)
                 if res and len(res.strip()) > 15:
                     reply = res.strip()
             except Exception as e:
-                print(f"Bobo LLM call error: {e}")
+                print(f"Milo LLM call error: {e}")
 
         # Fallback thông minh nếu không có AI key hoặc LLM trả lời rỗng
         if not reply:
-            reply = get_bobo_fallback_response(user_msg)
+            reply = get_milo_fallback_response(user_msg)
 
         return jsonify({'success': True, 'reply': reply})
     except Exception as e:
