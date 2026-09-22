@@ -1292,6 +1292,107 @@ def api_test_ai():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+# ═══════════════════════════════════════════════════════════
+# TRỢ LÝ ẢO HÀNH CHÍNH BOBO (FCT AI ASSISTANT)
+# ═══════════════════════════════════════════════════════════
+
+BOBO_SYSTEM_PROMPT = """Bạn là Bobo - nữ trợ lý hành chính ảo 3D thông minh, chu đáo và lịch sự của Hệ thống Quản lý Nhân sự FCT (FCT HR & DAS System).
+Phong cách:
+- Luôn xưng là "em" hoặc "Bobo", gọi người dùng là "anh/chị".
+- Ngữ điệu nhẹ nhàng, niềm nở, giải thích ngắn gọn, súc tích và có cấu trúc rõ ràng.
+
+Kiến thức nghiệp vụ FCT:
+1. Nhập hồ sơ mới:
+   - Bấm nút "➕ Nhập Hồ Sơ Mới" ở góc trên hoặc truy cập trực tiếp form.
+   - Điền tiếng Việt, hệ thống tự động dịch Họ tên, Kinh nghiệm, Ghi chú sang tiếng Trung Phồn Thể chuẩn Đài Loan.
+   - Tải ảnh chân dung 4x6 và mã QR Line. Bấm "Lưu Form" để lưu lại.
+2. Tìm kiếm & Lọc hồ sơ:
+   - Thanh tìm kiếm: Gõ Họ tên hoặc Mã số (MD: Nam, FD: Nữ, KD: Điều dưỡng).
+   - Bộ lọc nhanh: Có các nút lọc theo Nam (MD), Nữ (FD), Điều dưỡng (KD), Năm tạo hồ sơ.
+   - Có thể tìm theo Tên/Mã số, Tay nghề hoặc Kinh nghiệm.
+3. Ghép đơn hàng & Quản lý tiến độ:
+   - Tab "Ghép đơn & Theo dõi": Chọn ứng viên rồi gán đơn hàng, hoặc dùng thanh thao tác hàng loạt "💼 Ghép đơn hàng".
+   - Tab "Danh sách trúng tuyển": Theo dõi tiến độ hồ sơ theo 5 giai đoạn: Gom hồ sơ ➔ Trình cục ➔ Làm Visa ➔ Nhận Visa ➔ Xuất cảnh.
+4. Xuất biểu mẫu & Excel:
+   - Có 3 mẫu form CV phỏng vấn chuyên nghiệp: Form Ver 2026 (mới nhất), Form Bole / Qianlima (cho đơn hàng Đài Loan), Form v6.18.
+   - Nút "📊 Xuất Excel" ở góc trên cho phép tải toàn bộ danh sách hoặc ứng viên đã chọn ra file Excel.
+5. Cảnh báo giấy tờ hết hạn:
+   - 4 loại giấy tờ quan trọng: Hộ chiếu, CCCD, Khám sức khỏe, Lý lịch tư pháp số 2. Màu đỏ là đã hết hạn, màu vàng là sắp hết hạn trong 30-90 ngày.
+6. Cài đặt hệ thống & Bảo mật:
+   - Nút bánh răng "Cài đặt hệ thống" được bảo mật bằng mã PIN cố định là 9595.
+   - Tại đây Quản trị viên có thể theo dõi dung lượng máy chủ (Quota) và cấu hình API dịch thuật (Groq, OpenAI, Gemini, DeepSeek...).
+
+Thẻ hành động đặc biệt (chèn ở cuối câu trả lời nếu câu hỏi liên quan để giao diện hiển thị nút bấm tắt):
+- Mở form nhập hồ sơ: [ACTION:OPEN_FORM]
+- Xuất Excel: [ACTION:EXPORT_EXCEL]
+- Xem danh sách trúng tuyển: [ACTION:OPEN_PASSED]
+- Xem ghép đơn hàng: [ACTION:OPEN_JOBS]
+- Mở cài đặt hệ thống: [ACTION:OPEN_SETTINGS]
+- Bắt đầu xem tour hướng dẫn: [ACTION:START_TOUR]
+"""
+
+def get_bobo_fallback_response(user_msg: str) -> str:
+    msg = user_msg.lower().strip()
+    if any(k in msg for k in ['nhập', 'tạo mới', 'thêm', 'form', 'ứng viên mới', 'hồ sơ mới']):
+        return "Dạ, để nhập hồ sơ mới, anh/chị hãy bấm vào nút **'➕ Nhập Hồ Sơ Mới'** ở góc trên bên phải màn hình (hoặc bấm nút bên dưới). Trong form nhập liệu, hệ thống sẽ tự động dịch Họ tên và Kinh nghiệm sang tiếng Trung Phồn Thể, đồng thời cho phép tải ảnh chân dung và mã QR Line ạ!\n\n[ACTION:OPEN_FORM]"
+    elif any(k in msg for k in ['excel', 'xuất excel', 'tải excel', 'bảng tính']):
+        return "Dạ, anh/chị có thể xuất danh sách ứng viên ra file Excel bất kỳ lúc nào bằng cách bấm vào nút **'📊 Xuất Excel'** màu xanh lá ở góc trên bên phải bảng danh sách ạ!\n\n[ACTION:EXPORT_EXCEL]"
+    elif any(k in msg for k in ['bole', 'ver 2026', '2026', 'v6.18', 'mẫu cv', 'xuất cv', 'in cv', 'phỏng vấn']):
+        return "Dạ, để xuất CV phỏng vấn cho ứng viên, anh/chị tìm ứng viên trong bảng danh sách, sau đó bấm vào nút **'Xem'** hoặc biểu tượng in ở cột Thao tác. Hệ thống cung cấp 3 mẫu chuẩn: **Form Ver 2026** (mới nhất), **Form Bole** (chuyên dụng phỏng vấn Đài Loan) và **Form v6.18** ạ!"
+    elif any(k in msg for k in ['đơn hàng', 'ghép đơn', 'gán đơn', 'công xưởng', 'nhà máy']):
+        return "Dạ, để gán đơn hàng cho ứng viên, anh/chị có thể chuyển sang tab **'💼 Ghép đơn & Theo dõi'**, hoặc tích chọn các ứng viên trong danh sách rồi bấm nút **'💼 Ghép đơn hàng'** trên thanh thao tác hàng loạt ạ!\n\n[ACTION:OPEN_JOBS]"
+    elif any(k in msg for k in ['trúng tuyển', 'tiến độ', 'kanban', 'visa', 'xuất cảnh']):
+        return "Dạ, toàn bộ ứng viên đã trúng tuyển và tiến độ hồ sơ được quản lý trực quan tại tab **'🏆 Danh sách trúng tuyển'** theo các bước: Gom hồ sơ ➔ Trình cục ➔ Làm Visa ➔ Nhận Visa ➔ Xuất cảnh ạ!\n\n[ACTION:OPEN_PASSED]"
+    elif any(k in msg for k in ['tìm', 'lọc', 'tìm kiếm', 'nữ', 'nam', 'điều dưỡng']):
+        return "Dạ, anh/chị có thể gõ trực tiếp tên hoặc mã số vào ô tìm kiếm, hoặc bấm các nút lọc nhanh **♂️ Nam (MD)**, **♀️ Nữ (FD)**, **🏥 Đ.Dưỡng (KD)** ngay phía trên bảng danh sách ạ!"
+    elif any(k in msg for k in ['hết hạn', 'hộ chiếu', 'cccd', 'tư pháp', 'sức khỏe', 'giấy tờ']):
+        return "Dạ, hệ thống tự động theo dõi 4 loại giấy tờ quan trọng của ứng viên thông qua các thẻ cảnh báo trên cùng: **Hộ chiếu, Căn cước công dân, Khám sức khỏe, và Lý lịch tư pháp số 2**. Giấy tờ màu đỏ là đã hết hạn, màu vàng là sắp hết hạn trong 30-90 ngày tới ạ!"
+    elif any(k in msg for k in ['cài đặt', 'mật khẩu', 'pin', '9595', 'quota', 'api']):
+        return "Dạ, nút **'Cài đặt hệ thống'** (biểu tượng bánh răng ở góc trên bên phải) được bảo mật bằng mã PIN cố định là **9595**. Tại đây anh/chị có thể xem dung lượng máy chủ và cấu hình các nhà cung cấp AI dịch thuật ạ!\n\n[ACTION:OPEN_SETTINGS]"
+    else:
+        return "Dạ, em là Bobo - Trợ lý Hành chính FCT! Em có thể hướng dẫn anh/chị nhập hồ sơ mới, tìm kiếm và lọc ứng viên, phân bổ đơn hàng, xuất form CV phỏng vấn (Bole, Ver 2026) hoặc kiểm tra giấy tờ sắp hết hạn. Anh/chị có thể bấm vào tab **'Cầm tay chỉ việc'** để em hướng dẫn trực tiếp từng bước trên màn hình nhé!\n\n[ACTION:START_TOUR]"
+
+@app.route('/api/ai/assistant-chat', methods=['POST'])
+@auth_required
+def api_assistant_chat():
+    try:
+        req = request.get_json() or {}
+        user_msg = str(req.get('message', '')).strip()
+        if not user_msg:
+            return jsonify({'success': False, 'message': 'Vui lòng nhập câu hỏi.'}), 400
+
+        # Thử gọi AI LLM nếu có cấu hình
+        provider = (os.environ.get('AI_PROVIDER') or '').lower()
+        key = os.environ.get('AI_API_KEY') or os.environ.get('GROQ_API_KEY') or ''
+        if (not key or not provider) and os.path.exists(AI_CONFIG_FILE):
+            try:
+                with open(AI_CONFIG_FILE, 'r', encoding='utf-8') as _f:
+                    _cfg = json.load(_f)
+                    if not provider: provider = _cfg.get('provider', '')
+                    if not key: key = _cfg.get('api_key', '')
+            except Exception:
+                pass
+
+        reply = None
+        if key and provider in ('groq', 'openai', 'gemini', 'anthropic', 'deepseek', 'openrouter'):
+            prompt = f"{BOBO_SYSTEM_PROMPT}\n\nNgười dùng hỏi: '{user_msg}'\nHãy trả lời bằng tiếng Việt thân thiện, súc tích và đúng quy trình nghiệp vụ của FCT:"
+            try:
+                res = call_ai_llm_translate(prompt)
+                if res and len(res.strip()) > 15:
+                    reply = res.strip()
+            except Exception as e:
+                print(f"Bobo LLM call error: {e}")
+
+        # Fallback thông minh nếu không có AI key hoặc LLM trả lời rỗng
+        if not reply:
+            reply = get_bobo_fallback_response(user_msg)
+
+        return jsonify({'success': True, 'reply': reply})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+
 def _process_form_data(request):
     if request.content_type and 'multipart/form-data' in request.content_type:
         data = json.loads(request.form.get('data', '{}'))

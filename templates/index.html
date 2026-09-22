@@ -962,10 +962,10 @@
                 </div>
             </div>
             <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
-                <button type="button" onclick="document.getElementById('historyModal').style.display='none'" class="modal-header-btn modal-header-btn-ghost" style="background:rgba(8,145,178,0.15); color:#0891b2; border-color:rgba(8,145,178,0.35);" title="Nhập hồ sơ mới">
+                <button type="button" id="btnNewCandidateHeader" onclick="document.getElementById('historyModal').style.display='none'" class="modal-header-btn modal-header-btn-ghost" style="background:rgba(8,145,178,0.15); color:#0891b2; border-color:rgba(8,145,178,0.35);" title="Nhập hồ sơ mới">
                     <span>➕ Nhập Hồ Sơ Mới</span>
                 </button>
-                <button type="button" onclick="bulkExportExcelHistory(true, event)" class="modal-header-btn modal-header-btn-green" title="Xuất Excel tất cả">
+                <button type="button" id="btnBulkExcelHeader" onclick="bulkExportExcelHistory(true, event)" class="modal-header-btn modal-header-btn-green" title="Xuất Excel tất cả">
                     <span class="hidden sm:inline">📊 Xuất Excel</span>
                     <span class="sm:hidden">📊</span>
                 </button>
@@ -6488,8 +6488,928 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 font-weight: 700 !important;
                 color: #0891b2 !important;
             }
+    </style>
 
+    <!-- ═══════════════════════════════════════════════════════════════
+         TRỢ LÝ ẢO HÀNH CHÍNH BOBO (3D AI ASSISTANT & SPOTLIGHT TOURS)
+         ═══════════════════════════════════════════════════════════════ -->
+    <style>
+        /* Floating Avatar Widget */
+        #boboWidgetWrapper {
+            position: fixed;
+            bottom: 22px;
+            right: 24px;
+            z-index: 100000;
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            pointer-events: none;
+        }
+        #boboAvatarBtn {
+            pointer-events: auto;
+            width: 62px;
+            height: 62px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #06b6d4 0%, #0284c7 100%);
+            border: 3px solid #ffffff;
+            box-shadow: 0 10px 25px rgba(2, 132, 199, 0.4), 0 0 0 2px rgba(6, 182, 212, 0.4);
+            cursor: pointer;
+            position: relative;
+            padding: 0;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            outline: none;
+        }
+        #boboAvatarBtn:hover {
+            transform: scale(1.08) translateY(-3px);
+            box-shadow: 0 14px 30px rgba(2, 132, 199, 0.55), 0 0 0 3px rgba(6, 182, 212, 0.6);
+        }
+        #boboAvatarImg {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+        }
+        .bobo-status-dot {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 15px;
+            height: 15px;
+            background: #22c55e;
+            border: 2.5px solid #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.8);
+            animation: boboPulse 2s infinite;
+        }
+        @keyframes boboPulse {
+            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+
+        /* Greeting Bubble */
+        #boboGreetingBubble {
+            pointer-events: auto;
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #cbd5e1;
+            padding: 10px 16px 10px 14px;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15);
+            font-size: 13px;
+            font-weight: 700;
+            color: #0f172a;
+            max-width: 250px;
+            line-height: 1.4;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: boboSlideIn 0.3s ease-out;
+            cursor: pointer;
+            margin-bottom: 8px;
+            position: relative;
+        }
+        #boboGreetingBubble::after {
+            content: '';
+            position: absolute;
+            bottom: 12px;
+            right: -8px;
+            width: 0;
+            height: 0;
+            border-top: 6px solid transparent;
+            border-bottom: 6px solid transparent;
+            border-left: 8px solid #ffffff;
+        }
+        @keyframes boboSlideIn {
+            from { opacity: 0; transform: translateX(10px) scale(0.95); }
+            to { opacity: 1; transform: translateX(0) scale(1); }
+        }
+
+        /* Bobo Assistant Panel */
+        #boboPanel {
+            display: none;
+            position: fixed;
+            bottom: 96px;
+            right: 24px;
+            width: 400px;
+            max-width: calc(100vw - 32px);
+            height: 560px;
+            max-height: calc(100vh - 120px);
+            z-index: 100001;
+            border-radius: 20px;
+            background: #ffffff;
+            box-shadow: 0 25px 60px rgba(15, 23, 42, 0.22), 0 0 0 1px rgba(8, 145, 178, 0.2);
+            flex-direction: column;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            animation: boboFadeUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes boboFadeUp {
+            from { opacity: 0; transform: translateY(16px) scale(0.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Panel Header */
+        .bobo-panel-header {
+            background: linear-gradient(135deg, #0e7490 0%, #0891b2 50%, #0284c7 100%);
+            color: #ffffff;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 12px rgba(8, 145, 178, 0.2);
+        }
+        .bobo-header-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .bobo-header-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #ffffff;
+            object-fit: cover;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        .bobo-header-title {
+            font-size: 15px;
+            font-weight: 850;
+            line-height: 1.2;
+            letter-spacing: -0.01em;
+        }
+        .bobo-header-status {
+            font-size: 11.5px;
+            color: #cffafe;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 2px;
+        }
+
+        /* Tabs Bar */
+        .bobo-tab-bar {
+            display: flex;
+            background: #f1f5f9;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 6px 8px;
+            gap: 6px;
+        }
+        .bobo-tab-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 12.5px;
+            font-weight: 750;
+            color: #64748b;
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .bobo-tab-btn.active {
+            background: #ffffff;
+            color: #0891b2;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.06);
+        }
+
+        /* Tour Tab Body */
+        .bobo-tab-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #f8fafc;
+        }
+        .bobo-tour-card {
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 12px 14px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .bobo-tour-card:hover {
+            border-color: #0891b2;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(8, 145, 178, 0.12);
+            background: #f0fdfa;
+        }
+        .bobo-tour-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: #ecfeff;
+            color: #0891b2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+            border: 1px solid #cffafe;
+        }
+        .bobo-tour-info {
+            flex: 1;
+            overflow: hidden;
+        }
+        .bobo-tour-title {
+            font-size: 13px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 2px;
+        }
+        .bobo-tour-desc {
+            font-size: 11px;
+            color: #64748b;
+            line-height: 1.35;
+        }
+
+        /* Chat Tab Body */
+        .bobo-chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: #f8fafc;
+        }
+        .bobo-msg {
+            display: flex;
+            gap: 8px;
+            max-width: 92%;
+            animation: fadeIn 0.2s ease;
+        }
+        .bobo-msg.bobo-user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+        .bobo-msg.bobo-bot {
+            align-self: flex-start;
+        }
+        .bobo-msg-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        .bobo-msg-bubble {
+            padding: 10px 14px;
+            border-radius: 14px;
+            font-size: 12.5px;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+        .bobo-user .bobo-msg-bubble {
+            background: #0891b2;
+            color: #ffffff;
+            border-bottom-right-radius: 4px;
+        }
+        .bobo-bot .bobo-msg-bubble {
+            background: #ffffff;
+            color: #1e293b;
+            border: 1px solid #e2e8f0;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        /* Suggestion Chips */
+        .bobo-chips-wrapper {
+            padding: 8px 12px;
+            background: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .bobo-chips-wrapper::-webkit-scrollbar { display: none; }
+        .bobo-chip {
+            white-space: nowrap;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            font-size: 11.5px;
+            font-weight: 700;
+            color: #334155;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .bobo-chip:hover {
+            background: #e0f2fe;
+            color: #0369a1;
+            border-color: #7dd3fc;
+        }
+
+        /* Chat Input Bar */
+        .bobo-chat-input-bar {
+            padding: 10px 12px;
+            background: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .bobo-input {
+            flex: 1;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 8px 12px;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.15s ease;
+            font-family: inherit;
+        }
+        .bobo-input:focus {
+            border-color: #0891b2;
+        }
+        .bobo-send-btn {
+            background: #0891b2;
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            flex-shrink: 0;
+        }
+        .bobo-send-btn:hover {
+            background: #0e7490;
+            transform: scale(1.05);
+        }
+
+        /* Action Buttons inside Bot Message */
+        .bobo-action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 8px;
+            padding: 6px 12px;
+            background: #0891b2;
+            color: #ffffff;
+            border-radius: 8px;
+            font-size: 11.5px;
+            font-weight: 750;
+            cursor: pointer;
+            text-decoration: none;
+            border: none;
+            transition: all 0.15s ease;
+        }
+        .bobo-action-btn:hover {
+            background: #0e7490;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(8, 145, 178, 0.25);
+        }
+
+        /* ── Spotlight Tour Overlay ── */
+        #boboTourOverlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 100050;
+            pointer-events: auto;
+        }
+        #boboSpotlightSvg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        #boboSpotlightMask {
+            fill: rgba(15, 23, 42, 0.65);
+        }
+        #boboTourCard {
+            position: absolute;
+            z-index: 100055;
+            width: 320px;
+            background: #ffffff;
+            border-radius: 16px;
+            border: 2px solid #0891b2;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+            padding: 16px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+            animation: fadeIn 0.2s ease;
+        }
+    </style>
+
+    <!-- Bobo Floating Widget -->
+    <div id="boboWidgetWrapper">
+        <div id="boboGreetingBubble" onclick="toggleBoboPanel()">
+            <span>👋</span>
+            <div>
+                <div>Chào anh/chị, em là <strong>Bobo</strong>!</div>
+                <div style="font-size:11px; color:#0891b2; font-weight:600;">Cần em hỗ trợ nghiệp vụ nào không ạ? 😊</div>
+            </div>
+            <span onclick="event.stopPropagation(); document.getElementById('boboGreetingBubble').style.display='none'" style="font-size:12px; color:#94a3b8; margin-left:4px; padding:2px 4px;">✕</span>
+        </div>
+        <button type="button" id="boboAvatarBtn" onclick="toggleBoboPanel()" title="Trợ lý Hành chính Bobo">
+            <img id="boboAvatarImg" src="/static/bobo_avatar.jpg" alt="Bobo Avatar" onerror="this.src='/static/LogoFCT.png'">
+            <div class="bobo-status-dot"></div>
+        </button>
+    </div>
+
+    <!-- Bobo Assistant Panel -->
+    <div id="boboPanel">
+        <!-- Header -->
+        <div class="bobo-panel-header">
+            <div class="bobo-header-info">
+                <img class="bobo-header-avatar" src="/static/bobo_avatar.jpg" alt="Bobo" onerror="this.src='/static/LogoFCT.png'">
+                <div>
+                    <div class="bobo-header-title">Bobo · Trợ lý Hành chính</div>
+                    <div class="bobo-header-status">
+                        <span style="display:inline-block; width:7px; height:7px; background:#4ade80; border-radius:50%;"></span>
+                        Hệ thống FCT HR · Luôn sẵn sàng
+                    </div>
+                </div>
+            </div>
+            <button type="button" onclick="closeBoboPanel()" style="background:transparent; border:none; color:#ffffff; font-size:18px; font-weight:bold; cursor:pointer; opacity:0.8; padding:4px;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">✕</button>
+        </div>
+
+        <!-- Tab Bar -->
+        <div class="bobo-tab-bar">
+            <button type="button" id="boboTabBtnTour" class="bobo-tab-btn active" onclick="switchBoboTab('tour')">
+                <span>🎯</span> Cầm tay chỉ việc
+            </button>
+            <button type="button" id="boboTabBtnChat" class="bobo-tab-btn" onclick="switchBoboTab('chat')">
+                <span>💬</span> Hỏi Bobo
+            </button>
+        </div>
+
+        <!-- Tab 1: Interactive Tours -->
+        <div id="boboTourTab" class="bobo-tab-content">
+            <div style="font-size:12px; font-weight:700; color:#475569; margin-bottom:4px;">
+                Chọn nghiệp vụ bạn muốn em hướng dẫn trực quan:
+            </div>
+
+            <!-- Tour 1 -->
+            <div class="bobo-tour-card" onclick="startBoboTour('tour_new_candidate')">
+                <div class="bobo-tour-icon">📝</div>
+                <div class="bobo-tour-info">
+                    <div class="bobo-tour-title">1. Nhập hồ sơ & Dịch tiếng Trung</div>
+                    <div class="bobo-tour-desc">Hướng dẫn điền form tiếng Việt, dịch Họ tên và tải ảnh chân dung 4x6.</div>
+                </div>
+                <div style="font-size:12px; color:#0891b2; font-weight:800;">Bắt đầu →</div>
+            </div>
+
+            <!-- Tour 2 -->
+            <div class="bobo-tour-card" onclick="startBoboTour('tour_search_filter')">
+                <div class="bobo-tour-icon">🔍</div>
+                <div class="bobo-tour-info">
+                    <div class="bobo-tour-title">2. Tìm kiếm & Lọc hồ sơ</div>
+                    <div class="bobo-tour-desc">Tìm nhanh theo tên, mã số, lọc theo giới tính (MD, FD) hoặc tay nghề.</div>
+                </div>
+                <div style="font-size:12px; color:#0891b2; font-weight:800;">Bắt đầu →</div>
+            </div>
+
+            <!-- Tour 3 -->
+            <div class="bobo-tour-card" onclick="startBoboTour('tour_job_management')">
+                <div class="bobo-tour-icon">💼</div>
+                <div class="bobo-tour-info">
+                    <div class="bobo-tour-title">3. Ghép đơn hàng & Công xưởng</div>
+                    <div class="bobo-tour-desc">Cách phân bổ ứng viên vào đơn hàng tuyển dụng và gán hàng loạt.</div>
+                </div>
+                <div style="font-size:12px; color:#0891b2; font-weight:800;">Bắt đầu →</div>
+            </div>
+
+            <!-- Tour 4 -->
+            <div class="bobo-tour-card" onclick="startBoboTour('tour_export_cv')">
+                <div class="bobo-tour-icon">📄</div>
+                <div class="bobo-tour-info">
+                    <div class="bobo-tour-title">4. Xuất form Bole, Ver 2026 & Excel</div>
+                    <div class="bobo-tour-desc">Cách tải bảng tính Excel danh sách và xuất CV phỏng vấn Đài Loan.</div>
+                </div>
+                <div style="font-size:12px; color:#0891b2; font-weight:800;">Bắt đầu →</div>
+            </div>
+
+            <!-- Tour 5 -->
+            <div class="bobo-tour-card" onclick="startBoboTour('tour_passed_kanban')">
+                <div class="bobo-tour-icon">🏆</div>
+                <div class="bobo-tour-info">
+                    <div class="bobo-tour-title">5. Quản lý trúng tuyển & Tiến độ</div>
+                    <div class="bobo-tour-desc">Theo dõi quy trình từ Gom hồ sơ, Trình cục đến Làm visa và Xuất cảnh.</div>
+                </div>
+                <div style="font-size:12px; color:#0891b2; font-weight:800;">Bắt đầu →</div>
+            </div>
+        </div>
+
+        <!-- Tab 2: AI Chat Helpdesk -->
+        <div id="boboChatTab" class="bobo-tab-content" style="display:none; padding:0; gap:0;">
+            <div id="boboChatMessages" class="bobo-chat-messages">
+                <!-- Welcome message from Bobo -->
+                <div class="bobo-msg bobo-bot">
+                    <img class="bobo-msg-avatar" src="/static/bobo_avatar.jpg" alt="Bobo" onerror="this.src='/static/LogoFCT.png'">
+                    <div class="bobo-msg-bubble">
+                        Dạ em chào anh/chị! Em là <strong>Bobo</strong> - trợ lý hành chính FCT. Anh/chị cần em hỗ trợ thao tác hoặc giải đáp thắc mắc nào cứ nhắn cho em nhé! 😊
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Suggestions -->
+            <div class="bobo-chips-wrapper">
+                <div class="bobo-chip" onclick="sendBoboQuickPrompt('Làm sao để xuất form phỏng vấn Bole?')">Mẫu form Bole</div>
+                <div class="bobo-chip" onclick="sendBoboQuickPrompt('Hướng dẫn cách nhập hồ sơ mới?')">Nhập hồ sơ mới</div>
+                <div class="bobo-chip" onclick="sendBoboQuickPrompt('Cách ghép đơn hàng cho ứng viên?')">Ghép đơn hàng</div>
+                <div class="bobo-chip" onclick="sendBoboQuickPrompt('Mã PIN vào Cài đặt hệ thống là gì?')">Mã PIN cài đặt</div>
+            </div>
+
+            <!-- Input Bar -->
+            <div class="bobo-chat-input-bar">
+                <input type="text" id="boboChatInput" class="bobo-input" placeholder="Hỏi Bobo bất kỳ điều gì..." onkeydown="if(event.key==='Enter') sendBoboChatMessage()">
+                <button type="button" class="bobo-send-btn" onclick="sendBoboChatMessage()" title="Gửi tin nhắn">
+                    <svg style="width:16px; height:16px; fill:currentColor;" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Spotlight Tour Overlay & Card -->
+    <div id="boboTourOverlay">
+        <svg id="boboSpotlightSvg">
+            <defs>
+                <mask id="boboSpotlightMask">
+                    <rect width="100%" height="100%" fill="white" />
+                    <rect id="boboHole" x="0" y="0" width="0" height="0" rx="10" fill="black" />
+                </mask>
+            </defs>
+            <rect width="100%" height="100%" fill="rgba(15, 23, 42, 0.72)" mask="url(#boboSpotlightMask)" />
+            <!-- Glowing stroke around target -->
+            <rect id="boboGlowBorder" x="0" y="0" width="0" height="0" rx="10" fill="none" stroke="#06b6d4" stroke-width="3" style="filter: drop-shadow(0 0 8px rgba(6,182,212,0.8)); transition: all 0.25s ease;" />
+        </svg>
+
+        <div id="boboTourCard">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <img src="/static/bobo_avatar.jpg" style="width:24px; height:24px; border-radius:50%; object-fit:cover;" onerror="this.src='/static/LogoFCT.png'">
+                    <span id="boboTourStepBadge" style="font-size:12px; font-weight:800; color:#0891b2; background:#ecfeff; padding:2px 8px; border-radius:999px;">Bước 1/3</span>
+                </div>
+                <button type="button" onclick="endBoboTour()" style="background:transparent; border:none; color:#94a3b8; font-size:14px; font-weight:bold; cursor:pointer;" title="Đóng tour">✕</button>
+            </div>
+
+            <div id="boboTourStepText" style="font-size:13px; color:#1e293b; line-height:1.55; margin-bottom:14px; font-weight:600;">
+                Nội dung hướng dẫn...
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <button type="button" id="boboTourPrevBtn" onclick="prevBoboStep()" style="padding:6px 12px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:8px; font-size:11.5px; font-weight:700; color:#475569; cursor:pointer;">← Quay lại</button>
+                <div style="display:flex; gap:6px;">
+                    <button type="button" onclick="endBoboTour()" style="padding:6px 12px; background:transparent; border:none; font-size:11.5px; font-weight:600; color:#64748b; cursor:pointer;">Bỏ qua</button>
+                    <button type="button" id="boboTourNextBtn" onclick="nextBoboStep()" style="padding:6px 16px; background:#0891b2; border:none; border-radius:8px; font-size:11.5px; font-weight:800; color:#ffffff; cursor:pointer; box-shadow:0 2px 6px rgba(8,145,178,0.3);">Tiếp tục →</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bobo Assistant Engine Script -->
+    <script>
+        // ── Trạng thái Bobo ──
+        let boboCurrentTour = null;
+        let boboTourStepIndex = 0;
+
+        // Tự động chào nhẹ sau 1.5 giây khi tải trang
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const bubble = document.getElementById('boboGreetingBubble');
+                if (bubble && !sessionStorage.getItem('bobo_greeted')) {
+                    bubble.style.display = 'flex';
+                    sessionStorage.setItem('bobo_greeted', 'true');
+                    setTimeout(() => {
+                        if (bubble && document.getElementById('boboPanel').style.display !== 'flex') {
+                            bubble.style.display = 'none';
+                        }
+                    }, 8000);
+                }
+            }, 1500);
+        });
+
+        function toggleBoboPanel() {
+            const p = document.getElementById('boboPanel');
+            const b = document.getElementById('boboGreetingBubble');
+            if (b) b.style.display = 'none';
+            if (p.style.display === 'flex') {
+                p.style.display = 'none';
+            } else {
+                p.style.display = 'flex';
+            }
+        }
+
+        function closeBoboPanel() {
+            const p = document.getElementById('boboPanel');
+            if (p) p.style.display = 'none';
+        }
+
+        function switchBoboTab(tab) {
+            const tourTab = document.getElementById('boboTourTab');
+            const chatTab = document.getElementById('boboChatTab');
+            const btnTour = document.getElementById('boboTabBtnTour');
+            const btnChat = document.getElementById('boboTabBtnChat');
+
+            if (tab === 'tour') {
+                tourTab.style.display = 'flex';
+                chatTab.style.display = 'none';
+                btnTour.classList.add('active');
+                btnChat.classList.remove('active');
+            } else {
+                tourTab.style.display = 'none';
+                chatTab.style.display = 'flex';
+                btnChat.classList.add('active');
+                btnTour.classList.remove('active');
+                setTimeout(() => {
+                    const inp = document.getElementById('boboChatInput');
+                    if (inp) inp.focus();
+                }, 100);
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // KỊCH BẢN TOUR CẦM TAY CHỈ VIỆC (SPOTLIGHT TOURS)
+        // ═══════════════════════════════════════════════════════════════
+        const BOBO_TOURS = {
+            'tour_new_candidate': [
+                {
+                    target: '#btnNewCandidateHeader',
+                    text: '<strong>Bước 1:</strong> Bấm vào nút <strong>➕ Nhập Hồ Sơ Mới</strong> ở góc này để mở giao diện nhập liệu ứng viên.',
+                    before: () => { document.getElementById('historyModal').style.display = 'block'; }
+                },
+                {
+                    target: '.btn-save-action',
+                    text: '<strong>Bước 2:</strong> Sau khi điền thông tin bằng tiếng Việt và tải ảnh 4x6, hệ thống tự động dịch tiếng Trung. Anh/chị bấm <strong>Lưu Form</strong> ở dưới cùng để ghi nhận vào hệ thống.',
+                    before: () => { document.getElementById('historyModal').style.display = 'none'; }
+                }
+            ],
+            'tour_search_filter': [
+                {
+                    target: '#searchInput',
+                    text: '<strong>Bước 1:</strong> Nhập Họ tên hoặc Mã số (ví dụ: MD-1234, FD-5678) vào ô này để lọc ngay lập tức.',
+                    before: () => {
+                        document.getElementById('historyModal').style.display = 'block';
+                        switchHistoryTab('candidates');
+                    }
+                },
+                {
+                    target: '#searchType',
+                    text: '<strong>Bước 2:</strong> Anh/chị có thể đổi cách tìm kiếm sang theo <strong>Tay nghề</strong> hoặc <strong>Kinh nghiệm làm việc</strong>.',
+                    before: () => {}
+                },
+                {
+                    target: '#filter-MD',
+                    text: '<strong>Bước 3:</strong> Dùng các nút lọc nhanh này để chỉ hiển thị lao động <strong>♂️ Nam (MD)</strong>, <strong>♀️ Nữ (FD)</strong> hoặc <strong>🏥 Điều dưỡng (KD)</strong>.',
+                    before: () => {}
+                }
+            ],
+            'tour_job_management': [
+                {
+                    target: '#tabBtn-jobs',
+                    text: '<strong>Bước 1:</strong> Bấm vào tab <strong>💼 Ghép đơn & Theo dõi</strong> để xem thống kê theo từng đơn hàng và công xưởng.',
+                    before: () => { document.getElementById('historyModal').style.display = 'block'; }
+                },
+                {
+                    target: '#historySelectAll',
+                    text: '<strong>Bước 2:</strong> Hoặc tại bảng danh sách, anh/chị có thể tích chọn các ứng viên rồi dùng thanh thao tác hàng loạt <strong>💼 Ghép đơn hàng</strong> để gán nhanh.',
+                    before: () => { switchHistoryTab('candidates'); }
+                }
+            ],
+            'tour_export_cv': [
+                {
+                    target: '#btnBulkExcelHeader',
+                    text: '<strong>Bước 1:</strong> Bấm vào nút <strong>📊 Xuất Excel</strong> ở góc này để tải file Excel toàn bộ ứng viên về máy tính.',
+                    before: () => { document.getElementById('historyModal').style.display = 'block'; }
+                },
+                {
+                    target: '#historyTableBody',
+                    text: '<strong>Bước 2:</strong> Tại mỗi hàng ứng viên, trong cột Thao tác có các biểu tượng xuất <strong>Form Ver 2026</strong>, <strong>Form Bole</strong> hoặc <strong>Form v6.18</strong> sẵn sàng in ấn phỏng vấn.',
+                    before: () => { switchHistoryTab('candidates'); }
+                }
+            ],
+            'tour_passed_kanban': [
+                {
+                    target: '#tabBtn-passed',
+                    text: '<strong>Bước 1:</strong> Bấm vào tab <strong>🏆 Danh sách trúng tuyển</strong> để theo dõi toàn bộ ứng viên đã được nhận đơn hàng.',
+                    before: () => { document.getElementById('historyModal').style.display = 'block'; }
+                },
+                {
+                    target: '#passedSummaryPanel',
+                    text: '<strong>Bước 2:</strong> Toàn bộ tiến độ hồ sơ được quản lý trực quan theo quy trình: <strong>Gom hồ sơ ➔ Trình cục ➔ Làm Visa ➔ Nhận Visa ➔ Xuất cảnh</strong>.',
+                    before: () => { switchHistoryTab('passed'); }
+                }
+            ]
+        };
+
+        function startBoboTour(tourKey) {
+            boboCurrentTour = BOBO_TOURS[tourKey];
+            if (!boboCurrentTour || boboCurrentTour.length === 0) return;
+            boboTourStepIndex = 0;
+            closeBoboPanel();
+            document.getElementById('boboTourOverlay').style.display = 'block';
+            renderBoboTourStep();
+        }
+
+        function renderBoboTourStep() {
+            if (!boboCurrentTour) return;
+            const step = boboCurrentTour[boboTourStepIndex];
+            if (!step) { endBoboTour(); return; }
+
+            if (typeof step.before === 'function') step.before();
+
+            setTimeout(() => {
+                const el = document.querySelector(step.target);
+                const overlay = document.getElementById('boboTourOverlay');
+                const hole = document.getElementById('boboHole');
+                const glow = document.getElementById('boboGlowBorder');
+                const card = document.getElementById('boboTourCard');
+                const badge = document.getElementById('boboTourStepBadge');
+                const text = document.getElementById('boboTourStepText');
+                const prevBtn = document.getElementById('boboTourPrevBtn');
+                const nextBtn = document.getElementById('boboTourNextBtn');
+
+                badge.textContent = `Bước ${boboTourStepIndex + 1}/${boboCurrentTour.length}`;
+                text.innerHTML = step.text;
+                prevBtn.style.display = boboTourStepIndex > 0 ? 'inline-block' : 'none';
+                nextBtn.textContent = (boboTourStepIndex === boboCurrentTour.length - 1) ? 'Hoàn tất 👏' : 'Tiếp tục →';
+
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    const r = el.getBoundingClientRect();
+                    const pad = 6;
+                    const x = Math.max(0, r.left - pad);
+                    const y = Math.max(0, r.top - pad);
+                    const w = r.width + pad * 2;
+                    const h = r.height + pad * 2;
+
+                    hole.setAttribute('x', x);
+                    hole.setAttribute('y', y);
+                    hole.setAttribute('width', w);
+                    hole.setAttribute('height', h);
+
+                    glow.setAttribute('x', x);
+                    glow.setAttribute('y', y);
+                    glow.setAttribute('width', w);
+                    glow.setAttribute('height', h);
+
+                    // Position Tour Card
+                    let cardTop = y + h + 14;
+                    let cardLeft = x;
+                    if (cardLeft + 320 > window.innerWidth) cardLeft = window.innerWidth - 336;
+                    if (cardLeft < 16) cardLeft = 16;
+                    if (cardTop + 200 > window.innerHeight) cardTop = Math.max(16, y - 200);
+
+                    card.style.top = `${cardTop}px`;
+                    card.style.left = `${cardLeft}px`;
+                } else {
+                    // Target not found fallback
+                    hole.setAttribute('width', 0);
+                    glow.setAttribute('width', 0);
+                    card.style.top = '30%';
+                    card.style.left = 'calc(50% - 160px)';
+                }
+            }, 100);
+        }
+
+        function nextBoboStep() {
+            if (!boboCurrentTour) return;
+            if (boboTourStepIndex < boboCurrentTour.length - 1) {
+                boboTourStepIndex++;
+                renderBoboTourStep();
+            } else {
+                endBoboTour();
+                // Re-open Bobo to say congrats
+                toggleBoboPanel();
+            }
+        }
+
+        function prevBoboStep() {
+            if (!boboCurrentTour) return;
+            if (boboTourStepIndex > 0) {
+                boboTourStepIndex--;
+                renderBoboTourStep();
+            }
+        }
+
+        function endBoboTour() {
+            boboCurrentTour = null;
+            document.getElementById('boboTourOverlay').style.display = 'none';
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // AI CHAT HELPDESK
+        // ═══════════════════════════════════════════════════════════════
+        function sendBoboQuickPrompt(txt) {
+            const inp = document.getElementById('boboChatInput');
+            if (inp) inp.value = txt;
+            sendBoboChatMessage();
+        }
+
+        async function sendBoboChatMessage() {
+            const inp = document.getElementById('boboChatInput');
+            const msg = inp ? inp.value.trim() : '';
+            if (!msg) return;
+            inp.value = '';
+
+            const container = document.getElementById('boboChatMessages');
+
+            // Render User Bubble
+            const userDiv = document.createElement('div');
+            userDiv.className = 'bobo-msg bobo-user';
+            userDiv.innerHTML = `<div class="bobo-msg-bubble">${escapeHtml(msg)}</div>`;
+            container.appendChild(userDiv);
+            container.scrollTop = container.scrollHeight;
+
+            // Render Bot Typing indicator
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'bobo-msg bobo-bot';
+            typingDiv.innerHTML = `
+                <img class="bobo-msg-avatar" src="/static/bobo_avatar.jpg" alt="Bobo" onerror="this.src='/static/LogoFCT.png'">
+                <div class="bobo-msg-bubble" style="color:#64748b;">
+                    <em>Bobo đang suy nghĩ...</em>
+                </div>
+            `;
+            container.appendChild(typingDiv);
+            container.scrollTop = container.scrollHeight;
+
+            try {
+                const res = await fetch('/api/ai/assistant-chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg })
+                });
+                const data = await res.json();
+                typingDiv.remove();
+
+                const botDiv = document.createElement('div');
+                botDiv.className = 'bobo-msg bobo-bot';
+
+                let rawReply = (data.success && data.reply) ? data.reply : 'Dạ em chưa thể trả lời câu hỏi này, anh/chị thử lại sau nhé!';
+                let formattedReply = formatBoboReply(rawReply);
+
+                botDiv.innerHTML = `
+                    <img class="bobo-msg-avatar" src="/static/bobo_avatar.jpg" alt="Bobo" onerror="this.src='/static/LogoFCT.png'">
+                    <div class="bobo-msg-bubble">${formattedReply}</div>
+                `;
+                container.appendChild(botDiv);
+                container.scrollTop = container.scrollHeight;
+            } catch (e) {
+                typingDiv.remove();
+                const errDiv = document.createElement('div');
+                errDiv.className = 'bobo-msg bobo-bot';
+                errDiv.innerHTML = `
+                    <img class="bobo-msg-avatar" src="/static/bobo_avatar.jpg" alt="Bobo" onerror="this.src='/static/LogoFCT.png'">
+                    <div class="bobo-msg-bubble" style="color:#dc2626;">Dạ kết nối máy chủ đang bận, anh/chị vui lòng thử lại ạ!</div>
+                `;
+                container.appendChild(errDiv);
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+
+        function formatBoboReply(txt) {
+            let out = escapeHtml(txt);
+            // Bold **text**
+            out = out.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            // Line breaks
+            out = out.replace(/\n/g, '<br>');
+
+            // Convert [ACTION:...] tags into clickable action buttons
+            out = out.replace(/\[ACTION:OPEN_FORM\]/g, `<br><button type="button" class="bobo-action-btn" onclick="document.getElementById('historyModal').style.display='none'; closeBoboPanel();">➕ Mở form Nhập hồ sơ</button>`);
+            out = out.replace(/\[ACTION:EXPORT_EXCEL\]/g, `<br><button type="button" class="bobo-action-btn" onclick="bulkExportExcelHistory(true, event);">📊 Tải file Excel danh sách</button>`);
+            out = out.replace(/\[ACTION:OPEN_PASSED\]/g, `<br><button type="button" class="bobo-action-btn" onclick="switchHistoryTab('passed'); closeBoboPanel();">🏆 Mở Danh sách trúng tuyển</button>`);
+            out = out.replace(/\[ACTION:OPEN_JOBS\]/g, `<br><button type="button" class="bobo-action-btn" onclick="switchHistoryTab('jobs'); closeBoboPanel();">💼 Mở Ghép đơn & Theo dõi</button>`);
+            out = out.replace(/\[ACTION:OPEN_SETTINGS\]/g, `<br><button type="button" class="bobo-action-btn" onclick="openSystemSettingsModal(); closeBoboPanel();">⚙️ Mở Cài đặt hệ thống</button>`);
+            out = out.replace(/\[ACTION:START_TOUR\]/g, `<br><button type="button" class="bobo-action-btn" onclick="switchBoboTab('tour');">🎯 Xem các tour hướng dẫn</button>`);
+
+            return out;
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/[&<>'"]/g, tag => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                "'": '&#39;',
+                '"': '&quot;'
+            }[tag] || tag));
+        }
+    </script>
 </body>
 </html>
+
 
 
