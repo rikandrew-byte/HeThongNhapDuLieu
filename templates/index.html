@@ -2165,18 +2165,8 @@
     <script>
         // ── Cài đặt hệ thống & Giám sát tài nguyên (Admin PIN Protected) ──
         function openSystemSettingsModal() {
-            // Kiểm tra xem quản trị viên đã mở khóa trong phiên làm việc này chưa
-            const isAuthed = sessionStorage.getItem('admin_master_authed') === 'true';
-            if (isAuthed) {
-                const m = document.getElementById('systemSettingsModal');
-                if (m) {
-                    m.style.display = 'block';
-                    loadQuotaStatus();
-                    loadSysAiStatus();
-                }
-            } else {
-                openAdminAuthModal();
-            }
+            // Mỗi lần bấm Cài đặt hệ thống đều yêu cầu nhập mã PIN bảo mật
+            openAdminAuthModal();
         }
 
 
@@ -2217,7 +2207,7 @@
                 });
                 const data = await res.json();
                 if (res.ok && data.success) {
-                    sessionStorage.setItem('admin_master_authed', 'true');
+                    sessionStorage.setItem('admin_master_pin', pin);
                     closeAdminAuthModal();
                     const sm = document.getElementById('systemSettingsModal');
                     if (sm) {
@@ -2242,6 +2232,7 @@
         function closeSystemSettingsModal() {
             const m = document.getElementById('systemSettingsModal');
             if (m) m.style.display = 'none';
+            sessionStorage.removeItem('admin_master_pin');
         }
 
 
@@ -2271,9 +2262,10 @@
             const showMsg = (txt, ok) => { msg.textContent = txt; msg.style.color = ok ? '#16a34a' : '#ef4444'; };
             if (selected !== 'google' && !key) { showMsg('Vui lòng nhập API Key cho provider đã chọn.', false); return; }
             try {
+                const pin = sessionStorage.getItem('admin_master_pin') || '';
                 const res = await fetch('/api/settings/ai', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ provider: selected, api_key: key })
+                    body: JSON.stringify({ provider: selected, api_key: key, pin: pin })
                 });
                 const data = await res.json();
                 showMsg(data.message || data.error || 'Không rõ kết quả', data.success);
@@ -2318,30 +2310,6 @@
             }
         }
 
-        async function saveAiApiKey() {
-            const inp = document.getElementById('groqApiKeyInput');
-            const key = inp ? inp.value.trim() : '';
-            if (!key) {
-                alert('Vui lòng nhập API Key trước khi lưu.');
-                return;
-            }
-            try {
-                const res = await fetch('/api/ai/config', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ groq_api_key: key })
-                });
-                const data = await res.json();
-                if (res.ok && data.success) {
-                    alert('✅ ' + data.message);
-                    loadQuotaStatus();
-                } else {
-                    alert('❌ Lỗi: ' + (data.message || 'Không thể cập nhật'));
-                }
-            } catch (e) {
-                alert('❌ Lỗi kết nối máy chủ');
-            }
-        }
 
         async function testAiTranslation() {
             const resSpan = document.getElementById('aiTestResult');

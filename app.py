@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 from urllib.parse import quote
 from unicodedata import normalize
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import func, text, inspect
+from sqlalchemy import func, text, inspect, or_
 from flask_basicauth import BasicAuth
 from PIL import Image
 from vietnamese_names_dict import get_vietnamese_name_in_chinese
@@ -520,18 +520,6 @@ def translate_fixed(text: str) -> str:
     if not text: return text
     return FIXED_TRANS.get(text.strip().lower(), text)
 
-def translate_name(text: str) -> str:
-    """Dành riêng cho dịch Họ Tên: Ưu tiên từ điển tên để tránh nhầm với tiếng Anh"""
-    if not text or not text.strip() or is_chinese(text): return text
-
-    # Chuẩn hóa Unicode NFC đầu vào để khớp chính xác từ điển nội bộ
-    text_normalized = normalize('NFC', text).strip()
-
-    # 1. Thử dịch từ từ điển tên riêng
-    # Hàm trả về None nếu có phần nào không tìm thấy → fallback Google Translate
-    dict_result = get_vietnamese_name_in_chinese(text_normalized)
-    if dict_result is not None:
-        return dict_result
 
 def call_ai_llm_translate(prompt: str) -> str:
     """Gọi trực tiếp AI (Groq, OpenAI, DeepSeek, OpenRouter, Gemini) qua SDK hoặc REST API"""
@@ -1145,9 +1133,13 @@ def get_system_quota():
                 quota_data["database"]["used_mb"] = used_mb
                 quota_data["database"]["percent"] = round((used_mb / quota_data["database"]["limit_mb"]) * 100, 1)
         else:
-            db_path = os.path.join(BASE_DIR, 'database.db')
+            db_path = db_uri.replace('sqlite:///', '') if db_uri else 'history.db'
+            if not os.path.isabs(db_path):
+                db_path = os.path.join(BASE_DIR, db_path)
             if not os.path.exists(db_path):
-                db_path = db_uri.replace('sqlite:///', '')
+                alt_path = os.path.join(BASE_DIR, 'history.db')
+                if os.path.exists(alt_path):
+                    db_path = alt_path
             if os.path.exists(db_path):
                 file_size_bytes = os.path.getsize(db_path)
                 used_mb = round(file_size_bytes / (1024 * 1024), 2)
@@ -1221,6 +1213,11 @@ def api_get_settings():
 def api_update_ai_settings():
     try:
         req = request.get_json() or {}
+        pin = str(req.get('pin', '')).strip()
+        correct_pin = str(os.environ.get('SYSTEM_SETTINGS_PIN', '9595')).strip()
+        if pin != correct_pin:
+            return jsonify({'success': False, 'message': 'Mã PIN bảo mật không chính xác!'}), 403
+
         provider = str(req.get('provider', 'google')).strip().lower()
         api_key = str(req.get('api_key', '')).strip()
         
@@ -1294,22 +1291,6 @@ def api_test_ai():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
-@app.route('/api/ai/config', methods=['POST'])
-@auth_required
-def api_update_ai_config():
-    try:
-        req = request.get_json() or {}
-        new_key = str(req.get('groq_api_key', '')).strip()
-        global groq_api_key, groq_client, Groq
-        if new_key:
-            groq_api_key = new_key
-            os.environ['GROQ_API_KEY'] = new_key
-            if Groq:
-                groq_client = Groq(api_key=new_key)
-            return jsonify({'success': True, 'message': 'Đã cập nhật Groq API Key thành công!'})
-        return jsonify({'success': False, 'message': 'API Key không được để trống'}), 400
-    except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
 
 def _process_form_data(request):
     if request.content_type and 'multipart/form-data' in request.content_type:
@@ -1590,30 +1571,21 @@ def api_history():
             .all()
         )
         
-        # On-the-fly cleanup for corrupted selected_job & auto-create missing factories
+        # Tự động liên kết factory_id nếu công xưởng đã có trong danh mục (batch lookup 1 lần, không gây N+1 query và TUYỆT ĐỐI KHÔNG XÓA selected_job)
         needs_commit = False
+        all_factories = {f.name.lower().strip(): f.id for f in Factory.query.all()}
         for r in records:
             if getattr(r, 'is_selected', False):
-                sj = getattr(r, 'selected_job', '')
-                if sj and (',' in sj or ';' in sj):
-                    first_job = re.split(r'[,;]+', sj)[0].strip()
-                    r.selected_job = first_job
-                    needs_commit = True
-                
-                # Check and link factory
-                first_job = getattr(r, 'selected_job', '')
-                if first_job:
-                    existing_factory = Factory.query.filter(func.lower(Factory.name) == first_job.lower()).first()
-                    if existing_factory:
-                        if getattr(r, 'factory_id', '') != existing_factory.id:
-                            r.factory_id = existing_factory.id
-                            needs_commit = True
-                    else:
-                        # If the factory was deleted from config, clear the candidate's factory links
-                        r.factory_id = ''
-                        r.appraisal_id = ''
-                        r.visa_id = ''
-                        r.selected_job = ''
+                sj = (getattr(r, 'selected_job', '') or '').strip()
+                if sj:
+                    if (',' in sj or ';' in sj):
+                        sj = re.split(r'[,;]+', sj)[0].strip()
+                        r.selected_job = sj
+                        needs_commit = True
+                    # Liên kết factory_id nếu tìm thấy công xưởng trong danh mục
+                    fid = all_factories.get(sj.lower())
+                    if fid and getattr(r, 'factory_id', '') != fid:
+                        r.factory_id = fid
                         needs_commit = True
         
         if needs_commit:
@@ -1851,11 +1823,17 @@ def api_assign_job_by_maso():
             db.session.commit()
             return jsonify({'success': True, 'count': len(records)})
             
-        # Tìm tất cả hồ sơ trong database để thực hiện gán mới và gỡ bỏ đồng bộ
-        all_records = FormHistory.query.all()
+        # Tối ưu truy vấn: chỉ lấy hồ sơ có mã trong clean_masos HOẶC đang chứa đơn hàng target_job
+        filter_cond = []
+        if clean_masos:
+            filter_cond.append(func.upper(FormHistory.ma_so).in_(clean_masos))
+        if don_hang:
+            filter_cond.append(FormHistory.don_hang.ilike(f"%{don_hang}%"))
+        
+        target_records = FormHistory.query.filter(or_(*filter_cond)).all() if filter_cond else []
         updated_count = 0
         
-        for r in all_records:
+        for r in target_records:
             r_maso = (r.ma_so or '').strip().upper()
             if not r_maso:
                 continue

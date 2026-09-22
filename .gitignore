@@ -8,11 +8,22 @@ env/
 venv/
 ENV/
 
-# Database
+# Database & SQLite files
+*.db
+*.sqlite
+*.sqlite3
 history.db
 
-# Project specific
+# Config & Secrets
+ai_config.json
+
+# Project generated & temporary files
 output/
 uploads/
+preview_*.html
+*.log
+output.txt
+birth_lines.txt
 *.docx
 !resume_template_chuan.docx
+
