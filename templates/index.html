@@ -5218,6 +5218,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             const checked = document.querySelectorAll('.history-row-checkbox:checked');
             document.getElementById('historySelectedCount').textContent = checked.length;
             document.getElementById('historyBulkBar').style.display = checked.length > 0 ? 'flex' : 'none';
+            document.body.classList.toggle('has-bulk-bar', checked.length > 0);
             checked.forEach(cb => { cb.closest('tr').style.background = '#eff6ff'; cb.closest('tr').dataset.checked = '1'; });
             document.querySelectorAll('.history-row-checkbox:not(:checked)').forEach(cb => {
                 cb.closest('tr').style.background = ''; delete cb.closest('tr').dataset.checked;
@@ -5244,6 +5245,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             const totalChecked = document.querySelectorAll('.history-row-checkbox:checked').length;
             document.getElementById('historySelectedCount').textContent = totalChecked;
             document.getElementById('historyBulkBar').style.display = totalChecked > 0 ? 'flex' : 'none';
+            document.body.classList.toggle('has-bulk-bar', totalChecked > 0);
             
             const visibleCheckboxes = Array.from(document.querySelectorAll('.history-row-checkbox')).filter(cb => cb.closest('tr').style.display !== 'none');
             const totalVisible = visibleCheckboxes.length;
@@ -5262,6 +5264,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             document.getElementById('historySelectAll').indeterminate = false;
             document.getElementById('historySelectedCount').textContent = '0';
             document.getElementById('historyBulkBar').style.display = 'none';
+            document.body.classList.remove('has-bulk-bar');
         }
 
 
@@ -6230,11 +6233,14 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 border-radius: 18px 18px 0 0 !important;
                 box-shadow: 0 -10px 35px rgba(0, 0, 0, 0.5) !important;
                 padding: 10px 14px calc(12px + env(safe-area-inset-bottom, 0px)) 14px !important;
-                display: flex !important;
                 flex-direction: column !important;
                 gap: 8px !important;
                 animation: slideUpBulk 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
                 box-sizing: border-box !important;
+            }
+            .modal-bulk-bar[style*="display: none"],
+            .modal-bulk-bar[style*="display:none"] {
+                display: none !important;
             }
             @keyframes slideUpBulk {
                 from { transform: translateY(100%); opacity: 0; }
@@ -6950,6 +6956,46 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 box-shadow: 0 25px 60px rgba(15, 23, 42, 0.25), 0 0 0 1.5px rgba(8, 145, 178, 0.3) !important;
             }
         }
+
+        /* Mobile & Tablet: Nút nổi Milo tinh gọn, không che chắn nút hệ thống */
+        @media (max-width: 1023px) {
+            #miloGreetingBubble {
+                display: none !important; /* Không tự bung bóng thoại to đè màn hình trên điện thoại */
+            }
+            #miloWidgetWrapper {
+                bottom: 20px;
+                right: 14px;
+                z-index: 100002;
+                transition: bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            #miloAvatarBtn {
+                width: 46px;
+                height: 46px;
+                border: 2px solid #ffffff;
+                box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
+            }
+            .milo-status-dot {
+                width: 11px;
+                height: 11px;
+                bottom: 1px;
+                right: 1px;
+                border-width: 2px;
+            }
+            /* Khi thanh thao tác hàng loạt (Bulk Bar) mở ở đáy màn hình trên mobile */
+            body.has-bulk-bar #miloWidgetWrapper {
+                bottom: 110px !important; /* Nhấc bổng Milo lên trên thanh công cụ để không che nút Xóa / Tải / In */
+            }
+            #miloPanel {
+                bottom: 0 !important;
+                right: 0 !important;
+                left: 0 !important;
+                width: 100vw !important;
+                max-width: 100vw !important;
+                height: 85vh !important;
+                max-height: 85vh !important;
+                border-radius: 20px 20px 0 0 !important;
+            }
+        }
         .milo-sidebar-card:hover {
             transform: translateY(-2px);
             border-color: #06b6d4 !important;
@@ -7153,8 +7199,9 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
         let miloCurrentTour = null;
         let miloTourStepIndex = 0;
 
-        // Tự động chào nhẹ sau 1.5 giây khi tải trang
+        // Tự động chào nhẹ sau 1.5 giây khi tải trang (chỉ trên Desktop)
         window.addEventListener('load', () => {
+            if (window.innerWidth < 1024) return;
             setTimeout(() => {
                 const bubble = document.getElementById('miloGreetingBubble');
                 if (bubble && !sessionStorage.getItem('milo_greeted')) {
@@ -7168,6 +7215,49 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 }
             }, 1500);
         });
+
+        // Cho phép vuốt/kéo nút Milo lên xuống mép phải trên điện thoại để linh hoạt vị trí
+        (function initMiloMobileDrag() {
+            let touchStartY = 0;
+            let initialBottom = 0;
+            let isDragging = false;
+
+            window.addEventListener('DOMContentLoaded', () => {
+                const btn = document.getElementById('miloAvatarBtn');
+                const wrapper = document.getElementById('miloWidgetWrapper');
+                if (!btn || !wrapper) return;
+
+                btn.addEventListener('touchstart', (e) => {
+                    touchStartY = e.touches[0].clientY;
+                    const rect = wrapper.getBoundingClientRect();
+                    initialBottom = window.innerHeight - rect.bottom;
+                    isDragging = false;
+                }, { passive: true });
+
+                btn.addEventListener('touchmove', (e) => {
+                    const currentY = e.touches[0].clientY;
+                    const deltaY = touchStartY - currentY;
+                    if (Math.abs(deltaY) > 6) {
+                        isDragging = true;
+                        let newBottom = initialBottom + deltaY;
+                        newBottom = Math.max(15, Math.min(window.innerHeight - 75, newBottom));
+                        wrapper.style.bottom = newBottom + 'px';
+                    }
+                }, { passive: true });
+
+                btn.addEventListener('touchend', (e) => {
+                    if (isDragging) {
+                        setTimeout(() => { isDragging = false; }, 80);
+                    }
+                });
+
+                const origToggle = window.toggleMiloPanel;
+                window.toggleMiloPanel = function() {
+                    if (isDragging) return;
+                    origToggle();
+                };
+            });
+        })();
 
         
         function openMiloChat() {
