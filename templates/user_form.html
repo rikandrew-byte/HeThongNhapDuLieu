@@ -57,20 +57,24 @@
             </div>
         </div>
 
-        <div class="block lg:hidden flex-shrink-0 pl-2">
-            <img src="{{ url_for('static', filename='LogoFCT.png') }}" alt="FCT Logo"
-                class="w-12 h-12 object-contain drop-shadow-sm">
+        <div class="block lg:hidden flex-shrink-0 pl-2 flex items-center gap-2">
+            <a href="/fct-1503" title="Trang quản trị" class="text-xs px-2.5 py-1.5 bg-cyan-50 text-cyan-700 rounded-lg border border-cyan-200 font-bold hover:bg-cyan-100 transition-colors">🔐 Quản trị</a>
         </div>
 
         <div class="hidden lg:block mt-10 border-t border-gray-200 pt-6 w-full">
-            <div class="flex items-center gap-2 mb-1">
-                <p class="text-[10px] text-slate-400 tracking-widest font-bold uppercase">Crafted by</p>
-                <div class="w-10 h-10 flex items-center justify-center flex-shrink-0">
-                    <img src="{{ url_for('static', filename='eagle_logo.png') }}" alt="Andrew Tseng Logo"
-                        class="w-full h-full object-contain drop-shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                    <p class="text-[10px] text-slate-400 tracking-widest font-bold uppercase">Crafted by</p>
+                    <div class="w-8 h-8 flex items-center justify-center flex-shrink-0">
+                        <img src="{{ url_for('static', filename='eagle_logo.png') }}" alt="Andrew Tseng Logo"
+                            class="w-full h-full object-contain drop-shadow-sm">
+                    </div>
                 </div>
             </div>
-            <p class="text-xl font-bold text-slate-800 tracking-wide">Andrew Tseng</p>
+            <p class="text-xl font-bold text-slate-800 tracking-wide mb-4">Andrew Tseng</p>
+            <a href="/fct-1503" class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-cyan-700 bg-cyan-50 hover:bg-cyan-100 rounded-xl border border-cyan-200 transition-all shadow-sm">
+                🔐 Đăng nhập Quản Trị DAS →
+            </a>
         </div>
     </div>
 

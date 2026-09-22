@@ -26,7 +26,7 @@ echo [2/3] Cài đặt/Cập nhật thư viện cần thiết...
 echo [3/3] Đang chạy Server tại http://127.0.0.1:5000
 echo Vui lòng đợi trong giây lát để hệ thống khởi động...
 timeout /t 5 /nobreak > nul
-start http://127.0.0.1:5000
+start http://127.0.0.1:5000/fct-1503
 %PY_PATH% app.py
 
 pause

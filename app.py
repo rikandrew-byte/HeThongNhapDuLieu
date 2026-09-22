@@ -1674,7 +1674,7 @@ def api_history():
         
         # Tự động liên kết factory_id nếu công xưởng đã có trong danh mục (batch lookup 1 lần, không gây N+1 query và TUYỆT ĐỐI KHÔNG XÓA selected_job)
         needs_commit = False
-        all_factories = {f.name.lower().strip(): f.id for f in Factory.query.all()}
+        all_factories = {f.name.lower().strip(): f.id for f in Factory.query.all() if f.name}
         for r in records:
             if getattr(r, 'is_selected', False):
                 sj = (getattr(r, 'selected_job', '') or '').strip()
