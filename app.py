@@ -5,7 +5,7 @@ Nhập liệu Tiếng Việt → Hệ thống quản lý và xuất hồ sơ th�
 """
 import os, uuid, re, unicodedata, json, base64, traceback, io, zipfile, requests
 from datetime import date, datetime, timedelta, timezone
-from flask import Flask, request, jsonify, send_file, render_template, Response, make_response, redirect
+from flask import Flask, request, jsonify, send_file, render_template, Response, make_response, redirect, send_from_directory
 from flask_cors import CORS
 from jinja2 import Template
 from deep_translator import GoogleTranslator
@@ -1092,6 +1092,10 @@ def index():
     resp.headers['Expires'] = '0'
     return resp
 
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    return send_from_directory(os.path.join(app.root_path, 'static'), filename)
+
 @app.route('/api/health')
 def health(): return jsonify({'ok': True, 'msg': 'DAS V3.0 running'})
 
@@ -1296,33 +1300,48 @@ def api_test_ai():
 # TRỢ LÝ ẢO HÀNH CHÍNH BOBO (FCT AI ASSISTANT)
 # ═══════════════════════════════════════════════════════════
 
-BOBO_SYSTEM_PROMPT = """Bạn là Bobo - nữ trợ lý hành chính ảo 3D thông minh, chu đáo và lịch sự của Hệ thống Quản lý Nhân sự FCT (FCT HR & DAS System).
-Phong cách:
+BOBO_SYSTEM_PROMPT = """Bạn là Bobo - nữ trợ lý hành chính ảo 3D thông minh, chu đáo và lịch thiệp của Hệ thống Quản trị Nhân sự FCT (FCT HR & DAS System).
+Phong cách giao tiếp:
 - Luôn xưng là "em" hoặc "Bobo", gọi người dùng là "anh/chị".
-- Ngữ điệu nhẹ nhàng, niềm nở, giải thích ngắn gọn, súc tích và có cấu trúc rõ ràng.
+- Ngữ điệu chuyên nghiệp, nhã nhặn, giải thích rõ ràng từng bước thao tác.
 
-Kiến thức nghiệp vụ FCT:
+NGUYÊN TẮC BẢO MẬT BẮT BUỘC:
+- TUYỆT ĐỐI KHÔNG BAO GIỜ tiết lộ mã PIN bảo mật Cài đặt hệ thống dưới bất kỳ hình thức nào.
+- Khi người dùng hỏi về mật khẩu hoặc mã PIN, luôn trả lời rằng:
+  "Dạ, mục 'Cài đặt hệ thống' được bảo mật bằng mã PIN riêng của Quản trị viên cấp cao nhằm bảo vệ an toàn máy chủ và cấu hình API. Em không có thẩm quyền cung cấp mã PIN này, anh/chị vui lòng liên hệ trực tiếp Quản trị viên để được cấp quyền ạ!"
+
+Kiến thức nghiệp vụ đầy đủ của Hệ thống FCT HR:
 1. Nhập hồ sơ mới:
-   - Bấm nút "➕ Nhập Hồ Sơ Mới" ở góc trên hoặc truy cập trực tiếp form.
-   - Điền tiếng Việt, hệ thống tự động dịch Họ tên, Kinh nghiệm, Ghi chú sang tiếng Trung Phồn Thể chuẩn Đài Loan.
-   - Tải ảnh chân dung 4x6 và mã QR Line. Bấm "Lưu Form" để lưu lại.
-2. Tìm kiếm & Lọc hồ sơ:
-   - Thanh tìm kiếm: Gõ Họ tên hoặc Mã số (MD: Nam, FD: Nữ, KD: Điều dưỡng).
-   - Bộ lọc nhanh: Có các nút lọc theo Nam (MD), Nữ (FD), Điều dưỡng (KD), Năm tạo hồ sơ.
-   - Có thể tìm theo Tên/Mã số, Tay nghề hoặc Kinh nghiệm.
-3. Ghép đơn hàng & Quản lý tiến độ:
-   - Tab "Ghép đơn & Theo dõi": Chọn ứng viên rồi gán đơn hàng, hoặc dùng thanh thao tác hàng loạt "💼 Ghép đơn hàng".
-   - Tab "Danh sách trúng tuyển": Theo dõi tiến độ hồ sơ theo 5 giai đoạn: Gom hồ sơ ➔ Trình cục ➔ Làm Visa ➔ Nhận Visa ➔ Xuất cảnh.
-4. Xuất biểu mẫu & Excel:
-   - Có 3 mẫu form CV phỏng vấn chuyên nghiệp: Form Ver 2026 (mới nhất), Form Bole / Qianlima (cho đơn hàng Đài Loan), Form v6.18.
-   - Nút "📊 Xuất Excel" ở góc trên cho phép tải toàn bộ danh sách hoặc ứng viên đã chọn ra file Excel.
-5. Cảnh báo giấy tờ hết hạn:
-   - 4 loại giấy tờ quan trọng: Hộ chiếu, CCCD, Khám sức khỏe, Lý lịch tư pháp số 2. Màu đỏ là đã hết hạn, màu vàng là sắp hết hạn trong 30-90 ngày.
-6. Cài đặt hệ thống & Bảo mật:
-   - Nút bánh răng "Cài đặt hệ thống" được bảo mật bằng mã PIN cố định là 9595.
-   - Tại đây Quản trị viên có thể theo dõi dung lượng máy chủ (Quota) và cấu hình API dịch thuật (Groq, OpenAI, Gemini, DeepSeek...).
+   - Bấm nút "➕ Nhập Hồ Sơ Mới" ở thanh trên cùng để mở form.
+   - Điền thông tin tiếng Việt: Họ tên, Ngày sinh, Quê quán, Kinh nghiệm làm việc, Tình trạng sức khỏe, v.v.
+   - Hệ thống tự động dịch thuật chuẩn xác sang tiếng Trung Phồn Thể (chuẩn Đài Loan).
+   - Cho phép kéo thả / dán trực tiếp ảnh chân dung 4x6, mã QR Line và giấy tờ đính kèm.
+2. Tìm kiếm & Lọc thông minh:
+   - Tìm kiếm tức thì theo Họ tên, Mã số, Tay nghề hoặc Kinh nghiệm.
+   - Lọc nhanh theo tiền tố mã số: ♂️ Nam (MD), ♀️ Nữ (FD), 🏥 Điều dưỡng (KD), ❓ Khác.
+   - Lọc theo Người phụ trách (NPT) và Lọc theo Năm lưu trữ.
+3. Ghép đơn hàng & Phân bổ công xưởng:
+   - Tab "Ghép đơn & Theo dõi": Hiển thị bảng tổng hợp từng đơn hàng, danh sách mã số ứng viên đã ghép.
+   - Ghép hàng loạt: Tích chọn các ứng viên rồi bấm "💼 Ghép đơn hàng" trên thanh công cụ.
+   - Ghép nhanh theo danh sách mã số: Nhập tên đơn hàng và dán danh sách mã số (ví dụ: KD1401, KD1402...).
+   - Bấm "Lọc nhanh" tại mỗi đơn hàng để xem ngay danh sách ứng viên thuộc đơn đó.
+4. Quản lý Danh sách trúng tuyển & Tiến độ 5 giai đoạn:
+   - Đánh dấu trúng tuyển: Bấm nút "🎯 Chưa trúng" chuyển thành "🎯 Trúng tuyển" tại mỗi dòng ứng viên.
+   - Tab "Danh sách trúng tuyển" quản lý tiến độ chuẩn theo 5 bước: Gom hồ sơ ➔ Trình cục ➔ Làm Visa ➔ Nhận Visa ➔ Xuất cảnh.
+5. Cảnh báo thời hạn Giấy tờ pháp lý:
+   - Tự động theo dõi 4 loại giấy tờ: Hộ chiếu, Căn cước công dân (CCCD), Khám sức khỏe (KSK), Lý lịch tư pháp số 2 (LLTP2).
+   - Thẻ cảnh báo trên cùng: Màu ĐỎ là đã hết hạn, màu VÀNG là sắp hết hạn trong 30-90 ngày tới.
+6. Cấu hình Nhà máy & Giấy tờ (Tờ thẩm định, Tờ Visa):
+   - Tab "Cấu hình Đơn hàng": Khai báo danh mục Nhà máy, Môi giới liên kết.
+   - Quản lý Tờ thẩm định và Tờ Visa: Theo dõi mã số, ngày hết hạn và chỉ tiêu (slots) tuyển dụng còn lại.
+7. Xuất Excel & In ấn chuyên nghiệp:
+   - Nút "📊 Xuất Excel": Tải toàn bộ danh sách hoặc các ứng viên đã chọn thành bảng tính Excel có sẵn biểu đồ thống kê chuyên nghiệp.
+   - In hồ sơ: Bấm "Xem & In" để in từng CV theo form chuẩn Ver 2026, hoặc tích chọn nhiều hồ sơ rồi bấm "🖨️ In PDF hàng loạt".
+   - Tải file ZIP: Đóng gói toàn bộ file HTML và ảnh giấy tờ gốc của các ứng viên thành file nén .ZIP.
+8. Sao lưu dự phòng dữ liệu:
+   - Hỗ trợ xuất toàn bộ dữ liệu ra file backup JSON và có thể nạp lại khi cần thiết.
 
-Thẻ hành động đặc biệt (chèn ở cuối câu trả lời nếu câu hỏi liên quan để giao diện hiển thị nút bấm tắt):
+Thẻ hành động tắt (đặt ở cuối câu trả lời khi người dùng hỏi liên quan):
 - Mở form nhập hồ sơ: [ACTION:OPEN_FORM]
 - Xuất Excel: [ACTION:EXPORT_EXCEL]
 - Xem danh sách trúng tuyển: [ACTION:OPEN_PASSED]
@@ -1333,24 +1352,43 @@ Thẻ hành động đặc biệt (chèn ở cuối câu trả lời nếu câu 
 
 def get_bobo_fallback_response(user_msg: str) -> str:
     msg = user_msg.lower().strip()
-    if any(k in msg for k in ['nhập', 'tạo mới', 'thêm', 'form', 'ứng viên mới', 'hồ sơ mới']):
-        return "Dạ, để nhập hồ sơ mới, anh/chị hãy bấm vào nút **'➕ Nhập Hồ Sơ Mới'** ở góc trên bên phải màn hình (hoặc bấm nút bên dưới). Trong form nhập liệu, hệ thống sẽ tự động dịch Họ tên và Kinh nghiệm sang tiếng Trung Phồn Thể, đồng thời cho phép tải ảnh chân dung và mã QR Line ạ!\n\n[ACTION:OPEN_FORM]"
+    
+    # Kiểm tra bảo mật PIN / Mật khẩu trước tiên
+    if any(k in msg for k in ['mật khẩu', 'mã pin', 'password', 'pin', '9595', 'xin mã']):
+        return "Dạ, mục **'Cài đặt hệ thống'** được bảo mật bằng mã PIN riêng của Quản trị viên cấp cao nhằm bảo vệ an toàn máy chủ và cấu hình API. Em không có thẩm quyền cung cấp mã PIN này, anh/chị vui lòng liên hệ trực tiếp Quản trị viên hệ thống để được cấp quyền truy cập ạ!\n\n[ACTION:OPEN_SETTINGS]"
+        
+    elif any(k in msg for k in ['nhập', 'tạo mới', 'thêm', 'form', 'ứng viên mới', 'hồ sơ mới']):
+        return "Dạ, để nhập hồ sơ mới, anh/chị hãy bấm vào nút **'➕ Nhập Hồ Sơ Mới'** ở thanh trên cùng (hoặc bấm nút bên dưới). Khi điền, hệ thống sẽ tự động dịch Họ tên và Kinh nghiệm sang tiếng Trung Phồn Thể, đồng thời cho phép tải ảnh chân dung và mã QR Line ạ!\n\n[ACTION:OPEN_FORM]"
+        
     elif any(k in msg for k in ['excel', 'xuất excel', 'tải excel', 'bảng tính']):
-        return "Dạ, anh/chị có thể xuất danh sách ứng viên ra file Excel bất kỳ lúc nào bằng cách bấm vào nút **'📊 Xuất Excel'** màu xanh lá ở góc trên bên phải bảng danh sách ạ!\n\n[ACTION:EXPORT_EXCEL]"
-    elif any(k in msg for k in ['bole', 'ver 2026', '2026', 'v6.18', 'mẫu cv', 'xuất cv', 'in cv', 'phỏng vấn']):
-        return "Dạ, để xuất CV phỏng vấn cho ứng viên, anh/chị tìm ứng viên trong bảng danh sách, sau đó bấm vào nút **'Xem'** hoặc biểu tượng in ở cột Thao tác. Hệ thống cung cấp 3 mẫu chuẩn: **Form Ver 2026** (mới nhất), **Form Bole** (chuyên dụng phỏng vấn Đài Loan) và **Form v6.18** ạ!"
+        return "Dạ, anh/chị có thể xuất dữ liệu ra file Excel bằng nút **'📊 Xuất Excel'** màu xanh lá ở thanh trên cùng. Nếu cần xuất nhóm ứng viên cụ thể, anh/chị chỉ cần tích chọn các ô vuông đầu dòng rồi bấm **'📊 Xuất Excel'** trên thanh thao tác hàng loạt ạ!\n\n[ACTION:EXPORT_EXCEL]"
+        
+    elif any(k in msg for k in ['cv', 'mẫu cv', 'xuất cv', 'in cv', 'phỏng vấn', 'in pdf', 'in hàng loạt']):
+        return "Dạ, để in CV ứng viên, anh/chị bấm vào nút **'🖨️ Xem & In'** ở cột Thao tác của ứng viên đó. Nếu muốn in nhiều người cùng lúc, anh/chị hãy tích chọn các ứng viên rồi bấm nút **'🖨️ In PDF hàng loạt'** trên thanh công cụ nổi ạ!"
+        
     elif any(k in msg for k in ['đơn hàng', 'ghép đơn', 'gán đơn', 'công xưởng', 'nhà máy']):
-        return "Dạ, để gán đơn hàng cho ứng viên, anh/chị có thể chuyển sang tab **'💼 Ghép đơn & Theo dõi'**, hoặc tích chọn các ứng viên trong danh sách rồi bấm nút **'💼 Ghép đơn hàng'** trên thanh thao tác hàng loạt ạ!\n\n[ACTION:OPEN_JOBS]"
-    elif any(k in msg for k in ['trúng tuyển', 'tiến độ', 'kanban', 'visa', 'xuất cảnh']):
-        return "Dạ, toàn bộ ứng viên đã trúng tuyển và tiến độ hồ sơ được quản lý trực quan tại tab **'🏆 Danh sách trúng tuyển'** theo các bước: Gom hồ sơ ➔ Trình cục ➔ Làm Visa ➔ Nhận Visa ➔ Xuất cảnh ạ!\n\n[ACTION:OPEN_PASSED]"
-    elif any(k in msg for k in ['tìm', 'lọc', 'tìm kiếm', 'nữ', 'nam', 'điều dưỡng']):
-        return "Dạ, anh/chị có thể gõ trực tiếp tên hoặc mã số vào ô tìm kiếm, hoặc bấm các nút lọc nhanh **♂️ Nam (MD)**, **♀️ Nữ (FD)**, **🏥 Đ.Dưỡng (KD)** ngay phía trên bảng danh sách ạ!"
+        return "Dạ, để ghép đơn hàng cho ứng viên, anh/chị có thể chuyển sang tab **'💼 Ghép đơn & Theo dõi'** để xem thống kê từng đơn, hoặc tích chọn các ứng viên rồi bấm nút **'💼 Ghép đơn hàng'** trên thanh thao tác hàng loạt ạ!\n\n[ACTION:OPEN_JOBS]"
+        
+    elif any(k in msg for k in ['trúng tuyển', 'tiến độ', 'kanban', 'visa', 'xuất cảnh', 'bước']):
+        return "Dạ, toàn bộ ứng viên trúng tuyển và tiến độ hồ sơ được quản lý trực quan tại tab **'🏆 Danh sách trúng tuyển'** qua 5 giai đoạn: **Gom hồ sơ ➔ Trình cục ➔ Làm Visa ➔ Nhận Visa ➔ Xuất cảnh** ạ!\n\n[ACTION:OPEN_PASSED]"
+        
+    elif any(k in msg for k in ['tìm', 'lọc', 'tìm kiếm', 'nữ', 'nam', 'điều dưỡng', 'npt']):
+        return "Dạ, anh/chị có thể gõ trực tiếp tên hoặc mã số vào ô tìm kiếm, hoặc bấm các nút lọc nhanh **♂️ Nam (MD)**, **♀️ Nữ (FD)**, **🏥 Đ.Dưỡng (KD)** và lọc theo Người phụ trách (NPT) ngay phía trên bảng danh sách ạ!"
+        
     elif any(k in msg for k in ['hết hạn', 'hộ chiếu', 'cccd', 'tư pháp', 'sức khỏe', 'giấy tờ']):
-        return "Dạ, hệ thống tự động theo dõi 4 loại giấy tờ quan trọng của ứng viên thông qua các thẻ cảnh báo trên cùng: **Hộ chiếu, Căn cước công dân, Khám sức khỏe, và Lý lịch tư pháp số 2**. Giấy tờ màu đỏ là đã hết hạn, màu vàng là sắp hết hạn trong 30-90 ngày tới ạ!"
-    elif any(k in msg for k in ['cài đặt', 'mật khẩu', 'pin', '9595', 'quota', 'api']):
-        return "Dạ, nút **'Cài đặt hệ thống'** (biểu tượng bánh răng ở góc trên bên phải) được bảo mật bằng mã PIN cố định là **9595**. Tại đây anh/chị có thể xem dung lượng máy chủ và cấu hình các nhà cung cấp AI dịch thuật ạ!\n\n[ACTION:OPEN_SETTINGS]"
+        return "Dạ, hệ thống tự động kiểm tra thời hạn 4 loại giấy tờ quan trọng: **Hộ chiếu, Căn cước công dân (CCCD), Khám sức khỏe (KSK), và Lý lịch tư pháp số 2 (LLTP2)**. Thẻ cảnh báo màu ĐỎ nghĩa là đã hết hạn, màu VÀNG nghĩa là sắp hết hạn trong 30-90 ngày tới để anh/chị kịp thời bổ sung ạ!"
+        
+    elif any(k in msg for k in ['nhà máy', 'tờ thẩm định', 'tờ visa', 'chỉ tiêu', 'quota', 'cấu hình đơn']):
+        return "Dạ, tại tab **'📋 Cấu hình Đơn hàng'**, anh/chị có thể quản lý danh sách Nhà máy, Môi giới liên kết, đồng thời theo dõi số lượng chỉ tiêu tuyển dụng (slots) còn lại của từng Tờ thẩm định và Tờ Visa ạ!"
+        
+    elif any(k in msg for k in ['zip', 'tải ảnh', 'tải hồ sơ', 'đóng gói']):
+        return "Dạ, để tải trọn gói hồ sơ kèm toàn bộ ảnh giấy tờ gốc của ứng viên, anh/chị hãy tích chọn các ứng viên rồi bấm nút **'📥 Tải (.ZIP)'** trên thanh thao tác hàng loạt ạ!"
+        
+    elif any(k in msg for k in ['sao lưu', 'backup', 'phục hồi', 'khôi phục']):
+        return "Dạ, anh/chị có thể sao lưu toàn bộ dữ liệu ra file JSON bằng cách bấm vào nút sao lưu dữ liệu, và có thể nạp lại dữ liệu bất cứ lúc nào khi cần thiết ạ!"
+        
     else:
-        return "Dạ, em là Bobo - Trợ lý Hành chính FCT! Em có thể hướng dẫn anh/chị nhập hồ sơ mới, tìm kiếm và lọc ứng viên, phân bổ đơn hàng, xuất form CV phỏng vấn (Bole, Ver 2026) hoặc kiểm tra giấy tờ sắp hết hạn. Anh/chị có thể bấm vào tab **'Cầm tay chỉ việc'** để em hướng dẫn trực tiếp từng bước trên màn hình nhé!\n\n[ACTION:START_TOUR]"
+        return "Dạ, em là Bobo - Trợ lý Hành chính FCT! Em có thể hướng dẫn anh/chị các nghiệp vụ: Nhập hồ sơ mới, Lọc và tìm kiếm ứng viên, Ghép đơn hàng, Quản lý tiến độ trúng tuyển 5 giai đoạn, Theo dõi giấy tờ hết hạn, Cấu hình nhà máy và Xuất Excel / In ấn. Anh/chị hãy bấm sang tab **'Cầm tay chỉ việc'** để em dẫn đi xem trực tiếp từng thao tác trên màn hình nhé!\n\n[ACTION:START_TOUR]"
 
 @app.route('/api/ai/assistant-chat', methods=['POST'])
 @auth_required

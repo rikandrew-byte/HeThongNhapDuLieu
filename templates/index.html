@@ -884,7 +884,7 @@
         <div class="w-full flex flex-col items-center">
             <!-- Center Logo, Title, and Version with Golden Ratio spacing -->
             <div class="flex flex-col items-center text-center" style="margin-top: 13px; gap: 13px;">
-                <img src="{{ url_for('static', filename='LogoFCT.png') }}" alt="FCT Logo" onerror="this.src='/static/LogoFCT.png'" style="width: 89px; height: 89px; object-fit: contain; filter: drop-shadow(0 8px 16px rgba(8,145,178,0.18));">
+                <img src="{{ url_for('static', filename='LogoFCT.png') }}" alt="FCT Logo" onerror="this.onerror=null; this.src='/LogoFCT.png';" style="width: 89px; height: 89px; object-fit: contain; filter: drop-shadow(0 8px 16px rgba(8,145,178,0.18));">
                 <div>
                     <h1 class="sidebar-logo-text font-extrabold" style="font-size: 21px; line-height: 1.3; letter-spacing: -0.01em;">
                         <span class="sidebar-logo-accent">FCT</span> HR SYSTEM
@@ -5699,6 +5699,11 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
 
             // Nạp danh mục NPT cố định ngay khi load trang
             loadEmployees();
+
+            // Nạp ngay danh sách hồ sơ ứng viên lập tức không chờ tài nguyên phụ
+            if (typeof loadHistory === 'function') {
+                loadHistory();
+            }
         });
 
 
@@ -6924,7 +6929,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             <span onclick="event.stopPropagation(); document.getElementById('boboGreetingBubble').style.display='none'" style="font-size:12px; color:#94a3b8; margin-left:4px; padding:2px 4px;">✕</span>
         </div>
         <button type="button" id="boboAvatarBtn" onclick="toggleBoboPanel()" title="Trợ lý Hành chính Bobo">
-            <img id="boboAvatarImg" src="/static/bobo_avatar.jpg" alt="Bobo Avatar" onerror="this.src='/static/LogoFCT.png'">
+            <img id="boboAvatarImg" src="{{ url_for('static', filename='bobo_avatar.jpg') }}" alt="Bobo Avatar" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
             <div class="bobo-status-dot"></div>
         </button>
     </div>
@@ -6934,7 +6939,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
         <!-- Header -->
         <div class="bobo-panel-header">
             <div class="bobo-header-info">
-                <img class="bobo-header-avatar" src="/static/bobo_avatar.jpg" alt="Bobo" onerror="this.src='/static/LogoFCT.png'">
+                <img class="bobo-header-avatar" src="{{ url_for('static', filename='bobo_avatar.jpg') }}" alt="Bobo" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
                 <div>
                     <div class="bobo-header-title">Bobo · Trợ lý Hành chính</div>
                     <div class="bobo-header-status">
@@ -6967,19 +6972,19 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 <div class="bobo-tour-icon">📝</div>
                 <div class="bobo-tour-info">
                     <div class="bobo-tour-title">1. Nhập hồ sơ & Dịch tiếng Trung</div>
-                    <div class="bobo-tour-desc">Hướng dẫn điền form tiếng Việt, dịch Họ tên và tải ảnh chân dung 4x6.</div>
+                    <div class="bobo-tour-desc">Điền tiếng Việt, tự động dịch Phồn Thể, chụp & dán ảnh 4x6, mã QR Line.</div>
                 </div>
-                <div style="font-size:12px; color:#0891b2; font-weight:800;">Bắt đầu →</div>
+                <div style="font-size:12px; color:#0891b2; font-weight:800;">Xem →</div>
             </div>
 
             <!-- Tour 2 -->
             <div class="bobo-tour-card" onclick="startBoboTour('tour_search_filter')">
                 <div class="bobo-tour-icon">🔍</div>
                 <div class="bobo-tour-info">
-                    <div class="bobo-tour-title">2. Tìm kiếm & Lọc hồ sơ</div>
-                    <div class="bobo-tour-desc">Tìm nhanh theo tên, mã số, lọc theo giới tính (MD, FD) hoặc tay nghề.</div>
+                    <div class="bobo-tour-title">2. Tìm kiếm & Bộ lọc nhanh</div>
+                    <div class="bobo-tour-desc">Tìm theo tên, mã số, lọc giới tính Nam (MD), Nữ (FD), Điều dưỡng (KD).</div>
                 </div>
-                <div style="font-size:12px; color:#0891b2; font-weight:800;">Bắt đầu →</div>
+                <div style="font-size:12px; color:#0891b2; font-weight:800;">Xem →</div>
             </div>
 
             <!-- Tour 3 -->
@@ -6987,29 +6992,49 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 <div class="bobo-tour-icon">💼</div>
                 <div class="bobo-tour-info">
                     <div class="bobo-tour-title">3. Ghép đơn hàng & Công xưởng</div>
-                    <div class="bobo-tour-desc">Cách phân bổ ứng viên vào đơn hàng tuyển dụng và gán hàng loạt.</div>
+                    <div class="bobo-tour-desc">Phân bổ đơn hàng hàng loạt hoặc gán nhanh theo danh sách mã số.</div>
                 </div>
-                <div style="font-size:12px; color:#0891b2; font-weight:800;">Bắt đầu →</div>
+                <div style="font-size:12px; color:#0891b2; font-weight:800;">Xem →</div>
             </div>
 
             <!-- Tour 4 -->
-            <div class="bobo-tour-card" onclick="startBoboTour('tour_export_cv')">
-                <div class="bobo-tour-icon">📄</div>
-                <div class="bobo-tour-info">
-                    <div class="bobo-tour-title">4. Xuất form Bole, Ver 2026 & Excel</div>
-                    <div class="bobo-tour-desc">Cách tải bảng tính Excel danh sách và xuất CV phỏng vấn Đài Loan.</div>
-                </div>
-                <div style="font-size:12px; color:#0891b2; font-weight:800;">Bắt đầu →</div>
-            </div>
-
-            <!-- Tour 5 -->
             <div class="bobo-tour-card" onclick="startBoboTour('tour_passed_kanban')">
                 <div class="bobo-tour-icon">🏆</div>
                 <div class="bobo-tour-info">
-                    <div class="bobo-tour-title">5. Quản lý trúng tuyển & Tiến độ</div>
-                    <div class="bobo-tour-desc">Theo dõi quy trình từ Gom hồ sơ, Trình cục đến Làm visa và Xuất cảnh.</div>
+                    <div class="bobo-tour-title">4. Quản lý trúng tuyển & Tiến độ 5 giai đoạn</div>
+                    <div class="bobo-tour-desc">Gom hồ sơ ➔ Trình cục ➔ Làm visa ➔ Nhận visa ➔ Xuất cảnh.</div>
                 </div>
-                <div style="font-size:12px; color:#0891b2; font-weight:800;">Bắt đầu →</div>
+                <div style="font-size:12px; color:#0891b2; font-weight:800;">Xem →</div>
+            </div>
+
+            <!-- Tour 5 -->
+            <div class="bobo-tour-card" onclick="startBoboTour('tour_expiry_warning')">
+                <div class="bobo-tour-icon">⚠️</div>
+                <div class="bobo-tour-info">
+                    <div class="bobo-tour-title">5. Cảnh báo thời hạn 4 loại giấy tờ</div>
+                    <div class="bobo-tour-desc">Kiểm tra hạn Hộ chiếu, CCCD, Khám sức khỏe, Lý lịch tư pháp số 2.</div>
+                </div>
+                <div style="font-size:12px; color:#0891b2; font-weight:800;">Xem →</div>
+            </div>
+
+            <!-- Tour 6 -->
+            <div class="bobo-tour-card" onclick="startBoboTour('tour_export_cv')">
+                <div class="bobo-tour-icon">📊</div>
+                <div class="bobo-tour-info">
+                    <div class="bobo-tour-title">6. Xuất Excel, In PDF & Tải ZIP</div>
+                    <div class="bobo-tour-desc">Tải bảng tính Excel thống kê, in PDF hàng loạt hoặc đóng gói hồ sơ ZIP.</div>
+                </div>
+                <div style="font-size:12px; color:#0891b2; font-weight:800;">Xem →</div>
+            </div>
+
+            <!-- Tour 7 -->
+            <div class="bobo-tour-card" onclick="startBoboTour('tour_factory_config')">
+                <div class="bobo-tour-icon">🏭</div>
+                <div class="bobo-tour-info">
+                    <div class="bobo-tour-title">7. Cấu hình Nhà máy & Quota Giấy tờ</div>
+                    <div class="bobo-tour-desc">Khai báo nhà máy, tờ thẩm định, tờ visa và theo dõi chỉ tiêu slots.</div>
+                </div>
+                <div style="font-size:12px; color:#0891b2; font-weight:800;">Xem →</div>
             </div>
         </div>
 
@@ -7018,19 +7043,21 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             <div id="boboChatMessages" class="bobo-chat-messages">
                 <!-- Welcome message from Bobo -->
                 <div class="bobo-msg bobo-bot">
-                    <img class="bobo-msg-avatar" src="/static/bobo_avatar.jpg" alt="Bobo" onerror="this.src='/static/LogoFCT.png'">
+                    <img class="bobo-msg-avatar" src="{{ url_for('static', filename='bobo_avatar.jpg') }}" alt="Bobo" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
                     <div class="bobo-msg-bubble">
-                        Dạ em chào anh/chị! Em là <strong>Bobo</strong> - trợ lý hành chính FCT. Anh/chị cần em hỗ trợ thao tác hoặc giải đáp thắc mắc nào cứ nhắn cho em nhé! 😊
+                        Dạ em chào anh/chị! Em là <strong>Bobo</strong> - trợ lý hành chính FCT. Em có thể hướng dẫn mọi thao tác quản lý hồ sơ, ghép đơn hàng, theo dõi tiến độ và in ấn. Anh/chị cần em hỗ trợ nghiệp vụ nào cứ nhắn cho em nhé! 😊
                     </div>
                 </div>
             </div>
 
             <!-- Quick Suggestions -->
             <div class="bobo-chips-wrapper">
-                <div class="bobo-chip" onclick="sendBoboQuickPrompt('Làm sao để xuất form phỏng vấn Bole?')">Mẫu form Bole</div>
-                <div class="bobo-chip" onclick="sendBoboQuickPrompt('Hướng dẫn cách nhập hồ sơ mới?')">Nhập hồ sơ mới</div>
-                <div class="bobo-chip" onclick="sendBoboQuickPrompt('Cách ghép đơn hàng cho ứng viên?')">Ghép đơn hàng</div>
-                <div class="bobo-chip" onclick="sendBoboQuickPrompt('Mã PIN vào Cài đặt hệ thống là gì?')">Mã PIN cài đặt</div>
+                <div class="bobo-chip" onclick="sendBoboQuickPrompt('Hướng dẫn cách nhập hồ sơ mới và tự động dịch tiếng Trung?')">📝 Nhập hồ sơ mới</div>
+                <div class="bobo-chip" onclick="sendBoboQuickPrompt('Cách ghép đơn hàng và phân bổ ứng viên?')">💼 Ghép đơn hàng</div>
+                <div class="bobo-chip" onclick="sendBoboQuickPrompt('Quy trình 5 giai đoạn tại Danh sách trúng tuyển?')">🏆 Quản lý trúng tuyển</div>
+                <div class="bobo-chip" onclick="sendBoboQuickPrompt('Cách xuất file Excel và in ấn CV phỏng vấn?')">📊 Xuất Excel & In CV</div>
+                <div class="bobo-chip" onclick="sendBoboQuickPrompt('Hệ thống cảnh báo những giấy tờ nào sắp hết hạn?')">⚠️ Cảnh báo giấy tờ</div>
+                <div class="bobo-chip" onclick="sendBoboQuickPrompt('Cách quản lý nhà máy và tờ thẩm định visa?')">🏭 Cấu hình nhà máy</div>
             </div>
 
             <!-- Input Bar -->
@@ -7060,7 +7087,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
         <div id="boboTourCard">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">
                 <div style="display:flex; align-items:center; gap:8px;">
-                    <img src="/static/bobo_avatar.jpg" style="width:24px; height:24px; border-radius:50%; object-fit:cover;" onerror="this.src='/static/LogoFCT.png'">
+                    <img src="{{ url_for('static', filename='bobo_avatar.jpg') }}" style="width:24px; height:24px; border-radius:50%; object-fit:cover;" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
                     <span id="boboTourStepBadge" style="font-size:12px; font-weight:800; color:#0891b2; background:#ecfeff; padding:2px 8px; border-radius:999px;">Bước 1/3</span>
                 </div>
                 <button type="button" onclick="endBoboTour()" style="background:transparent; border:none; color:#94a3b8; font-size:14px; font-weight:bold; cursor:pointer;" title="Đóng tour">✕</button>
@@ -7153,14 +7180,14 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 },
                 {
                     target: '.btn-save-action',
-                    text: '<strong>Bước 2:</strong> Sau khi điền thông tin bằng tiếng Việt và tải ảnh 4x6, hệ thống tự động dịch tiếng Trung. Anh/chị bấm <strong>Lưu Form</strong> ở dưới cùng để ghi nhận vào hệ thống.',
+                    text: '<strong>Bước 2:</strong> Sau khi điền thông tin bằng tiếng Việt và tải ảnh 4x6, hệ thống tự động dịch tiếng Trung Phồn Thể. Anh/chị bấm <strong>Lưu Form</strong> ở dưới cùng để ghi nhận vào hệ thống.',
                     before: () => { document.getElementById('historyModal').style.display = 'none'; }
                 }
             ],
             'tour_search_filter': [
                 {
                     target: '#searchInput',
-                    text: '<strong>Bước 1:</strong> Nhập Họ tên hoặc Mã số (ví dụ: MD-1234, FD-5678) vào ô này để lọc ngay lập tức.',
+                    text: '<strong>Bước 1:</strong> Nhập Họ tên hoặc Mã số (ví dụ: KD1401, FD1205) vào ô này để lọc hồ sơ ngay lập tức.',
                     before: () => {
                         document.getElementById('historyModal').style.display = 'block';
                         switchHistoryTab('candidates');
@@ -7168,7 +7195,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 },
                 {
                     target: '#searchType',
-                    text: '<strong>Bước 2:</strong> Anh/chị có thể đổi cách tìm kiếm sang theo <strong>Tay nghề</strong> hoặc <strong>Kinh nghiệm làm việc</strong>.',
+                    text: '<strong>Bước 2:</strong> Anh/chị có thể đổi chế độ tìm kiếm sang theo <strong>Tay nghề</strong> hoặc <strong>Kinh nghiệm làm việc</strong>.',
                     before: () => {}
                 },
                 {
@@ -7180,37 +7207,67 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             'tour_job_management': [
                 {
                     target: '#tabBtn-jobs',
-                    text: '<strong>Bước 1:</strong> Bấm vào tab <strong>💼 Ghép đơn & Theo dõi</strong> để xem thống kê theo từng đơn hàng và công xưởng.',
+                    text: '<strong>Bước 1:</strong> Bấm vào tab <strong>💼 Ghép đơn & Theo dõi</strong> để xem thống kê theo từng đơn hàng và công xưởng tuyển dụng.',
                     before: () => { document.getElementById('historyModal').style.display = 'block'; }
                 },
                 {
                     target: '#historySelectAll',
-                    text: '<strong>Bước 2:</strong> Hoặc tại bảng danh sách, anh/chị có thể tích chọn các ứng viên rồi dùng thanh thao tác hàng loạt <strong>💼 Ghép đơn hàng</strong> để gán nhanh.',
-                    before: () => { switchHistoryTab('candidates'); }
-                }
-            ],
-            'tour_export_cv': [
-                {
-                    target: '#btnBulkExcelHeader',
-                    text: '<strong>Bước 1:</strong> Bấm vào nút <strong>📊 Xuất Excel</strong> ở góc này để tải file Excel toàn bộ ứng viên về máy tính.',
-                    before: () => { document.getElementById('historyModal').style.display = 'block'; }
-                },
-                {
-                    target: '#historyTableBody',
-                    text: '<strong>Bước 2:</strong> Tại mỗi hàng ứng viên, trong cột Thao tác có các biểu tượng xuất <strong>Form Ver 2026</strong>, <strong>Form Bole</strong> hoặc <strong>Form v6.18</strong> sẵn sàng in ấn phỏng vấn.',
+                    text: '<strong>Bước 2:</strong> Hoặc tại bảng danh sách, anh/chị có thể tích chọn các ứng viên rồi dùng thanh thao tác hàng loạt <strong>💼 Ghép đơn hàng</strong> để gán nhanh cùng lúc.',
                     before: () => { switchHistoryTab('candidates'); }
                 }
             ],
             'tour_passed_kanban': [
                 {
                     target: '#tabBtn-passed',
-                    text: '<strong>Bước 1:</strong> Bấm vào tab <strong>🏆 Danh sách trúng tuyển</strong> để theo dõi toàn bộ ứng viên đã được nhận đơn hàng.',
+                    text: '<strong>Bước 1:</strong> Bấm vào tab <strong>🏆 Danh sách trúng tuyển</strong> để theo dõi toàn bộ ứng viên đã trúng tuyển đơn hàng.',
                     before: () => { document.getElementById('historyModal').style.display = 'block'; }
                 },
                 {
                     target: '#passedSummaryPanel',
-                    text: '<strong>Bước 2:</strong> Toàn bộ tiến độ hồ sơ được quản lý trực quan theo quy trình: <strong>Gom hồ sơ ➔ Trình cục ➔ Làm Visa ➔ Nhận Visa ➔ Xuất cảnh</strong>.',
+                    text: '<strong>Bước 2:</strong> Toàn bộ tiến độ hồ sơ được quản lý trực quan theo 5 giai đoạn: <strong>Gom hồ sơ ➔ Trình cục ➔ Làm Visa ➔ Nhận Visa ➔ Xuất cảnh</strong>.',
                     before: () => { switchHistoryTab('passed'); }
+                }
+            ],
+            'tour_expiry_warning': [
+                {
+                    target: '#tabContent-candidates',
+                    text: '<strong>Bước 1:</strong> Hệ thống tự động kiểm tra thời hạn 4 loại giấy tờ quan trọng: <strong>Hộ chiếu, CCCD, Khám sức khỏe (KSK) và Lý lịch tư pháp số 2 (LLTP2)</strong>.',
+                    before: () => {
+                        document.getElementById('historyModal').style.display = 'block';
+                        switchHistoryTab('candidates');
+                    }
+                },
+                {
+                    target: '#historyTableBody',
+                    text: '<strong>Bước 2:</strong> Những giấy tờ hiển thị màu <span style="color:#ef4444; font-weight:800;">ĐỎ</span> là đã hết hạn, màu <span style="color:#f59e0b; font-weight:800;">VÀNG</span> là sắp hết hạn trong 30-90 ngày tới để anh/chị kịp thời bổ sung.',
+                    before: () => { switchHistoryTab('candidates'); }
+                }
+            ],
+            'tour_export_cv': [
+                {
+                    target: '#btnBulkExcelHeader',
+                    text: '<strong>Bước 1:</strong> Bấm vào nút <strong>📊 Xuất Excel</strong> ở góc này để tải file Excel danh sách ứng viên có sẵn biểu đồ thống kê.',
+                    before: () => { document.getElementById('historyModal').style.display = 'block'; }
+                },
+                {
+                    target: '#historyTableBody',
+                    text: '<strong>Bước 2:</strong> Tại cột Thao tác của từng ứng viên, bấm <strong>🖨️ Xem & In</strong> để in form CV Ver 2026. Anh/chị cũng có thể tích chọn nhiều ứng viên rồi bấm <strong>🖨️ In PDF hàng loạt</strong> hoặc <strong>📥 Tải (.ZIP)</strong>.',
+                    before: () => { switchHistoryTab('candidates'); }
+                }
+            ],
+            'tour_factory_config': [
+                {
+                    target: '#tabBtn-configs',
+                    text: '<strong>Bước 1:</strong> Bấm vào tab <strong>📋 Cấu hình Đơn hàng</strong> để quản lý danh mục Nhà máy, Môi giới liên kết và Giấy tờ pháp lý.',
+                    before: () => {
+                        document.getElementById('historyModal').style.display = 'block';
+                        switchHistoryTab('configs');
+                    }
+                },
+                {
+                    target: '#tabContent-configs',
+                    text: '<strong>Bước 2:</strong> Tại đây anh/chị có thể khai báo Nhà máy mới, Tờ thẩm định, Tờ Visa và theo dõi số lượng chỉ tiêu slots tuyển dụng còn lại.',
+                    before: () => { switchHistoryTab('configs'); }
                 }
             ]
         };
@@ -7338,7 +7395,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             const typingDiv = document.createElement('div');
             typingDiv.className = 'bobo-msg bobo-bot';
             typingDiv.innerHTML = `
-                <img class="bobo-msg-avatar" src="/static/bobo_avatar.jpg" alt="Bobo" onerror="this.src='/static/LogoFCT.png'">
+                <img class="bobo-msg-avatar" src="{{ url_for('static', filename='bobo_avatar.jpg') }}" alt="Bobo" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
                 <div class="bobo-msg-bubble" style="color:#64748b;">
                     <em>Bobo đang suy nghĩ...</em>
                 </div>
@@ -7362,7 +7419,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 let formattedReply = formatBoboReply(rawReply);
 
                 botDiv.innerHTML = `
-                    <img class="bobo-msg-avatar" src="/static/bobo_avatar.jpg" alt="Bobo" onerror="this.src='/static/LogoFCT.png'">
+                    <img class="bobo-msg-avatar" src="{{ url_for('static', filename='bobo_avatar.jpg') }}" alt="Bobo" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
                     <div class="bobo-msg-bubble">${formattedReply}</div>
                 `;
                 container.appendChild(botDiv);
@@ -7372,7 +7429,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 const errDiv = document.createElement('div');
                 errDiv.className = 'bobo-msg bobo-bot';
                 errDiv.innerHTML = `
-                    <img class="bobo-msg-avatar" src="/static/bobo_avatar.jpg" alt="Bobo" onerror="this.src='/static/LogoFCT.png'">
+                    <img class="bobo-msg-avatar" src="{{ url_for('static', filename='bobo_avatar.jpg') }}" alt="Bobo" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
                     <div class="bobo-msg-bubble" style="color:#dc2626;">Dạ kết nối máy chủ đang bận, anh/chị vui lòng thử lại ạ!</div>
                 `;
                 container.appendChild(errDiv);
