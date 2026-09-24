@@ -895,19 +895,22 @@
 
             <!-- Milo AI Assistant Staff Card (Trợ lý Hành chính) -->
             <div class="hidden lg:block w-full" style="margin-top: 14px; position:relative; z-index:3;">
-                <div class="milo-sidebar-card" onclick="toggleMiloPanel()" style="background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%); border: 1.5px solid #a5f3fc; border-radius: 14px; padding: 9px 12px; box-shadow: 0 2px 8px rgba(8, 145, 178, 0.08); cursor: pointer; transition: all 0.2s ease;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="position: relative; width: 38px; height: 38px; flex-shrink: 0;">
-                            <img src="{{ url_for('static', filename='milo_avatar.jpg') }}" alt="Milo" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 6px rgba(8, 145, 178, 0.2);">
-                            <span style="position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; background: #22c55e; border: 2px solid #ffffff; border-radius: 50%;"></span>
+                <div class="milo-sidebar-card" onclick="toggleMiloPanel()" title="Bấm để mở Trợ lý AI Milo & Hướng dẫn Cầm tay chỉ việc">
+                    <div style="display: flex; align-items: center; gap: 10px; position: relative; z-index: 1;">
+                        <div style="position: relative; width: 40px; height: 40px; flex-shrink: 0;">
+                            <img src="{{ url_for('static', filename='milo_avatar.jpg') }}" alt="Milo" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(8, 145, 178, 0.25);">
+                            <span class="milo-avatar-status"></span>
                         </div>
                         <div style="flex: 1; min-width: 0;">
-                            <div style="font-size: 13px; font-weight: 800; color: #0f766e; display: flex; align-items: center; gap: 5px;">
-                                Milo <span style="font-size: 9px; font-weight: 700; background: #ccfbf1; color: #0d9488; padding: 1px 5px; border-radius: 999px;">Trợ lý AI</span>
+                            <div style="font-size: 13px; font-weight: 800; color: #0f766e; display: flex; align-items: center; gap: 4px;">
+                                Milo <span class="milo-wave-hand" title="Xin chào anh/chị!">👋</span>
+                                <span style="font-size: 9px; font-weight: 700; background: #ccfbf1; color: #0d9488; padding: 1px 5px; border-radius: 999px;">Trợ lý AI</span>
                             </div>
                             <div style="font-size: 11px; color: #64748b; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Hỗ trợ nghiệp vụ DAS</div>
                         </div>
-                        <div style="font-size: 12px; color: #0891b2; font-weight: 700; display:flex; align-items:center; gap:2px; background:#ffffff; padding:3px 7px; border-radius:8px; border:1px solid #cffafe;">💬 Hỏi</div>
+                        <div class="milo-ask-badge">
+                            <span>💬</span> Hỏi
+                        </div>
                     </div>
                 </div>
             </div>
@@ -6532,6 +6535,120 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
          TRỢ LÝ ẢO HÀNH CHÍNH MILO (3D AI ASSISTANT & SPOTLIGHT TOURS)
          ═══════════════════════════════════════════════════════════════ -->
     <style>
+        /* ─── Milo Sidebar Card Enhanced Effects (Shimmer, Radar Dot, Wave Hand, Gradient Badge) ─── */
+        .milo-sidebar-card {
+            background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 55%, #f5f3ff 100%);
+            border: 1.5px solid #a5f3fc;
+            border-radius: 16px;
+            padding: 9px 12px;
+            box-shadow: 0 4px 14px rgba(8, 145, 178, 0.12), 0 0 0 1px rgba(6, 182, 212, 0.25);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .milo-sidebar-card:hover {
+            transform: translateY(-2px);
+            border-color: #38bdf8;
+            box-shadow: 0 8px 24px rgba(8, 145, 178, 0.22), 0 0 0 2px rgba(6, 182, 212, 0.45);
+        }
+        /* Cách 1: Tia sáng quét qua định kỳ (Shimmer sweep) */
+        .milo-sidebar-card::before {
+            content: '';
+            position: absolute;
+            top: -60%;
+            left: -120%;
+            width: 70%;
+            height: 220%;
+            background: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.75) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            transform: rotate(25deg);
+            animation: miloCardShimmer 4.5s infinite cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+            z-index: 2;
+        }
+        @keyframes miloCardShimmer {
+            0%, 65% {
+                left: -120%;
+            }
+            100% {
+                left: 220%;
+            }
+        }
+        /* Cách 2: Icon bàn tay vẫy chào */
+        .milo-wave-hand {
+            display: inline-block;
+            font-size: 13px;
+            transform-origin: 70% 70%;
+            animation: miloWave 2.4s infinite ease-in-out;
+        }
+        @keyframes miloWave {
+            0%, 100% { transform: rotate(0deg); }
+            10%, 30% { transform: rotate(14deg); }
+            20% { transform: rotate(-8deg); }
+            40% { transform: rotate(-4deg); }
+            50% { transform: rotate(10deg); }
+            60% { transform: rotate(0deg); }
+        }
+        /* Cách 2: Chấm trạng thái Radar nhịp thở */
+        .milo-avatar-status {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 11px;
+            height: 11px;
+            background: #10b981;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 0 6px rgba(16, 185, 129, 0.7);
+        }
+        .milo-avatar-status::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 50%;
+            border: 2px solid #10b981;
+            animation: miloRadarPulse 1.8s infinite ease-out;
+        }
+        @keyframes miloRadarPulse {
+            0% {
+                transform: scale(0.9);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(2.4);
+                opacity: 0;
+            }
+        }
+        /* Cách 4: Nút Hỏi Milo màu Gradient Cyan nổi bật */
+        .milo-ask-badge {
+            font-size: 11px;
+            font-weight: 800;
+            color: #ffffff !important;
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+            padding: 5px 10px;
+            border-radius: 999px;
+            box-shadow: 0 3px 10px rgba(8, 145, 178, 0.35);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+            letter-spacing: 0.3px;
+        }
+        .milo-sidebar-card:hover .milo-ask-badge {
+            transform: scale(1.06);
+            box-shadow: 0 4px 14px rgba(8, 145, 178, 0.55);
+            background: linear-gradient(135deg, #0891b2 0%, #0284c7 100%);
+        }
+
         /* Floating Avatar Widget */
         #miloWidgetWrapper {
             position: fixed;
