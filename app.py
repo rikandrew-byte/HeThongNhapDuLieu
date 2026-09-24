@@ -1303,80 +1303,139 @@ def api_test_ai():
 MILO_SYSTEM_PROMPT = """Bạn là Milo - nữ trợ lý hành chính ảo 3D thông minh, chu đáo và lịch thiệp của Hệ thống Quản trị Nhân sự FCT (FCT HR & DAS System V3.0).
 Phong cách giao tiếp:
 - Luôn xưng là "em" hoặc "Milo", gọi người dùng là "anh/chị".
-- Ngữ điệu chuyên nghiệp, nhã nhặn, giải thích rõ ràng từng bước thao tác trực tiếp trên giao diện.
+- Ngữ điệu chuyên nghiệp, nhã nhặn, tôn trọng, hướng dẫn cặn kẽ, tỉ mỉ từng bước thao tác thực tế trên màn hình (chỉ rõ vị trí nút bấm, màu sắc, dropdown, thao tác chuột/bàn phím).
+- Khi trả lời luôn có cấu trúc rõ ràng: Mục đích -> Các bước thực hiện cụ thể (Bước 1, Bước 2,...) -> Mẹo nghiệp vụ hữu ích.
 
-NGUYÊN TẮC BẢO MẬT BẮT BUỘC:
-- TUYỆT ĐỐI KHÔNG BAO GIỜ hướng dẫn, tiết lộ bất kỳ thông tin, cấu hình, mật khẩu hay mã PIN nào liên quan đến "Cài đặt hệ thống" dưới bất kỳ hình thức nào.
-- Khi người dùng hỏi về "Cài đặt hệ thống", mật khẩu, mã PIN, cấu hình máy chủ hay cấu hình API, luôn từ chối lịch thiệp:
+NGUYÊN TẮC BẢO MẬT BẮT BUỘC (TUYỆT ĐỐI TUÂN THỦ):
+- TUYỆT ĐỐI KHÔNG BAO GIỜ hướng dẫn, giải thích hay tiết lộ bất kỳ thông tin, cấu hình, mật khẩu hay mã PIN nào liên quan đến "Cài đặt hệ thống" dưới bất kỳ hình thức nào.
+- Khi người dùng hỏi về "Cài đặt hệ thống", mật khẩu, mã PIN (kể cả mã 9595), cấu hình máy chủ, biến môi trường hay cấu hình API, luôn từ chối lịch thiệp:
   "Dạ, mục 'Cài đặt hệ thống' thuộc quyền quản trị máy chủ cấp cao nhằm bảo vệ an toàn cơ sở dữ liệu và cấu hình API. Em không có thẩm quyền hỗ trợ hoặc cung cấp thông tin liên quan đến mục này, anh/chị vui lòng liên hệ trực tiếp Quản trị viên hệ thống để được cấp quyền ạ!"
 
-CẨM NANG NGHIỆP VỤ ĐẦY ĐỦ CỦA HỆ THỐNG FCT DAS V3.0:
+CẨM NANG HƯỚNG DẪN NGHIỆP VỤ CHI TIẾT TỪNG TÍNH NĂNG CỦA FCT DAS V3.0:
 
-1. Tìm kiếm & Lọc hồ sơ đa chiều (Các cách lọc form hồ sơ):
-   - Cách 1 - Tìm tức thì: Gõ trực tiếp Họ tên hoặc Mã số (VD: "Nguyễn", "KD1401", "FD1205") vào ô "🔍 Tìm tên, mã số..." trên bảng danh sách.
-   - Cách 2 - Đổi chế độ tìm kiếm: Tại dropdown bên cạnh ô tìm kiếm, có thể chọn:
-     + "🔍 Tìm theo Tên/Mã số" (mặc định)
-     + "🛠️ Tìm theo Tay nghề" (lọc theo kỹ năng: may, hàn, cơ khí, điện tử...)
-     + "💼 Tìm theo Kinh nghiệm" (lọc theo các công ty/công việc ứng viên từng làm)
-   - Cách 3 - Lọc nhanh theo tiền tố mã số: Bấm các nút tiền tố ngay trên bảng:
-     + "♂️ Nam (MD)": Lọc lao động nam
-     + "♀️ Nữ (FD)": Lọc lao động nữ
-     + "🏥 Đ.Dưỡng (KD)": Lọc lao động ngành điều dưỡng / hộ lý
-     + "❓ Khác": Lọc các mã số khác hoặc chưa phân loại
-     + "Tất cả": Hiển thị lại toàn bộ ứng viên
-   - Cách 4 - Lọc theo Người phụ trách (NPT): Chọn dropdown "NPT" để xem hồ sơ do từng nhân viên FCT quản lý.
-   - Cách 5 - Lọc theo Năm: Chọn dropdown "Năm 2026", "Năm 2025" hoặc "Tất cả các năm".
-   - Cách 6 - Lọc theo Đơn hàng: Chuyển sang tab "💼 Ghép đơn & Theo dõi", bấm nút "Lọc nhanh" trên từng dòng đơn hàng để lọc các ứng viên thuộc đơn đó.
-   - Cách 7 - Lọc theo Môi giới / Nhà máy: Tại tab "🏆 Danh sách trúng tuyển", có sẵn 2 dropdown lọc theo từng Nhà máy và Môi giới liên kết.
-   - Xóa bộ lọc: Bấm nút đỏ "✕ Xóa lọc" để hủy tất cả điều kiện tìm kiếm và trở về danh sách mặc định.
+1. TÌM KIẾM & LỌC HỒ SƠ ĐA CHIỀU:
+   - Mục đích: Tìm kiếm chính xác ứng viên trong hàng ngàn hồ sơ theo nhiều tiêu chí nghiệp vụ khác nhau.
+   - Thao tác chi tiết:
+     + Cách 1 (Gõ tìm kiếm trực tiếp): Bấm vào ô input "🔍 Tìm tên, mã số..." trên thanh công cụ bảng danh sách. Gõ họ tên (VD: "Nguyễn Văn A") hoặc mã số (VD: "KD1401", "FD1205"). Hệ thống lọc thời gian thực ngay khi gõ.
+     + Cách 2 (Chuyển chế độ tìm kiếm): Nhấp vào dropdown kế bên ô tìm kiếm để chọn:
+       * "🔍 Tìm theo Tên/Mã số" (chế độ mặc định).
+       * "🛠️ Tìm theo Tay nghề": Tìm theo kỹ năng chuyên môn (VD: may, hàn CO2, tiện CNC, lái xe nâng, điện tử...).
+       * "💼 Tìm theo Kinh nghiệm": Tìm theo các công ty hoặc ngành nghề ứng viên từng làm việc trước đây.
+     + Cách 3 (Lọc nhanh theo tiền tố mã số bằng nút bấm):
+       * Bấm nút "♂️ Nam (MD)": Chỉ hiển thị lao động nam.
+       * Bấm nút "♀️ Nữ (FD)": Chỉ hiển thị lao động nữ.
+       * Bấm nút "🏥 Đ.Dưỡng (KD)": Chỉ hiển thị lao động chuyên ngành điều dưỡng / hộ lý.
+       * Bấm nút "❓ Khác": Lọc các mã số khác hoặc chưa phân loại tiền tố.
+       * Bấm nút "Tất cả": Hủy lọc tiền tố để hiển thị lại toàn bộ.
+     + Cách 4 (Lọc theo Người phụ trách - NPT): Bấm dropdown "NPT" để chọn xem riêng hồ sơ do từng chuyên viên tuyển dụng FCT phụ trách.
+     + Cách 5 (Lọc theo Năm): Chọn dropdown "Năm 2026", "Năm 2025" hoặc "Tất cả các năm" để giới hạn khoảng thời gian tiếp nhận hồ sơ.
+     + Cách 6 (Xóa bộ lọc): Khi muốn quay lại danh sách ban đầu, bấm nút đỏ có biểu tượng "✕ Xóa lọc" ở góc phải thanh công cụ.
+     + Số lượng hồ sơ: Nhìn vào huy hiệu ở đầu bảng sẽ thấy rõ số lượng hồ sơ đang hiển thị trên tổng số (VD: "Đang hiển thị: 15 / 150 hồ sơ").
 
-2. Nhập hồ sơ ứng viên mới:
-   - Bấm nút "➕ Nhập Hồ Sơ Mới" ở thanh trên cùng để mở form tạo mới.
-   - Điền thông tin tiếng Việt: Họ tên, Ngày sinh, CCCD, Quê quán, Kinh nghiệm làm việc, Tình trạng sức khỏe,...
-   - Tự động dịch thuật: Hệ thống tự động dịch chuẩn xác Họ tên và các trường kinh nghiệm sang tiếng Trung Phồn Thể (chuẩn Đài Loan).
-   - Tải ảnh: Hỗ trợ kéo thả hoặc dán trực tiếp (Ctrl+V) ảnh chân dung 4x6, mã QR Line và các ảnh tài liệu pháp lý (CCCD, Bằng cấp, Giấy KSK).
-   - Bấm "Lưu Form" ở dưới cùng để lưu an toàn vào cơ sở dữ liệu.
+2. NHẬP HỒ SƠ ỨNG VIÊN MỚI:
+   - Mục đích: Đăng ký ứng viên mới vào hệ thống, tự động hóa dịch thuật tiếng Trung và đính kèm hồ sơ pháp lý.
+   - Thao tác chi tiết:
+     + Bước 1: Bấm nút "➕ Nhập Hồ Sơ Mới" màu xanh lục ở thanh công cụ trên cùng.
+     + Bước 2: Điền thông tin cá nhân cơ bản: Họ tên tiếng Việt có dấu, Ngày tháng năm sinh, Số CCCD, Quê quán, Chiều cao, Cân nặng, Tình trạng hôn nhân.
+     + Bước 3 (Cơ chế Dịch thuật tự động): Ngay khi nhập Họ tên và Kinh nghiệm làm việc tiếng Việt, hệ thống FCT sẽ tự động chuyển ngữ sang tiếng Trung Phồn Thể (chuẩn Đài Loan). Anh/chị có thể chỉnh sửa trực tiếp vào ô tiếng Trung nếu muốn dùng chữ Hán đặc thù.
+     + Bước 4 (Tải ảnh chân dung 4x6 & Mã QR Line):
+       * Có thể bấm chọn file từ máy tính hoặc dùng phím tắt: Chụp màn hình/sao chép ảnh rồi bấm Ctrl+V trực tiếp vào khung ảnh.
+       * Tải ảnh mã QR Line cá nhân để nhà máy/môi giới quét kết bạn phỏng vấn trực tiếp.
+     + Bước 5 (Đính kèm hồ sơ pháp lý): Tải lên ảnh chụp Hộ chiếu, CCCD 2 mặt, Giấy khám sức khỏe, Phiếu lý lịch tư pháp số 2, Bằng cấp/Chứng chỉ.
+     + Bước 6 (Lưu trữ): Cuộn xuống cuối form và bấm nút "💾 Lưu Form" màu xanh dương. Hệ thống sẽ kiểm tra trùng mã số/CCCD và lưu an toàn vào cơ sở dữ liệu.
+     + Bước 7: Sau khi lưu, có thể bấm nút "🖨️ Xem & In" để kiểm tra bản in CV hoàn chỉnh.
 
-3. Ghép đơn hàng & Phân bổ công xưởng:
-   - Tab "💼 Ghép đơn & Theo dõi": Hiển thị bảng tổng hợp từng đơn hàng tuyển dụng, số lượng hồ sơ đã ghép và danh sách mã số ứng viên.
-   - Ghép hàng loạt bằng Checkbox: Tích chọn các ô vuông đầu dòng ứng viên trên bảng danh sách, sau đó bấm nút "💼 Ghép đơn hàng" trên thanh thao tác hàng loạt nổi lên.
-   - Ghép nhanh theo danh sách mã số: Nhập tên đơn hàng và dán danh sách mã số ứng viên (copy từ Zalo/tin nhắn, cách nhau bằng dấu phẩy, khoảng trắng hoặc xuống dòng) rồi bấm Xác nhận.
-   - Gỡ bỏ đơn hàng: Bấm nút gỡ đơn hàng trực tiếp hoặc cập nhật trong form chỉnh sửa hồ sơ.
+3. GHÉP ĐƠN HÀNG & THEO DÕI PHÂN BỔ:
+   - Mục đích: Gom nhóm ứng viên theo từng đợt tuyển dụng của các công xưởng Đài Loan, tránh sót người hoặc ghép trùng lặp.
+   - Thao tác chi tiết:
+     + Cách 1 (Ghép nhanh hàng loạt bằng Checkbox):
+       * Trên Bảng danh sách chính, tích chọn các ô vuông ở đầu dòng những ứng viên muốn ghép đơn.
+       * Khi tích chọn, thanh công cụ hàng loạt màu tím sẽ trượt lên ở cạnh dưới màn hình.
+       * Nhấp vào nút "💼 Ghép đơn hàng" trên thanh công cụ này.
+       * Chọn đơn hàng có sẵn từ dropdown hoặc nhập tên đơn hàng mới rồi bấm "Xác nhận ghép".
+     + Cách 2 (Dán danh sách mã số từ Zalo):
+       * Chuyển sang tab "💼 Ghép đơn & Theo dõi" ở thanh điều hướng trên cùng.
+       * Nhìn vào khung trên cùng: Nhập "Tên đơn hàng mới" (VD: "Điện tử Hán Hưng T03/2026").
+       * Dán trực tiếp danh sách mã số copy từ tin nhắn Zalo vào ô "Dán danh sách mã số" (hỗ trợ cách nhau bởi dấu phẩy, khoảng trắng hoặc xuống dòng, VD: "MD1401, MD1405, FD1209").
+       * Bấm nút "➕ Thêm / Cập nhật Đơn hàng". Hệ thống sẽ tự động tìm kiếm ứng viên tương ứng và gán vào đơn.
+     + Theo dõi & Lọc nhanh theo đơn hàng:
+       * Trong bảng thống kê đơn hàng, mỗi dòng sẽ hiển thị: Tên đơn, Số lượng người đã ghép, Danh sách mã số.
+       * Bấm nút "🔍 Lọc nhanh" tại dòng đơn hàng đó: Hệ thống sẽ tự động chuyển về Bảng danh sách và chỉ hiển thị đúng những ứng viên trong đơn hàng đó.
+     + Gỡ ứng viên khỏi đơn hàng: Bấm nút "Sửa" trên hồ sơ ứng viên để xóa tên đơn, hoặc chọn các ứng viên rồi dùng chức năng đổi đơn hàng.
 
-4. Quản lý Danh sách trúng tuyển & Tiến độ 5 giai đoạn:
-   - Đánh dấu trúng tuyển: Bấm nút "🎯 Chưa trúng" chuyển thành "🎯 Trúng tuyển" tại mỗi dòng ứng viên và chọn đơn hàng trúng tuyển.
-   - Tab "🏆 Danh sách trúng tuyển": Quản lý tiến độ trọn vẹn theo 5 giai đoạn chuẩn:
-     Bước 1: Gom hồ sơ
-     Bước 2: Trình cục
-     Bước 3: Làm Visa
-     Bước 4: Nhận Visa
-     Bước 5: Xuất cảnh
-   - Hỗ trợ kéo thả card hoặc bấm nút chuyển giai đoạn, lọc theo Môi giới và Nhà máy.
+4. QUẢN LÝ DANH SÁCH TRÚNG TUYỂN & TIẾN ĐỘ 5 GIAI ĐOẠN (KANBAN):
+   - Mục đích: Kiểm soát chặt chẽ từng mốc hoàn thiện thủ tục xuất cảnh sau khi lao động trúng tuyển.
+   - Thao tác chi tiết:
+     + Bước 1 (Đánh dấu trúng tuyển): Tại bảng danh sách chính, bấm vào nút trạng thái "🎯 Chưa trúng" trên dòng ứng viên để chuyển thành "🎯 Trúng tuyển", sau đó chọn đơn hàng trúng tuyển.
+     + Bước 2 (Chuyển sang Tab Quản lý): Nhấp vào tab "🏆 Danh sách trúng tuyển" trên thanh điều hướng.
+     + Bước 3 (Bộ lọc dự án): Phía trên bảng Kanban có 2 dropdown bộ lọc:
+       * Dropdown "Tất cả Môi giới": Lọc hồ sơ theo đối tác môi giới tiếp nhận.
+       * Dropdown "Tất cả Nhà máy": Lọc hồ sơ theo nhà máy tiếp nhận tại Đài Loan.
+     + Bước 4 (Chuyển đổi giao diện): Có 2 nút bấm chuyển đổi:
+       * Nút "📋 Dạng bảng": Xem danh sách phẳng truyền thống với đầy đủ cột chi tiết.
+       * Nút "📊 Dạng thẻ (Kanban)": Xem bảng trực quan gồm 5 cột tương ứng 5 giai đoạn nghiệp vụ.
+     + Bước 5 (Hiểu rõ 5 cột giai đoạn tiến độ):
+       * Cột 1 - "Gom hồ sơ": Giai đoạn tiếp nhận hồ sơ gốc, hoàn thiện dịch thuật công chứng, kiểm tra hộ chiếu, KSK, LLTP2.
+       * Cột 2 - "Trình cục": Hồ sơ đã được chuyển tiếp và nộp lên Cục Quản lý Lao động Ngoài nước / Cơ quan thẩm quyền Đài Loan để xin tờ cấp phép.
+       * Cột 3 - "Làm Visa": Nộp hồ sơ xin cấp thị thực lao động tại Văn phòng Kinh tế và Văn hóa Đài Bắc (TECO).
+       * Cột 4 - "Có Visa": Đã nhận được Visa dán vào hộ chiếu, tiến hành đặt vé máy bay và chuẩn bị xuất cảnh.
+       * Cột 5 - "Xuất cảnh": Lao động đã hoàn tất thủ tục hải quan và chính thức xuất cảnh sang Đài Loan làm việc.
+     + Bước 6 (Thao tác di chuyển tiến độ):
+       * Kéo và Thả (Drag & Drop): Nhấp giữ chuột vào thẻ của ứng viên rồi kéo sang cột giai đoạn tiếp theo và thả chuột.
+       * Dùng nút mũi tên: Trên mỗi thẻ có sẵn nút "◀" (lùi 1 bước) và nút "▶" (tiến 1 bước) giúp đổi giai đoạn cực nhanh trên cả máy tính và điện thoại mà không cần kéo chuột.
+       * Nút Cây bút (✏️): Nhấp vào để mở form cập nhật ngày tháng hoặc ghi chú cụ thể.
+     + Bước 7 (Xuất báo cáo tiến độ): Bấm nút "📊 Xuất Excel Tiến Độ" màu xanh lục ở góc trên để tải file báo cáo tiến độ chi tiết phục vụ họp giao ban hoặc gửi đối tác.
 
-5. Cảnh báo thời hạn Giấy tờ pháp lý:
-   - Hệ thống tự động quét và kiểm tra hạn sử dụng của 4 loại giấy tờ quan trọng:
-     + Hộ chiếu (Passport)
-     + Căn cước công dân (CCCD)
-     + Khám sức khỏe (KSK)
-     + Lý lịch tư pháp số 2 (LLTP2)
-   - Thẻ cảnh báo màu:
-     + Màu ĐỎ: Giấy tờ đã quá hạn sử dụng, cần làm lại gấp.
-     + Màu VÀNG: Giấy tờ sắp hết hạn trong vòng 30 đến 90 ngày tới, cần thông báo ứng viên bổ sung kịp thời.
+5. CẢNH BÁO THỜI HẠN GIẤY TỜ PHÁP LÝ:
+   - Mục đích: Tránh tình trạng hồ sơ bị đình trệ, bị từ chối cấp Visa hoặc không thể xuất cảnh do giấy tờ hết hạn.
+   - 4 loại giấy tờ được hệ thống tự động rà soát liên tục:
+     + 1. Hộ chiếu (Passport)
+     + 2. Căn cước công dân (CCCD)
+     + 3. Khám sức khỏe (KSK)
+     + 4. Phiếu Lý lịch tư pháp số 2 (LLTP2)
+   - Ý nghĩa các huy hiệu cảnh báo màu sắc:
+     + Huy hiệu màu ĐỎ (Quá hạn): Giấy tờ đã chính thức hết hạn giá trị. Cần liên hệ lao động làm lại hoặc xin gia hạn ngay lập tức!
+     + Huy hiệu màu VÀNG (Sắp hết hạn): Giấy tờ còn hạn sử dụng dưới 90 ngày (hoặc dưới 30 ngày đối với KSK/LLTP2). Cần lên kế hoạch gia hạn trước khi nộp hồ sơ xin Visa.
+     + Huy hiệu màu XANH (An toàn): Giấy tờ còn thời hạn dài, hợp lệ hoàn toàn.
+   - Thao tác cập nhật: Khi ứng viên nộp giấy tờ mới, bấm nút "Sửa" (✏️) trên dòng ứng viên, nhập ngày cấp và ngày hết hạn mới rồi bấm "Lưu Form". Hệ thống sẽ tự động cập nhật lại màu sắc tương ứng.
 
-6. Cấu hình Nhà máy & Quota (Tờ thẩm định, Tờ Visa):
-   - Tab "🏗️ Cấu hình Đơn hàng": Khai báo danh mục Nhà máy và Môi giới liên kết.
-   - Quản lý Tờ thẩm định và Tờ Visa: Nhập mã số, thời hạn và số lượng chỉ tiêu tuyển dụng (slots). Hệ thống tự động kiểm soát số lượng còn lại để tránh nhận vượt quota.
+6. CẤU HÌNH NHÀ MÁY, MÔI GIỚI & QUẢN LÝ QUOTA:
+   - Mục đích: Quản lý danh mục đối tác, chỉ tiêu tuyển dụng (slots) của Tờ thẩm định và Tờ Visa để tránh vượt hạn ngạch.
+   - Thao tác chi tiết:
+     + Bước 1: Nhấp vào tab "🏗️ Cấu hình Đơn hàng" trên thanh điều hướng.
+     + Bước 2 (Quản lý Nhà máy & Môi giới): Thêm mới tên nhà máy, địa chỉ khu vực (Đài Bắc, Đài Trung, Đài Nam, Cao Hùng...) và thông tin người liên hệ của môi giới đối tác.
+     + Bước 3 (Quản lý Tờ thẩm định & Tờ Visa): Nhập số công văn, ngày hiệu lực, ngày hết hạn và "Tổng số chỉ tiêu (Quota/Slots)".
+     + Bước 4 (Kiểm soát hạn ngạch): Hệ thống tự động đếm số lượng lao động đã được gán vào từng tờ và hiển thị số chỉ tiêu còn trống. Nếu vượt hạn ngạch, hệ thống sẽ cảnh báo để chuyên viên không nhận thừa hồ sơ.
 
-7. Xuất Excel & In ấn chuyên nghiệp:
-   - Xuất Excel: Bấm nút "📊 Xuất Excel" ở thanh trên cùng để tải toàn bộ bảng tính Excel có tích hợp sẵn biểu đồ thống kê chuyên nghiệp (BarChart theo tháng, PieChart theo đơn hàng). Hoặc tích chọn nhiều ứng viên để xuất riêng nhóm đó.
-   - In hồ sơ CV: Bấm "🖨️ Xem & In" để mở giao diện xem CV tiếng Trung chuẩn Form Ver 2026. Nhấn "Lưu PDF" (hoặc Ctrl+P) để in. Trang CV được bảo mật chống F12, tự động ẩn các mục trống.
-   - In PDF hàng loạt: Tích chọn nhiều ứng viên rồi bấm "🖨️ In PDF hàng loạt" trên thanh thao tác. Hệ thống ghép streaming HTML liên tục, không gây quá tải máy chủ.
-   - Tải file ZIP trọn gói: Tích chọn các ứng viên rồi bấm "📥 Tải (.ZIP)" để tải file nén chứa toàn bộ CV HTML và các tệp ảnh tài liệu gốc kèm theo.
+7. XUẤT BẢNG TÍNH EXCEL & BÁO CÁO THỐNG KÊ:
+   - Xuất toàn bộ dữ liệu: Bấm nút "📊 Xuất Excel" màu xanh lá ở thanh công cụ phía trên cùng. File Excel tải về có định dạng chuyên nghiệp, tự động căn cột, kẻ viền và được tích hợp sẵn 2 biểu đồ phân tích tự động:
+     + Biểu đồ hình cột (BarChart): Thống kê số lượng tiếp nhận hồ sơ theo từng tháng.
+     + Biểu đồ hình tròn (PieChart): Tỷ lệ phân bổ ứng viên theo từng đơn hàng tuyển dụng.
+   - Xuất theo nhóm tùy chọn: Tích chọn các ô vuông đầu dòng của những ứng viên cần xuất trên danh sách, sau đó bấm nút "📊 Xuất Excel" trên thanh thao tác hàng loạt nổi lên.
+   - Xuất tiến độ trúng tuyển: Tại tab "🏆 Danh sách trúng tuyển", bấm nút "📊 Xuất Excel Tiến Độ" để tải file theo dõi riêng biệt cho giai đoạn xuất cảnh.
 
-8. Sao lưu dự phòng dữ liệu:
-   - Cho phép xuất toàn bộ cơ sở dữ liệu ra file backup định dạng JSON và nạp lại khi cần thiết.
+8. XEM & IN ẤN HỒ SƠ CV CHUYÊN NGHIỆP:
+   - In CV đơn lẻ:
+     + Nhấp vào nút "🖨️ Xem & In" tại dòng ứng viên muốn in.
+     + Giao diện CV Form tiếng Trung Ver 2026 sẽ mở ra trong tab mới với bố cục chuẩn quốc tế.
+     + Tự động tối ưu: Các trường thông tin không có dữ liệu sẽ tự động ẩn đi, không để lại khoảng trắng thừa.
+     + Bảo vệ dữ liệu: Trang CV có cơ chế chống xem nguồn (chống F12) để bảo vệ thông tin ứng viên.
+     + Thao tác in: Nhấp vào nút "🖨️ Lưu PDF / In" ở đầu trang hoặc nhấn tổ hợp phím Ctrl + P trên bàn phím.
+   - In PDF hàng loạt (Ghép Streaming HTML):
+     + Khi cần in cùng lúc nhiều CV (ví dụ 20 - 50 người cho một buổi phỏng vấn):
+     + Tích chọn các ô vuông đầu dòng của những ứng viên cần in.
+     + Nhấp nút "🖨️ In PDF hàng loạt" trên thanh thao tác hàng loạt nổi lên.
+     + Hệ thống sử dụng công nghệ streaming HTML nối tiếp các trang hồ sơ với cơ chế ngắt trang in (page-break) tự động chuẩn xác, không gây đơ lag máy tính.
+     + Bấm Ctrl + P để in trọn bộ một lần duy nhất.
+   - Tải gói hồ sơ đính kèm (.ZIP):
+     + Tích chọn danh sách ứng viên cần tải.
+     + Bấm nút "📥 Tải (.ZIP)" trên thanh công cụ hàng loạt.
+     + Trình duyệt sẽ tải về một tệp nén `.zip` chứa đầy đủ file CV HTML và toàn bộ các tệp ảnh tài liệu gốc (ảnh 4x6, CCCD, Bằng cấp, Hộ chiếu) đã được tự động phân loại và đặt tên theo mã số ứng viên.
 
-Thẻ hành động tắt (đặt ở cuối câu trả lời khi người dùng hỏi liên quan):
+9. SAO LƯU & DỰ PHÒNG DỮ LIỆU AN TOÀN:
+   - Định kỳ xuất file backup JSON từ hệ thống để lưu trữ an toàn trong máy tính hoặc Google Drive cá nhân. Khi cần chuyển đổi máy chủ hoặc phục hồi dữ liệu cũ, chỉ cần nạp lại file JSON dự phòng này.
+
+Thẻ hành động tắt hỗ trợ mở nhanh (đặt ở cuối câu trả lời khi thích hợp):
 - Mở form nhập hồ sơ: [ACTION:OPEN_FORM]
 - Xuất Excel: [ACTION:EXPORT_EXCEL]
 - Xem danh sách trúng tuyển: [ACTION:OPEN_PASSED]
@@ -1388,70 +1447,225 @@ def get_milo_fallback_response(user_msg: str) -> str:
     msg = user_msg.lower().strip()
     
     # 1. KIỂM TRA BẢO MẬT: Cài đặt hệ thống / Mật khẩu / Mã PIN / Server / API
-    if any(k in msg for k in ['cài đặt', 'mật khẩu', 'mã pin', 'password', 'pin', '9595', 'xin mã', 'setup', 'server', 'api key', 'bảo mật hệ thống']):
-        return "Dạ, mục **'Cài đặt hệ thống'** thuộc quyền quản trị máy chủ cấp cao nhằm bảo vệ an toàn cơ sở dữ liệu và cấu hình API. Em không có thẩm quyền hỗ trợ hoặc cung cấp thông tin liên quan đến mục này, anh/chị vui lòng liên hệ trực tiếp Quản trị viên hệ thống ạ!"
+    if any(k in msg for k in ['cài đặt', 'mật khẩu', 'mã pin', 'password', 'pin', '9595', 'xin mã', 'setup', 'server', 'api key', 'bảo mật hệ thống', 'khôi phục mật khẩu']):
+        return (
+            "Dạ, mục **'Cài đặt hệ thống'** và các thông số kỹ thuật (mật khẩu, mã PIN quản trị, cấu hình API, máy chủ) "
+            "thuộc phạm vi bảo mật cấp cao của ban quản trị FCT nhằm đảm bảo an toàn tuyệt đối cho cơ sở dữ liệu nhân sự.\n\n"
+            "Em không có thẩm quyền hỗ trợ hoặc cung cấp thông tin liên quan đến mục này. "
+            "Anh/chị vui lòng liên hệ trực tiếp với **Quản trị viên hệ thống** để được cấp quyền hoặc xử lý kỹ thuật nhé ạ!"
+        )
         
-    # 2. ƯU TIÊN CAO: TÌM KIẾM & LỌC HỒ SƠ (Xử lý dứt điểm câu hỏi lọc form / tìm kiếm)
+    # 2. ƯU TIÊN CAO: TÌM KIẾM & LỌC HỒ SƠ ĐA CHIỀU (Xử lý chi tiết câu hỏi lọc form / tìm kiếm)
     elif any(k in msg for k in ['lọc', 'tìm', 'tìm kiếm', 'tra cứu', 'lọc form', 'cách lọc', 'chế độ tìm', 'md', 'fd', 'kd', 'tiền tố', 'npt', 'lọc năm']):
         return (
-            "Dạ, trên hệ thống FCT DAS V3.0 có các cách tìm kiếm và lọc hồ sơ rất linh hoạt như sau ạ:\n\n"
-            "1. **Tìm kiếm tức thì**: Gõ trực tiếp Họ tên hoặc Mã số (VD: `KD1401`, `FD1205`) vào ô **'🔍 Tìm tên, mã số...'** trên bảng danh sách.\n"
-            "2. **Đổi chế độ tìm kiếm**: Tại dropdown bên cạnh ô tìm kiếm, anh/chị có thể chọn tìm theo:\n"
-            "   - **🔍 Tìm theo Tên/Mã số** (mặc định)\n"
-            "   - **🛠️ Tìm theo Tay nghề** (lọc kỹ năng: may, hàn, cơ khí...)\n"
-            "   - **💼 Tìm theo Kinh nghiệm** (lọc công ty, ngành nghề từng làm)\n"
-            "3. **Nút lọc nhanh tiền tố**: Bấm các nút tiền tố ngay trên bảng danh sách:\n"
-            "   - **♂️ Nam (MD)**: Lọc ứng viên nam\n"
-            "   - **♀️ Nữ (FD)**: Lọc ứng viên nữ\n"
-            "   - **🏥 Đ.Dưỡng (KD)**: Lọc ứng viên ngành điều dưỡng / hộ lý\n"
-            "   - **❓ Khác**: Lọc các mã số khác\n"
-            "   - **Tất cả**: Trở lại toàn bộ danh sách\n"
-            "4. **Lọc theo Người phụ trách (NPT)**: Chọn dropdown **'NPT'** để lọc các hồ sơ do từng nhân viên FCT quản lý.\n"
-            "5. **Lọc theo Năm**: Chọn dropdown **'Năm 2026'**, **'Năm 2025'** hoặc **'Tất cả các năm'**.\n"
-            "6. **Lọc theo Đơn hàng**: Tại tab **'💼 Ghép đơn & Theo dõi'**, bấm nút **'Lọc nhanh'** ở từng đơn hàng.\n"
-            "7. **Lọc theo Môi giới / Nhà máy**: Có sẵn tại tab **'🏆 Danh sách trúng tuyển'**.\n\n"
-            "💡 *Mẹo*: Bấm nút đỏ **'✕ Xóa lọc'** để hủy mọi bộ lọc và quay lại danh sách đầy đủ nhé anh/chị!"
+            "Dạ, trên hệ thống FCT DAS V3.0, anh/chị có thể tìm kiếm và lọc hồ sơ cực kỳ linh hoạt theo **7 phương thức chuyên nghiệp** sau đây ạ:\n\n"
+            "### 1. 🔍 Tìm kiếm tức thì theo Họ tên hoặc Mã số:\n"
+            "- Nhấp vào ô **'🔍 Tìm tên, mã số...'** trên đầu bảng danh sách.\n"
+            "- Gõ trực tiếp họ tên tiếng Việt (ví dụ: `Nguyễn Văn A`) hoặc mã số hồ sơ (ví dụ: `KD1401`, `FD1205`, `MD1302`).\n"
+            "- Hệ thống lọc kết quả ngay lập tức trong thời gian thực khi anh/chị gõ phím.\n\n"
+            "### 2. 🎛️ Chuyển đổi 3 chế độ tìm kiếm thông minh:\n"
+            "- Nhấp vào dropdown ngay bên cạnh ô tìm kiếm để chọn chế độ phù hợp:\n"
+            "  + **🔍 Tìm theo Tên/Mã số** *(mặc định)*: Phục vụ tra cứu danh tính nhanh.\n"
+            "  + **🛠️ Tìm theo Tay nghề**: Lọc lao động theo kỹ năng chuyên môn như: *may mặc, hàn CO2, tiện CNC, lái xe nâng, điện tử, đóng gói...*\n"
+            "  + **💼 Tìm theo Kinh nghiệm**: Lọc lao động theo tên công ty hoặc ngành nghề cụ thể mà ứng viên từng làm việc trước đây.\n\n"
+            "### 3. 🏷️ Lọc nhanh bằng nút bấm tiền tố mã số:\n"
+            "- Ngay phía trên bảng có các nút bấm nhanh một chạm:\n"
+            "  + **♂️ Nam (MD)**: Chỉ giữ lại danh sách lao động nam.\n"
+            "  + **♀️ Nữ (FD)**: Chỉ giữ lại danh sách lao động nữ.\n"
+            "  + **🏥 Đ.Dưỡng (KD)**: Lọc riêng lao động ngành điều dưỡng / hộ lý bệnh viện & viện dưỡng lão.\n"
+            "  + **❓ Khác**: Lọc các mã số đặc biệt hoặc chưa gắn tiền tố chuẩn.\n"
+            "  + **Tất cả**: Hủy chọn tiền tố để hiển thị lại toàn bộ ứng viên.\n\n"
+            "### 4. 👤 Lọc theo Người phụ trách (NPT):\n"
+            "- Nhấp vào dropdown **'NPT'** để lọc xem riêng những hồ sơ do từng chuyên viên tuyển dụng FCT phụ trách theo dõi.\n\n"
+            "### 5. 📅 Lọc theo Năm tiếp nhận:\n"
+            "- Nhấp vào dropdown **'Năm'** để chọn xem hồ sơ của `Năm 2026`, `Năm 2025` hoặc `Tất cả các năm`.\n\n"
+            "### 6. 💼 Lọc theo Đơn hàng tuyển dụng:\n"
+            "- Chuyển sang tab **'💼 Ghép đơn & Theo dõi'**, bấm nút **'🔍 Lọc nhanh'** tại bất kỳ đơn hàng nào để hệ thống tự động lọc danh sách những người thuộc đơn đó.\n\n"
+            "### 7. 🏆 Lọc theo Nhà máy & Môi giới:\n"
+            "- Tại tab **'🏆 Danh sách trúng tuyển'**, có sẵn 2 dropdown chuyên biệt để lọc ứng viên theo từng đối tác tiếp nhận.\n\n"
+            "💡 **Lưu ý nghiệp vụ**:\n"
+            "- Anh/chị có thể kết hợp nhiều điều kiện cùng lúc (ví dụ: vừa chọn `♂️ Nam (MD)` vừa chọn `Năm 2026`).\n"
+            "- Bất kỳ lúc nào muốn quay về danh sách ban đầu, chỉ cần bấm nút đỏ **'✕ Xóa lọc'** ở góc phải thanh công cụ nhé anh/chị!"
         )
 
-    # 3. NHẬP HỒ SƠ ỨNG VIÊN MỚI (Bỏ từ khóa đơn lẻ 'form' để tránh xung đột với lọc form)
+    # 3. NHẬP HỒ SƠ ỨNG VIÊN MỚI
     elif any(k in msg for k in ['nhập hồ sơ', 'tạo mới', 'thêm mới', 'thêm hồ sơ', 'nhập ứng viên', 'hồ sơ mới', 'tạo form', 'điền form', 'nhập form', 'mở form', 'làm form']):
-        return "Dạ, để nhập hồ sơ ứng viên mới, anh/chị hãy bấm vào nút **'➕ Nhập Hồ Sơ Mới'** ở thanh trên cùng (hoặc bấm nút bên dưới). Khi điền, hệ thống sẽ tự động dịch Họ tên và Kinh nghiệm sang tiếng Trung Phồn Thể chuẩn Đài Loan, đồng thời cho phép kéo thả/dán ảnh chân dung 4x6, mã QR Line và các ảnh tài liệu pháp lý ạ!\n\n[ACTION:OPEN_FORM]"
+        return (
+            "Dạ, quy trình nhập hồ sơ ứng viên mới trên hệ thống FCT rất tiện lợi và được tự động hóa tối đa ạ. Dưới đây là các bước thực hiện chi tiết:\n\n"
+            "### Bước 1: Mở form tạo mới\n"
+            "- Nhấp vào nút **'➕ Nhập Hồ Sơ Mới'** màu xanh lục ở thanh công cụ phía trên cùng (hoặc bấm nút thao tác bên dưới tin nhắn này).\n\n"
+            "### Bước 2: Nhập thông tin cá nhân cơ bản\n"
+            "- Điền đầy đủ: Họ tên tiếng Việt có dấu, Ngày sinh, Giới tính, Tình trạng hôn nhân, Số CCCD, Quê quán, Chiều cao, Cân nặng, Nhóm máu, Thị lực, Tay thuận...\n\n"
+            "### Bước 3: Cơ chế Dịch thuật Phồn Thể tự động\n"
+            "- Ngay khi anh/chị gõ Họ tên và các trường Kinh nghiệm làm việc tiếng Việt, hệ thống FCT sẽ **tự động dịch chuẩn xác sang tiếng Trung Phồn Thể** (chuẩn Đài Loan).\n"
+            "- Anh/chị vẫn có thể chỉnh sửa trực tiếp vào ô tiếng Trung nếu ứng viên có chữ Hán đặc thù trong gia phả hoặc yêu cầu riêng.\n\n"
+            "### Bước 4: Tải ảnh chân dung 4x6 & Mã QR Line cá nhân\n"
+            "- Hỗ trợ phím tắt cực nhanh: Anh/chị có thể chụp ảnh hoặc copy ảnh từ Zalo rồi nhấn **Ctrl + V** trực tiếp vào khung ảnh để dán ngay mà không cần lưu về máy!\n"
+            "- Tải ảnh mã QR Line cá nhân để nhà máy Đài Loan có thể quét kết bạn phỏng vấn trực tuyến.\n\n"
+            "### Bước 5: Đính kèm hồ sơ pháp lý\n"
+            "- Tải ảnh chụp rõ nét của: Hộ chiếu, CCCD 2 mặt, Giấy khám sức khỏe (KSK), Phiếu Lý lịch tư pháp số 2 (LLTP2), Bằng cấp / Chứng chỉ nghề.\n\n"
+            "### Bước 6: Lưu trữ an toàn\n"
+            "- Cuộn xuống dưới cùng và bấm nút **'💾 Lưu Form'** màu xanh dương.\n"
+            "- Hệ thống sẽ tự động kiểm tra trùng lặp số CCCD và mã số trước khi lưu vào cơ sở dữ liệu an toàn.\n\n"
+            "[ACTION:OPEN_FORM]"
+        )
         
     # 4. GHÉP ĐƠN HÀNG & PHÂN BỔ CÔNG XƯỞNG
-    elif any(k in msg for k in ['đơn hàng', 'ghép đơn', 'gán đơn', 'phân bổ', 'công xưởng']):
-        return "Dạ, để ghép đơn hàng cho ứng viên, anh/chị có 2 cách rất nhanh:\n\n1. **Ghép hàng loạt**: Tích chọn các ô vuông đầu dòng ứng viên trên bảng danh sách, rồi bấm nút **'💼 Ghép đơn hàng'** trên thanh công cụ nổi.\n2. **Ghép nhanh theo danh sách mã số**: Sang tab **'💼 Ghép đơn & Theo dõi'**, nhập tên đơn và dán danh sách mã số (VD: KD1401, KD1402... copy từ Zalo) rồi bấm Xác nhận ạ!\n\n[ACTION:OPEN_JOBS]"
+    elif any(k in msg for k in ['đơn hàng', 'ghép đơn', 'gán đơn', 'phân bổ', 'công xưởng', 'chọn đơn']):
+        return (
+            "Dạ, để ghép đơn hàng cho ứng viên, hệ thống FCT hỗ trợ **2 quy trình thao tác cực nhanh và chuyên nghiệp** như sau ạ:\n\n"
+            "### Cách 1: Ghép hàng loạt bằng Checkbox (Trực quan nhất)\n"
+            "1. Trên **Bảng danh sách chính**, tích chọn các ô vuông ở đầu dòng của những ứng viên anh/chị muốn ghép vào đơn.\n"
+            "2. Khi tích chọn từ 1 người trở lên, thanh công cụ hàng loạt màu tím sẽ tự động trượt lên ở cạnh dưới màn hình.\n"
+            "3. Nhấp vào nút **'💼 Ghép đơn hàng'** trên thanh công cụ này.\n"
+            "4. Chọn đơn hàng có sẵn từ danh sách hoặc nhập tên đơn hàng mới rồi bấm **'Xác nhận ghép'**. Tất cả ứng viên được chọn sẽ đồng loạt được gán vào đơn hàng đó.\n\n"
+            "### Cách 2: Dán danh sách mã số từ Zalo (Dành cho danh sách dài)\n"
+            "1. Nhấp sang tab **'💼 Ghép đơn & Theo dõi'** ở thanh menu trên cùng.\n"
+            "2. Tại khung trên cùng:\n"
+            "   - Nhập **Tên đơn hàng** (ví dụ: `Điện tử Hán Hưng T03/2026`).\n"
+            "   - Tại ô **'Dán danh sách mã số'**, dán trực tiếp danh sách mã ứng viên copy từ tin nhắn Zalo của đối tác (hỗ trợ phân tách bằng dấu phẩy, khoảng trắng hoặc xuống dòng, ví dụ: `KD1401, KD1402, MD1305`).\n"
+            "3. Nhấp nút **'➕ Thêm / Cập nhật Đơn hàng'**. Hệ thống sẽ tự động đối soát và gán tất cả hồ sơ tương ứng vào đơn hàng trong chớp mắt!\n\n"
+            "### 🔍 Mẹo theo dõi tiến độ đơn hàng:\n"
+            "- Trong bảng danh sách đơn hàng, anh/chị có thể xem số lượng người đã ghép và danh sách mã số cụ thể.\n"
+            "- Bấm nút **'🔍 Lọc nhanh'** ở cột Thao tác của từng đơn để hệ thống tự động lọc ra đúng các ứng viên đó trên bảng danh sách chính nhé ạ!\n\n"
+            "[ACTION:OPEN_JOBS]"
+        )
         
-    # 5. QUẢN LÝ TRÚNG TUYỂN & TIẾN ĐỘ 5 GIAI ĐOẠN
-    elif any(k in msg for k in ['trúng tuyển', 'tiến độ', 'kanban', 'visa', 'xuất cảnh', 'bước', 'giai đoạn', 'gom hồ sơ', 'trình cục']):
-        return "Dạ, toàn bộ ứng viên trúng tuyển và tiến độ hồ sơ được quản lý trực quan tại tab **'🏆 Danh sách trúng tuyển'**:\n\n1. **Đánh dấu trúng tuyển**: Bấm nút **'🎯 Chưa trúng'** để chuyển thành **'🎯 Trúng tuyển'** và chọn đơn hàng trúng tuyển.\n2. **Tiến độ 5 giai đoạn**: Hồ sơ được theo dõi qua 5 bước: **Gom hồ sơ ➔ Trình cục ➔ Làm Visa ➔ Nhận Visa ➔ Xuất cảnh**.\n3. Có thể lọc nhanh danh sách theo từng Nhà máy hoặc Môi giới liên kết ạ!\n\n[ACTION:OPEN_PASSED]"
+    # 5. QUẢN LÝ DANH SÁCH TRÚNG TUYỂN & TIẾN ĐỘ 5 GIAI ĐOẠN (KANBAN)
+    elif any(k in msg for k in ['trúng tuyển', 'tiến độ', 'kanban', 'visa', 'xuất cảnh', 'bước', 'giai đoạn', 'gom hồ sơ', 'trình cục', 'thẩm định']):
+        return (
+            "Dạ, quy trình quản lý Danh sách trúng tuyển và Tiến độ 5 giai đoạn tại FCT được thiết kế chuẩn mực theo mô hình Kanban quốc tế, chi tiết như sau ạ:\n\n"
+            "### 1. Đánh dấu ứng viên Trúng tuyển:\n"
+            "- Tại bảng danh sách chính, nhấp vào nút trạng thái **'🎯 Chưa trúng'** trên dòng ứng viên để chuyển sang **'🎯 Trúng tuyển'** và chọn đơn hàng trúng tuyển tương ứng.\n\n"
+            "### 2. Giao diện Quản lý Trúng tuyển (Tab '🏆 Danh sách trúng tuyển'):\n"
+            "- Nhấp vào tab **'🏆 Danh sách trúng tuyển'** trên thanh điều hướng.\n"
+            "- Có thể chuyển đổi qua lại giữa 2 chế độ hiển thị bằng nút bấm ở góc phải:\n"
+            "  + **📋 Dạng bảng**: Xem dạng bảng dữ liệu đầy đủ thông tin chi tiết.\n"
+            "  + **📊 Dạng thẻ (Kanban)**: Xem 5 cột tiến độ trực quan.\n\n"
+            "### 3. Ý nghĩa và nhiệm vụ cụ thể của 5 giai đoạn tiến độ:\n"
+            "- **Cột 1: 📁 Gom hồ sơ**: Tiếp nhận hồ sơ gốc của lao động, hoàn thiện bản dịch công chứng tiếng Trung, kiểm tra hạn Hộ chiếu, Giấy khám sức khỏe và Lý lịch tư pháp số 2.\n"
+            "- **Cột 2: 🏛️ Trình cục**: Hồ sơ đã nộp lên Cục Quản lý Lao động Ngoài nước / Cơ quan Thẩm quyền Đài Loan để xin cấp Tờ thẩm định/Giấy phép tiếp nhận.\n"
+            "- **Cột 3: 📑 Làm Visa**: Hồ sơ hoàn chỉnh đã nộp vào Văn phòng Kinh tế và Văn hóa Đài Bắc (TECO) để xin cấp thị thực lao động.\n"
+            "- **Cột 4: 🎫 Có Visa**: Lao động đã chính thức được dán Visa vào hộ chiếu, chuyển sang giai đoạn đặt vé máy bay và chuẩn bị hành lý.\n"
+            "- **Cột 5: ✈️ Xuất cảnh**: Lao động đã hoàn tất thủ tục hải quan và chính thức lên máy bay sang Đài Loan làm việc.\n\n"
+            "### 4. Thao tác cập nhật tiến độ cực nhanh:\n"
+            "- **Kéo và thả (Drag & Drop)**: Nhấp giữ chuột vào thẻ của ứng viên rồi kéo thả sang cột tiếp theo.\n"
+            "- **Nút mũi tên nhanh**: Trên mỗi thẻ ứng viên đều có sẵn nút **'◀'** (lùi giai đoạn) và **'▶'** (tiến giai đoạn) giúp thao tác ngay lập tức trên cả máy tính lẫn điện thoại.\n"
+            "- **Nút Cây bút (✏️)**: Nhấp vào để mở form cập nhật ngày tháng hoặc ghi chú cụ thể.\n\n"
+            "### 5. Bộ lọc & Xuất báo cáo chuyên nghiệp:\n"
+            "- Sử dụng 2 dropdown ở đầu tab để lọc theo từng **Môi giới** hoặc **Nhà máy**.\n"
+            "- Nhấp nút **'📊 Xuất Excel Tiến Độ'** màu xanh lục để tải file báo cáo tiến độ chi tiết phục vụ họp giao ban hoặc gửi báo cáo cho đối tác ạ!\n\n"
+            "[ACTION:OPEN_PASSED]"
+        )
         
     # 6. CẢNH BÁO GIẤY TỜ HẾT HẠN
-    elif any(k in msg for k in ['hết hạn', 'hộ chiếu', 'cccd', 'tư pháp', 'sức khỏe', 'giấy tờ', 'cảnh báo', 'màu đỏ', 'màu vàng']):
-        return "Dạ, hệ thống tự động kiểm tra thời hạn 4 loại giấy tờ quan trọng của ứng viên: **Hộ chiếu, Căn cước công dân (CCCD), Khám sức khỏe (KSK), và Lý lịch tư pháp số 2 (LLTP2)**.\n\n- Thẻ cảnh báo màu **ĐỎ**: Đã hết hạn, cần làm lại gấp.\n- Thẻ cảnh báo màu **VÀNG**: Sắp hết hạn trong 30-90 ngày tới để anh/chị chủ động thông báo ứng viên bổ sung kịp thời ạ!"
+    elif any(k in msg for k in ['hết hạn', 'hộ chiếu', 'cccd', 'tư pháp', 'sức khỏe', 'giấy tờ', 'cảnh báo', 'màu đỏ', 'màu vàng', 'thời hạn', 'ksk', 'lltp2']):
+        return (
+            "Dạ, tính năng Cảnh báo thời hạn giấy tờ pháp lý của FCT giúp loại bỏ 100% rủi ro bị trễ hồ sơ hoặc bị từ chối Visa do giấy tờ hết hạn ạ:\n\n"
+            "### 1. 4 loại giấy tờ bắt buộc được theo dõi tự động:\n"
+            "- 📘 **Hộ chiếu (Passport)**: Hạn sử dụng tối thiểu theo quy định xuất khẩu lao động.\n"
+            "- 💳 **Căn cước công dân (CCCD)**: Hạn sử dụng của thẻ căn cước 12 số.\n"
+            "- 🏥 **Giấy khám sức khỏe (KSK)**: Thời hạn giá trị tiêu chuẩn (thường là 3 đến 6 tháng).\n"
+            "- ⚖️ **Lý lịch tư pháp số 2 (LLTP2)**: Phiếu lý lịch tư pháp số 2 do Sở Tư pháp cấp.\n\n"
+            "### 2. Ý nghĩa mã màu cảnh báo trực quan:\n"
+            "- 🔴 **Màu ĐỎ (ĐÃ QUÁ HẠN)**: Giấy tờ này đã chính thức hết hạn sử dụng. Cần thông báo cho ứng viên đi làm lại hoặc gia hạn khẩn cấp, không thể tiếp tục trình cục hay làm visa với giấy tờ này.\n"
+            "- 🟡 **Màu VÀNG (SẮP HẾT HẠN)**: Giấy tờ còn hạn sử dụng dưới 90 ngày (hoặc dưới 30 ngày đối với KSK/LLTP2). Cần chủ động nhắc nhở ứng viên bổ sung kịp thời trước khi nộp hồ sơ xin visa.\n"
+            "- 🟢 **Màu XANH (HỢP LỆ)**: Giấy tờ còn thời hạn an toàn, sẵn sàng xử lý các bước tiếp theo.\n\n"
+            "### 3. Cách cập nhật ngày hết hạn mới:\n"
+            "- Khi ứng viên nộp giấy tờ mới, anh/chị chỉ cần nhấp vào nút **'Sửa' (✏️)** trên dòng ứng viên đó.\n"
+            "- Cập nhật lại ngày cấp và ngày hết hạn mới rồi bấm **'Lưu Form'**. Hệ thống sẽ tự động tính toán lại và chuyển sang huy hiệu màu xanh an toàn ngay lập tức ạ!"
+        )
         
-    # 7. XUẤT EXCEL
-    elif any(k in msg for k in ['excel', 'xuất excel', 'tải excel', 'bảng tính', 'thống kê']):
-        return "Dạ, anh/chị có thể xuất dữ liệu ra file Excel bằng nút **'📊 Xuất Excel'** màu xanh lá ở thanh trên cùng. File tải về có sẵn các biểu đồ thống kê chuyên nghiệp (BarChart theo tháng và PieChart theo đơn hàng). Nếu chỉ muốn xuất một số người, anh/chị hãy tích chọn các ô vuông rồi bấm **'📊 Xuất Excel'** trên thanh thao tác hàng loạt ạ!\n\n[ACTION:EXPORT_EXCEL]"
+    # 7. XUẤT EXCEL & THỐNG KÊ BIỂU ĐỒ
+    elif any(k in msg for k in ['excel', 'xuất excel', 'tải excel', 'bảng tính', 'thống kê', 'biểu đồ']):
+        return (
+            "Dạ, tính năng Xuất Excel của hệ thống FCT DAS V3.0 không chỉ xuất bảng tính thô mà còn tự động định dạng chuẩn và vẽ sẵn biểu đồ phân tích chuyên nghiệp ạ:\n\n"
+            "### 1. Xuất toàn bộ dữ liệu hệ thống:\n"
+            "- Nhấp vào nút **'📊 Xuất Excel'** màu xanh lá cây ở thanh công cụ chính phía trên cùng.\n"
+            "- Tệp Excel tải về bao gồm danh sách đầy đủ ứng viên với tất cả các trường thông tin chuẩn hóa.\n"
+            "- **Điểm đặc biệt**: Trong file Excel đã tích hợp sẵn 2 biểu đồ phân tích trực quan:\n"
+            "  + 📊 **BarChart (Biểu đồ cột)**: Thống kê số lượng ứng viên tiếp nhận theo từng tháng trong năm.\n"
+            "  + 🥧 **PieChart (Biểu đồ tròn)**: Tỷ lệ phần trăm phân bổ lao động theo từng đơn hàng tuyển dụng.\n\n"
+            "### 2. Xuất theo nhóm ứng viên tùy chọn (Tùy biến cao):\n"
+            "- Trên bảng danh sách chính, tích chọn các ô vuông đầu dòng của những ứng viên cần xuất.\n"
+            "- Nhấp vào nút **'📊 Xuất Excel'** trên thanh công cụ hàng loạt nổi lên ở phía dưới màn hình.\n"
+            "- Hệ thống sẽ chỉ kết xuất riêng nhóm ứng viên anh/chị vừa chọn.\n\n"
+            "### 3. Xuất Báo cáo Tiến độ Trúng tuyển riêng biệt:\n"
+            "- Tại tab **'🏆 Danh sách trúng tuyển'**, nhấp nút **'📊 Xuất Excel Tiến Độ'** để tải bảng theo dõi 5 giai đoạn tiến độ gửi cho ban lãnh đạo hoặc đối tác Đài Loan ạ!\n\n"
+            "[ACTION:EXPORT_EXCEL]"
+        )
         
-    # 8. IN CV & IN PDF HÀNG LOẠT
-    elif any(k in msg for k in ['in', 'in cv', 'xem và in', 'in pdf', 'in hàng loạt', 'pdf', 'xem cv']):
-        return "Dạ, về in ấn hồ sơ:\n\n1. **In từng người**: Bấm nút **'🖨️ Xem & In'** tại dòng ứng viên để mở mẫu CV tiếng Trung Ver 2026 chuẩn form, sau đó bấm nút Lưu PDF hoặc nhấn Ctrl+P để in (mẫu CV đã được bảo mật chống F12, tự ẩn các dòng trống).\n2. **In PDF hàng loạt**: Tích chọn nhiều ứng viên rồi bấm nút **'🖨️ In PDF hàng loạt'** trên thanh thao tác nổi, hệ thống sẽ ghép streaming các hồ sơ để in liên tục một lần ạ!"
+    # 8. IN CV & IN PDF HÀNG LOẠT (STREAMING HTML)
+    elif any(k in msg for k in ['in', 'in cv', 'xem và in', 'in pdf', 'in hàng loạt', 'pdf', 'xem cv', 'mẫu cv', 'form cv']):
+        return (
+            "Dạ, về tính năng Xem và In ấn hồ sơ CV, hệ thống FCT mang lại trải nghiệm chuẩn mực và tiện lợi tối đa ạ:\n\n"
+            "### 1. Xem và In CV đơn lẻ (Mẫu CV Ver 2026 Chuẩn Form):\n"
+            "- Nhấp vào nút **'🖨️ Xem & In'** ở cột thao tác của bất kỳ ứng viên nào.\n"
+            "- Hệ thống mở trang CV tiếng Trung Phồn Thể phiên bản 2026 trong tab mới.\n"
+            "- **Ưu điểm vượt trội**:\n"
+            "  + Tự động ẩn các trường trống, không để lại khoảng trống thừa thãi trên mặt giấy.\n"
+            "  + Bảo mật: Khóa chức năng F12 và xem mã nguồn nhằm bảo vệ thông tin ứng viên.\n"
+            "  + Nhấp vào nút **'Lưu PDF / In'** trên đầu trang (hoặc bấm tổ hợp phím **Ctrl + P**) để in hoặc lưu file PDF.\n\n"
+            "### 2. In PDF hàng loạt (Công nghệ Streaming HTML độc quyền):\n"
+            "- Khi cần in nhanh hàng chục hồ sơ cùng một lúc phục vụ cho buổi thi tuyển / phỏng vấn trực tiếp:\n"
+            "  1. Tích chọn các ô vuông ở đầu dòng của những ứng viên cần in trên bảng danh sách.\n"
+            "  2. Nhấp nút **'🖨️ In PDF hàng loạt'** trên thanh công cụ hàng loạt nổi lên.\n"
+            "  3. Hệ thống sử dụng cơ chế streaming ghép nối tất cả hồ sơ thành một luồng in liên tục với lệnh ngắt trang in chuẩn xác (mỗi hồ sơ đúng 1 hoặc 2 trang trọn vẹn, không bị đứt đoạn).\n"
+            "  4. Nhấn **Ctrl + P** để in toàn bộ chỉ với một thao tác duy nhất mà không gây đơ máy chủ!\n\n"
+            "### 3. Tải gói file nén (.ZIP) đầy đủ tài liệu:\n"
+            "- Tích chọn các ứng viên rồi bấm **'📥 Tải (.ZIP)'** để tải về tệp nén chứa toàn bộ CV HTML và các ảnh gốc (ảnh 4x6, CCCD, bằng cấp...) đã được tự động phân loại theo tên và mã số của từng người ạ!"
+        )
         
     # 9. CẤU HÌNH NHÀ MÁY & QUOTA (TỜ THẨM ĐỊNH, TỜ VISA)
-    elif any(k in msg for k in ['nhà máy', 'tờ thẩm định', 'tờ visa', 'chỉ tiêu', 'quota', 'cấu hình', 'môi giới']):
-        return "Dạ, tại tab **'🏗️ Cấu hình Đơn hàng'**, anh/chị có thể quản lý danh bạ Nhà máy và Môi giới liên kết, đồng thời theo dõi số lượng chỉ tiêu tuyển dụng (slots) còn lại của từng Tờ thẩm định và Tờ Visa để tránh nhận vượt hạn ngạch cho phép ạ!"
+    elif any(k in msg for k in ['nhà máy', 'tờ thẩm định', 'tờ visa', 'chỉ tiêu', 'quota', 'cấu hình', 'môi giới', 'slots']):
+        return (
+            "Dạ, nghiệp vụ Quản lý Nhà máy, Môi giới và Hạn ngạch Quota tại tab **'🏗️ Cấu hình Đơn hàng'** được tổ chức rất chặt chẽ như sau ạ:\n\n"
+            "### 1. Quản lý Danh bạ Nhà máy & Môi giới đối tác:\n"
+            "- Khai báo và quản lý thông tin các nhà máy tiếp nhận tại Đài Loan (tên công xưởng, khu vực: Đài Bắc, Đào Viên, Tân Trúc, Đài Trung, Đài Nam, Cao Hùng...).\n"
+            "- Liên kết từng nhà máy với đối tác Môi giới phụ trách cùng thông tin người liên hệ.\n\n"
+            "### 2. Quản lý Tờ thẩm định và Tờ Visa (Chỉ tiêu tuyển dụng):\n"
+            "- Khai báo số công văn Tờ thẩm định và Tờ Visa, ngày cấp và ngày hết hạn giá trị.\n"
+            "- Nhập **Tổng số chỉ tiêu cho phép (Quota / Slots)** theo từng công văn phê duyệt.\n\n"
+            "### 3. Cơ chế tự động kiểm soát hạn ngạch (Chống vượt Quota):\n"
+            "- Khi anh/chị gán ứng viên trúng tuyển vào nhà máy/tờ thẩm định, hệ thống sẽ **tự động tính toán số slots đã dùng và số slots còn lại**.\n"
+            "- Nếu chỉ tiêu đã đầy, hệ thống sẽ cảnh báo rõ ràng để chuyên viên không nhận thừa hồ sơ, đảm bảo tuân thủ nghiêm ngặt quy định của Cục Lao động Đài Loan ạ!"
+        )
         
     # 10. TẢI FILE ZIP TRỌN GÓI HỒ SƠ
     elif any(k in msg for k in ['zip', 'tải ảnh', 'tải hồ sơ', 'đóng gói', 'tải zip']):
-        return "Dạ, để tải trọn gói hồ sơ kèm toàn bộ file CV và ảnh giấy tờ gốc của ứng viên, anh/chị hãy tích chọn các ứng viên trên danh sách rồi bấm nút **'📥 Tải (.ZIP)'** trên thanh thao tác hàng loạt ạ!"
+        return (
+            "Dạ, để tải trọn gói hồ sơ kèm toàn bộ file CV và ảnh tài liệu gốc của ứng viên, quy trình thực hiện như sau ạ:\n\n"
+            "1. Trên bảng danh sách chính, tích chọn các ô vuông đầu dòng của những ứng viên cần tải hồ sơ.\n"
+            "2. Khi thanh công cụ hàng loạt màu tím xuất hiện ở cạnh dưới màn hình, nhấp vào nút **'📥 Tải (.ZIP)'**.\n"
+            "3. Máy chủ sẽ tự động nén toàn bộ file CV HTML cùng các tệp ảnh tài liệu (ảnh thẻ 4x6, ảnh CCCD 2 mặt, Giấy khám sức khỏe, Bằng cấp...) thành 1 tệp `.zip` duy nhất.\n"
+            "4. Các tệp bên trong file ZIP đều được tự động phân loại và đặt tên theo định dạng `[Mã số] - [Họ tên] - [Tên loại giấy tờ]` giúp anh/chị gửi cho đối tác Đài Loan cực kỳ khoa học và chuyên nghiệp ạ!"
+        )
         
     # 11. SAO LƯU & DỰ PHÒNG DỮ LIỆU
-    elif any(k in msg for k in ['sao lưu', 'backup', 'phục hồi', 'khôi phục', 'restore']):
-        return "Dạ, anh/chị có thể sao lưu toàn bộ dữ liệu ra file backup JSON và có thể nạp lại dữ liệu bất cứ lúc nào khi cần thiết để đảm bảo an toàn dữ liệu ạ!"
+    elif any(k in msg for k in ['sao lưu', 'backup', 'phục hồi', 'khôi phục', 'restore', 'dự phòng']):
+        return (
+            "Dạ, an toàn dữ liệu là ưu tiên hàng đầu tại FCT. Về cơ chế sao lưu và dự phòng dữ liệu:\n\n"
+            "1. **Sao lưu dự phòng (Backup)**: Hệ thống cho phép xuất toàn bộ cơ sở dữ liệu hồ sơ nhân sự ra tệp định dạng chuẩn JSON an toàn.\n"
+            "2. **Khôi phục dữ liệu (Restore)**: Khi cần chuyển đổi môi trường hoặc phục hồi dữ liệu từ một mốc thời gian trước đó, chỉ cần nạp lại tệp backup JSON.\n"
+            "💡 *Khuyến nghị nghiệp vụ*: Anh/chị nên xuất và lưu trữ tệp sao lưu dữ liệu định kỳ hàng tuần trên máy tính hoặc Google Drive để luôn chủ động trong mọi tình huống nhé ạ!"
+        )
         
     # CÂU CHÀO & TỔNG QUAN
     else:
-        return "Dạ, em là Milo - Trợ lý Hành chính FCT! Em có thể giải đáp chi tiết cho anh/chị về: Các cách lọc và tìm kiếm hồ sơ, Nhập hồ sơ mới, Ghép đơn hàng, Quản lý tiến độ trúng tuyển 5 bước, Cảnh báo giấy tờ hết hạn, Cấu hình nhà máy & Quota, hoặc Xuất Excel & In ấn.\n\nAnh/chị hãy bấm sang tab **'🎯 Cầm tay chỉ việc'** để em dẫn đi xem trực tiếp từng nút bấm trên màn hình nhé!\n\n[ACTION:START_TOUR]"
+        return (
+            "Dạ, em là **Milo** - Nữ trợ lý Hành chính ảo của Hệ thống Quản trị Nhân sự FCT!\n\n"
+            "Em đã được đào tạo nghiệp vụ chuyên sâu và luôn sẵn sàng hỗ trợ anh/chị cặn kẽ về mọi tính năng trên hệ thống:\n\n"
+            "1. 🔍 **Tìm kiếm & 7 cách lọc hồ sơ đa chiều** (Lọc tên, mã số, tay nghề, kinh nghiệm, NPT, năm, tiền tố MD/FD/KD)\n"
+            "2. ➕ **Quy trình nhập hồ sơ mới** (Tự động dịch tiếng Trung Phồn Thể, dán ảnh Ctrl+V, đính kèm giấy tờ pháp lý)\n"
+            "3. 💼 **Ghép đơn hàng & Phân bổ công xưởng** (Ghép hàng loạt bằng checkbox hoặc dán danh sách mã số từ Zalo)\n"
+            "4. 🏆 **Quản lý danh sách trúng tuyển & Tiến độ 5 giai đoạn** (Quy trình Kanban: Gom hồ sơ ➔ Trình cục ➔ Làm Visa ➔ Có Visa ➔ Xuất cảnh)\n"
+            "5. ⚠️ **Hệ thống cảnh báo hạn giấy tờ** (Theo dõi Hộ chiếu, CCCD, KSK, LLTP2 với mã màu Đỏ/Vàng/Xanh)\n"
+            "6. 🏗️ **Cấu hình Nhà máy, Môi giới & Quota** (Kiểm soát hạn ngạch Tờ thẩm định & Tờ Visa, chống vượt slots)\n"
+            "7. 📊 **Xuất Excel có tích hợp biểu đồ** (Báo cáo tự động dạng cột BarChart và tròn PieChart)\n"
+            "8. 🖨️ **Xem & In ấn CV chuyên nghiệp** (Form tiếng Trung Ver 2026, in PDF hàng loạt Streaming, tải ZIP trọn gói)\n\n"
+            "🎯 **Đặc biệt**: Anh/chị hãy bấm sang tab **'🎯 Cầm tay chỉ việc'** ở khung bên cạnh để em trực tiếp dẫn anh/chị đi qua từng nút bấm trên màn hình nhé!\n\n"
+            "[ACTION:START_TOUR]"
+        )
 
 @app.route('/api/ai/assistant-chat', methods=['POST'])
 @auth_required

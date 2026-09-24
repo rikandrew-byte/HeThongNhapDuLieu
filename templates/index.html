@@ -6939,12 +6939,13 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
         #miloTourCard {
             position: absolute;
             z-index: 100055;
-            width: 320px;
+            width: 380px;
+            max-width: calc(100vw - 32px);
             background: #ffffff;
-            border-radius: 16px;
+            border-radius: 18px;
             border: 2px solid #0891b2;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
-            padding: 16px;
+            padding: 16px 18px;
             font-family: 'Inter', sans-serif;
             transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
             animation: fadeIn 0.2s ease;
@@ -7181,21 +7182,25 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
         <div id="miloTourCard">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">
                 <div style="display:flex; align-items:center; gap:8px;">
-                    <img src="{{ url_for('static', filename='milo_avatar.jpg') }}" style="width:24px; height:24px; border-radius:50%; object-fit:cover;" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
-                    <span id="miloTourStepBadge" style="font-size:12px; font-weight:800; color:#0891b2; background:#ecfeff; padding:2px 8px; border-radius:999px;">Bước 1/3</span>
+                    <img src="{{ url_for('static', filename='milo_avatar.jpg') }}" style="width:26px; height:26px; border-radius:50%; object-fit:cover;" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
+                    <span id="miloTourStepBadge" style="font-size:12px; font-weight:800; color:#0891b2; background:#ecfeff; padding:2px 10px; border-radius:999px; border:1px solid #a5f3fc;">Bước 1/11</span>
                 </div>
-                <button type="button" onclick="endMiloTour()" style="background:transparent; border:none; color:#94a3b8; font-size:14px; font-weight:bold; cursor:pointer;" title="Đóng tour">✕</button>
+                <button type="button" onclick="endMiloTour()" style="background:transparent; border:none; color:#94a3b8; font-size:16px; font-weight:bold; cursor:pointer; padding:2px 6px;" title="Đóng tour" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#94a3b8'">✕</button>
             </div>
 
-            <div id="miloTourStepText" style="font-size:13px; color:#1e293b; line-height:1.55; margin-bottom:14px; font-weight:600;">
+            <div id="miloTourStepTitle" style="font-size:14px; font-weight:850; color:#0e7490; margin-bottom:8px; line-height:1.4;">
+                Tiêu đề bước...
+            </div>
+
+            <div id="miloTourStepText" style="font-size:13px; color:#1e293b; line-height:1.6; margin-bottom:16px; font-weight:550; max-height:280px; overflow-y:auto;">
                 Nội dung hướng dẫn...
             </div>
 
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <button type="button" id="miloTourPrevBtn" onclick="prevMiloStep()" style="padding:6px 12px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:8px; font-size:11.5px; font-weight:700; color:#475569; cursor:pointer;">← Quay lại</button>
+                <button type="button" id="miloTourPrevBtn" onclick="prevMiloStep()" style="padding:7px 14px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:8px; font-size:12px; font-weight:700; color:#475569; cursor:pointer;">← Quay lại</button>
                 <div style="display:flex; gap:6px;">
-                    <button type="button" onclick="endMiloTour()" style="padding:6px 12px; background:transparent; border:none; font-size:11.5px; font-weight:600; color:#64748b; cursor:pointer;">Bỏ qua</button>
-                    <button type="button" id="miloTourNextBtn" onclick="nextMiloStep()" style="padding:6px 16px; background:#0891b2; border:none; border-radius:8px; font-size:11.5px; font-weight:800; color:#ffffff; cursor:pointer; box-shadow:0 2px 6px rgba(8,145,178,0.3);">Tiếp tục →</button>
+                    <button type="button" onclick="endMiloTour()" style="padding:7px 12px; background:transparent; border:none; font-size:12px; font-weight:600; color:#64748b; cursor:pointer;">Bỏ qua</button>
+                    <button type="button" id="miloTourNextBtn" onclick="nextMiloStep()" style="padding:7px 18px; background:linear-gradient(135deg, #0891b2, #0e7490); border:none; border-radius:8px; font-size:12px; font-weight:800; color:#ffffff; cursor:pointer; box-shadow:0 2px 6px rgba(8,145,178,0.3);">Tiếp tục →</button>
                 </div>
             </div>
         </div>
@@ -7326,19 +7331,52 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             'tour_new_candidate': [
                 {
                     target: '#btnNewCandidateHeader',
-                    text: '<strong>Bước 1:</strong> Bấm vào nút <strong>➕ Nhập Hồ Sơ Mới</strong> ở góc này để mở giao diện nhập liệu ứng viên.',
+                    title: '➕ Nút Nhập Hồ Sơ Mới',
+                    text: 'Bấm vào nút <strong>➕ Nhập Hồ Sơ Mới</strong> ở góc trên bên phải để bắt đầu tạo hồ sơ cho người lao động.',
                     before: () => { document.getElementById('historyModal').style.display = 'block'; }
                 },
                 {
-                    target: '.btn-save-action',
-                    text: '<strong>Bước 2:</strong> Sau khi điền thông tin bằng tiếng Việt và tải ảnh 4x6, hệ thống tự động dịch tiếng Trung Phồn Thể. Anh/chị bấm <strong>Lưu Form</strong> ở dưới cùng để ghi nhận vào hệ thống.',
+                    target: 'input[name="Hoten"]',
+                    title: '🇻🇳 Họ Tên & 🇹🇼 Dịch Tiếng Trung Tự Động',
+                    text: 'Anh/chị chỉ cần nhập Họ tên bằng tiếng Việt có dấu (ví dụ: <em>Võ Thị Khuyên</em>). Khi chuyển sang ô khác, hệ thống sẽ <strong>tự động dịch chuẩn xác</strong> sang tiếng Trung Phồn Thể chuẩn Đài Loan (<em>武氏勸</em>) vào ô Tên tiếng Trung mà không cần biết tiếng Trung!',
                     before: () => { document.getElementById('historyModal').style.display = 'none'; }
+                },
+                {
+                    target: '#photoInput',
+                    title: '📸 Ảnh Chân Dung 4x6 & Mã QR Line',
+                    text: 'Hệ thống hỗ trợ thao tác kéo thả hoặc dán cực nhanh:<br>• Bấm để chọn file ảnh từ máy tính.<br>• Kéo thả file ảnh trực tiếp vào khung.<br>• Hoặc <strong>chụp ảnh màn hình rồi nhấn Ctrl+V (Dán)</strong> trực tiếp! Ảnh sẽ tự động được nén chuẩn dung lượng.',
+                    before: () => {}
+                },
+                {
+                    target: '#documentInput',
+                    title: '📑 Tải Ảnh Giấy Tờ Pháp Lý Đính Kèm',
+                    text: 'Kéo thả hoặc dán đồng thời nhiều ảnh tài liệu: <strong>Hộ chiếu, Căn cước công dân, Bằng lái, Giấy khám sức khỏe, Bằng cấp, Giấy tư pháp</strong>. Anh/chị có thể xem lại ảnh và xóa từng ảnh dễ dàng.',
+                    before: () => {}
+                },
+                {
+                    target: '.btn-save-action',
+                    title: '💾 Lưu Form Vào Cơ Sở Dữ Liệu',
+                    text: 'Sau khi kiểm tra thông tin, bấm nút <strong>💾 Lưu Form</strong> ở thanh công cụ dưới đáy. Dữ liệu sẽ được lưu an toàn vào cơ sở dữ liệu Neon PostgreSQL và tự động tạo mã số định danh.',
+                    before: () => {}
+                },
+                {
+                    target: '.btn-print-action',
+                    title: '🖨️ Xem & In Mẫu CV Phỏng Vấn',
+                    text: 'Bấm <strong>🖨️ Xem & In</strong> để mở trực tiếp form CV Ver 2026 tiếng Trung chuẩn form Đài Loan. Form được thiết kế chống sao chép F12 và tự động ẩn các mục không có dữ liệu.',
+                    before: () => {}
+                },
+                {
+                    target: '#btnBackToList',
+                    title: '← Quay Lại Bảng Quản Lý Hồ Sơ',
+                    text: 'Bấm <strong>✕ Hủy / Quay lại</strong> (hoặc nút quay lại ở đầu trang) bất cứ lúc nào để trở về giao diện danh sách quản lý chung.',
+                    before: () => {}
                 }
             ],
             'tour_search_filter': [
                 {
                     target: '#searchInput',
-                    text: '<strong>Bước 1:</strong> Nhập Họ tên hoặc Mã số (ví dụ: KD1401, FD1205) vào ô này để lọc hồ sơ ngay lập tức.',
+                    title: '🔍 Thanh Tìm Kiếm Đa Năng Tức Thì',
+                    text: 'Gõ bất kỳ thông tin nào của ứng viên vào đây: <strong>Họ tên</strong> (VD: <em>Nguyễn Thị Lý</em>) hoặc <strong>Mã số</strong> (VD: <em>KD1401, FD4176</em>). Bảng danh sách sẽ lọc ngay lập tức sau từng ký tự gõ.',
                     before: () => {
                         document.getElementById('historyModal').style.display = 'block';
                         switchHistoryTab('candidates');
@@ -7346,43 +7384,193 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 },
                 {
                     target: '#searchType',
-                    text: '<strong>Bước 2:</strong> Anh/chị có thể đổi chế độ tìm kiếm sang theo <strong>Tay nghề</strong> hoặc <strong>Kinh nghiệm làm việc</strong>.',
+                    title: '⚙️ 3 Chế Độ Tìm Kiếm Chuyên Sâu',
+                    text: 'Dropdown này cho phép chuyển đổi chế độ lọc:<br>• <strong>🔍 Tên / Mã số</strong>: Tìm theo họ tên hoặc mã định danh.<br>• <strong>🛠️ Tay nghề</strong>: Lọc kỹ năng (may, hàn, cơ khí, điện tử, đóng gói...).<br>• <strong>💼 Kinh nghiệm</strong>: Tìm theo tên công ty cũ hoặc ngành nghề từng làm.',
+                    before: () => {}
+                },
+                {
+                    target: '#yearFilter',
+                    title: '📅 Lọc Theo Năm Lưu Trữ Hồ Sơ',
+                    text: 'Hệ thống tự động phân loại hồ sơ theo năm: <strong>Năm 2026</strong> (mặc định), <strong>Năm 2025</strong> hoặc <strong>Tất cả các năm</strong> để kiểm tra dữ liệu qua các thời kỳ.',
+                    before: () => {}
+                },
+                {
+                    target: '#nptFilter',
+                    title: '👤 Lọc Theo Người Phụ Trách (NPT)',
+                    text: 'Chọn tên nhân viên hoặc đối tác FCT để lọc riêng những hồ sơ do người đó chịu trách nhiệm theo dõi (ví dụ: <em>VC</em>, <em>Minh An</em>, <em>Hồng Mẫn</em>...).',
                     before: () => {}
                 },
                 {
                     target: '#filter-MD',
-                    text: '<strong>Bước 3:</strong> Dùng các nút lọc nhanh này để chỉ hiển thị lao động <strong>♂️ Nam (MD)</strong>, <strong>♀️ Nữ (FD)</strong> hoặc <strong>🏥 Điều dưỡng (KD)</strong>.',
+                    title: '⚡ Lọc Nhanh Theo Tiền Tố Giới Tính & Nghề',
+                    text: 'Bấm các nút màu sắc nổi bật để lọc tức thì:<br>• <strong>♂️ Nam (MD)</strong>: Chỉ hiện lao động nam.<br>• <strong>♀️ Nữ (FD)</strong>: Chỉ hiện lao động nữ.<br>• <strong>🏥 Đ.Dưỡng (KD)</strong>: Lao động ngành điều dưỡng / hộ lý.<br>• <strong>❓ Khác</strong>: Các mã ngoại lệ.<br>• <strong>Tất cả</strong>: Quay lại danh sách đầy đủ.',
+                    before: () => {}
+                },
+                {
+                    target: '.filter-item-clear',
+                    title: '✕ Nút Xóa Lọc Một Chạm',
+                    text: 'Bất cứ lúc nào muốn hủy toàn bộ các điều kiện tìm kiếm và quay về danh sách ban đầu, anh/chị chỉ cần bấm nút đỏ <strong>✕ Xóa lọc</strong>!',
+                    before: () => {}
+                },
+                {
+                    target: '#historySelectAll',
+                    title: '☑️ Chọn Hàng Loạt & Thanh Thao Tác Nổi',
+                    text: 'Tích vào ô vuông ở góc tiêu đề để chọn tất cả (hoặc tích chọn từng người). Một <strong>thanh công cụ màu xanh nổi</strong> sẽ xuất hiện ở trên bảng để anh/chị Ghép đơn, In PDF hàng loạt hoặc Xuất Excel cùng lúc!',
                     before: () => {}
                 }
             ],
             'tour_job_management': [
                 {
                     target: '#tabBtn-jobs',
-                    text: '<strong>Bước 1:</strong> Bấm vào tab <strong>💼 Ghép đơn & Theo dõi</strong> để xem thống kê theo từng đơn hàng và công xưởng tuyển dụng.',
-                    before: () => { document.getElementById('historyModal').style.display = 'block'; }
+                    title: '💼 Tab Ghép Đơn & Theo Dõi',
+                    text: 'Bấm vào tab <strong>💼 Ghép đơn & Theo dõi</strong> để vào trung tâm phân bổ lao động vào từng đơn hàng tuyển dụng của các nhà máy Đài Loan.',
+                    before: () => {
+                        document.getElementById('historyModal').style.display = 'block';
+                        switchHistoryTab('jobs');
+                    }
+                },
+                {
+                    target: '.quick-job-assign-box',
+                    title: '⚡ Tính Năng Gán Đơn Nhanh Bằng Mã Số',
+                    text: 'Khi nhân viên hoặc đối tác gửi danh sách mã số qua Zalo/tin nhắn (VD: <em>KD1401, KD1402, FD4176</em>), tính năng này giúp anh/chị gán toàn bộ người đó vào đơn hàng chỉ trong 3 giây!',
+                    before: () => {}
+                },
+                {
+                    target: '#quickJobNameInput',
+                    title: '🏷️ Nhập Tên Đơn Hàng Cần Gán',
+                    text: 'Nhập tên đơn hàng hoặc tên xí nghiệp tiếp nhận (ví dụ: <em>Thác Vỹ, Cự Xương, Hưng Vượng</em>...). Hệ thống có gợi ý thông minh các đơn đã có trong danh mục.',
+                    before: () => {}
+                },
+                {
+                    target: '#quickJobMasoInput',
+                    title: '📋 Dán Danh Sách Mã Số Ứng Viên',
+                    text: 'Sao chép trực tiếp từ tin nhắn Zalo và dán vào đây. Hệ thống tự động nhận diện chính xác dù các mã số cách nhau bằng dấu phẩy, khoảng trắng hay xuống dòng, rồi bấm <strong>⚡ Xác nhận gán đơn</strong>.',
+                    before: () => {}
+                },
+                {
+                    target: '#jobSummaryTableBody',
+                    title: '📊 Bảng Thống Kê Tiến Độ Các Đơn Hàng',
+                    text: 'Bảng này tổng hợp toàn bộ các đơn hàng hiện hành, số lượng ứng viên đã ghép vào từng đơn và liệt kê danh sách mã số chi tiết.',
+                    before: () => {}
+                },
+                {
+                    target: '.job-summary-table',
+                    title: '🔍 Nút Lọc Nhanh Từng Đơn Hàng',
+                    text: 'Tại mỗi dòng đơn hàng, bấm nút <strong>🔍 Lọc nhanh</strong> để lập tức chuyển sang bảng danh sách hồ sơ chỉ gồm những ứng viên của đơn hàng đó, rất thuận tiện để in ấn hoặc kiểm tra!',
+                    before: () => {}
                 },
                 {
                     target: '#historySelectAll',
-                    text: '<strong>Bước 2:</strong> Hoặc tại bảng danh sách, anh/chị có thể tích chọn các ứng viên rồi dùng thanh thao tác hàng loạt <strong>💼 Ghép đơn hàng</strong> để gán nhanh cùng lúc.',
+                    title: '☑️ Cách 2: Ghép Hàng Loạt Bằng Checkbox Trên Bảng',
+                    text: 'Ngoài ra, tại bảng danh sách hồ sơ anh/chị có thể <strong>tích chọn các ô vuông đầu dòng</strong> của ứng viên, thanh công cụ nổi sẽ xuất hiện và bấm <strong>💼 Ghép đơn hàng</strong> để phân bổ!',
                     before: () => { switchHistoryTab('candidates'); }
                 }
             ],
             'tour_passed_kanban': [
                 {
                     target: '#tabBtn-passed',
-                    text: '<strong>Bước 1:</strong> Bấm vào tab <strong>🏆 Danh sách trúng tuyển</strong> để theo dõi toàn bộ ứng viên đã trúng tuyển đơn hàng.',
-                    before: () => { document.getElementById('historyModal').style.display = 'block'; }
+                    title: '🏆 Tab Danh Sách Trúng Tuyển',
+                    text: 'Chào mừng anh/chị đến với trung tâm quản lý trúng tuyển! Toàn bộ ứng viên đã được doanh nghiệp tuyển chọn sẽ được theo dõi sát sao từng bước chuẩn bị xuất cảnh tại đây.',
+                    before: () => {
+                        document.getElementById('historyModal').style.display = 'block';
+                        switchHistoryTab('passed');
+                    }
                 },
                 {
-                    target: '#passedSummaryPanel',
-                    text: '<strong>Bước 2:</strong> Toàn bộ tiến độ hồ sơ được quản lý trực quan theo 5 giai đoạn: <strong>Gom hồ sơ ➔ Trình cục ➔ Làm Visa ➔ Nhận Visa ➔ Xuất cảnh</strong>.',
-                    before: () => { switchHistoryTab('passed'); }
+                    target: '#kanbanBrokerFilterSelect',
+                    title: '🤝 Lọc Theo Đối Tác Môi Giới',
+                    text: 'Khi cần đối soát tiến độ hồ sơ với một công ty Môi giới cụ thể, anh/chị chọn tên Môi giới tại đây để bảng Kanban chỉ hiển thị riêng nhóm lao động thuộc đơn vị đó phụ trách.',
+                    before: () => {}
+                },
+                {
+                    target: '#kanbanFilterSelect',
+                    title: '🏭 Lọc Theo Nhà Máy Tiếp Nhận',
+                    text: 'Dropdown này giúp anh/chị xem riêng danh sách trúng tuyển của một nhà máy/xí nghiệp cụ thể ở Đài Loan (ví dụ: <em>Cự Xương, Bội Nhì, Lạc Dung...</em>) để kiểm tra quân số.',
+                    before: () => {}
+                },
+                {
+                    target: 'button[onclick="exportPassedHistoryExcel(event)"]',
+                    title: '📊 Xuất Báo Cáo Tiến Độ Ra Excel',
+                    text: 'Bấm nút <strong>📊 Xuất Excel Tiến Độ</strong> để tải file Excel báo cáo tiến độ chi tiết, phân chia rõ ràng theo từng giai đoạn và nhà máy, rất tiện gửi báo cáo lãnh đạo!',
+                    before: () => {}
+                },
+                {
+                    target: '#toggleViewBtn-kanban',
+                    title: '🔄 Chuyển Đổi: Bảng Kanban & Danh Sách',
+                    text: 'Hệ thống hỗ trợ 2 chế độ hiển thị linh hoạt:<br>• <strong>📊 Bảng Kanban</strong>: Kéo thả trực quan theo 5 cột tiến độ.<br>• <strong>📝 Danh sách</strong>: Bảng dữ liệu gom gọn theo từng đơn hàng.',
+                    before: () => {}
+                },
+                {
+                    target: '.kanban-column[data-status="GOM_HO_SO"]',
+                    title: '📁 Giai Đoạn 1: GOM HỒ SƠ',
+                    text: 'Điểm xuất phát ngay sau khi trúng tuyển: Nhân viên FCT phụ trách sẽ liên hệ ứng viên để thu thập trọn bộ giấy tờ gốc: Hộ chiếu, CCCD, Bằng cấp, Giấy KSK và Lý lịch tư pháp số 2.',
+                    before: () => {}
+                },
+                {
+                    target: '.kanban-column[data-status="TRINH_CUC"]',
+                    title: '🏛️ Giai Đoạn 2: TRÌNH CỤC (Lao Động)',
+                    text: 'Sau khi hồ sơ hoàn tất và đạt chuẩn, hồ sơ sẽ được nộp lên Cục Quản lý Lao động hoặc cơ quan thẩm quyền Đài Loan để xin cấp thư phê duyệt (Tờ Thẩm Định / Quota).',
+                    before: () => {}
+                },
+                {
+                    target: '.kanban-column[data-status="LAM_VISA"]',
+                    title: '🎫 Giai Đoạn 3: LÀM VISA (Thị Thực)',
+                    text: 'Khi đã có giấy phép từ Cục, hồ sơ được chuyển tiếp sang Văn phòng Kinh tế & Văn hóa Đài Bắc (TECO) để xin cấp thị thực lao động (Visa) dán vào hộ chiếu.',
+                    before: () => {}
+                },
+                {
+                    target: '.kanban-column[data-status="NHAN_VISA"]',
+                    title: '✅ Giai Đoạn 4: CÓ VISA',
+                    text: 'Đã nhận Visa từ TECO! Lúc này ứng viên đã đủ điều kiện pháp lý để xuất cảnh. Nhân viên sẽ tiến hành đặt vé máy bay, xếp lịch giáo dục định hướng lần cuối.',
+                    before: () => {}
+                },
+                {
+                    target: '.kanban-column[data-status="XUAT_CANH"]',
+                    title: '✈️ Giai Đoạn 5: DỰ KIẾN XUẤT CẢNH',
+                    text: 'Chốt ngày bay! Khi lao động chính thức bay sang Đài Loan, hồ sơ sẽ hoàn tất chu kỳ quản lý và được tự động chuyển sang mục <strong>✈️ Đã xuất cảnh</strong>.',
+                    before: () => {}
+                },
+                {
+                    target: '#passedKanbanContainer',
+                    title: '💡 Thao Tác Kéo Thả & Điều Hướng Thẻ',
+                    text: '• <strong>Kéo & Thả</strong>: Dùng chuột kéo bất kỳ thẻ ứng viên nào từ cột này sang cột khác để cập nhật tiến độ.<br>• <strong>Nút mũi tên</strong>: Bấm <strong>▶</strong> để tiến 1 bước hoặc <strong>◀</strong> để lùi 1 bước.<br>• Bấm <strong>⚙️ Sửa</strong> trên thẻ để cập nhật ngày tờ trình, số visa, ghi chú!',
+                    before: () => {}
                 }
             ],
             'tour_expiry_warning': [
                 {
                     target: '#tabContent-candidates',
-                    text: '<strong>Bước 1:</strong> Hệ thống tự động kiểm tra thời hạn 4 loại giấy tờ quan trọng: <strong>Hộ chiếu, CCCD, Khám sức khỏe (KSK) và Lý lịch tư pháp số 2 (LLTP2)</strong>.',
+                    title: '⚠️ 4 Loại Giấy Tờ Được Giám Sát Tự Động',
+                    text: 'Hệ thống FCT DAS V3.0 liên tục quét hạn sử dụng của <strong>4 loại giấy tờ cốt lõi</strong> của người lao động:<br>1. <strong>Hộ chiếu (Passport)</strong><br>2. <strong>Căn cước công dân (CCCD)</strong><br>3. <strong>Khám sức khỏe (KSK)</strong><br>4. <strong>Lý lịch tư pháp số 2 (LLTP2)</strong>.',
+                    before: () => {
+                        document.getElementById('historyModal').style.display = 'block';
+                        switchHistoryTab('candidates');
+                    }
+                },
+                {
+                    target: 'thead tr',
+                    title: '🔴 Nhãn Cảnh Báo Màu ĐỎ (Đã Hết Hạn)',
+                    text: 'Khi một giấy tờ hiển thị nhãn màu <strong>ĐỎ</strong> ngay cạnh tên ứng viên, nghĩa là giấy tờ đó <strong>đã quá hạn sử dụng</strong> theo quy định. Lao động bắt buộc phải làm lại gấp để không bị Cục hoặc TECO từ chối hồ sơ!',
+                    before: () => {}
+                },
+                {
+                    target: 'thead tr',
+                    title: '🟡 Nhãn Cảnh Báo Màu VÀNG (Sắp Hết Hạn)',
+                    text: 'Nhãn màu <strong>VÀNG</strong> cảnh báo giấy tờ chỉ còn hạn từ <strong>30 đến 90 ngày tới</strong>. Cán bộ tuyển dụng cần thông báo ngay cho lao động để chuẩn bị thủ tục gia hạn sớm, tránh bị động khi có visa.',
+                    before: () => {}
+                },
+                {
+                    target: '#historyTableBody',
+                    title: '✏️ Cập Nhật Lại Ngày Hạn Giấy Tờ Sau Khi Gia Hạn',
+                    text: 'Sau khi người lao động đã nhận được giấy tờ gia hạn mới, anh/chị bấm nút <strong>✏️ Sửa</strong> trên dòng ứng viên đó, cập nhật lại Ngày cấp và Ngày hết hạn rồi bấm Lưu. Cảnh báo đỏ/vàng sẽ tự động biến mất!',
+                    before: () => {}
+                }
+            ],
+            'tour_export_cv': [
+                {
+                    target: '#btnBulkExcelHeader',
+                    title: '📊 Xuất File Excel Danh Sách Kèm Biểu Đồ',
+                    text: 'Bấm nút <strong>📊 Xuất Excel</strong> ở góc trên cùng để tải ngay file Excel toàn bộ ứng viên. Bảng tính có tích hợp sẵn 2 biểu đồ phân tích tự động: <strong>Biểu đồ cột theo tháng</strong> và <strong>Biểu đồ tròn theo đơn hàng</strong> rất đẹp mắt!',
                     before: () => {
                         document.getElementById('historyModal').style.display = 'block';
                         switchHistoryTab('candidates');
@@ -7390,26 +7578,34 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 },
                 {
                     target: '#historyTableBody',
-                    text: '<strong>Bước 2:</strong> Những giấy tờ hiển thị màu <span style="color:#ef4444; font-weight:800;">ĐỎ</span> là đã hết hạn, màu <span style="color:#f59e0b; font-weight:800;">VÀNG</span> là sắp hết hạn trong 30-90 ngày tới để anh/chị kịp thời bổ sung.',
-                    before: () => { switchHistoryTab('candidates'); }
-                }
-            ],
-            'tour_export_cv': [
-                {
-                    target: '#btnBulkExcelHeader',
-                    text: '<strong>Bước 1:</strong> Bấm vào nút <strong>📊 Xuất Excel</strong> ở góc này để tải file Excel danh sách ứng viên có sẵn biểu đồ thống kê.',
-                    before: () => { document.getElementById('historyModal').style.display = 'block'; }
+                    title: '🖨️ Xem & In Từng Form CV Chuẩn Ver 2026',
+                    text: 'Tại cột Thao tác của từng người, bấm <strong>🖨️ Xem & In</strong> để mở mẫu CV tiếng Trung Ver 2026. Anh/chị bấm <strong>Lưu PDF</strong> hoặc nhấn <strong>Ctrl+P</strong> để in ra giấy hoặc lưu thành file PDF sắc nét chuẩn khổ A4.',
+                    before: () => {}
                 },
                 {
-                    target: '#historyTableBody',
-                    text: '<strong>Bước 2:</strong> Tại cột Thao tác của từng ứng viên, bấm <strong>🖨️ Xem & In</strong> để in form CV Ver 2026. Anh/chị cũng có thể tích chọn nhiều ứng viên rồi bấm <strong>🖨️ In PDF hàng loạt</strong> hoặc <strong>📥 Tải (.ZIP)</strong>.',
-                    before: () => { switchHistoryTab('candidates'); }
+                    target: '#historySelectAll',
+                    title: '☑️ Tích Chọn Nhóm Ứng Viên Cần In / Tải',
+                    text: 'Muốn in hoặc tải cùng lúc nhiều người cho đợt phỏng vấn? Anh/chị hãy tích chọn các ô vuông đầu dòng của những người đó, thanh công cụ nổi sẽ xuất hiện ở phía trên bảng!',
+                    before: () => {}
+                },
+                {
+                    target: '#historyBulkBar',
+                    title: '🖨️ In PDF Hàng Loạt Bằng Công Nghệ Streaming',
+                    text: 'Bấm nút <strong>🖨️ In PDF hàng loạt</strong> trên thanh công cụ nổi. Hệ thống sẽ ghép nối liên tục hàng chục mẫu CV vào một luồng in duy nhất, sẵn sàng gửi lệnh in cho máy in mà không lo treo máy!',
+                    before: () => { document.getElementById('historyBulkBar').style.display = 'flex'; }
+                },
+                {
+                    target: '#historyBulkBar',
+                    title: '📥 Đóng Gói Trọn Bộ Hồ Sơ (.ZIP)',
+                    text: 'Bấm nút <strong>📥 Tải (.ZIP)</strong> để tải về 1 file nén chứa toàn bộ: file CV HTML độc lập (xem offline không cần mạng) kèm đầy đủ ảnh chụp giấy tờ gốc của các ứng viên đã chọn!',
+                    before: () => { document.getElementById('historyBulkBar').style.display = 'flex'; }
                 }
             ],
             'tour_factory_config': [
                 {
                     target: '#tabBtn-configs',
-                    text: '<strong>Bước 1:</strong> Bấm vào tab <strong>📋 Cấu hình Đơn hàng</strong> để quản lý danh mục Nhà máy, Môi giới liên kết và Giấy tờ pháp lý.',
+                    title: '🏗️ Tab Cấu Hình Đơn Hàng & Quota',
+                    text: 'Bấm vào tab <strong>📋 Cấu hình Đơn hàng</strong> để quản lý danh bạ các Nhà máy, Đối tác Môi giới liên kết tại Đài Loan và quản lý số lượng chỉ tiêu tuyển dụng (Quota).',
                     before: () => {
                         document.getElementById('historyModal').style.display = 'block';
                         switchHistoryTab('configs');
@@ -7417,8 +7613,21 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 },
                 {
                     target: '#tabContent-configs',
-                    text: '<strong>Bước 2:</strong> Tại đây anh/chị có thể khai báo Nhà máy mới, Tờ thẩm định, Tờ Visa và theo dõi số lượng chỉ tiêu slots tuyển dụng còn lại.',
-                    before: () => { switchHistoryTab('configs'); }
+                    title: '🏭 Khai Báo Nhà Máy & Môi Giới Mới',
+                    text: 'Tại đây anh/chị có thể khai báo Nhà máy mới và chọn Môi giới liên kết. Tên nhà máy sau khi thêm sẽ lập tức hiển thị trên tất cả các dropdown chọn đơn hàng và lọc trúng tuyển trên hệ thống.',
+                    before: () => {}
+                },
+                {
+                    target: '#factoryDocListBody',
+                    title: '📑 Quản Lý Tờ Thẩm Định & Tờ Visa',
+                    text: 'Mỗi nhà máy sẽ được gán các mã <strong>Tờ thẩm định</strong> và <strong>Tờ Visa</strong> cụ thể, đi kèm ngày hết hiệu lực và số lượng chỉ tiêu tuyển dụng (Dung lượng slots cho phép).',
+                    before: () => {}
+                },
+                {
+                    target: '#tabContent-configs',
+                    title: '🛡️ Tự Động Kiểm Soát Hạn Mức (Slots)',
+                    text: 'Khi điều phối ứng viên vào đơn hàng, hệ thống tự động đối soát số lượng chỉ tiêu còn lại của Tờ thẩm định/Visa đó, giúp công ty không bao giờ nhận vượt hạn ngạch cho phép!',
+                    before: () => {}
                 }
             ]
         };
@@ -7446,17 +7655,22 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 const glow = document.getElementById('miloGlowBorder');
                 const card = document.getElementById('miloTourCard');
                 const badge = document.getElementById('miloTourStepBadge');
+                const title = document.getElementById('miloTourStepTitle');
                 const text = document.getElementById('miloTourStepText');
                 const prevBtn = document.getElementById('miloTourPrevBtn');
                 const nextBtn = document.getElementById('miloTourNextBtn');
 
                 badge.textContent = `Bước ${miloTourStepIndex + 1}/${miloCurrentTour.length}`;
+                if (title) {
+                    title.innerHTML = step.title || '';
+                    title.style.display = step.title ? 'block' : 'none';
+                }
                 text.innerHTML = step.text;
                 prevBtn.style.display = miloTourStepIndex > 0 ? 'inline-block' : 'none';
                 nextBtn.textContent = (miloTourStepIndex === miloCurrentTour.length - 1) ? 'Hoàn tất 👏' : 'Tiếp tục →';
 
                 if (el) {
-                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                     const r = el.getBoundingClientRect();
                     const pad = 6;
                     const x = Math.max(0, r.left - pad);
@@ -7475,11 +7689,12 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                     glow.setAttribute('height', h);
 
                     // Position Tour Card
+                    const cardW = 380;
                     let cardTop = y + h + 14;
                     let cardLeft = x;
-                    if (cardLeft + 320 > window.innerWidth) cardLeft = window.innerWidth - 336;
+                    if (cardLeft + cardW > window.innerWidth) cardLeft = window.innerWidth - cardW - 16;
                     if (cardLeft < 16) cardLeft = 16;
-                    if (cardTop + 200 > window.innerHeight) cardTop = Math.max(16, y - 200);
+                    if (cardTop + 240 > window.innerHeight) cardTop = Math.max(16, y - 240);
 
                     card.style.top = `${cardTop}px`;
                     card.style.left = `${cardLeft}px`;
@@ -7488,9 +7703,9 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                     hole.setAttribute('width', 0);
                     glow.setAttribute('width', 0);
                     card.style.top = '30%';
-                    card.style.left = 'calc(50% - 160px)';
+                    card.style.left = 'calc(50% - 190px)';
                 }
-            }, 100);
+            }, 180);
         }
 
         function nextMiloStep() {
