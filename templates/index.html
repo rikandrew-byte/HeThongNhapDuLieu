@@ -895,15 +895,15 @@
 
             <!-- Milo AI Assistant Staff Card (Trợ lý Hành chính) -->
             <div class="hidden lg:block w-full" style="margin-top: 14px; position:relative; z-index:3;">
-                <div class="milo-sidebar-card" onclick="toggleMiloPanel()" title="Bấm để mở Trợ lý AI Milo & Hướng dẫn Cầm tay chỉ việc">
+                <div class="milo-sidebar-card" onclick="toggleMiloPanel()" title="Bấm để mở Trợ lý AI Daisy & Hướng dẫn Cầm tay chỉ việc">
                     <div style="display: flex; align-items: center; gap: 10px; position: relative; z-index: 1;">
                         <div style="position: relative; width: 40px; height: 40px; flex-shrink: 0;">
-                            <img src="{{ url_for('static', filename='milo_avatar.jpg') }}?v=eyesmile_2026" alt="Milo" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(8, 145, 178, 0.25);">
+                            <img src="{{ url_for('static', filename='milo_avatar.jpg') }}?v=eyesmile_2026" alt="Daisy" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(8, 145, 178, 0.25);">
                             <span class="milo-avatar-status"></span>
                         </div>
                         <div style="flex: 1; min-width: 0;">
                             <div style="font-size: 13px; font-weight: 800; color: #0f766e; display: flex; align-items: center; gap: 4px;">
-                                Milo <span class="milo-wave-hand" title="Xin chào anh/chị!">👋</span>
+                                Daisy <span class="milo-wave-hand" title="Xin chào anh/chị!">👋</span>
                                 <span style="font-size: 9px; font-weight: 700; background: #ccfbf1; color: #0d9488; padding: 1px 5px; border-radius: 999px;">Trợ lý AI</span>
                             </div>
                             <div style="font-size: 11px; color: #64748b; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Hỗ trợ nghiệp vụ DAS</div>
@@ -954,9 +954,9 @@
             <div id="sidebarMiloOfficeCard" class="hidden lg:block w-full" style="display: none; margin-top: 16px; position:relative; z-index:2;">
                 <div style="background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 50%, #eff6ff 100%); border: 1.5px solid #a5f3fc; border-radius: 18px; padding: 10px; box-shadow: 0 10px 30px rgba(8, 145, 178, 0.18); position: relative; overflow: hidden;">
                     <div style="position: relative; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12); border: 2px solid #ffffff;">
-                        <img src="{{ url_for('static', filename='milo_office_desk.jpg') }}?v=desk_2026" alt="Milo Trợ lý Hành chính" style="width: 100%; height: auto; display: block; object-fit: cover;">
+                        <img src="{{ url_for('static', filename='milo_office_desk.jpg') }}?v=desk_2026" alt="Daisy Trợ lý Hành chính" style="width: 100%; height: auto; display: block; object-fit: cover;">
                         <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(15, 23, 42, 0.8) 0%, rgba(15, 23, 42, 0) 100%); padding: 12px 10px 8px; color: #ffffff; text-align: center;">
-                            <div style="font-size: 12px; font-weight: 800; letter-spacing: 0.3px;">Milo · Trực Văn Phòng</div>
+                            <div style="font-size: 12px; font-weight: 800; letter-spacing: 0.3px;">Daisy · Trực Văn Phòng</div>
                             <div style="font-size: 10px; opacity: 0.9; font-weight: 600;">FOCUS • KIND • GROW</div>
                         </div>
                     </div>
@@ -7187,13 +7187,13 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
         <div id="miloGreetingBubble" onclick="toggleMiloPanel()">
             <span>👋</span>
             <div>
-                <div>Chào anh/chị, em là <strong>Milo</strong>!</div>
+                <div>Chào anh/chị, em là <strong>Daisy</strong>!</div>
                 <div style="font-size:11px; color:#0891b2; font-weight:600;">Cần em hỗ trợ nghiệp vụ nào không ạ? 😊</div>
             </div>
             <span onclick="event.stopPropagation(); document.getElementById('miloGreetingBubble').style.display='none'" style="font-size:12px; color:#94a3b8; margin-left:4px; padding:2px 4px;">✕</span>
         </div>
-        <button type="button" id="miloAvatarBtn" onclick="toggleMiloPanel()" title="Trợ lý Hành chính Milo">
-            <img id="miloAvatarImg" src="{{ url_for('static', filename='milo_avatar.jpg') }}?v=eyesmile_2026" alt="Milo Avatar" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
+        <button type="button" id="miloAvatarBtn" onclick="toggleMiloPanel()" title="Trợ lý Hành chính Daisy">
+            <img id="miloAvatarImg" src="{{ url_for('static', filename='milo_avatar.jpg') }}?v=eyesmile_2026" alt="Daisy Avatar" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
             <div class="milo-status-dot"></div>
         </button>
     </div>
@@ -7203,9 +7203,9 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
         <!-- Header -->
         <div class="milo-panel-header">
             <div class="milo-header-info">
-                <img class="milo-header-avatar" src="{{ url_for('static', filename='milo_avatar.jpg') }}?v=eyesmile_2026" alt="Milo" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
+                <img class="milo-header-avatar" src="{{ url_for('static', filename='milo_avatar.jpg') }}?v=eyesmile_2026" alt="Daisy" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
                 <div>
-                    <div class="milo-header-title">Milo · Trợ lý Hành chính</div>
+                    <div class="milo-header-title">Daisy · Trợ lý Hành chính</div>
                     <div class="milo-header-status">
                         <span style="display:inline-block; width:7px; height:7px; background:#4ade80; border-radius:50%;"></span>
                         Hệ thống FCT HR · Luôn sẵn sàng
@@ -7221,7 +7221,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 <span>🎯</span> Cầm tay chỉ việc
             </button>
             <button type="button" id="miloTabBtnChat" class="milo-tab-btn" onclick="switchMiloTab('chat')">
-                <span>💬</span> Hỏi Milo
+                <span>💬</span> Hỏi Daisy
             </button>
         </div>
 
@@ -7307,9 +7307,9 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             <div id="miloChatMessages" class="milo-chat-messages">
                 <!-- Welcome message from Milo -->
                 <div class="milo-msg milo-bot">
-                    <img class="milo-msg-avatar" src="{{ url_for('static', filename='milo_avatar.jpg') }}?v=eyesmile_2026" alt="Milo" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
+                    <img class="milo-msg-avatar" src="{{ url_for('static', filename='milo_avatar.jpg') }}?v=eyesmile_2026" alt="Daisy" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
                     <div class="milo-msg-bubble">
-                        Dạ em chào anh/chị! Em là <strong>Milo</strong> - trợ lý hành chính FCT. Em có thể hướng dẫn mọi thao tác quản lý hồ sơ, ghép đơn hàng, theo dõi tiến độ và in ấn. Anh/chị cần em hỗ trợ nghiệp vụ nào cứ nhắn cho em nhé! 😊
+                        Dạ em chào anh/chị! Em là <strong>Daisy</strong> - trợ lý hành chính FCT. Em có thể hướng dẫn mọi thao tác quản lý hồ sơ, ghép đơn hàng, theo dõi tiến độ và in ấn. Anh/chị cần em hỗ trợ nghiệp vụ nào cứ nhắn cho em nhé! 😊
                     </div>
                 </div>
             </div>
@@ -7327,7 +7327,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
 
             <!-- Input Bar -->
             <div class="milo-chat-input-bar">
-                <input type="text" id="miloChatInput" class="milo-input" placeholder="Hỏi Milo bất kỳ điều gì..." onkeydown="if(event.key==='Enter') sendMiloChatMessage()">
+                <input type="text" id="miloChatInput" class="milo-input" placeholder="Hỏi Daisy bất kỳ điều gì..." onkeydown="if(event.key==='Enter') sendMiloChatMessage()">
                 <button type="button" class="milo-send-btn" onclick="sendMiloChatMessage()" title="Gửi tin nhắn">
                     <svg style="width:16px; height:16px; fill:currentColor;" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
                 </button>
@@ -7352,7 +7352,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
         <div id="miloTourCard">
             <!-- Em bé hướng dẫn đứng bên cạnh thẻ tour (đúng chỗ khoanh tròn đỏ) -->
             <div id="miloTourGuideKid">
-                <img src="{{ url_for('static', filename='milo_guide_kid.png') }}?v=guide_2026" alt="Milo hướng dẫn">
+                <img src="{{ url_for('static', filename='milo_guide_kid.png') }}?v=guide_2026" alt="Daisy hướng dẫn">
             </div>
 
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">
@@ -7448,7 +7448,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
         })();
 
         
-        // Đồng bộ hiển thị bé Milo trang phục hành chính ở Sidebar (vùng khoanh cam) khi bấm Hỏi / mở panel
+        // Đồng bộ hiển thị bé Daisy trang phục hành chính ở Sidebar (vùng khoanh cam) khi bấm Hỏi / mở panel
         function syncMiloSidebarOffice(isOpen) {
             const stats = document.getElementById('sidebarStatsWrapper');
             const office = document.getElementById('sidebarMiloOfficeCard');
@@ -7977,9 +7977,9 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             const typingDiv = document.createElement('div');
             typingDiv.className = 'milo-msg milo-bot';
             typingDiv.innerHTML = `
-                <img class="milo-msg-avatar" src="{{ url_for('static', filename='milo_avatar.jpg') }}?v=eyesmile_2026" alt="Milo" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
+                <img class="milo-msg-avatar" src="{{ url_for('static', filename='milo_avatar.jpg') }}?v=eyesmile_2026" alt="Daisy" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
                 <div class="milo-msg-bubble" style="color:#64748b;">
-                    <em>Milo đang suy nghĩ...</em>
+                    <em>Daisy đang suy nghĩ...</em>
                 </div>
             `;
             container.appendChild(typingDiv);
@@ -8001,7 +8001,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 let formattedReply = formatMiloReply(rawReply);
 
                 botDiv.innerHTML = `
-                    <img class="milo-msg-avatar" src="{{ url_for('static', filename='milo_avatar.jpg') }}?v=eyesmile_2026" alt="Milo" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
+                    <img class="milo-msg-avatar" src="{{ url_for('static', filename='milo_avatar.jpg') }}?v=eyesmile_2026" alt="Daisy" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
                     <div class="milo-msg-bubble">${formattedReply}</div>
                 `;
                 container.appendChild(botDiv);
@@ -8011,7 +8011,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 const errDiv = document.createElement('div');
                 errDiv.className = 'milo-msg milo-bot';
                 errDiv.innerHTML = `
-                    <img class="milo-msg-avatar" src="{{ url_for('static', filename='milo_avatar.jpg') }}?v=eyesmile_2026" alt="Milo" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
+                    <img class="milo-msg-avatar" src="{{ url_for('static', filename='milo_avatar.jpg') }}?v=eyesmile_2026" alt="Daisy" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
                     <div class="milo-msg-bubble" style="color:#dc2626;">Dạ kết nối máy chủ đang bận, anh/chị vui lòng thử lại ạ!</div>
                 `;
                 container.appendChild(errDiv);
