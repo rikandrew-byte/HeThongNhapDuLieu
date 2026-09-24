@@ -916,7 +916,7 @@
             </div>
 
             <!-- Thống kê hệ thống -->
-            <div class="hidden lg:block w-full" style="margin-top: 20px; position:relative; z-index:2;">
+            <div id="sidebarStatsWrapper" class="hidden lg:block w-full" style="margin-top: 20px; position:relative; z-index:2; transition: all 0.3s ease;">
                 <p class="font-bold text-slate-400 uppercase tracking-widest" style="font-size: 10px; margin-bottom: 13px;">Thống kê hệ thống</p>
                 <div style="display: flex; flex-direction: column; gap: 13px;">
                     <div class="flex items-center justify-between bg-white border border-slate-100 rounded-xl shadow-sm" style="padding: 13px;">
@@ -946,6 +946,23 @@
                             <span class="font-semibold text-slate-600" style="font-size: 13px;">Cài đặt hệ thống</span>
                         </div>
                         <span class="text-slate-400 font-bold" style="font-size: 12px;">→</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Khung Bé Milo trang phục hành chính (Xuất hiện khi bấm "Hỏi" / Mở Panel) -->
+            <div id="sidebarMiloOfficeCard" class="hidden lg:block w-full" style="display: none; margin-top: 16px; position:relative; z-index:2;">
+                <div style="background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 50%, #eff6ff 100%); border: 1.5px solid #a5f3fc; border-radius: 18px; padding: 10px; box-shadow: 0 10px 30px rgba(8, 145, 178, 0.18); position: relative; overflow: hidden;">
+                    <div style="position: relative; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12); border: 2px solid #ffffff;">
+                        <img src="{{ url_for('static', filename='milo_office_desk.jpg') }}?v=desk_2026" alt="Milo Trợ lý Hành chính" style="width: 100%; height: auto; display: block; object-fit: cover;">
+                        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(15, 23, 42, 0.8) 0%, rgba(15, 23, 42, 0) 100%); padding: 12px 10px 8px; color: #ffffff; text-align: center;">
+                            <div style="font-size: 12px; font-weight: 800; letter-spacing: 0.3px;">Milo · Trực Văn Phòng</div>
+                            <div style="font-size: 10px; opacity: 0.9; font-weight: 600;">FOCUS • KIND • GROW</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 10px; padding: 4px 6px; display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 11.5px; font-weight: 750; color: #0e7490;">
+                        <span class="milo-status-dot" style="position: static; display: inline-block; width: 8px; height: 8px; margin: 0; flex-shrink: 0;"></span>
+                        <span>Đang sẵn sàng hỗ trợ anh/chị!</span>
                     </div>
                 </div>
             </div>
@@ -7067,6 +7084,42 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
             animation: fadeIn 0.2s ease;
         }
+
+        /* Em bé hướng dẫn đứng bên cạnh thẻ tour (Chỗ khoanh tròn đỏ) */
+        #miloTourGuideKid {
+            position: absolute;
+            left: -155px;
+            bottom: -8px;
+            width: 165px;
+            pointer-events: none;
+            z-index: 100060;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: miloKidBounce 2.6s infinite ease-in-out;
+        }
+        #miloTourGuideKid img {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: contain;
+            filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.42));
+        }
+        @keyframes miloKidBounce {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-8px) rotate(-1.5deg);
+            }
+        }
+        /* Mobile: Bé thu gọn lên trên góc thẻ tour để không tràn màn hình */
+        @media (max-width: 768px) {
+            #miloTourGuideKid {
+                left: -6px !important;
+                bottom: auto !important;
+                top: -96px !important;
+                width: 105px !important;
+            }
+        }
     
         /* Desktop: Ẩn nút tròn nổi góc phải dưới, hiển thị Milo Card trên Sidebar */
         @media (min-width: 1024px) {
@@ -7297,6 +7350,11 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
         </svg>
 
         <div id="miloTourCard">
+            <!-- Em bé hướng dẫn đứng bên cạnh thẻ tour (đúng chỗ khoanh tròn đỏ) -->
+            <div id="miloTourGuideKid">
+                <img src="{{ url_for('static', filename='milo_guide_kid.png') }}?v=guide_2026" alt="Milo hướng dẫn">
+            </div>
+
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">
                 <div style="display:flex; align-items:center; gap:8px;">
                     <img src="{{ url_for('static', filename='milo_avatar.jpg') }}?v=eyesmile_2026" style="width:26px; height:26px; border-radius:50%; object-fit:cover;" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
@@ -7390,16 +7448,33 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
         })();
 
         
+        // Đồng bộ hiển thị bé Milo trang phục hành chính ở Sidebar (vùng khoanh cam) khi bấm Hỏi / mở panel
+        function syncMiloSidebarOffice(isOpen) {
+            const stats = document.getElementById('sidebarStatsWrapper');
+            const office = document.getElementById('sidebarMiloOfficeCard');
+            if (stats && office) {
+                if (isOpen) {
+                    stats.style.display = 'none';
+                    office.style.display = 'block';
+                } else {
+                    office.style.display = 'none';
+                    stats.style.display = 'block';
+                }
+            }
+        }
+
         function openMiloChat() {
             const p = document.getElementById('miloPanel');
             if (p) p.style.display = 'flex';
             switchMiloTab('chat');
+            syncMiloSidebarOffice(true);
         }
 
         function openMiloTour() {
             const p = document.getElementById('miloPanel');
             if (p) p.style.display = 'flex';
             switchMiloTab('tour');
+            syncMiloSidebarOffice(true);
         }
 
         function toggleMiloPanel() {
@@ -7408,14 +7483,17 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             if (b) b.style.display = 'none';
             if (p.style.display === 'flex') {
                 p.style.display = 'none';
+                syncMiloSidebarOffice(false);
             } else {
                 p.style.display = 'flex';
+                syncMiloSidebarOffice(true);
             }
         }
 
         function closeMiloPanel() {
             const p = document.getElementById('miloPanel');
             if (p) p.style.display = 'none';
+            syncMiloSidebarOffice(false);
         }
 
         function switchMiloTab(tab) {
@@ -7815,12 +7893,33 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
 
                     card.style.top = `${cardTop}px`;
                     card.style.left = `${cardLeft}px`;
+
+                    // Điều chỉnh vị trí em bé hướng dẫn đứng bên cạnh (đúng chỗ khoanh tròn đỏ)
+                    const guideKid = document.getElementById('miloTourGuideKid');
+                    if (guideKid && window.innerWidth >= 768) {
+                        if (cardLeft < 170) {
+                            guideKid.style.left = 'auto';
+                            guideKid.style.right = '-155px';
+                            guideKid.style.bottom = '-8px';
+                            guideKid.style.top = 'auto';
+                        } else {
+                            guideKid.style.left = '-155px';
+                            guideKid.style.right = 'auto';
+                            guideKid.style.bottom = '-8px';
+                            guideKid.style.top = 'auto';
+                        }
+                    }
                 } else {
                     // Target not found fallback
                     hole.setAttribute('width', 0);
                     glow.setAttribute('width', 0);
                     card.style.top = '30%';
                     card.style.left = 'calc(50% - 190px)';
+                    const guideKid = document.getElementById('miloTourGuideKid');
+                    if (guideKid && window.innerWidth >= 768) {
+                        guideKid.style.left = '-155px';
+                        guideKid.style.right = 'auto';
+                    }
                 }
             }, 180);
         }
