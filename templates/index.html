@@ -969,8 +969,17 @@
 
         </div>
 
-        <div class="block lg:hidden flex-shrink-0 pl-2">
-            <img src="{{ url_for('static', filename='LogoFCT.png') }}" alt="FCT Logo" class="w-10 h-8 object-contain">
+        <div class="block lg:hidden flex-shrink-0 flex items-center gap-2 pl-2">
+            <!-- Nút Daisy Header Mobile -->
+            <button type="button" onclick="toggleMiloPanel()" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-teal-50 to-cyan-50 border border-cyan-200 shadow-sm active:scale-95 transition-all" title="Mở Trợ lý AI Daisy">
+                <div class="relative w-6 h-6 rounded-full overflow-hidden border border-white shadow-sm flex-shrink-0">
+                    <img src="{{ url_for('static', filename='milo_avatar.jpg') }}?v=daisy_boss_2026" alt="Daisy" class="w-full h-full object-cover">
+                    <span class="absolute bottom-0 right-0 w-2 h-2 bg-emerald-500 rounded-full border border-white"></span>
+                </div>
+                <span class="text-xs font-bold text-cyan-800">Daisy</span>
+                <span class="text-xs">👋</span>
+            </button>
+            <img src="{{ url_for('static', filename='LogoFCT.png') }}" alt="FCT Logo" class="w-8 h-7 object-contain">
         </div>
 
         <div class="hidden lg:block w-full" style="position:relative; z-index:2; margin-top: auto;">
@@ -7136,33 +7145,48 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             }
         }
 
-        /* Mobile & Tablet: Nút nổi Milo tinh gọn, không che chắn nút hệ thống */
+        /* Mobile & Tablet: Trợ lý Daisy tinh gọn, thông minh, không che nút hệ thống */
         @media (max-width: 1023px) {
             #miloGreetingBubble {
                 display: none !important; /* Không tự bung bóng thoại to đè màn hình trên điện thoại */
             }
             #miloWidgetWrapper {
-                bottom: 20px;
-                right: 14px;
+                bottom: 22px;
+                right: 12px;
                 z-index: 100002;
-                transition: bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+                transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, bottom 0.25s ease;
+            }
+            /* Tự động nép 50% vào mép màn hình khi không chạm để không che chắn nút */
+            #miloWidgetWrapper.is-docked-right {
+                transform: translateX(48%) !important;
+                opacity: 0.65;
+            }
+            #miloWidgetWrapper.is-docked-left {
+                transform: translateX(-48%) !important;
+                opacity: 0.65;
+            }
+            #miloWidgetWrapper:hover,
+            #miloWidgetWrapper:active,
+            #miloWidgetWrapper.is-active {
+                transform: translateX(0) !important;
+                opacity: 1 !important;
             }
             #miloAvatarBtn {
-                width: 46px;
-                height: 46px;
+                width: 44px;
+                height: 44px;
                 border: 2px solid #ffffff;
-                box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
+                box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
             }
             .milo-status-dot {
-                width: 11px;
-                height: 11px;
+                width: 10px;
+                height: 10px;
                 bottom: 1px;
                 right: 1px;
                 border-width: 2px;
             }
             /* Khi thanh thao tác hàng loạt (Bulk Bar) mở ở đáy màn hình trên mobile */
             body.has-bulk-bar #miloWidgetWrapper {
-                bottom: 110px !important; /* Nhấc bổng Milo lên trên thanh công cụ để không che nút Xóa / Tải / In */
+                bottom: 105px !important; /* Nhấc bổng Daisy lên trên thanh công cụ để không che nút Xóa / Tải / In */
             }
             #miloPanel {
                 bottom: 0 !important;
@@ -7170,9 +7194,36 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 left: 0 !important;
                 width: 100vw !important;
                 max-width: 100vw !important;
-                height: 85vh !important;
-                max-height: 85vh !important;
-                border-radius: 20px 20px 0 0 !important;
+                height: 84vh !important;
+                max-height: 84vh !important;
+                border-radius: 22px 22px 0 0 !important;
+                box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.3) !important;
+            }
+            /* Spotlight Tour trên Mobile: Cố định đáy màn hình để không che vùng target ở trên */
+            #miloTourCard {
+                position: fixed !important;
+                bottom: 12px !important;
+                top: auto !important;
+                left: 10px !important;
+                right: 10px !important;
+                width: auto !important;
+                max-width: calc(100vw - 20px) !important;
+                border-radius: 16px !important;
+                padding: 12px 14px !important;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45) !important;
+            }
+            #miloTourStepText {
+                max-height: 150px !important;
+                margin-bottom: 10px !important;
+                font-size: 12px !important;
+                line-height: 1.5 !important;
+            }
+            #miloTourGuideKid {
+                left: 6px !important;
+                right: auto !important;
+                bottom: auto !important;
+                top: -74px !important;
+                width: 80px !important;
             }
         }
         .milo-sidebar-card:hover {
@@ -7305,6 +7356,20 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
         <!-- Tab 2: AI Chat Helpdesk -->
         <div id="miloChatTab" class="milo-tab-content" style="display:none; padding:0; gap:0;">
             <div id="miloChatMessages" class="milo-chat-messages">
+                <!-- Mobile Only: Banner Daisy trực văn phòng khi mở chat -->
+                <div class="block lg:hidden" style="margin-bottom: 6px; border-radius: 14px; overflow: hidden; border: 1.5px solid #a5f3fc; box-shadow: 0 4px 14px rgba(8, 145, 178, 0.15); flex-shrink: 0;">
+                    <div style="position: relative;">
+                        <img src="{{ url_for('static', filename='milo_office_desk.jpg') }}?v=daisy_desk_2026" alt="Daisy trực văn phòng" style="width: 100%; height: 110px; object-fit: cover; object-position: center 25%; display: block;">
+                        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(15, 23, 42, 0.88) 0%, transparent 100%); padding: 8px 10px 6px; color: #ffffff; display: flex; justify-content: space-between; align-items: flex-end;">
+                            <div>
+                                <div style="font-size: 11.5px; font-weight: 800; letter-spacing: 0.2px;">Daisy · Trực Văn Phòng</div>
+                                <div style="font-size: 9.5px; opacity: 0.9; font-weight: 500;">DREAM BIG • WORK SMART</div>
+                            </div>
+                            <span style="font-size: 9px; font-weight: 700; background: #10b981; color: #ffffff; padding: 2px 7px; border-radius: 999px; box-shadow: 0 0 6px rgba(16,185,129,0.8);">Trực tuyến</span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Welcome message from Milo -->
                 <div class="milo-msg milo-bot">
                     <img class="milo-msg-avatar" src="{{ url_for('static', filename='milo_avatar.jpg') }}?v=daisy_boss_2026" alt="Daisy" onerror="this.onerror=null; this.src='{{ url_for('static', filename='LogoFCT.png') }}';">
@@ -7404,44 +7469,100 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             }, 1500);
         });
 
-        // Cho phép vuốt/kéo nút Milo lên xuống mép phải trên điện thoại để linh hoạt vị trí
+        // Hệ thống kéo thả thông minh và tự động nép mép (Smart Snap & Auto-Dock) trên Mobile
         (function initMiloMobileDrag() {
-            let touchStartY = 0;
-            let initialBottom = 0;
+            let touchStartX = 0, touchStartY = 0;
+            let initialX = 0, initialBottom = 0;
             let isDragging = false;
+            let dockTimer = null;
+
+            function triggerDock() {
+                if (window.innerWidth >= 1024) return;
+                const wrapper = document.getElementById('miloWidgetWrapper');
+                const panel = document.getElementById('miloPanel');
+                if (!wrapper || (panel && panel.style.display === 'flex')) return;
+
+                const rect = wrapper.getBoundingClientRect();
+                const isLeft = rect.left < window.innerWidth / 2;
+                wrapper.classList.remove('is-docked-left', 'is-docked-right');
+                wrapper.classList.add(isLeft ? 'is-docked-left' : 'is-docked-right');
+            }
+
+            function resetDockTimer() {
+                const wrapper = document.getElementById('miloWidgetWrapper');
+                if (wrapper) {
+                    wrapper.classList.remove('is-docked-left', 'is-docked-right');
+                }
+                clearTimeout(dockTimer);
+                dockTimer = setTimeout(triggerDock, 3000);
+            }
 
             window.addEventListener('DOMContentLoaded', () => {
                 const btn = document.getElementById('miloAvatarBtn');
                 const wrapper = document.getElementById('miloWidgetWrapper');
                 if (!btn || !wrapper) return;
 
+                // Tự động nép sau 3 giây không chạm
+                resetDockTimer();
+                window.addEventListener('scroll', resetDockTimer, { passive: true });
+
                 btn.addEventListener('touchstart', (e) => {
-                    touchStartY = e.touches[0].clientY;
+                    const touch = e.touches[0];
+                    touchStartX = touch.clientX;
+                    touchStartY = touch.clientY;
                     const rect = wrapper.getBoundingClientRect();
+                    initialX = rect.left;
                     initialBottom = window.innerHeight - rect.bottom;
                     isDragging = false;
+                    wrapper.classList.remove('is-docked-left', 'is-docked-right');
+                    clearTimeout(dockTimer);
                 }, { passive: true });
 
                 btn.addEventListener('touchmove', (e) => {
-                    const currentY = e.touches[0].clientY;
-                    const deltaY = touchStartY - currentY;
-                    if (Math.abs(deltaY) > 6) {
+                    const touch = e.touches[0];
+                    const deltaX = touch.clientX - touchStartX;
+                    const deltaY = touchStartY - touch.clientY;
+
+                    if (Math.hypot(deltaX, deltaY) > 8) {
                         isDragging = true;
                         let newBottom = initialBottom + deltaY;
-                        newBottom = Math.max(15, Math.min(window.innerHeight - 75, newBottom));
-                        wrapper.style.bottom = newBottom + 'px';
+                        newBottom = Math.max(12, Math.min(window.innerHeight - 70, newBottom));
+                        wrapper.style.bottom = `${newBottom}px`;
+
+                        let newX = initialX + deltaX;
+                        newX = Math.max(8, Math.min(window.innerWidth - 56, newX));
+                        wrapper.style.left = `${newX}px`;
+                        wrapper.style.right = 'auto';
                     }
                 }, { passive: true });
 
                 btn.addEventListener('touchend', (e) => {
                     if (isDragging) {
-                        setTimeout(() => { isDragging = false; }, 80);
+                        setTimeout(() => { isDragging = false; }, 100);
+                        // Hít thông minh về mép gần nhất (Snap to edge)
+                        const rect = wrapper.getBoundingClientRect();
+                        const isLeft = rect.left < window.innerWidth / 2;
+                        wrapper.style.transition = 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
+                        if (isLeft) {
+                            wrapper.style.left = '10px';
+                            wrapper.style.right = 'auto';
+                        } else {
+                            wrapper.style.left = 'auto';
+                            wrapper.style.right = '10px';
+                        }
+                        setTimeout(() => {
+                            wrapper.style.transition = '';
+                            resetDockTimer();
+                        }, 350);
+                    } else {
+                        resetDockTimer();
                     }
                 });
 
                 const origToggle = window.toggleMiloPanel;
                 window.toggleMiloPanel = function() {
                     if (isDragging) return;
+                    resetDockTimer();
                     origToggle();
                 };
             });
