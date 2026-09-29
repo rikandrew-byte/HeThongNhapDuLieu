@@ -2801,6 +2801,37 @@
                 }).catch(e => console.error("Error loading employees:", e));
         }
 
+        // Chuẩn hóa so sánh sắp xếp ứng viên theo mã số có số thứ tự bé dần (ví dụ: MD13543 > MD13542 > MD13540 > MD13539...)
+        function compareCandidateMaso(masoA, masoB, idA = 0, idB = 0) {
+            const sA = (masoA || '').toString().trim().toUpperCase();
+            const sB = (masoB || '').toString().trim().toUpperCase();
+            
+            // 1. Hồ sơ CHO_DUYET luôn ưu tiên đưa lên đầu danh sách
+            const isChoA = sA === 'CHO_DUYET';
+            const isChoB = sB === 'CHO_DUYET';
+            if (isChoA && !isChoB) return -1;
+            if (!isChoA && isChoB) return 1;
+            if (isChoA && isChoB) return (parseInt(idB, 10) || 0) - (parseInt(idA, 10) || 0);
+
+            // 2. Trích xuất phần số từ mã số (ví dụ MD13543 -> 13543)
+            const matchA = sA.match(/\d+/);
+            const matchB = sB.match(/\d+/);
+            const numA = matchA ? parseInt(matchA[0], 10) : -1;
+            const numB = matchB ? parseInt(matchB[0], 10) : -1;
+
+            // Sắp xếp theo số thứ tự giảm dần (từ lớn đến bé)
+            if (numB !== numA) {
+                return numB - numA;
+            }
+
+            // 3. Nếu cùng số thứ tự (ví dụ MD13540 vs FD13540 hoặc mã không có số)
+            const strComp = sB.localeCompare(sA, undefined, { numeric: true, sensitivity: 'base' });
+            if (strComp !== 0) return strComp;
+
+            // 4. Nếu mã hoàn toàn trùng nhau, ưu tiên ID lớn hơn (tạo sau)
+            return (parseInt(idB, 10) || 0) - (parseInt(idA, 10) || 0);
+        }
+
         // Hàm gọi API lấy lịch sử và hiển thị lên bảng
 async function loadHistory(searchQuery = '', skipUIInit = false) {
     try {
@@ -2834,18 +2865,8 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
         const result = await response.json();
 
         if (result.success) {
-            // Sắp xếp mã số theo thứ tự số từ lớn đến bé (ví dụ: KD1425 > KD1423 > KD1422 > KD1421...)
-            function parseMasoNum(m) {
-                if (!m) return 0;
-                const match = m.toString().match(/\d+/);
-                return match ? parseInt(match[0], 10) : 0;
-            }
-            result.data.sort((a, b) => {
-                const numA = parseMasoNum(a.ma_so);
-                const numB = parseMasoNum(b.ma_so);
-                if (numB !== numA) return numB - numA;
-                return (b.ma_so || '').localeCompare(a.ma_so || '', undefined, { numeric: true, sensitivity: 'base' });
-            });
+            // Sắp xếp mã số theo thứ tự số từ lớn đến bé (ví dụ: MD13543 > MD13542 > MD13540...)
+            result.data.sort((a, b) => compareCandidateMaso(a.ma_so, b.ma_so, a.id, b.id));
             currentHistoryData = result.data;
             
             // Cập nhật thống kê Sidebar
@@ -3906,6 +3927,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                     const list = document.createElement('div');
                     list.style.padding = '8px 16px';
                     
+                    candidates.sort((a, b) => compareCandidateMaso(a.ma_so, b.ma_so, a.id, b.id));
                     candidates.forEach((item, index) => {
                         const row = document.createElement('div');
                         row.style.cssText = `display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed #e2e8f0; gap: 8px; flex-wrap: wrap;`;
@@ -5675,21 +5697,15 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 }
             }
 
-            // 5. Reorder rows: if multiple terms (e.g. Quick Filter), sort A-Z. Otherwise, restore original (newest first) order.
+            // 5. Luôn sắp xếp lại các dòng theo mã số có số thứ tự bé dần (từ lớn đến bé: MD13543 > MD13542 > MD13540...)
             const rowArray = Array.from(rows);
-            if (terms.length > 1) {
-                rowArray.sort((a, b) => {
-                    const ma = (a.getAttribute('data-maso') || '').toUpperCase().trim();
-                    const mb = (b.getAttribute('data-maso') || '').toUpperCase().trim();
-                    return ma.localeCompare(mb, undefined, { numeric: true, sensitivity: 'base' });
-                });
-            } else {
-                rowArray.sort((a, b) => {
-                    const idA = parseInt(a.dataset.id || '0', 10);
-                    const idB = parseInt(b.dataset.id || '0', 10);
-                    return idB - idA;
-                });
-            }
+            rowArray.sort((a, b) => {
+                const ma = (a.dataset.masoOrig || a.getAttribute('data-maso-orig') || a.dataset.maso || a.getAttribute('data-maso') || '').toUpperCase().trim();
+                const mb = (b.dataset.masoOrig || b.getAttribute('data-maso-orig') || b.dataset.maso || b.getAttribute('data-maso') || '').toUpperCase().trim();
+                const idA = parseInt(a.dataset.id || '0', 10);
+                const idB = parseInt(b.dataset.id || '0', 10);
+                return compareCandidateMaso(ma, mb, idA, idB);
+            });
             rowArray.forEach(row => tbody.appendChild(row));
 
             updateHistoryCount();

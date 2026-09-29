@@ -1920,6 +1920,17 @@ def handle_employees():
             return jsonify({'success': True, 'message': 'Đã xóa nhân viên'})
         return jsonify({'success': False, 'message': 'Không tìm thấy nhân viên'})
 
+def sort_history_records(record_list):
+    """Sắp xếp danh sách hồ sơ: CHO_DUYET lên đầu, sau đó theo số thứ tự trong mã số giảm dần (bé dần: MD13543 > MD13542 > MD13540...), rồi mã số giảm dần, cuối cùng ID giảm dần."""
+    def get_sort_key(r):
+        ms = (getattr(r, 'ma_so', '') or '').strip().upper()
+        is_cho = 1 if ms == 'CHO_DUYET' else 0
+        m = re.search(r'\d+', ms)
+        num = int(m.group(0)) if m else -1
+        rid = getattr(r, 'id', 0) or 0
+        return (is_cho, num, ms, rid)
+    return sorted(record_list, key=get_sort_key, reverse=True)
+
 @app.route('/api/history', methods=['GET'])
 @auth_required
 def api_history():
@@ -1986,6 +1997,7 @@ def api_history():
             )
             .all()
         )
+        records = sort_history_records(records)
         
         # Tự động liên kết factory_id nếu công xưởng đã có trong danh mục (batch lookup 1 lần, không gây N+1 query và TUYỆT ĐỐI KHÔNG XÓA selected_job)
         needs_commit = False
@@ -2450,7 +2462,7 @@ def api_export_excel():
             selected_records = FormHistory.query.filter(FormHistory.is_selected == True).all()
         
         # records = active_records (để tương thích với logic bên dưới của Sheet 1 & Thống Kê)
-        records = active_records
+        records = sort_history_records(active_records)
         # Khử trùng lặp và loại bỏ các bản ghi đã xóa khỏi danh sách trúng tuyển
         selected_records = deduplicate_placement_records([r for r in selected_records if not getattr(r, 'is_deleted', False)])
             
