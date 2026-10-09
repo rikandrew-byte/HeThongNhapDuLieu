@@ -36,7 +36,12 @@ groq_client = Groq(api_key=groq_api_key) if (Groq and groq_api_key) else None
 app = Flask(__name__, static_folder='static', static_url_path='')
 app.debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
 CORS(app, resources={r"/*": {"origins": ["https://cv.fct.vn", "http://127.0.0.1:5000", "http://localhost:5000"]}})
-app.config['MAX_CONTENT_LENGTH'] = 20 * 1024 * 1024  # 20MB limit
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB limit
+app.config['MAX_FORM_MEMORY_SIZE'] = 50 * 1024 * 1024  # 50MB limit for form fields
+
+@app.errorhandler(413)
+def request_entity_too_large(error):
+    return jsonify({'success': False, 'error': 'Dung lượng dữ liệu hoặc ảnh quá lớn (vượt quá giới hạn 50MB). Vui lòng nén bớt ảnh trước khi gửi.'}), 413
 
 username = os.environ.get('ADMIN_USERNAME', 'fctvt')
 password = os.environ.get('ADMIN_PASSWORD', '1503')

@@ -540,7 +540,7 @@
             // ── Hàm set ảnh chân dung — lưu base64 vào hidden field ──
             async function setPhoto(file) {
                 if (!file || !file.type.startsWith('image/')) return;
-                const b64 = await resizeToBase64(file, 1800, 0.95);
+                const b64 = await resizeToBase64(file, 1200, 0.85);
                 photoPreview.src = b64;
                 photoPreview.classList.remove('hidden');
                 dropzoneText.classList.add('hidden');

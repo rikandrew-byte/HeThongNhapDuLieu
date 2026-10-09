@@ -2496,7 +2496,7 @@
             // ── Hàm set ảnh chân dung — lưu base64 vào hidden field ──
             async function setPhoto(file) {
                 if (!file || !file.type.startsWith('image/')) return;
-                const b64 = await resizeToBase64(file, 1800, 0.95);
+                const b64 = await resizeToBase64(file, 1200, 0.85);
                 photoPreview.src = b64;
                 photoPreview.classList.remove('hidden');
                 dropzoneText.classList.add('hidden');
@@ -5830,16 +5830,20 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             // Luôn gửi document_images kể cả khi rỗng để tránh Backend tự động khôi phục từ bản ghi cũ
             plainData['document_images'] = currentDocumentImages || [];
 
-            const submitFormData = new FormData();
-            submitFormData.append('data', JSON.stringify(plainData));
-
             try {
                 const response = await fetch('/api/submit-only', {
                     method: 'POST',
-                    body: submitFormData,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(plainData),
                     credentials: 'same-origin'
                 });
-                const result = await response.json();
+                
+                let result = {};
+                try {
+                    result = await response.json();
+                } catch (e) {
+                    result = { success: false, error: `HTTP ${response.status}: ${response.statusText}` };
+                }
                 
                 if (result.success) {
                     if (mode === 'html') {
