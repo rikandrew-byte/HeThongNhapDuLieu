@@ -21,10 +21,24 @@ import openpyxl
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 from openpyxl.chart import BarChart, PieChart, Reference
 from openpyxl.chart.label import DataLabelList
-from openpyxl.utils import get_column_letter
+# Monkey-patch typing.ForwardRef for Python 3.10.0 compatibility with Pydantic V2
+import typing
+if hasattr(typing, 'ForwardRef'):
+    _orig_fr_init = typing.ForwardRef.__init__
+    def _patched_fr_init(self, arg, is_argument=False, is_class=False, **kwargs):
+        try:
+            return _orig_fr_init(self, arg, is_argument=is_argument)
+        except TypeError:
+            return _orig_fr_init(self, arg)
+    try:
+        typing.ForwardRef('test', is_argument=False, is_class=True)
+    except TypeError:
+        typing.ForwardRef.__init__ = _patched_fr_init
+
 try:
     from groq import Groq
-except ImportError:
+except Exception as _groq_err:
+    print(f"Warning: Could not import Groq: {_groq_err}")
     Groq = None
 
 load_dotenv()
