@@ -346,14 +346,37 @@
             .premium-sidebar {
                 flex-shrink: 0 !important;
                 height: auto !important;
-                padding: 16px 20px !important;
+                padding: 8px 14px !important;
+            }
+            .premium-sidebar > div:first-child {
+                width: auto !important;
+                align-items: flex-start !important;
+            }
+            .sidebar-brand-block {
+                flex-direction: row !important;
+                align-items: center !important;
+                text-align: left !important;
+                margin-top: 0 !important;
+                gap: 10px !important;
+            }
+            .sidebar-brand-logo {
+                width: 34px !important;
+                height: 34px !important;
+            }
+            .sidebar-logo-text {
+                font-size: 14.5px !important;
+                line-height: 1.2 !important;
+            }
+            .sidebar-version-sub {
+                font-size: 10px !important;
+                margin-top: 1px !important;
             }
             .main-content-area {
                 flex: 1 !important;
                 height: auto !important;
                 min-height: 0 !important;
                 overflow-y: auto !important;
-                padding-bottom: 120px !important;
+                padding-bottom: 90px !important;
             }
             .glass-bottom-bar {
                 position: sticky !important;
@@ -884,13 +907,13 @@
         
         <div class="w-full flex flex-col items-center">
             <!-- Center Logo, Title, and Version with Golden Ratio spacing -->
-            <div class="flex flex-col items-center text-center" style="margin-top: 13px; gap: 13px;">
-                <img src="{{ url_for('static', filename='LogoFCT.png') }}" alt="FCT Logo" onerror="this.onerror=null; this.src='/LogoFCT.png';" style="width: 89px; height: 89px; object-fit: contain; filter: drop-shadow(0 8px 16px rgba(8,145,178,0.18));">
+            <div class="sidebar-brand-block flex flex-col items-center text-center" style="margin-top: 13px; gap: 13px;">
+                <img class="sidebar-brand-logo" src="{{ url_for('static', filename='LogoFCT.png') }}" alt="FCT Logo" onerror="this.onerror=null; this.src='/LogoFCT.png';" style="width: 89px; height: 89px; object-fit: contain; filter: drop-shadow(0 8px 16px rgba(8,145,178,0.18));">
                 <div>
                     <h1 class="sidebar-logo-text font-extrabold" style="font-size: 21px; line-height: 1.3; letter-spacing: -0.01em;">
                         <span class="sidebar-logo-accent">FCT</span> HR SYSTEM
                     </h1>
-                    <div class="text-slate-400 font-semibold" style="font-size: 13px; margin-top: 8px;">v3.0 · DAS System</div>
+                    <div class="sidebar-version-sub text-slate-400 font-semibold" style="font-size: 13px; margin-top: 8px;">v3.0 · DAS System</div>
                 </div>
             </div>
 
@@ -980,7 +1003,9 @@
                 <span class="text-xs font-bold text-cyan-800">Daisy</span>
                 <span class="text-xs">👋</span>
             </button>
-            <img src="{{ url_for('static', filename='LogoFCT.png') }}" alt="FCT Logo" class="w-8 h-7 object-contain">
+            <button type="button" onclick="openSystemSettingsModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 shadow-sm active:scale-95 transition-all" title="Cài đặt hệ thống">
+                <span class="text-sm">⚙️</span>
+            </button>
         </div>
 
         <div class="hidden lg:block w-full" style="position:relative; z-index:2; margin-top: auto;">
@@ -1011,12 +1036,15 @@
                 </div>
             </div>
             <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
-                <button type="button" id="btnNewCandidateHeader" onclick="document.getElementById('historyModal').style.display='none'" class="modal-header-btn modal-header-btn-ghost" style="background:rgba(8,145,178,0.15); color:#0891b2; border-color:rgba(8,145,178,0.35);" title="Nhập hồ sơ mới">
+                <button type="button" id="btnNewCandidateHeader" onclick="cancelEdit(); document.getElementById('historyModal').style.display='none';" class="modal-header-btn modal-header-btn-ghost" style="background:rgba(8,145,178,0.15); color:#0891b2; border-color:rgba(8,145,178,0.35);" title="Nhập hồ sơ mới">
                     <span>➕ Nhập Hồ Sơ Mới</span>
                 </button>
                 <button type="button" id="btnBulkExcelHeader" onclick="bulkExportExcelHistory(true, event)" class="modal-header-btn modal-header-btn-green" title="Xuất Excel tất cả">
                     <span class="hidden sm:inline">📊 Xuất Excel</span>
                     <span class="sm:hidden">📊</span>
+                </button>
+                <button type="button" onclick="openSystemSettingsModal()" class="modal-header-btn modal-header-btn-ghost lg:hidden" style="background:#f8fafc; color:#475569; border-color:#cbd5e1;" title="Cài đặt hệ thống & Giám sát tài nguyên">
+                    <span>⚙️</span>
                 </button>
             </div>
         </div>
@@ -1160,7 +1188,7 @@
             </div>
 
             <!-- Bảng điều khiển View Toggle và Lọc nhanh -->
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:16px; background:#ffffff; border:1px solid #cbd5e1; border-radius:12px; padding:10px 16px; flex-wrap:wrap;">
+            <div class="passed-filter-toolbar" style="display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:16px; background:#ffffff; border:1px solid #cbd5e1; border-radius:12px; padding:10px 16px; flex-wrap:wrap;">
                 <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
                     <div style="display:flex; align-items:center; gap:6px;">
                         <label style="font-size:12px; font-weight:800; color:#475569;">Lọc Môi giới:</label>
@@ -1246,7 +1274,7 @@
         <!-- Tab Archived: Đã xuất cảnh -->
         <div id="tabContent-archived" style="display: none; padding:16px 20px;">
             <!-- Header -->
-            <div style="padding:10px 18px; background:linear-gradient(135deg, #ecfeff 0%, #cffafe 100%); border-top:1px solid #a5f3fc; border-bottom:2px solid #67e8f9; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; border-radius:10px;">
+            <div style="padding:10px 16px; background:linear-gradient(135deg, #ecfeff 0%, #cffafe 100%); border-top:1px solid #a5f3fc; border-bottom:2px solid #67e8f9; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; border-radius:10px;">
                 <div style="font-size:14px; font-weight:850; color:#0e7490; display:flex; align-items:center; gap:8px;">
                     <span style="font-size:16px;">✈️</span> Ứng viên đã xuất cảnh
                     <span id="archivedCountBadge" style="background:#a5f3fc; color:#0e7490; font-size:11px; font-weight:800; padding:2px 8px; border-radius:20px;">0</span>
@@ -1751,8 +1779,8 @@
     <div class="w-full lg:w-2/3 h-full overflow-y-auto relative main-content-area px-4 py-6 lg:px-16 lg:py-12">
         
         <!-- Nút Quay lại Bảng Quản Lý & Nạp file backup -->
-        <div class="flex justify-between items-center mb-6 max-w-4xl mx-auto gap-3">
-            <button type="button" onclick="loadHistory()" class="btn-cta-primary" style="background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; box-shadow:none;">
+        <div class="cv-top-nav-bar flex justify-between items-center mb-6 max-w-4xl mx-auto gap-2 sm:gap-3">
+            <button type="button" onclick="cancelEdit(); loadHistory();" class="btn-cta-primary" style="background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; box-shadow:none;">
                 <span>←</span><span> Quay lại bảng Quản lý Hồ Sơ</span>
             </button>
             <button type="button" onclick="document.getElementById('importFileInput').click()" class="btn-cta-primary" style="background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; box-shadow:none;">
@@ -2018,7 +2046,7 @@
                 </div>
                 <div class="space-y-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     
-                    <div class="grid grid-cols-4 gap-4 pb-4 border-b border-gray-100">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 pb-4 border-b border-gray-100">
                         <div class="col-span-1">
                             <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Quốc gia 1</label>
                             <select name="QG1" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none cursor-pointer">
@@ -2055,7 +2083,7 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-4 gap-4 pb-4 border-b border-gray-100">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 pb-4 border-b border-gray-100">
                         <div class="col-span-1">
                             <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Quốc gia 2</label>
                             <select name="QG2" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none cursor-pointer">
@@ -2092,7 +2120,7 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-4 gap-4 pb-4 border-b border-gray-100">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 pb-4 border-b border-gray-100">
                         <div class="col-span-1">
                             <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Quốc gia 3</label>
                             <select name="QG3" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-blue-600 focus:outline-none cursor-pointer">
@@ -2209,7 +2237,7 @@
                 </button>
  
                 <!-- Hủy / Quay lại (chế độ tạo mới) -->
-                <button type="button" id="btnBackToList" onclick="loadHistory()"
+                <button type="button" id="btnBackToList" onclick="cancelEdit(); loadHistory();"
                     class="btn-bar btn-bar-ghost"
                     style="display:flex; align-items:center;">
                     ✕ Hủy / Quay lại
@@ -3976,11 +4004,11 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                         checkExpiry(item.judicial_record_2_expiry, 'Tư pháp');
  
                         row.innerHTML = `
-                            <div style="display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1;">
-                                <span style="font-weight: 700; color: #1e293b; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${item.ho_ten}">${item.ho_ten}</span>
+                            <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 6px 8px; min-width: 180px; flex: 1;">
+                                <span style="font-weight: 700; color: #1e293b; font-size: 14px;" title="${item.ho_ten}">${item.ho_ten}</span>
                                 <span style="background: #f1f5f9; color: #475569; font-size: 11px; padding: 2px 6px; border-radius: 4px; border: 1px solid #cbd5e1; flex-shrink: 0;">${item.ma_so}</span>
                                 ${getStatusBadgeHtml(item.placement_status, item.cancel_date)}
-                                <div style="display:flex; flex-wrap:wrap; gap:4px;">${warningsHtml}</div>
+                                ${warningsHtml ? `<div style="display:flex; flex-wrap:wrap; gap:4px;">${warningsHtml}</div>` : ''}
                             </div>
                             <div style="display: flex; gap: 6px; flex-shrink: 0;">
                                 <button onclick="openPlacementModal(${item.id})" class="btn-passed-view" style="background:#3b82f6; border-color:#2563eb; color:#fff;">⚙️ <span class="hidden sm:inline">Tiến độ & Giấy tờ</span><span class="sm:hidden">Sửa</span></button>
@@ -4120,9 +4148,11 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
 
             // Tạo bảng phong cách Excel
             const tableWrapper = document.createElement('div');
+            tableWrapper.className = 'archived-table-wrapper';
             tableWrapper.style.cssText = 'width:100%; overflow-x:auto; max-height:calc(100vh - 240px); overflow-y:auto; border:1px solid #cbd5e1; border-radius:10px; background:#fff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);';
 
             const table = document.createElement('table');
+            table.className = 'archived-table';
             table.style.cssText = 'width:100%; border-collapse:separate; border-spacing:0; font-size:12.5px; text-align:left;';
 
             // Headers
@@ -4155,6 +4185,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             const tbody = document.createElement('tbody');
             filtered.forEach((item, index) => {
                 const tr = document.createElement('tr');
+                tr.className = 'archived-row';
                 tr.style.cssText = `background: ${index % 2 === 0 ? '#ffffff' : '#f8fafc'}; transition: background 0.15s;`;
                 tr.onmouseenter = () => { tr.style.background = '#f1f5f9'; };
                 tr.onmouseleave = () => { tr.style.background = index % 2 === 0 ? '#ffffff' : '#f8fafc'; };
@@ -5416,13 +5447,32 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
         // --- Toggle Menu Mobile ---
         function toggleMobileMenu(id) {
             const menu = document.getElementById(`menu-${id}`);
+            if (!menu) return;
             const isActive = menu.classList.contains('active');
             
             // Đóng tất cả menu khác
-            document.querySelectorAll('.mobile-action-menu').forEach(m => m.classList.remove('active'));
+            document.querySelectorAll('.mobile-action-menu').forEach(m => {
+                m.classList.remove('active');
+                m.style.top = '';
+                m.style.bottom = '';
+            });
             
-            // Nếu chưa mở thì mở
-            if (!isActive) menu.classList.add('active');
+            // Nếu chưa mở thì mở và tự động tính toán hướng bung (lên/xuống) để không bị khuất ở đáy màn hình
+            if (!isActive) {
+                menu.classList.add('active');
+                const row = menu.closest('.history-card-row') || menu.parentElement;
+                if (row) {
+                    const rect = row.getBoundingClientRect();
+                    const spaceBelow = window.innerHeight - rect.top;
+                    if (spaceBelow < 280 && rect.top > 220) {
+                        menu.style.top = 'auto';
+                        menu.style.bottom = '46px';
+                    } else {
+                        menu.style.top = '52px';
+                        menu.style.bottom = 'auto';
+                    }
+                }
+            }
             
             // Đóng khi click ra ngoài
             const closeMenu = (e) => {
@@ -5925,9 +5975,17 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
 
         function cancelEdit() {
             document.getElementById('editingRecordId').value = '';
+            document.getElementById('existingDonhang').value = '';
             document.getElementById('btnUpdateOnly').style.display = 'none';
             document.getElementById('btnCancelEdit').style.display = 'none';
             document.getElementById('resumeForm').reset();
+
+            // Khôi phục nhân viên NPT đang chọn (nếu có trong sessionStorage)
+            const empSelect = document.getElementById('npt-emp-select');
+            const savedEmp = sessionStorage.getItem('f48_emp_draft');
+            if (empSelect && savedEmp) {
+                empSelect.value = savedEmp;
+            }
             
             // Xóa ảnh preview
             document.getElementById('photoPreview').classList.add('hidden');
@@ -5936,8 +5994,10 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             document.getElementById('existingPhotoPath').value = '';
             
             // Xóa QR preview
-            qrPreview.classList.add('hidden');
-            qrDropzoneText.classList.remove('hidden');
+            const qrPrev = document.getElementById('qrPreview');
+            if (qrPrev) qrPrev.classList.add('hidden');
+            const qrText = document.getElementById('qrDropzoneText');
+            if (qrText) qrText.classList.remove('hidden');
             document.getElementById('qrBase64').value = '';
             document.getElementById('existingQrPath').value = '';
             
@@ -6839,6 +6899,133 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 white-space: nowrap !important;
                 font-size: 11px !important;
                 padding: 2px 6px !important;
+            }
+
+            /* ===== FORM CV & THANH CÔNG CỤ ĐÁY TRÊN MOBILE ===== */
+            .cv-top-nav-bar {
+                margin-bottom: 14px !important;
+            }
+            .cv-top-nav-bar .btn-cta-primary {
+                padding: 8px 10px !important;
+                font-size: 11.5px !important;
+                border-radius: 10px !important;
+                white-space: nowrap !important;
+            }
+            .glass-bottom-bar {
+                padding: 8px 10px calc(10px + env(safe-area-inset-bottom, 0px)) 10px !important;
+            }
+            .glass-bottom-bar > div {
+                gap: 6px !important;
+            }
+            .glass-bottom-bar button {
+                padding: 9px 10px !important;
+                font-size: 11.5px !important;
+                border-radius: 10px !important;
+                flex: 1 1 auto !important;
+                justify-content: center !important;
+                min-width: 0 !important;
+            }
+
+            /* ===== TAB 2: DANH SÁCH TRÚNG TUYỂN TRÊN MOBILE ===== */
+            #tabContent-passed {
+                padding: 10px 10px 80px 10px !important;
+            }
+            #passedSummaryPanel {
+                padding: 8px 12px !important;
+                margin-bottom: 8px !important;
+                border-radius: 8px !important;
+            }
+            .passed-filter-toolbar {
+                padding: 8px 10px !important;
+                gap: 8px !important;
+                margin-bottom: 10px !important;
+            }
+            .passed-filter-toolbar > div:first-child {
+                width: 100% !important;
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 6px !important;
+            }
+            .passed-filter-toolbar > div:first-child > div {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 2px !important;
+                width: 100% !important;
+            }
+            .passed-filter-toolbar select {
+                width: 100% !important;
+                padding: 5px 8px !important;
+                font-size: 11.5px !important;
+                box-sizing: border-box !important;
+            }
+            #passedKanbanContainer {
+                min-height: 300px !important;
+            }
+            #passedKanbanContainer .kanban-column > div:last-child {
+                min-height: 200px !important;
+            }
+
+            /* ===== TAB 3: ĐÃ XUẤT CẢNH - MOBILE CARD LAYOUT ===== */
+            #tabContent-archived {
+                padding: 10px 10px 80px 10px !important;
+            }
+            .archived-table-wrapper {
+                max-height: none !important;
+                overflow: visible !important;
+                border: none !important;
+                background: transparent !important;
+                box-shadow: none !important;
+            }
+            .archived-table thead { display: none !important; }
+            .archived-table,
+            .archived-table tbody,
+            .archived-table tr,
+            .archived-table td {
+                display: block !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            .archived-table tr.archived-row {
+                background: #ffffff !important;
+                border: 1px solid #cbd5e1 !important;
+                border-radius: 12px !important;
+                margin-bottom: 10px !important;
+                padding: 10px 12px !important;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.04) !important;
+            }
+            .archived-table td {
+                padding: 4px 0 !important;
+                border: none !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                gap: 8px !important;
+                max-width: none !important;
+                white-space: normal !important;
+                text-align: right !important;
+            }
+            .archived-table td::before {
+                font-size: 10.5px !important;
+                font-weight: 700 !important;
+                color: #94a3b8 !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.04em !important;
+                flex-shrink: 0 !important;
+                text-align: left !important;
+            }
+            .archived-table td:nth-child(1)::before { content: "Mã số:"; }
+            .archived-table td:nth-child(2)::before { content: "Họ tên:"; }
+            .archived-table td:nth-child(3)::before { content: "Nhà máy:"; }
+            .archived-table td:nth-child(4)::before { content: "Thẩm định:"; }
+            .archived-table td:nth-child(5)::before { content: "Tờ Visa:"; }
+            .archived-table td:nth-child(6)::before { content: "Ngày xuất cảnh:"; }
+            .archived-table td:nth-child(7)::before { content: "Người phụ trách:"; }
+            .archived-table td:nth-child(8)::before { content: "Ghi chú:"; }
+            .archived-table td:nth-child(9) {
+                margin-top: 6px !important;
+                padding-top: 8px !important;
+                border-top: 1px dashed #e2e8f0 !important;
+                justify-content: flex-end !important;
             }
         }
 
