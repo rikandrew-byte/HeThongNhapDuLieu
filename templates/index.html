@@ -1621,7 +1621,7 @@
     </div>
 
     <!-- Modal Chỉnh sửa cấu hình Nhà máy / Giấy tờ -->
-    <div id="editConfigModal" class="glass-modal" style="display:none; position:fixed; top:15%; left:5%; width:90%; max-width:480px; margin: 0 auto; z-index:20000; border-radius:16px; background:#ffffff; padding:20px; box-shadow:0 10px 40px rgba(0,0,0,0.2); border:1px solid #cbd5e1; font-family:'Inter',sans-serif;">
+    <div id="editConfigModal" class="glass-modal" style="display:none; position:fixed; top:15%; left:5%; right:5%; width:90%; max-width:480px; margin: 0 auto; z-index:20000; border-radius:16px; background:#ffffff; padding:20px; box-shadow:0 10px 40px rgba(0,0,0,0.2); border:1px solid #cbd5e1; font-family:'Inter',sans-serif;">
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1.5px solid #e2e8f0; padding-bottom:10px; margin-bottom:15px;">
             <h3 id="editConfigTitle" style="font-size:14px; font-weight:850; color:#1e293b; margin:0;">Chỉnh sửa cấu hình</h3>
             <button type="button" onclick="closeEditConfigModal()" style="background:none; border:none; color:#64748b; font-size:18px; cursor:pointer; font-weight:bold; padding:0;">✕</button>
@@ -1634,13 +1634,13 @@
     </div>
 
     <!-- Modal Xác thực Quản trị viên (Admin PIN Protection) -->
-    <div id="adminAuthModal" class="glass-modal" style="display:none; position:fixed; top:25%; left:5%; width:90%; max-width:420px; margin: 0 auto; z-index:25000; border-radius:20px; background:#ffffff; padding:24px; box-shadow:0 25px 60px rgba(0,0,0,0.3); border:1px solid #cbd5e1; font-family:'Inter',sans-serif; text-align:center;">
+    <div id="adminAuthModal" class="glass-modal" style="display:none; position:fixed; top:25%; left:5%; right:5%; width:90%; max-width:420px; margin: 0 auto; z-index:25000; border-radius:20px; background:#ffffff; padding:24px; box-shadow:0 25px 60px rgba(0,0,0,0.3); border:1px solid #cbd5e1; font-family:'Inter',sans-serif; text-align:center;">
         <div style="font-size:36px; margin-bottom:8px;">🔐</div>
         <h3 style="font-size:16px; font-weight:850; color:#0f172a; margin:0 0 6px 0;">Xác thực Quản trị viên</h3>
         <p style="font-size:12px; color:#64748b; margin:0 0 18px 0;">Nhập mã PIN bảo mật để truy cập Cài đặt hệ thống.</p>
         
         <form onsubmit="event.preventDefault(); submitAdminPin();" style="display:flex; flex-direction:column; gap:12px;">
-            <input type="password" id="adminPinInput" placeholder="Nhập mã PIN (9595)..." autocomplete="current-password" style="width:100%; padding:10px 14px; border:2px solid #cbd5e1; border-radius:10px; font-size:14px; text-align:center; font-weight:700; letter-spacing:0.1em; outline:none; transition:border-color 0.15s;" onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#cbd5e1'">
+            <input type="password" id="adminPinInput" placeholder="Nhập mã PIN bảo mật..." autocomplete="current-password" style="width:100%; padding:10px 14px; border:2px solid #cbd5e1; border-radius:10px; font-size:14px; text-align:center; font-weight:700; letter-spacing:0.1em; outline:none; transition:border-color 0.15s;" onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#cbd5e1'">
             <div id="adminPinError" style="display:none; color:#dc2626; font-size:11.5px; font-weight:700;"></div>
             <div style="display:flex; gap:8px; justify-content:center; margin-top:6px;">
                 <button type="button" onclick="closeAdminAuthModal()" style="flex:1; padding:9px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer;">Hủy bỏ</button>
@@ -1650,7 +1650,7 @@
     </div>
 
     <!-- Modal Cài đặt hệ thống & Giám sát tài nguyên (System Settings & Resource Quota) -->
-    <div id="systemSettingsModal" class="glass-modal" style="display:none; position:fixed; top:6%; left:5%; width:90%; max-width:720px; margin: 0 auto; z-index:20000; border-radius:20px; background:#ffffff; padding:24px; box-shadow:0 25px 60px rgba(0,0,0,0.25); border:1px solid #cbd5e1; font-family:'Inter',sans-serif; max-height:88vh; overflow-y:auto;">
+    <div id="systemSettingsModal" class="glass-modal" style="display:none; position:fixed; top:6%; left:5%; right:5%; width:90%; max-width:720px; margin: 0 auto; z-index:20000; border-radius:20px; background:#ffffff; padding:24px; box-shadow:0 25px 60px rgba(0,0,0,0.25); border:1px solid #cbd5e1; font-family:'Inter',sans-serif; max-height:88vh; overflow-y:auto;">
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1.5px solid #e2e8f0; padding-bottom:14px; margin-bottom:20px;">
             <div style="display:flex; align-items:center; gap:10px;">
                 <span style="font-size:24px;">⚙️</span>
