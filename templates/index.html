@@ -2682,20 +2682,20 @@
             });
 
             // ── Hàm hiển thị preview tài liệu từ mảng currentDocumentImages ──
-            // 🚀 TỐI ƯU: Render trực tiếp từ Base64, không cần FileReader async
+            // 🚀 Hỗ trợ cả R2 URL CDN và Base64
             window.displayDocumentPreview = function() {
                 const preview = document.getElementById('documentPreview');
                 preview.innerHTML = '';
                 if (!currentDocumentImages || currentDocumentImages.length === 0) return;
 
-                currentDocumentImages.forEach((b64, index) => {
-                    if (!b64 || !b64.startsWith('data:image/')) return;
+                currentDocumentImages.forEach((imgSrc, index) => {
+                    if (!imgSrc || (!imgSrc.startsWith('data:image/') && !imgSrc.startsWith('http'))) return;
                     const div = document.createElement('div');
                     div.className = 'relative group';
                     div.innerHTML = `
-                        <img src="${b64}" class="w-full h-32 object-cover rounded-lg border border-gray-200 shadow-sm">
+                        <img src="${imgSrc}" class="w-full h-32 object-cover rounded-lg border border-gray-200 shadow-sm">
                         <div class="absolute -top-2 -right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                            <a href="${b64}" download="document_${index + 1}.jpg" class="bg-blue-500 hover:bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shadow" title="Tải tài liệu">⬇</a>
+                            <a href="${imgSrc}" target="_blank" download="document_${index + 1}.jpg" class="bg-blue-500 hover:bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shadow" title="Tải tài liệu">⬇</a>
                             <button type="button" onclick="removeDocument(${index})" class="bg-red-500 hover:bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shadow" title="Xóa tài liệu">✕</button>
                         </div>
                     `;
@@ -3256,44 +3256,52 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 }
             });
             
-            // Ảnh chân dung: hiển thị preview & nút tải nếu có ảnh
-            if (data['photo'] && data['photo'].startsWith('data:image/')) {
+            // Ảnh chân dung: hiển thị preview & nút tải nếu có ảnh (hỗ trợ cả R2 URL CDN & Base64)
+            const photoVal = data['photo'] ? String(data['photo']).trim() : '';
+            if (photoVal && (photoVal.startsWith('data:image/') || photoVal.startsWith('http'))) {
                 const photoPreview = document.getElementById('photoPreview');
-                photoPreview.src = data['photo'];
+                photoPreview.src = photoVal;
                 photoPreview.classList.remove('hidden');
                 document.getElementById('dropzoneText').classList.add('hidden');
                 const dlBtn = document.getElementById('downloadPhotoBtn');
                 if (dlBtn) {
-                    dlBtn.href = data['photo'];
+                    dlBtn.href = photoVal;
                     dlBtn.classList.remove('hidden');
                 }
                 document.getElementById('clearPhotoBtn').classList.remove('hidden');
+                if (photoVal.startsWith('http')) {
+                    document.getElementById('existingPhotoPath').value = photoVal;
+                }
             } else {
                 document.getElementById('downloadPhotoBtn').classList.add('hidden');
             }
             
-            // QR Code LINE: hiển thị preview & nút tải nếu có QR
-            if (data['qr_line'] && data['qr_line'].startsWith('data:image/')) {
+            // QR Code LINE: hiển thị preview & nút tải nếu có QR (hỗ trợ cả R2 URL CDN & Base64)
+            const qrVal = data['qr_line'] ? String(data['qr_line']).trim() : '';
+            if (qrVal && (qrVal.startsWith('data:image/') || qrVal.startsWith('http'))) {
                 const qrPreview = document.getElementById('qrPreview');
-                qrPreview.src = data['qr_line'];
+                qrPreview.src = qrVal;
                 qrPreview.classList.remove('hidden');
                 document.getElementById('qrDropzoneText').classList.add('hidden');
                 const dlBtn = document.getElementById('downloadQrBtn');
                 if (dlBtn) {
-                    dlBtn.href = data['qr_line'];
+                    dlBtn.href = qrVal;
                     dlBtn.classList.remove('hidden');
                 }
                 document.getElementById('clearQrBtn').classList.remove('hidden');
+                if (qrVal.startsWith('http')) {
+                    document.getElementById('existingQrPath').value = qrVal;
+                }
             } else {
                 document.getElementById('downloadQrBtn').classList.add('hidden');
             }
             
-            // 🚀 TỐI ƯU: Phục hồi tài liệu tức thì (0ms) bằng cách gán thẳng Base64 vào mảng
-            // → Không còn gọi base64ToFile() gây đơ Main Thread
+            // 🚀 TỐI ƯU: Phục hồi tài liệu tức thì (0ms) từ R2 URL hoặc Base64
             currentDocumentImages = (data.document_images && Array.isArray(data.document_images))
-                ? data.document_images.filter(b64 => b64 && typeof b64 === 'string' && b64.startsWith('data:image/'))
+                ? data.document_images.filter(img => img && typeof img === 'string' && (img.startsWith('data:image/') || img.startsWith('http')))
                 : [];
             displayDocumentPreview();
+
             
             // Xóa mã số nếu là CHO_DUYET để Admin nhập mã mới
             const maSoInput = document.getElementsByName("Maso")[0];
@@ -5901,12 +5909,23 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 return;
             }
 
-            // Đưa ảnh base64 đã resize vào plainData
+            // Đưa ảnh vào plainData (ưu tiên ảnh mới tải lên, nếu không thì giữ ảnh R2/Base64 hiện có)
             const photoB64 = document.getElementById('photoBase64').value;
-            if (photoB64) plainData['photo'] = photoB64;
+            const existingPhoto = document.getElementById('existingPhotoPath').value;
+            if (photoB64) {
+                plainData['photo'] = photoB64;
+            } else if (existingPhoto) {
+                plainData['photo'] = existingPhoto;
+            }
 
             const qrB64 = document.getElementById('qrBase64').value;
-            if (qrB64) plainData['qr_line'] = qrB64;
+            const existingQr = document.getElementById('existingQrPath').value;
+            if (qrB64) {
+                plainData['qr_line'] = qrB64;
+            } else if (existingQr) {
+                plainData['qr_line'] = existingQr;
+            }
+
 
             // Gửi record_id nếu đang UPDATE
             const recordId = document.getElementById('editingRecordId').value;

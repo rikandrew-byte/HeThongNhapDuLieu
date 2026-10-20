@@ -836,6 +836,95 @@ def _init_cache():
 _init_cache()
 
 
+# --- CLOUDFLARE R2 CLIENT & HELPERS ---
+_r2_client = None
+
+def get_r2_client():
+    global _r2_client
+    if _r2_client is not None:
+        return _r2_client
+    try:
+        import boto3
+        from botocore.config import Config
+        account_id = os.environ.get('CLOUDFLARE_ACCOUNT_ID') or os.environ.get('R2_ACCOUNT_ID')
+        access_key = os.environ.get('R2_ACCESS_KEY_ID') or os.environ.get('R2_ACCESS_KEY')
+        secret_key = os.environ.get('R2_SECRET_ACCESS_KEY') or os.environ.get('R2_SECRET_KEY')
+        if not (account_id and access_key and secret_key):
+            return None
+        _r2_client = boto3.client(
+            's3',
+            endpoint_url=f"https://{account_id}.r2.cloudflarestorage.com",
+            aws_access_key_id=access_key,
+            aws_secret_access_key=secret_key,
+            config=Config(signature_version='s3v4')
+        )
+        return _r2_client
+    except Exception as e:
+        print(f"[R2] Init error: {e}")
+        return None
+
+
+def upload_to_r2(img_data: str, folder: str = 'cv_photos', filename: str = None) -> str:
+    """Upload ảnh (Base64 hoặc bytes) lên Cloudflare R2.
+    - Nếu đã là URL http/https: giữ nguyên (idempotent).
+    - Nếu là chuỗi Base64 data:image/: decode và lưu thẳng lên R2, trả về public CDN URL.
+    - An toàn tuyệt đối: nếu R2 chưa cấu hình hoặc lỗi kết nối, trả về dữ liệu gốc (không bao giờ làm hỏng/mất ảnh).
+    """
+    if not img_data or not isinstance(img_data, str):
+        return img_data
+    if img_data.startswith('http://') or img_data.startswith('https://'):
+        return img_data
+    if not img_data.startswith('data:image/'):
+        return img_data
+
+    client = get_r2_client()
+    if not client:
+        return img_data
+
+    bucket_name = os.environ.get('R2_BUCKET_NAME', 'labor-docs-bucket')
+    public_base = (os.environ.get('R2_PUBLIC_URL') or os.environ.get('R2_PUBLIC_DOMAIN', '')).rstrip('/')
+    if not public_base:
+        return img_data
+
+    try:
+        header, b64_str = img_data.split(',', 1)
+        mime = 'image/jpeg'
+        ext = 'jpg'
+        if 'image/png' in header:
+            mime = 'image/png'
+            ext = 'png'
+        elif 'image/webp' in header:
+            mime = 'image/webp'
+            ext = 'webp'
+
+        raw_bytes = base64.b64decode(b64_str)
+
+        if not filename:
+            filename = f"{uuid.uuid4().hex[:12]}.{ext}"
+        else:
+            base_name = filename.rsplit('.', 1)[0] if '.' in filename else filename
+            filename = f"{base_name}.{ext}"
+
+
+        key = f"{folder}/{filename}"
+
+        client.put_object(
+            Bucket=bucket_name,
+            Key=key,
+            Body=raw_bytes,
+            ContentType=mime,
+            CacheControl='public, max-age=31536000'
+        )
+
+        public_url = f"{public_base}/{key}"
+        print(f"[R2] Uploaded: {public_url} ({len(raw_bytes)} bytes)")
+        return public_url
+    except Exception as e:
+        print(f"[R2] Upload failed, fallback to original: {e}")
+        return img_data
+
+
+
 def _fetch_r2_image_as_base64(url: str) -> str:
     """Tải ảnh từ URL R2 về và chuyển thành Base64 để nhúng vào HTML offline.
     Đây là cầu nối giữa R2 (lưu file thật) và file HTML (cần Base64 để offline được).
@@ -964,16 +1053,29 @@ def prepare_render_data(raw_data: dict, record=None) -> dict:
             data[f'{key}_base64'] = path
         elif path.startswith('http'):
             # Là URL từ Cloudflare R2 → Kéo về và chuyển thành Base64 để nhúng offline
-            print(f"🔄 Fetching {key} from R2 for offline HTML...")
             fetched = _fetch_r2_image_as_base64(path)
-            data[f'{key}_base64'] = fetched if fetched else ""
+            data[f'{key}_base64'] = fetched if fetched else path
         else:
             data[f'{key}_base64'] = ""
 
     # Xử lý ảnh tài liệu (giấy tờ) để render trang 2
-    data['document_images'] = raw_data.get('document_images', [])
+    raw_docs = raw_data.get('document_images', [])
+    processed_docs = []
+    if raw_docs and isinstance(raw_docs, list):
+        for doc in raw_docs:
+            if not doc: continue
+            doc_str = str(doc).strip()
+            if skip_images or doc_str.startswith('data:image/'):
+                processed_docs.append(doc_str)
+            elif doc_str.startswith('http'):
+                fetched_doc = _fetch_r2_image_as_base64(doc_str)
+                processed_docs.append(fetched_doc if fetched_doc else doc_str)
+            else:
+                processed_docs.append(doc_str)
+    data['document_images'] = processed_docs
 
     return data
+
 
 def _protect_html(html: str) -> str:
     html = re.sub(r'<!--(?!\[if).*?-->', '', html, flags=re.DOTALL)
@@ -1076,11 +1178,44 @@ def _resize_image_for_db(data_uri: str, max_px: int = 1800, quality: int = 95) -
 
 def _prepare_data_for_db(data: dict) -> dict:
     clean = dict(data)
-    for key in ('photo', 'qr_line'):
-        if clean.get(key): clean[key] = _resize_image_for_db(clean[key])
-    # Resize ảnh tài liệu nếu có - Giảm sâu hơn để tránh lỗi 413 (900px, quality 60)
+    ma_so = str(clean.get('Maso') or clean.get('ma_so') or 'CHO_DUYET').strip()
+    if not ma_so: ma_so = 'CHO_DUYET'
+
+    # 1. Ảnh chân dung: Đẩy lên Cloudflare R2
+    if clean.get('photo'):
+        val = str(clean['photo']).strip()
+        if val.startswith('data:image/'):
+            up_url = upload_to_r2(val, folder='cv_photos', filename=f"{ma_so}_{uuid.uuid4().hex[:8]}")
+            if up_url.startswith('http'):
+                clean['photo'] = up_url
+            else:
+                clean['photo'] = _resize_image_for_db(val)
+
+    # 2. Mã QR LINE: Đẩy lên Cloudflare R2
+    if clean.get('qr_line'):
+        val = str(clean['qr_line']).strip()
+        if val.startswith('data:image/'):
+            up_url = upload_to_r2(val, folder='cv_qr', filename=f"{ma_so}_qr_{uuid.uuid4().hex[:8]}")
+            if up_url.startswith('http'):
+                clean['qr_line'] = up_url
+            else:
+                clean['qr_line'] = _resize_image_for_db(val)
+
+    # 3. Ảnh tài liệu: Đẩy lên Cloudflare R2
     if clean.get('document_images') and isinstance(clean['document_images'], list):
-        clean['document_images'] = [_resize_image_for_db(img, max_px=900, quality=60) for img in clean['document_images'] if img]
+        uploaded_docs = []
+        for idx, img in enumerate(clean['document_images']):
+            if img:
+                val = str(img).strip()
+                if val.startswith('data:image/'):
+                    up_url = upload_to_r2(val, folder='cv_docs', filename=f"{ma_so}_doc_{idx+1}_{uuid.uuid4().hex[:8]}")
+                    if up_url.startswith('http'):
+                        uploaded_docs.append(up_url)
+                    else:
+                        uploaded_docs.append(_resize_image_for_db(val, max_px=900, quality=60))
+                else:
+                    uploaded_docs.append(val)
+        clean['document_images'] = uploaded_docs
     
     # Tự động sao lưu văn bản tiếng Việt gốc và dịch trước sang tiếng Trung Phồn thể để lưu vào DB
     # Điều này loại bỏ hoàn toàn việc dịch trên trang hiển thị (CV), giúp mở CV nhanh tức thì.
@@ -1172,25 +1307,37 @@ def get_system_quota():
         print(f"Lỗi đọc dung lượng Database: {db_err}")
 
     try:
-        # Tính dung lượng thực tế của các tệp ảnh và tài liệu
-        uploads_dir = os.path.join(BASE_DIR, 'uploads')
-        total_upload_bytes = 0
-        if os.path.exists(uploads_dir):
-            for root, _, files in os.walk(uploads_dir):
-                for f in files:
-                    fp = os.path.join(root, f)
-                    if os.path.exists(fp):
-                        total_upload_bytes += os.path.getsize(fp)
-        
-        if total_upload_bytes == 0:
-            count = FormHistory.query.filter_by(is_deleted=False).count()
-            total_upload_bytes = count * 250 * 1024  # Ước tính ~250KB/hồ sơ
+        r2 = get_r2_client()
+        bucket_name = os.environ.get('R2_BUCKET_NAME', 'labor-docs-bucket')
+        total_cf_bytes = 0
+        r2_connected = False
+        if r2:
+            try:
+                paginator = r2.get_paginator('list_objects_v2')
+                for page in paginator.paginate(Bucket=bucket_name, PaginationConfig={'MaxItems': 3000}):
+                    for obj in page.get('Contents', []):
+                        total_cf_bytes += obj.get('Size', 0)
+                r2_connected = True
+            except Exception as r2_read_err:
+                print(f"Lỗi đọc Cloudflare R2 bucket: {r2_read_err}")
 
-        used_cf_mb = round(total_upload_bytes / (1024 * 1024), 2)
+        if not r2_connected:
+            uploads_dir = os.path.join(BASE_DIR, 'uploads')
+            if os.path.exists(uploads_dir):
+                for root, _, files in os.walk(uploads_dir):
+                    for f in files:
+                        fp = os.path.join(root, f)
+                        if os.path.exists(fp):
+                            total_cf_bytes += os.path.getsize(fp)
+
+        used_cf_mb = round(total_cf_bytes / (1024 * 1024), 2)
         quota_data["cloudflare"]["used_mb"] = used_cf_mb
         quota_data["cloudflare"]["percent"] = round((used_cf_mb / quota_data["cloudflare"]["limit_mb"]) * 100, 2)
+        if r2_connected:
+            quota_data["cloudflare"]["note"] = f"Đã kết nối R2 ({bucket_name}) — Miễn phí 10GB lưu trữ và 0đ băng thông."
     except Exception as cf_err:
         print(f"Lỗi đọc dung lượng Cloudflare/Uploads: {cf_err}")
+
 
     return jsonify(quota_data)
 
