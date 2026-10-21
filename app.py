@@ -133,6 +133,33 @@ class SimpleRateLimiter:
 submit_limiter = SimpleRateLimiter()
 translate_limiter = SimpleRateLimiter()
 
+TURNSTILE_SECRET_KEY = os.environ.get('TURNSTILE_SECRET_KEY', '0x4AAAAAAFe1lmToQHdKac-ZxrS-yGGAnuc')
+
+def verify_turnstile_token(token: str, remote_ip: str = None) -> bool:
+    """Xác thực token Cloudflare Turnstile với Cloudflare API."""
+    if not TURNSTILE_SECRET_KEY:
+        return True
+    if not token or not str(token).strip():
+        return False
+    try:
+        res = requests.post(
+            'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+            data={
+                'secret': TURNSTILE_SECRET_KEY,
+                'response': str(token).strip(),
+                'remoteip': remote_ip or ''
+            },
+            timeout=8
+        )
+        res_json = res.json()
+        if res_json.get('success'):
+            return True
+        print(f"[Turnstile] Verify failed: {res_json}")
+        return False
+    except Exception as e:
+        print(f"[Turnstile] Verification error: {e}")
+        return False
+
 # --- DATABASE CONFIG ---
 db_url = os.environ.get('DATABASE_URL')
 if db_url and db_url.startswith("postgres://"):
@@ -1961,6 +1988,14 @@ def api_submit_only():
         if not is_admin and not record_id:
             client_ip = get_client_ip()
 
+            # 0. Cấp độ 3: Xác thực Cloudflare Turnstile chống bot
+            turnstile_token = data.get('cf-turnstile-response') or data.get('turnstile_token')
+            if not verify_turnstile_token(turnstile_token, client_ip):
+                return jsonify({
+                    'success': False,
+                    'error': 'Xác thực bảo mật Cloudflare Turnstile không thành công hoặc đã hết hạn. Vui lòng tải lại trang và thử lại.'
+                }), 400
+
             # 1. Cấp độ 1: Bẫy Bot tự động (Honeypot)
             if data.get('_hp_security_code'):
                 return jsonify({'success': False, 'error': 'Yêu cầu bị từ chối do phát hiện dấu hiệu bất thường.'}), 400
@@ -2012,6 +2047,8 @@ def api_submit_only():
         # Dọn sạch các trường bảo mật trước khi lưu vào DB
         data.pop('_hp_security_code', None)
         data.pop('_form_rendered_at', None)
+        data.pop('cf-turnstile-response', None)
+        data.pop('turnstile_token', None)
 
         if ma_so and ma_so.upper() != 'CHO_DUYET':
             existing = FormHistory.query.filter_by(ma_so=ma_so, is_deleted=False).first()

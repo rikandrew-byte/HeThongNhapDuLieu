@@ -7,6 +7,7 @@
     <title>Hệ Thống Đăng Ký Thông Tin Ứng Viên</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -478,6 +479,15 @@
                     </div>
                 </div>
             </section>
+
+            <!-- Cloudflare Turnstile Verification (Cấp độ 3) -->
+            <div class="mt-8 flex flex-col items-center justify-center p-6 bg-white rounded-2xl shadow-sm border border-gray-100">
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
+                    Xác thực bảo mật Cloudflare
+                </p>
+                <div class="cf-turnstile" data-sitekey="0x4AAAAAAFe1llLTn7_NilF5" data-theme="light" data-callback="onTurnstileSuccess" data-expired-callback="onTurnstileExpired" data-error-callback="onTurnstileError"></div>
+            </div>
         </form>
 
         <div class="fixed bottom-8 right-8 z-50">
@@ -491,6 +501,11 @@
     </div>
 
     <script>
+        let _turnstileToken = '';
+        function onTurnstileSuccess(token) { _turnstileToken = token; }
+        function onTurnstileExpired() { _turnstileToken = ''; }
+        function onTurnstileError() { _turnstileToken = ''; }
+
         // --- Xử lý Kéo Thả và Dán Ảnh ---
         document.addEventListener('DOMContentLoaded', () => {
             const formRenderedAt = document.getElementById('formRenderedAt');
@@ -702,6 +717,18 @@
                     plainData[key] = value;
                 }
             });
+
+            // Kiểm tra xác thực Cloudflare Turnstile
+            const turnstileInput = form.querySelector('[name="cf-turnstile-response"]');
+            const turnstileToken = (turnstileInput && turnstileInput.value) ? turnstileInput.value : _turnstileToken;
+            if (!turnstileToken) {
+                alert("Vui lòng hoàn tất xác thực bảo mật Cloudflare (tích chọn) trước khi gửi.");
+                btnText.innerText = "GỬI ĐĂNG KÝ";
+                loading.classList.add('hidden');
+                if (submitBtn) submitBtn.disabled = false;
+                return;
+            }
+            plainData['cf-turnstile-response'] = turnstileToken;
 
             // Kiểm tra tối thiểu
             if (!plainData['Hoten']) {
