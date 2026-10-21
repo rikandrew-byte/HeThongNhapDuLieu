@@ -77,6 +77,12 @@
             <input type="hidden" id="photoBase64" value="">
             <input type="hidden" id="qrBase64" value="">
 
+            <!-- Honeypot & Security verification -->
+            <div style="display:none !important; visibility:hidden; opacity:0; position:absolute; left:-9999px; height:0; width:0; z-index:-1;" aria-hidden="true" tabindex="-1">
+                <input type="text" name="_hp_security_code" id="hp_security_code" autocomplete="off" tabindex="-1" value="">
+                <input type="hidden" name="_form_rendered_at" id="formRenderedAt" value="">
+            </div>
+
             <section>
                 <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
                     <span class="w-2 h-6 bg-cyan-600 rounded-full"></span> 1. Thông tin cá nhân
@@ -475,8 +481,8 @@
         </form>
 
         <div class="fixed bottom-8 right-8 z-50">
-            <button type="button" onclick="handleSubmit()"
-                class="bg-gradient-to-r from-cyan-600 to-teal-700 hover:from-cyan-500 hover:to-teal-600 text-white font-bold py-4 px-10 rounded-full shadow-[0_10px_25px_rgba(8,145,178,0.4)] transition-all transform hover:-translate-y-1 flex items-center gap-3">
+            <button type="button" id="submitBtn" onclick="handleSubmit()"
+                class="bg-gradient-to-r from-cyan-600 to-teal-700 hover:from-cyan-500 hover:to-teal-600 text-white font-bold py-4 px-10 rounded-full shadow-[0_10px_25px_rgba(8,145,178,0.4)] transition-all transform hover:-translate-y-1 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
                 <span id="btnText">GỬI ĐĂNG KÝ</span>
                 <div id="loading"
                     class="hidden w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -487,6 +493,9 @@
     <script>
         // --- Xử lý Kéo Thả và Dán Ảnh ---
         document.addEventListener('DOMContentLoaded', () => {
+            const formRenderedAt = document.getElementById('formRenderedAt');
+            if (formRenderedAt) formRenderedAt.value = Date.now();
+
             const dropzone = document.getElementById('dropzone');
             const photoInput = document.getElementById('photoInput');
             const photoPreview = document.getElementById('photoPreview');
@@ -675,9 +684,11 @@
 
         async function handleSubmit() {
             const form = document.getElementById('resumeForm');
+            const submitBtn = document.getElementById('submitBtn');
             const btnText = document.getElementById('btnText');
             const loading = document.getElementById('loading');
 
+            if (submitBtn) submitBtn.disabled = true;
             btnText.innerText = "ĐANG XỬ LÝ...";
             loading.classList.remove('hidden');
 
@@ -697,6 +708,7 @@
                 alert("Vui lòng nhập Họ tên ứng viên!");
                 btnText.innerText = "GỬI ĐĂNG KÝ";
                 loading.classList.add('hidden');
+                if (submitBtn) submitBtn.disabled = false;
                 return;
             }
 
@@ -724,6 +736,7 @@
             } finally {
                 btnText.innerText = "GỬI ĐĂNG KÝ";
                 loading.classList.add('hidden');
+                if (submitBtn) submitBtn.disabled = false;
             }
         }
     </script>

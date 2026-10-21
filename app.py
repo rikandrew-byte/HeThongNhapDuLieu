@@ -3,7 +3,9 @@
 Document Automation System (DAS) - Flask Backend V3.0
 Nhập liệu Tiếng Việt → Hệ thống quản lý và xuất hồ sơ thông minh.
 """
-import os, uuid, re, unicodedata, json, base64, traceback, io, zipfile, requests
+import os, uuid, re, unicodedata, json, base64, traceback, io, zipfile, requests, time
+from collections import defaultdict
+from threading import Lock
 from datetime import date, datetime, timedelta, timezone
 from flask import Flask, request, jsonify, send_file, render_template, Response, make_response, redirect, send_from_directory
 from flask_cors import CORS
@@ -76,6 +78,60 @@ def auth_required(f):
     if os.environ.get('RENDER'):
         return basic_auth.required(f)
     return f
+
+def is_admin_request():
+    try:
+        return basic_auth.authenticate()
+    except Exception:
+        return False
+
+def get_client_ip():
+    cf_ip = request.headers.get('CF-Connecting-IP')
+    if cf_ip:
+        return cf_ip.strip()
+    xff = request.headers.get('X-Forwarded-For')
+    if xff:
+        return xff.split(',')[0].strip()
+    return request.remote_addr or 'unknown'
+
+class SimpleRateLimiter:
+    """Rate limiter in-memory đơn giản, nhẹ, an toàn đa luồng."""
+    def __init__(self):
+        self.lock = Lock()
+        self.requests = defaultdict(list)
+        self.last_request = {}
+
+    def is_allowed(self, key, max_requests, window_seconds, min_interval_seconds=0):
+        with self.lock:
+            now = time.time()
+            if min_interval_seconds > 0 and key in self.last_request:
+                elapsed = now - self.last_request[key]
+                if elapsed < min_interval_seconds:
+                    wait_sec = int(min_interval_seconds - elapsed) + 1
+                    return False, f"Thao tác quá nhanh. Vui lòng thử lại sau {wait_sec} giây."
+
+            cutoff = now - window_seconds
+            timestamps = [t for t in self.requests[key] if t > cutoff]
+            self.requests[key] = timestamps
+
+            if len(timestamps) >= max_requests:
+                earliest = timestamps[0]
+                retry_after = int(window_seconds - (now - earliest)) + 1
+                return False, f"Bạn đã gửi quá số lần cho phép (tối đa {max_requests} lần trong {int(window_seconds / 60)} phút). Vui lòng thử lại sau {retry_after} giây."
+
+            self.requests[key].append(now)
+            self.last_request[key] = now
+
+            if len(self.requests) > 3000:
+                expired_keys = [k for k, ts in self.requests.items() if not ts or ts[-1] <= cutoff]
+                for k in expired_keys:
+                    self.requests.pop(k, None)
+                    self.last_request.pop(k, None)
+
+            return True, None
+
+submit_limiter = SimpleRateLimiter()
+translate_limiter = SimpleRateLimiter()
 
 # --- DATABASE CONFIG ---
 db_url = os.environ.get('DATABASE_URL')
@@ -1893,6 +1949,70 @@ def api_submit_only():
         ma_so = str(data.get('Maso', '')).strip()
         ho_ten = str(data.get('Hoten', '')).strip()
 
+        # Kiểm tra xác thực Admin
+        is_admin = False
+        try:
+            if basic_auth.authenticate():
+                is_admin = True
+        except Exception:
+            pass
+
+        # NẾU LÀ FORM ĐĂNG KÝ MỚI TỪ PHÍA ỨNG VIÊN (KHÔNG PHẢI ADMIN & KHÔNG PHẢI UPDATE RECORD CŨ)
+        if not is_admin and not record_id:
+            client_ip = get_client_ip()
+
+            # 1. Cấp độ 1: Bẫy Bot tự động (Honeypot)
+            if data.get('_hp_security_code'):
+                return jsonify({'success': False, 'error': 'Yêu cầu bị từ chối do phát hiện dấu hiệu bất thường.'}), 400
+
+            # 2. Cấp độ 1: Kiểm tra thời gian thao tác tối thiểu (Min Time-to-Submit)
+            form_rendered_at = data.get('_form_rendered_at')
+            if form_rendered_at:
+                try:
+                    time_elapsed_ms = (time.time() * 1000) - float(form_rendered_at)
+                    if time_elapsed_ms < 3500:  # Nộp form dưới 3.5 giây -> Bot spam
+                        return jsonify({'success': False, 'error': 'Thời gian gửi form quá nhanh. Vui lòng kiểm tra lại thông tin hồ sơ.'}), 400
+                except (ValueError, TypeError):
+                    pass
+
+            # 3. Cấp độ 2: Giới hạn tần suất nộp (Rate Limit theo IP: max 5 lần / 10 phút, giãn cách 10s)
+            allowed, limit_msg = submit_limiter.is_allowed(client_ip, max_requests=5, window_seconds=600, min_interval_seconds=10)
+            if not allowed:
+                return jsonify({'success': False, 'error': limit_msg}), 429
+
+            # 4. Cấp độ 1: Chặn gửi trùng lặp thông tin cùng 1 ứng viên trong 10 phút (Deduplication)
+            if ho_ten:
+                cutoff_time = datetime.utcnow() - timedelta(minutes=10)
+                recent_same = FormHistory.query.filter(
+                    FormHistory.ho_ten.ilike(ho_ten),
+                    FormHistory.ngay_tao >= cutoff_time,
+                    FormHistory.is_deleted == False
+                ).all()
+
+                curr_phone = str(data.get('Lienhe', '')).strip()
+                curr_dob = str(data.get('Ngaysinh', '')).strip()
+
+                for r in recent_same:
+                    try:
+                        prev_json = json.loads(r.data_json or '{}')
+                        prev_phone = str(prev_json.get('Lienhe', '')).strip()
+                        prev_dob = str(prev_json.get('Ngaysinh', '')).strip()
+
+                        phone_match = bool(curr_phone and prev_phone and curr_phone == prev_phone)
+                        dob_match = bool(curr_dob and prev_dob and curr_dob == prev_dob)
+
+                        if phone_match or dob_match or (not curr_phone and not curr_dob):
+                            return jsonify({
+                                'success': False,
+                                'error': f'Hồ sơ của ứng viên "{ho_ten}" đã được gửi lên hệ thống trong vòng 10 phút qua. Vui lòng không nộp lặp lại liên tục.'
+                            }), 429
+                    except Exception:
+                        pass
+
+        # Dọn sạch các trường bảo mật trước khi lưu vào DB
+        data.pop('_hp_security_code', None)
+        data.pop('_form_rendered_at', None)
+
         if ma_so and ma_so.upper() != 'CHO_DUYET':
             existing = FormHistory.query.filter_by(ma_so=ma_so, is_deleted=False).first()
             if existing and (not record_id or int(record_id) != existing.id):
@@ -1968,6 +2088,20 @@ def api_submit_only():
 @app.route('/api/translate', methods=['POST'])
 def api_translate():
     try:
+        # Rate limiting cho /api/translate nếu không phải admin (tối đa 30 lượt / phút)
+        is_admin = False
+        try:
+            if basic_auth.authenticate():
+                is_admin = True
+        except Exception:
+            pass
+
+        if not is_admin:
+            client_ip = get_client_ip()
+            allowed, limit_msg = translate_limiter.is_allowed(client_ip, max_requests=30, window_seconds=60, min_interval_seconds=0)
+            if not allowed:
+                return jsonify({'success': False, 'error': 'Bạn đang yêu cầu dịch quá nhanh. Vui lòng chờ 1 phút.'}), 429
+
         data = request.get_json() or {}
         text = data.get('text', '').strip()
         trans_type = data.get('type', 'name')  # 'name' hoặc 'free'
