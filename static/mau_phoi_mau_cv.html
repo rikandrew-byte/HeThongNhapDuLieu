@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>So Sánh 3 Phương Án Phối Màu CV FCT</title>
+    <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Be Vietnam Pro', sans-serif; }
+        .zh-font { font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 p-4 md:p-6 antialiased">
+
+    <!-- Thanh Điều Khiển Chọn Phương Án -->
+    <div class="max-w-5xl mx-auto mb-6 bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+                <h1 class="text-lg font-black text-slate-900 flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-cyan-600"></span>
+                    SO SÁNH 3 PHƯƠNG ÁN PHỐI MÀU CV FCT
+                </h1>
+                <p class="text-xs text-slate-500 mt-0.5">Bấm vào từng nút bên dưới để xem trực quan giao diện thay đổi tức thì</p>
+            </div>
+            <!-- Tabs Switcher -->
+            <div class="flex flex-wrap gap-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
+                <button onclick="switchTab('goc')" id="btn-goc" class="tab-btn px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-slate-600 hover:text-slate-900">
+                    Mẫu Gốc (Hiện tại)
+                </button>
+                <button onclick="switchTab('pa1')" id="btn-pa1" class="tab-btn px-3 py-1.5 text-xs font-bold rounded-lg transition-all bg-white text-cyan-800 shadow-sm border border-slate-200">
+                    PA 1: Tối Giản Slate ⭐
+                </button>
+                <button onclick="switchTab('pa2')" id="btn-pa2" class="tab-btn px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-slate-600 hover:text-slate-900">
+                    PA 2: Á Đông Hổ Phách
+                </button>
+                <button onclick="switchTab('pa3')" id="btn-pa3" class="tab-btn px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-slate-600 hover:text-slate-900">
+                    PA 3: Thẻ Phẳng Clean
+                </button>
+                <button onclick="switchTab('compare')" id="btn-compare" class="tab-btn px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-cyan-700 bg-cyan-50 hover:bg-cyan-100 border border-cyan-200">
+                    ⚡ So Sánh 4 Mẫu
+                </button>
+            </div>
+        </div>
+
+        <!-- Thanh phân tích mô tả phương án đang xem -->
+        <div id="desc-box" class="mt-4 pt-3 border-t border-slate-100 flex items-start gap-3 text-xs leading-relaxed">
+            <span id="desc-badge" class="px-2 py-0.5 rounded-md font-bold text-[11px] bg-cyan-100 text-cyan-800 whitespace-nowrap">Phương Án 1</span>
+            <p id="desc-text" class="text-slate-600">
+                <strong>Tối giản hiện đại (Slate & Teal Accent):</strong> Đưa toàn bộ 12 ô thông tin về gam màu xám trung tính cao cấp (Slate-200 & Slate-50). Giữ màu xanh cổ vịt làm điểm nhấn thương hiệu ở Tiêu đề mục lớn. Giúp mắt người xem tập trung 100% vào dữ liệu thật của ứng viên, loại bỏ hoàn toàn cảm giác ngợp xanh.
+            </p>
+        </div>
+    </div>
+
+    <!-- KHUNG HIỂN THỊ MẪU (SINGLE VIEW) -->
+    <div id="single-view" class="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
+        <!-- Banner Mockup Mini -->
+        <div class="h-20 bg-gradient-to-r from-[#083344] via-[#0e7490] to-[#083344] px-6 flex items-center justify-between text-white border-b-2 border-amber-400">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full border-2 border-cyan-300 flex items-center justify-center font-black text-cyan-200 text-xs shadow-inner">FCT</div>
+                <div>
+                    <h3 class="font-serif tracking-widest text-base font-bold text-amber-200 zh-font">履 歷 表</h3>
+                    <p class="text-[9px] tracking-widest text-cyan-200 uppercase font-bold">Curriculum Vitae</p>
+                </div>
+            </div>
+            <div class="text-right zh-font text-xs text-amber-200/90 italic hidden sm:block">
+                ✦ 先有伯樂，後有千里馬
+            </div>
+        </div>
+
+        <!-- Thân CV -->
+        <div class="p-6 md:p-8 grid grid-cols-1 md:grid-cols-12 gap-8 bg-white">
+            <!-- Cột trái: Tên + Ảnh -->
+            <div class="md:col-span-4 flex flex-col items-center border-b md:border-b-0 md:border-r border-slate-100 pb-6 md:pb-0 md:pr-6">
+                <span class="px-3 py-1 bg-cyan-50 border border-cyan-200 text-cyan-800 font-extrabold text-xs rounded-full tracking-wider mb-2">
+                    ID: MD13559
+                </span>
+                <h2 class="text-xl font-black text-slate-900 tracking-tight text-center">QUÁCH CÔNG XUÂN</h2>
+                <p class="text-base font-bold text-cyan-800 zh-font mb-4">郭公春</p>
+
+                <div class="w-48 h-60 rounded-2xl border-2 border-slate-200 bg-slate-50 flex flex-col items-center justify-center text-slate-400 p-4 shadow-inner relative overflow-hidden">
+                    <svg class="w-16 h-16 text-slate-300 mb-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
+                    <span class="text-xs font-semibold text-slate-400 text-center">Khung Ảnh Chân Dung<br>Ứng Viên</span>
+                </div>
+            </div>
+
+            <!-- Cột phải: KHU VỰC THÔNG TIN CÁ NHÂN (VÙNG ĐANG ĐƯỢC ĐỔI MÀU) -->
+            <div class="md:col-span-8 flex flex-col justify-start" id="preview-container">
+                <!-- Nội dung động sẽ render ở đây qua JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- KHUNG SO SÁNH 4 MẪU ĐẶT CẠNH NHAU (COMPARE VIEW) -->
+    <div id="compare-view" class="max-w-7xl mx-auto hidden grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Render 4 ô so sánh -->
+        <div class="bg-white p-5 rounded-2xl shadow-md border border-slate-200">
+            <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+                <span class="text-xs font-black uppercase text-slate-500 tracking-wider">🔴 MẪU GỐC HIỆN TẠI</span>
+                <span class="text-[11px] text-red-500 bg-red-50 px-2 py-0.5 rounded font-bold">Bội thực màu xanh</span>
+            </div>
+            <div id="compare-goc"></div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl shadow-md border-2 border-cyan-500 relative">
+            <div class="absolute -top-3 right-4 bg-cyan-600 text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full shadow">
+                Khuyên Dùng ⭐
+            </div>
+            <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+                <span class="text-xs font-black uppercase text-cyan-800 tracking-wider">🟢 PHƯƠNG ÁN 1: TỐI GIẢN SLATE</span>
+                <span class="text-[11px] text-cyan-700 bg-cyan-50 px-2 py-0.5 rounded font-bold">Thoáng mắt & Sang trọng</span>
+            </div>
+            <div id="compare-pa1"></div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl shadow-md border border-slate-200">
+            <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+                <span class="text-xs font-black uppercase text-amber-800 tracking-wider">🟡 PHƯƠNG ÁN 2: Á ĐÔNG HỔ PHÁCH</span>
+                <span class="text-[11px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded font-bold">Hài hòa tranh Bá Nhạc</span>
+            </div>
+            <div id="compare-pa2"></div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl shadow-md border border-slate-200">
+            <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+                <span class="text-xs font-black uppercase text-slate-700 tracking-wider">⚪ PHƯƠNG ÁN 3: THẺ PHẲNG CLEAN</span>
+                <span class="text-[11px] text-slate-700 bg-slate-100 px-2 py-0.5 rounded font-bold">Phong cách Apple/Stripe</span>
+            </div>
+            <div id="compare-pa3"></div>
+        </div>
+    </div>
+
+    <script>
+        // Dữ liệu ứng viên thực tế
+        const fields = [
+            { vi: 'Tuổi', zh: '年齡', val: '31' },
+            { vi: 'Ngày sinh', zh: '生日', val: '18/11/1994' },
+            { vi: 'Chiều cao', zh: '身高', val: '176 cm' },
+            { vi: 'Cân nặng', zh: '體重', val: '72 kg' },
+            { vi: 'Hôn nhân', zh: '婚姻狀況', val: 'Chưa kết hôn / 未婚' },
+            { vi: 'Số người con', zh: '子女人數', val: '0' },
+            { vi: 'Học vấn', zh: '最高學歷', val: 'Cấp 3 / 高中' },
+            { vi: 'Quê quán', zh: '籍貫', val: 'Thanh Hóa / 清化' },
+            { vi: 'Thị lực', zh: '視力', val: 'Bình thường / 正常' },
+            { vi: 'Tay thuận', zh: '慣用手', val: 'Tay phải / 右手' },
+            { vi: 'Hình xăm', zh: '刺青', val: 'Không / 無' },
+            { vi: 'Thuốc / Rượu', zh: '菸酒', val: 'Không / 不抽菸 不喝酒' }
+        ];
+
+        // 1. Template Mẫu Gốc (Hiện tại)
+        function renderGoc() {
+            return `
+                <div class="flex justify-between items-center pb-2 border-b-2 border-[#a5f3fc] mb-3">
+                    <span class="text-sm font-black text-[#0e7490] uppercase tracking-wider flex items-center gap-1.5">
+                        <span class="text-amber-500">✦</span> THÔNG TIN CÁ NHÂN
+                    </span>
+                    <span class="text-xs font-bold text-[#0e7490] zh-font bg-[#ecfeff] border border-[#a5f3fc] px-2.5 py-0.5 rounded-md">
+                        個人基本信息
+                    </span>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    ${fields.map(f => `
+                        <div class="bg-white border border-[#cffafe] rounded-lg overflow-hidden flex flex-col shadow-sm">
+                            <div class="bg-[#ecfeff] border-b border-[#cffafe] px-2.5 py-1 flex items-center gap-1">
+                                <span class="text-[10.5px] font-bold text-[#0e7490] uppercase tracking-wider">${f.vi}</span>
+                                <span class="text-[10px] text-[#67e8f9] font-bold">/</span>
+                                <span class="text-[11.5px] font-semibold text-[#0891b2] zh-font">${f.zh}</span>
+                            </div>
+                            <div class="px-2.5 py-1.5 text-xs font-bold text-[#0f172a]">${f.val}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // 2. Template Phương Án 1 (Tối giản Slate & Điểm nhấn Teal - Khuyên dùng)
+        function renderPA1() {
+            return `
+                <div class="flex justify-between items-center pb-2 border-b-2 border-cyan-700 mb-3">
+                    <span class="text-sm font-black text-cyan-900 uppercase tracking-wider flex items-center gap-1.5">
+                        <span class="text-amber-500">✦</span> THÔNG TIN CÁ NHÂN
+                    </span>
+                    <span class="text-xs font-bold text-cyan-800 zh-font bg-cyan-50 border border-cyan-200 px-2.5 py-0.5 rounded-md">
+                        個人基本信息
+                    </span>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    ${fields.map(f => `
+                        <div class="bg-white border border-slate-200 hover:border-slate-300 rounded-lg overflow-hidden flex flex-col shadow-sm transition-colors">
+                            <div class="bg-slate-50 border-b border-slate-100 px-2.5 py-1 flex items-center gap-1">
+                                <span class="text-[10.5px] font-bold text-slate-600 uppercase tracking-wider">${f.vi}</span>
+                                <span class="text-[10px] text-slate-300 font-bold">/</span>
+                                <span class="text-[11.5px] font-semibold text-slate-500 zh-font">${f.zh}</span>
+                            </div>
+                            <div class="px-2.5 py-1.5 text-xs font-extrabold text-slate-900">${f.val}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // 3. Template Phương Án 2 (Á Đông Hổ Phách & Kem Ngà)
+        function renderPA2() {
+            return `
+                <div class="flex justify-between items-center pb-2 border-b-2 border-amber-400 mb-3">
+                    <span class="text-sm font-black text-[#083344] uppercase tracking-wider flex items-center gap-1.5">
+                        <span class="text-amber-500">✦</span> THÔNG TIN CÁ NHÂN
+                    </span>
+                    <span class="text-xs font-bold text-amber-800 zh-font bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-md shadow-sm">
+                        個人基本信息
+                    </span>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    ${fields.map(f => `
+                        <div class="bg-white border border-stone-200 rounded-lg overflow-hidden flex flex-col shadow-sm">
+                            <div class="bg-[#fafaf9] border-b border-stone-100 px-2.5 py-1 flex items-center gap-1">
+                                <span class="text-[10.5px] font-bold text-cyan-800 uppercase tracking-wider">${f.vi}</span>
+                                <span class="text-[10px] text-amber-500 font-black">/</span>
+                                <span class="text-[11.5px] font-semibold text-stone-500 zh-font">${f.zh}</span>
+                            </div>
+                            <div class="px-2.5 py-1.5 text-xs font-bold text-stone-900">${f.val}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // 4. Template Phương Án 3 (Thẻ Phẳng Clean Card Style)
+        function renderPA3() {
+            return `
+                <div class="flex justify-between items-center pb-2 border-b-2 border-cyan-700 mb-3">
+                    <span class="text-sm font-black text-cyan-900 uppercase tracking-wider flex items-center gap-1.5">
+                        <span class="text-amber-500">✦</span> THÔNG TIN CÁ NHÂN
+                    </span>
+                    <span class="text-xs font-bold text-cyan-800 zh-font bg-cyan-50 border border-cyan-200 px-2.5 py-0.5 rounded-md">
+                        個人基本信息
+                    </span>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    ${fields.map(f => `
+                        <div class="bg-white border border-slate-200 rounded-lg px-2.5 py-2 flex flex-col justify-center shadow-sm">
+                            <div class="flex items-center gap-1 mb-0.5">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">${f.vi}</span>
+                                <span class="text-[10px] text-slate-300">/</span>
+                                <span class="text-[11px] font-medium text-slate-400 zh-font">${f.zh}</span>
+                            </div>
+                            <div class="text-[13px] font-extrabold text-slate-900 leading-tight">${f.val}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        const descriptions = {
+            goc: {
+                badge: 'Mẫu Gốc (Hiện Tại)',
+                badgeClass: 'bg-red-100 text-red-800',
+                text: '<strong>Mẫu hiện tại:</strong> Cả 12 ô đều dùng viền xanh (#cffafe), dải nền nhãn xanh (#ecfeff) và chữ nhãn xanh (#0e7490). Tạo ra quá nhiều mảng xanh lặp lại (bội thực màu xanh), khiến thông tin ứng viên khó nổi bật.'
+            },
+            pa1: {
+                badge: 'Phương Án 1 (Khuyên Dùng) ⭐',
+                badgeClass: 'bg-cyan-100 text-cyan-800',
+                text: '<strong>Tối giản hiện đại (Slate & Teal Accent):</strong> Đưa toàn bộ 12 ô thông tin về gam màu xám trung tính cao cấp (Slate-200 & Slate-50). Giữ màu xanh cổ vịt làm điểm nhấn thương hiệu ở Tiêu đề mục lớn. Giúp mắt người xem tập trung 100% vào dữ liệu thật của ứng viên, loại bỏ hoàn toàn cảm giác ngợp xanh.'
+            },
+            pa2: {
+                badge: 'Phương Án 2 (Á Đông Hổ Phách)',
+                badgeClass: 'bg-amber-100 text-amber-800',
+                text: '<strong>Á Đông Quý Phái (Xanh Cổ Vịt phối Vàng Hổ Phách):</strong> Lấy cảm hứng trực tiếp từ bức tranh thủy mặc Bá Nhạc & Thiên Lý Mã trên banner. Tiêu đề gạch chỉ vàng, badge tiếng Trung mạ vàng kem ấm (#fffbeb), nhãn màu xanh ngọc kết hợp xám ấm, tạo cảm giác sang trọng cổ phong.'
+            },
+            pa3: {
+                badge: 'Phương Án 3 (Thẻ Phẳng Clean)',
+                badgeClass: 'bg-slate-200 text-slate-800',
+                text: '<strong>Thẻ phẳng không dải nền:</strong> Loại bỏ hoàn toàn khối nền chia đôi ô. Nhãn chữ nhỏ tinh gọn ở trên, giá trị dữ liệu to đậm rõ ràng ở dưới. Phong cách tối giản kiểu Apple/Stripe, sạch sẽ và thông thoáng tối đa.'
+            }
+        };
+
+        function switchTab(mode) {
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.className = 'tab-btn px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-slate-600 hover:text-slate-900';
+            });
+            const activeBtn = document.getElementById('btn-' + mode);
+            if (activeBtn) {
+                activeBtn.className = 'tab-btn px-3 py-1.5 text-xs font-bold rounded-lg transition-all bg-white text-cyan-800 shadow-sm border border-slate-200 ring-2 ring-cyan-500/20';
+            }
+
+            const singleView = document.getElementById('single-view');
+            const compareView = document.getElementById('compare-view');
+            const previewContainer = document.getElementById('preview-container');
+            const descBox = document.getElementById('desc-box');
+
+            if (mode === 'compare') {
+                singleView.classList.add('hidden');
+                compareView.classList.remove('hidden');
+                document.getElementById('compare-goc').innerHTML = renderGoc();
+                document.getElementById('compare-pa1').innerHTML = renderPA1();
+                document.getElementById('compare-pa2').innerHTML = renderPA2();
+                document.getElementById('compare-pa3').innerHTML = renderPA3();
+                descBox.classList.add('hidden');
+            } else {
+                compareView.classList.add('hidden');
+                singleView.classList.remove('hidden');
+                descBox.classList.remove('hidden');
+
+                if (mode === 'goc') previewContainer.innerHTML = renderGoc();
+                else if (mode === 'pa1') previewContainer.innerHTML = renderPA1();
+                else if (mode === 'pa2') previewContainer.innerHTML = renderPA2();
+                else if (mode === 'pa3') previewContainer.innerHTML = renderPA3();
+
+                const d = descriptions[mode];
+                const badge = document.getElementById('desc-badge');
+                badge.className = `px-2 py-0.5 rounded-md font-bold text-[11px] whitespace-nowrap ${d.badgeClass}`;
+                badge.innerText = d.badge;
+                document.getElementById('desc-text').innerHTML = d.text;
+            }
+        }
+
+        // Mặc định khởi tạo Phương Án 1
+        switchTab('pa1');
+    </script>
+</body>
+</html>
