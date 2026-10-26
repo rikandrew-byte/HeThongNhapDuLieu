@@ -133,7 +133,7 @@ class SimpleRateLimiter:
 submit_limiter = SimpleRateLimiter()
 translate_limiter = SimpleRateLimiter()
 
-TURNSTILE_SECRET_KEY = os.environ.get('TURNSTILE_SECRET_KEY', '0x4AAAAAAFe1lmToQHdKac-ZxrS-yGGAnuc')
+TURNSTILE_SECRET_KEY = os.environ.get('TURNSTILE_SECRET_KEY')
 
 def verify_turnstile_token(token: str, remote_ip: str = None) -> bool:
     """Xác thực token Cloudflare Turnstile với Cloudflare API."""
