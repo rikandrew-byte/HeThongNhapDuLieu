@@ -2005,7 +2005,7 @@ def api_submit_only():
             if form_rendered_at:
                 try:
                     time_elapsed_ms = (time.time() * 1000) - float(form_rendered_at)
-                    if time_elapsed_ms < 3500:  # Nộp form dưới 3.5 giây -> Bot spam
+                    if 0 <= time_elapsed_ms < 3500:  # Nộp form dưới 3.5 giây -> Bot spam
                         return jsonify({'success': False, 'error': 'Thời gian gửi form quá nhanh. Vui lòng kiểm tra lại thông tin hồ sơ.'}), 400
                 except (ValueError, TypeError):
                     pass

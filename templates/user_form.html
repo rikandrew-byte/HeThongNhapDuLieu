@@ -757,9 +757,13 @@
                     setTimeout(() => window.location.reload(), 500);
                 } else {
                     alert("Lỗi: " + result.error);
+                    if (window.turnstile) { try { turnstile.reset(); } catch(e){} }
+                    _turnstileToken = '';
                 }
             } catch (error) {
                 alert("Lỗi kết nối máy chủ.");
+                if (window.turnstile) { try { turnstile.reset(); } catch(e){} }
+                _turnstileToken = '';
             } finally {
                 btnText.innerText = "GỬI ĐĂNG KÝ";
                 loading.classList.add('hidden');
