@@ -870,16 +870,25 @@ def sanitize_filename_master(name):
 
 def fmt_date(d):
     if not d: return ""
-    try: return datetime.strptime(str(d), "%Y-%m-%d").strftime("%d/%m/%Y")
-    except: return str(d)
+    d_str = str(d).strip()
+    for in_fmt in ("%Y-%m-%d", "%d/%m/%Y", "%Y/%m/%d", "%d-%m-%Y"):
+        try:
+            return datetime.strptime(d_str, in_fmt).strftime("%Y/%m/%d")
+        except ValueError:
+            pass
+    return d_str
 
 def calc_age(birth_str):
     if not birth_str: return ""
-    try:
-        b = datetime.strptime(str(birth_str), "%Y-%m-%d")
-        today = date.today()
-        return today.year - b.year - ((today.month, today.day) < (b.month, b.day))
-    except: return ""
+    b_str = str(birth_str).strip()
+    for in_fmt in ("%Y-%m-%d", "%d/%m/%Y", "%Y/%m/%d", "%d-%m-%Y"):
+        try:
+            b = datetime.strptime(b_str, in_fmt)
+            today = date.today()
+            return today.year - b.year - ((today.month, today.day) < (b.month, b.day))
+        except ValueError:
+            pass
+    return ""
 
 def chk(v):
     return v in (True, 'true', '1', 1, 'yes', 'on', 'checked')
