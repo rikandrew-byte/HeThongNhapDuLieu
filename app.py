@@ -2597,9 +2597,6 @@ def api_assign_job_by_maso():
             ).all()
             for r in records:
                 r.don_hang = ""
-                r.selected_job = ""
-                r.is_selected = False
-                r.selected_at = None
                 try:
                     if r.data_json:
                         jd = json.loads(r.data_json)
@@ -2725,17 +2722,11 @@ def api_assign_job_by_maso():
                         changed = True
             else:
                 # Ứng viên KHÔNG nằm trong danh sách mới: bớt đơn hàng này ra khỏi hồ sơ
+                # (Lưu ý: KHÔNG tự ý hủy kết quả trúng tuyển của ứng viên nếu đơn hàng tuyển liên tục theo nhiều đợt)
                 if has_old or has_target:
                     new_jobs = [j for j in current_jobs if unicodedata.normalize('NFC', j.upper()) not in (old_job, target_job)]
                     r.don_hang = ", ".join(new_jobs)
                     changed = True
-                    # Nếu ứng viên đang trúng tuyển đơn hàng bị gỡ, hủy trạng thái trúng tuyển
-                    if getattr(r, 'selected_job', None):
-                        sel_norm = unicodedata.normalize('NFC', r.selected_job.strip().upper())
-                        if sel_norm in (old_job, target_job):
-                            r.selected_job = ""
-                            r.is_selected = False
-                            r.selected_at = None
                             
             if changed:
                 if r.data_json:
@@ -2782,13 +2773,6 @@ def api_remove_job_from_maso():
             if len(new_jobs) != len(jobs):
                 new_donhang = ", ".join(new_jobs)
                 r.don_hang = new_donhang
-                # Nếu ứng viên đang trúng tuyển đơn hàng này, hủy trạng thái trúng tuyển
-                if getattr(r, 'selected_job', None):
-                    sel_norm = unicodedata.normalize('NFC', r.selected_job.strip().upper())
-                    if sel_norm == job_to_remove:
-                        r.selected_job = ""
-                        r.is_selected = False
-                        r.selected_at = None
                 try:
                     if r.data_json:
                         jd = json.loads(r.data_json)
