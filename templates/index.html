@@ -153,6 +153,25 @@
             font-family: monospace;
             white-space: nowrap;
         }
+        .job-badge-remove-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            padding: 0 0 0 5px;
+            line-height: 1;
+            margin-left: 2px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+        }
+        .job-badge-remove-btn:hover {
+            color: #ef4444 !important;
+            transform: scale(1.25);
+        }
 
         /* ── Base ── */
         body {
@@ -1302,13 +1321,27 @@
                 <!-- Đăng ký ghép đơn nhanh -->
                 <div class="quick-job-assign-box" style="background:#ffffff; border:1px solid #a5f3fc; border-radius:14px; padding:16px; margin-bottom:16px; box-shadow:0 4px 14px -2px rgba(8,145,178,0.08);">
 
+                    <!-- Banner trạng thái khi đang ở Chế độ Sửa đơn hàng -->
+                    <div id="quickJobEditingBanner" style="display:none; align-items:center; justify-content:space-between; background:#fff7ed; border:1px solid #fdba74; padding:10px 14px; border-radius:10px; margin-bottom:14px; animation: fadeIn 0.15s ease-out;">
+                        <div style="font-size:13px; font-weight:750; color:#c2410c; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                            <span>✍️ ĐANG SỬA ĐƠN HÀNG:</span>
+                            <span id="quickJobEditingName" style="background:#ffedd5; padding:2px 8px; border-radius:6px; border:1px solid #fed7aa; color:#9a3412; font-weight:800;"></span>
+                            <span style="font-size:12px; font-weight:500; color:#7c2d12;">(Bạn có thể sửa tên đơn, thêm hoặc bớt mã số bên dưới rồi bấm Lưu)</span>
+                        </div>
+                        <button type="button" onclick="cancelQuickJobEdit()" style="background:#ea580c; color:#ffffff; border:none; padding:5px 12px; border-radius:6px; font-size:12px; font-weight:750; cursor:pointer; transition:all 0.15s;"
+                            onmouseover="this.style.background='#c2410c'" onmouseout="this.style.background='#ea580c'">
+                            ❌ Hủy sửa
+                        </button>
+                    </div>
+
                     <div class="quick-job-assign-fields" style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
                         <div style="flex:1; min-width:180px;">
                             <label style="display:block; font-size:11px; font-weight:700; color:#0e7490; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.02em;">Tên đơn hàng:</label>
-                            <input type="text" id="quickJobNameInput" placeholder="Ví dụ: Thác Vỹ, HV" 
+                            <input type="text" id="quickJobNameInput" list="quickJobNameOptions" autocomplete="off" placeholder="Ví dụ: Thác Vỹ, HV" 
                                 style="width:100%; padding:10px 12px; border:1px solid #a5f3fc; border-radius:8px; font-size:13px; outline:none; box-sizing:border-box; background:#fbfbfe; font-family:'Inter',sans-serif; font-weight:750; color:#0f172a; transition: all 0.15s;"
                                 onfocus="this.style.borderColor='#0891b2'; this.style.background='#ffffff'; this.style.boxShadow='0 0 0 3px rgba(8,145,178,0.15)';" 
                                 onblur="this.style.borderColor='#a5f3fc'; this.style.background='#fbfbfe'; this.style.boxShadow='none';">
+                            <datalist id="quickJobNameOptions"></datalist>
                         </div>
                         <div style="flex:2; min-width:280px;">
                             <label style="display:block; font-size:11px; font-weight:700; color:#0e7490; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.02em;">Danh sách dự tuyển:</label>
@@ -1317,10 +1350,10 @@
                                 onfocus="this.style.borderColor='#0891b2'; this.style.background='#ffffff'; this.style.boxShadow='0 0 0 3px rgba(8,145,178,0.15)';" 
                                 onblur="this.style.borderColor='#a5f3fc'; this.style.background='#fbfbfe'; this.style.boxShadow='none';">
                         </div>
-                        <button type="button" onclick="submitQuickJobAssign()" 
+                        <button type="button" id="quickJobSubmitBtn" onclick="submitQuickJobAssign()" 
                             style="padding:10px 22px; background:#0891b2; color:#ffffff; border:none; border-radius:8px; font-size:13px; font-weight:800; cursor:pointer; transition:all 0.18s; white-space:nowrap; box-shadow:0 4px 6px -1px rgba(8,145,178,0.25); display:flex; align-items:center; gap:6px;"
-                            onmouseover="this.style.background='#0e7490'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(8,145,178,0.35)';"
-                            onmouseout="this.style.background='#0891b2'; this.style.transform='none'; this.style.boxShadow='0 4px 6px -1px rgba(8,145,178,0.25)';">
+                            onmouseover="this.style.filter='brightness(0.95)'; this.style.transform='translateY(-1px)';"
+                            onmouseout="this.style.filter='none'; this.style.transform='none';">
                             <span>⚡ Ghép ngay</span>
                         </button>
                     </div>
@@ -5001,6 +5034,12 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             
             const sortedJobs = Object.keys(jobMap).sort();
             
+            // Cập nhật datalist gợi ý tên đơn hàng
+            const datalist = document.getElementById('quickJobNameOptions');
+            if (datalist) {
+                datalist.innerHTML = sortedJobs.map(j => `<option value="${j.replace(/"/g, '&quot;')}">`).join('');
+            }
+            
             if (sortedJobs.length === 0) {
                 tbody.innerHTML = `
                     <tr>
@@ -5017,6 +5056,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 const masoArray = [...new Set(applicants.map(i => i.ma_so).filter(m => m && m !== 'CHO_DUYET'))];
                 masoArray.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
                 const masoList = masoArray.join(', ');
+                const choDuyetCount = applicants.filter(i => !i.ma_so || i.ma_so === 'CHO_DUYET').length;
                 
                 let masoBadgesHtml = '';
                 if (masoList && masoList.trim() !== '') {
@@ -5024,6 +5064,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                     masoBadgesHtml = `<div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:4px;">` +
                         codes.map(code => {
                             const codeUpper = code.toUpperCase();
+                            const removeBtnHtml = `<button type="button" class="job-badge-remove-btn" onclick="removeCandidateFromJob('${code}', '${job.replace(/'/g, "\\'")}', event)" title="Xóa ${code} khỏi đơn ${job}">×</button>`;
                             if (selectedCandidatesMap.has(codeUpper)) {
                                 const selJobUpper = selectedCandidatesMap.get(codeUpper);
                                 // Split để xử lý dữ liệu cũ có nhiều đơn trong selected_job
@@ -5031,24 +5072,30 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                                     ? selJobUpper.split(/[,;]+/).map(j => j.trim()).filter(j => j)
                                     : [];
                                 if (selJobs.length > 0 && selJobs.some(sj => sj === job.toUpperCase())) {
-                                    return `<span class="job-maso-badge-success" title="Đã trúng tuyển đơn hàng này">🏆 ${code}</span>`;
+                                    return `<span class="job-maso-badge-success" title="Đã trúng tuyển đơn hàng này">🏆 ${code}${removeBtnHtml}</span>`;
                                 } else if (selJobs.length > 0) {
                                     const origItem = currentHistoryData.find(i => i.ma_so && i.ma_so.toUpperCase() === codeUpper && i.is_selected);
                                     const selJobDisplay = origItem ? (origItem.selected_job || '') : selJobUpper;
                                     // Hiển thị chỉ đơn đầu tiên nếu là chuỗi nhiều đơn (dữ liệu cũ)
                                     const displayClean = selJobDisplay.split(/[,;]+/)[0].trim() || selJobDisplay;
-                                    return `<span class="job-maso-badge-warning" title="Cảnh báo: Đã trúng tuyển đơn hàng: ${displayClean}">⚠️ ${code}</span>`;
+                                    return `<span class="job-maso-badge-warning" title="Cảnh báo: Đã trúng tuyển đơn hàng: ${displayClean}">⚠️ ${code}${removeBtnHtml}</span>`;
                                 } else {
                                     // Trúng tuyển nhưng chưa xác định đơn nào → hiển thị như cảnh báo nhạt
-                                    return `<span class="job-maso-badge-warning" title="Đã trúng tuyển nhưng chưa xác định đơn cụ thể">❓ ${code}</span>`;
+                                    return `<span class="job-maso-badge-warning" title="Đã trúng tuyển nhưng chưa xác định đơn cụ thể">❓ ${code}${removeBtnHtml}</span>`;
                                 }
                             } else {
-                                return `<span class="job-maso-badge" style="display:inline-flex; align-items:center; background:#eef2ff; border:1px solid #c7d2fe; border-radius:6px; padding:3px 8px; font-size:12px; font-weight:700; color:#312e81; font-family:monospace; white-space:nowrap;">${code}</span>`;
+                                return `<span class="job-maso-badge" style="display:inline-flex; align-items:center; background:#eef2ff; border:1px solid #c7d2fe; border-radius:6px; padding:3px 8px; font-size:12px; font-weight:700; color:#312e81; font-family:monospace; white-space:nowrap;">${code}${removeBtnHtml}</span>`;
                             }
-                        }).join('') +
-                        `</div>`;
+                        }).join('');
+                        
+                    if (choDuyetCount > 0) {
+                        masoBadgesHtml += `<span class="job-maso-badge" style="display:inline-flex; align-items:center; background:#fef3c7; border:1px solid #fde68a; border-radius:6px; padding:3px 8px; font-size:11px; font-weight:700; color:#b45309;" title="Hồ sơ mới chưa được cấp mã số">+${choDuyetCount} Chờ duyệt</span>`;
+                    }
+                    masoBadgesHtml += `</div>`;
+                } else if (choDuyetCount > 0) {
+                    masoBadgesHtml = `<span class="job-maso-badge" style="display:inline-flex; align-items:center; background:#fef3c7; border:1px solid #fde68a; border-radius:6px; padding:3px 8px; font-size:11px; font-weight:700; color:#b45309;" title="Hồ sơ mới chưa được cấp mã số">+${choDuyetCount} Chờ duyệt</span>`;
                 } else {
-                    masoBadgesHtml = '<span style="color:#ef4444; font-style:italic;">Chỉ có mã Chờ duyệt</span>';
+                    masoBadgesHtml = '<span style="color:#ef4444; font-style:italic;">Chưa có mã số</span>';
                 }
 
                 const tr = document.createElement('tr');
@@ -5097,6 +5144,32 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             });
         }
 
+        async function removeCandidateFromJob(maso, jobName, event) {
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+            if (!confirm(`Bạn có chắc chắn muốn xóa ứng viên [${maso}] khỏi đơn hàng "${jobName}" không?`)) return;
+            try {
+                const res = await fetch('/api/history/remove-job-from-maso', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ ma_so: maso, don_hang: jobName })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    await loadHistory(window.lastHistorySearchQuery || '', true);
+                } else {
+                    alert('Lỗi: ' + result.error);
+                }
+            } catch (e) {
+                console.error('removeCandidateFromJob error:', e);
+                alert('Lỗi kết nối máy chủ.');
+            }
+        }
+        }
+
         function copyJobMasoList(masoList, btn) {
             if (!masoList || masoList.trim() === '') {
                 alert('Không có mã số ứng viên hợp lệ để copy.');
@@ -5135,6 +5208,21 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
         }
 
         function fillQuickJobAssignInputs(jobName, masoList) {
+            window._currentEditingJobName = jobName;
+            
+            const banner = document.getElementById('quickJobEditingBanner');
+            const nameSpan = document.getElementById('quickJobEditingName');
+            const submitBtn = document.getElementById('quickJobSubmitBtn');
+            
+            if (banner && nameSpan) {
+                nameSpan.textContent = jobName;
+                banner.style.display = 'flex';
+            }
+            if (submitBtn) {
+                submitBtn.innerHTML = '<span>💾 Lưu thay đổi đơn hàng</span>';
+                submitBtn.style.background = '#ea580c';
+            }
+            
             const jobNameInput = document.getElementById('quickJobNameInput');
             const masoInput = document.getElementById('quickJobMasoInput');
             if (jobNameInput && masoInput) {
@@ -5145,6 +5233,21 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 // Cuộn mượt tới khung ghép đơn nhanh để người dùng thao tác
                 jobNameInput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
+        }
+
+        function cancelQuickJobEdit() {
+            window._currentEditingJobName = null;
+            const banner = document.getElementById('quickJobEditingBanner');
+            const submitBtn = document.getElementById('quickJobSubmitBtn');
+            if (banner) banner.style.display = 'none';
+            if (submitBtn) {
+                submitBtn.innerHTML = '<span>⚡ Ghép ngay</span>';
+                submitBtn.style.background = '#0891b2';
+            }
+            const jobNameInput = document.getElementById('quickJobNameInput');
+            const masoInput = document.getElementById('quickJobMasoInput');
+            if (jobNameInput) jobNameInput.value = '';
+            if (masoInput) masoInput.value = '';
         }
 
         function showJobAssignPrompt(count, options, prefillValue = '') {
@@ -5282,15 +5385,16 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             
             const jobName = jobNameInput.value.trim();
             const masoRaw = masoInput.value.trim();
+            const isEditing = !!window._currentEditingJobName;
             
-            if (!masoRaw) {
+            if (!masoRaw && !isEditing) {
                 alert('Vui lòng nhập danh sách mã số ứng viên!');
                 masoInput.focus();
                 return;
             }
             
             const masoList = masoRaw.split(/[,\s;]+/).map(m => m.trim().toUpperCase()).filter(m => m.length > 0);
-            if (masoList.length === 0) {
+            if (masoList.length === 0 && !isEditing) {
                 alert('Danh sách mã số không hợp lệ!');
                 masoInput.focus();
                 return;
@@ -5302,23 +5406,38 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             }
             
             try {
+                const payload = {
+                    maso_list: masoList,
+                    don_hang: jobName,
+                    mode: isEditing ? 'sync' : 'add',
+                    old_don_hang: isEditing ? window._currentEditingJobName : ''
+                };
+                
                 const res = await fetch('/api/history/assign-job-by-maso', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'same-origin',
-                    body: JSON.stringify({ maso_list: masoList, don_hang: jobName })
+                    body: JSON.stringify(payload)
                 });
                 const result = await res.json();
                 
                 if (result.success) {
-                    jobNameInput.value = '';
-                    masoInput.value = '';
+                    let msg = '';
                     if (!jobName) {
-                        alert(`Đã xóa bỏ đơn hàng thành công cho ${result.count} ứng viên tìm thấy!`);
+                        msg = `Đã xóa bỏ đơn hàng thành công cho ${result.count} ứng viên tìm thấy!`;
+                    } else if (isEditing) {
+                        msg = `Đã cập nhật thành công đơn hàng "${jobName}"!`;
                     } else {
-                        alert(`Đã ghép thành công đơn hàng "${jobName}" cho ${result.count} ứng viên tìm thấy!`);
+                        msg = `Đã ghép thành công đơn hàng "${jobName}" cho ${result.count} ứng viên tìm thấy!`;
                     }
-                    loadHistory();
+                    
+                    if (result.not_found && result.not_found.length > 0) {
+                        msg += `\n⚠️ Lưu ý: Có ${result.not_found.length} mã số không tìm thấy trong hệ thống: [${result.not_found.join(', ')}]`;
+                    }
+                    
+                    cancelQuickJobEdit();
+                    alert(msg);
+                    await loadHistory(window.lastHistorySearchQuery || '', true);
                 } else {
                     alert('Lỗi: ' + result.error);
                 }
@@ -5336,13 +5455,16 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'same-origin',
-                    body: JSON.stringify({ maso_list: [], don_hang: jobName })
+                    body: JSON.stringify({ maso_list: [], don_hang: jobName, mode: 'sync' })
                 });
                 const result = await res.json();
                 
                 if (result.success) {
+                    if (window._currentEditingJobName && window._currentEditingJobName.toUpperCase() === jobName.toUpperCase()) {
+                        cancelQuickJobEdit();
+                    }
                     alert(`Đã gỡ bỏ thành công đơn hàng "${jobName}" khỏi ${result.count} ứng viên!`);
-                    loadHistory();
+                    await loadHistory(window.lastHistorySearchQuery || '', true);
                 } else {
                     alert('Lỗi: ' + result.error);
                 }

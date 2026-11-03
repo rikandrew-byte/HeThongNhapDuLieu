@@ -2575,18 +2575,31 @@ def api_assign_job_by_maso():
         data = request.get_json() or {}
         maso_list = data.get('maso_list', [])
         don_hang = str(data.get('don_hang', '')).strip()
+        old_don_hang = str(data.get('old_don_hang', '')).strip()
+        mode = str(data.get('mode', '')).strip().lower() # 'add' hoặc 'sync'
         
         # Chuẩn hóa danh sách mã số và tên đơn hàng mục tiêu
         clean_masos = [unicodedata.normalize('NFC', str(m).strip().upper()) for m in maso_list if str(m).strip()]
-        target_job = unicodedata.normalize('NFC', don_hang.strip().upper())
+        target_job = unicodedata.normalize('NFC', don_hang.upper())
+        old_job = unicodedata.normalize('NFC', old_don_hang.upper()) if old_don_hang else target_job
         
-        # Nếu Tên đơn hàng trống, ta thực hiện xóa sạch đơn hàng cho các mã số trong list
+        # Nếu không truyền mode: nếu có old_don_hang hoặc clean_masos rỗng -> 'sync'; ngược lại mặc định 'add'
+        if not mode:
+            mode = 'sync' if (old_don_hang or not clean_masos) else 'add'
+            
+        # Trường hợp 1: Tên đơn hàng trống -> Xóa sạch đơn hàng cho các mã số trong list
         if not target_job:
             if not clean_masos:
                 return jsonify({'success': False, 'error': 'No candidate codes provided'}), 400
-            records = FormHistory.query.filter(func.upper(FormHistory.ma_so).in_(clean_masos)).all()
+            records = FormHistory.query.filter(
+                func.upper(FormHistory.ma_so).in_(clean_masos),
+                FormHistory.is_deleted == False
+            ).all()
             for r in records:
                 r.don_hang = ""
+                r.selected_job = ""
+                r.is_selected = False
+                r.selected_at = None
                 try:
                     if r.data_json:
                         jd = json.loads(r.data_json)
@@ -2595,34 +2608,30 @@ def api_assign_job_by_maso():
                 except:
                     pass
             db.session.commit()
-            return jsonify({'success': True, 'count': len(records)})
+            return jsonify({'success': True, 'count': len(records), 'not_found': []})
             
-        # Tối ưu truy vấn: chỉ lấy hồ sơ có mã trong clean_masos HOẶC đang chứa đơn hàng target_job
-        filter_cond = []
-        if clean_masos:
-            filter_cond.append(func.upper(FormHistory.ma_so).in_(clean_masos))
-        if don_hang:
-            filter_cond.append(FormHistory.don_hang.ilike(f"%{don_hang}%"))
-        
-        target_records = FormHistory.query.filter(or_(*filter_cond)).all() if filter_cond else []
-        updated_count = 0
-        
-        for r in target_records:
-            r_maso = (r.ma_so or '').strip().upper()
-            if not r_maso:
-                continue
+        # Trường hợp 2: Chế độ THÊM ỨNG VIÊN VÀO ĐƠN HÀNG (mode == 'add')
+        # Dùng khi nhập nhanh ở đầu trang: CHỈ THÊM vào các ứng viên được chọn, KHÔNG xóa các ứng viên cũ của đơn!
+        if mode == 'add':
+            if not clean_masos:
+                return jsonify({'success': False, 'error': 'Vui lòng nhập ít nhất một mã số ứng viên'}), 400
                 
-            donhang_str = (r.don_hang or '').strip()
-            # Tách các đơn hàng hiện tại của ứng viên
-            current_jobs = [j.strip() for j in re.split(r'[,;]+', donhang_str) if j.strip()]
-            current_jobs_upper = [unicodedata.normalize('NFC', j.upper()) for j in current_jobs]
+            records = FormHistory.query.filter(
+                func.upper(FormHistory.ma_so).in_(clean_masos),
+                FormHistory.is_deleted == False
+            ).all()
             
-            in_new_list = unicodedata.normalize('NFC', r_maso) in clean_masos
-            has_job_currently = target_job in current_jobs_upper
-            
-            if in_new_list:
-                # Nếu ứng viên có trong danh sách nhập vào nhưng chưa được gán đơn này, tiến hành gán thêm
-                if not has_job_currently:
+            found_masos = set()
+            updated_count = 0
+            for r in records:
+                r_maso = unicodedata.normalize('NFC', (r.ma_so or '').strip().upper())
+                found_masos.add(r_maso)
+                
+                donhang_str = (r.don_hang or '').strip()
+                current_jobs = [j.strip() for j in re.split(r'[,;]+', donhang_str) if j.strip()]
+                current_jobs_upper = [unicodedata.normalize('NFC', j.upper()) for j in current_jobs]
+                
+                if target_job not in current_jobs_upper:
                     current_jobs.append(don_hang)
                     new_donhang = ", ".join(current_jobs)
                     r.don_hang = new_donhang
@@ -2634,23 +2643,113 @@ def api_assign_job_by_maso():
                     except:
                         pass
                     updated_count += 1
-            else:
-                # Nếu ứng viên KHÔNG có trong danh sách nhập vào nhưng hiện đang được gán đơn này, tiến hành gỡ bỏ
-                if has_job_currently:
-                    new_jobs = [j for j in current_jobs if unicodedata.normalize('NFC', j.strip().upper()) != target_job]
-                    new_donhang = ", ".join(new_jobs)
-                    r.don_hang = new_donhang
-                    try:
-                        if r.data_json:
+                    
+            db.session.commit()
+            not_found = [m for m in clean_masos if m not in found_masos]
+            return jsonify({'success': True, 'count': updated_count, 'not_found': not_found})
+            
+        # Trường hợp 3: Chế độ ĐỒNG BỘ / SỬA / XÓA ĐƠN HÀNG (mode == 'sync')
+        # Dùng khi bấm nút "Sửa" đơn hàng hoặc nút "Bỏ" đơn hàng
+        all_active = FormHistory.query.filter(FormHistory.is_deleted == False).all()
+        updated_count = 0
+        found_masos = set()
+        
+        for r in all_active:
+            r_maso = unicodedata.normalize('NFC', (r.ma_so or '').strip().upper())
+            
+            # Bảo vệ ứng viên chưa cấp mã số (CHO_DUYET hoặc rỗng) không bị xóa nhầm khi admin sửa đơn
+            if not r_maso or r_maso == 'CHO_DUYET':
+                donhang_str = (r.don_hang or '').strip()
+                current_jobs = [j.strip() for j in re.split(r'[,;]+', donhang_str) if j.strip()]
+                current_jobs_upper = [unicodedata.normalize('NFC', j.upper()) for j in current_jobs]
+                has_old = old_job in current_jobs_upper
+                # Nếu đơn hàng được đổi tên, cập nhật tên mới cho hồ sơ chờ duyệt
+                if has_old and old_job != target_job:
+                    new_jobs = [don_hang if unicodedata.normalize('NFC', j.upper()) == old_job else j for j in current_jobs]
+                    r.don_hang = ", ".join(new_jobs)
+                    if r.data_json:
+                        try:
                             jd = json.loads(r.data_json)
-                            jd['Donhang'] = new_donhang
+                            jd['Donhang'] = r.don_hang
                             r.data_json = json.dumps(jd, ensure_ascii=False)
+                        except:
+                            pass
+                    updated_count += 1
+                continue
+                
+            donhang_str = (r.don_hang or '').strip()
+            current_jobs = [j.strip() for j in re.split(r'[,;]+', donhang_str) if j.strip()]
+            current_jobs_upper = [unicodedata.normalize('NFC', j.upper()) for j in current_jobs]
+            
+            has_old = old_job in current_jobs_upper
+            has_target = target_job in current_jobs_upper
+            in_new_list = r_maso in clean_masos
+            
+            changed = False
+            if in_new_list:
+                found_masos.add(r_maso)
+                # Ứng viên thuộc danh sách đơn hàng
+                # Nếu đổi tên đơn hàng: thay thế old_job thành don_hang; nếu chưa có thì thêm mới
+                new_jobs = []
+                already_in = False
+                for j in current_jobs:
+                    j_norm = unicodedata.normalize('NFC', j.upper())
+                    if j_norm == old_job or j_norm == target_job:
+                        if not already_in:
+                            new_jobs.append(don_hang)
+                            already_in = True
+                    else:
+                        new_jobs.append(j)
+                if not already_in:
+                    new_jobs.append(don_hang)
+                    
+                # Deduplicate giữ nguyên thứ tự
+                seen = set()
+                dedup = []
+                for j in new_jobs:
+                    jn = unicodedata.normalize('NFC', j.upper())
+                    if jn not in seen:
+                        seen.add(jn)
+                        dedup.append(j)
+                        
+                new_donhang = ", ".join(dedup)
+                if new_donhang != donhang_str:
+                    r.don_hang = new_donhang
+                    changed = True
+                    
+                # Cập nhật selected_job nếu đổi tên đơn hàng
+                if old_job != target_job and getattr(r, 'selected_job', None):
+                    sel_norm = unicodedata.normalize('NFC', r.selected_job.strip().upper())
+                    if sel_norm == old_job:
+                        r.selected_job = don_hang
+                        changed = True
+            else:
+                # Ứng viên KHÔNG nằm trong danh sách mới: bớt đơn hàng này ra khỏi hồ sơ
+                if has_old or has_target:
+                    new_jobs = [j for j in current_jobs if unicodedata.normalize('NFC', j.upper()) not in (old_job, target_job)]
+                    r.don_hang = ", ".join(new_jobs)
+                    changed = True
+                    # Nếu ứng viên đang trúng tuyển đơn hàng bị gỡ, hủy trạng thái trúng tuyển
+                    if getattr(r, 'selected_job', None):
+                        sel_norm = unicodedata.normalize('NFC', r.selected_job.strip().upper())
+                        if sel_norm in (old_job, target_job):
+                            r.selected_job = ""
+                            r.is_selected = False
+                            r.selected_at = None
+                            
+            if changed:
+                if r.data_json:
+                    try:
+                        jd = json.loads(r.data_json)
+                        jd['Donhang'] = r.don_hang
+                        r.data_json = json.dumps(jd, ensure_ascii=False)
                     except:
                         pass
-                    updated_count += 1
-                    
+                updated_count += 1
+                
         db.session.commit()
-        return jsonify({'success': True, 'count': updated_count})
+        not_found = [m for m in clean_masos if m not in found_masos]
+        return jsonify({'success': True, 'count': updated_count, 'not_found': not_found})
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -2666,7 +2765,10 @@ def api_remove_job_from_maso():
         if not ma_so or not job_to_remove:
             return jsonify({'success': False, 'error': 'Missing parameters'}), 400
             
-        records = FormHistory.query.filter(func.upper(FormHistory.ma_so) == ma_so).all()
+        records = FormHistory.query.filter(
+            func.upper(FormHistory.ma_so) == ma_so,
+            FormHistory.is_deleted == False
+        ).all()
         updated_count = 0
         
         for r in records:
@@ -2680,6 +2782,13 @@ def api_remove_job_from_maso():
             if len(new_jobs) != len(jobs):
                 new_donhang = ", ".join(new_jobs)
                 r.don_hang = new_donhang
+                # Nếu ứng viên đang trúng tuyển đơn hàng này, hủy trạng thái trúng tuyển
+                if getattr(r, 'selected_job', None):
+                    sel_norm = unicodedata.normalize('NFC', r.selected_job.strip().upper())
+                    if sel_norm == job_to_remove:
+                        r.selected_job = ""
+                        r.is_selected = False
+                        r.selected_at = None
                 try:
                     if r.data_json:
                         jd = json.loads(r.data_json)
