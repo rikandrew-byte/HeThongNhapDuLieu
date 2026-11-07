@@ -326,13 +326,16 @@
             border: 1px solid rgba(226,232,240,0.8);
         }
 
-        /* ── Glass Bottom Bar (Thanh Tác Vụ Đáy Cao Cấp) ── */
+        /* ── Bottom Action Bar (Cố định ở cuối form, hoàn toàn không lơ lửng che chữ) ── */
         .glass-bottom-bar {
-            background: rgba(255, 255, 255, 0.9) !important;
-            backdrop-filter: blur(16px) saturate(180%) !important;
-            -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
-            border-top: 1.5px solid rgba(226, 232, 240, 0.85) !important;
-            box-shadow: 0 -8px 25px -4px rgba(15, 23, 42, 0.06), 0 -2px 6px -1px rgba(15, 23, 42, 0.03) !important;
+            position: static !important;
+            background: transparent !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            border-top: 1.5px dashed #cbd5e1 !important;
+            box-shadow: none !important;
+            margin-top: 28px !important;
+            padding: 24px 0 60px 0 !important;
         }
         .btn-bar {
             display: inline-flex;
@@ -396,14 +399,15 @@
                 height: auto !important;
                 min-height: 0 !important;
                 overflow-y: auto !important;
-                padding-bottom: 90px !important;
+                padding-bottom: 40px !important;
             }
             .glass-bottom-bar {
-                position: sticky !important;
-                bottom: 0 !important;
+                position: static !important;
+                bottom: auto !important;
                 width: 100% !important;
-                z-index: 1000 !important;
+                z-index: 10 !important;
                 box-sizing: border-box !important;
+                padding: 20px 0 50px 0 !important;
             }
         }
 
@@ -890,7 +894,7 @@
         
         /* Show create-only controls by default */
         #btnBackToList,
-        .btn-save-action {
+        .glass-bottom-bar .btn-save-action {
             display: inline-flex !important;
         }
 
@@ -958,6 +962,19 @@
         }
         .btn-update-action:active {
             transform: translateY(0) scale(1) !important;
+        }
+
+        /* Tinh chỉnh kích thước nút trên thanh Top Action Bar */
+        .cv-top-nav-bar #btnTopSave,
+        .cv-top-nav-bar #btnTopUpdate {
+            padding: 8px 20px !important;
+            border-radius: 10px !important;
+            font-size: 13px !important;
+        }
+        .cv-top-nav-bar #btnTopCancel {
+            padding: 8px 16px !important;
+            border-radius: 10px !important;
+            font-size: 12.5px !important;
         }
 
         /* Hide bottom bar when history dashboard is open */
@@ -1857,14 +1874,40 @@
 
     <div class="w-full lg:w-2/3 h-full overflow-y-auto relative main-content-area px-4 py-6 lg:px-16 lg:py-12">
         
-        <!-- Nút Quay lại Bảng Quản Lý & Nạp file backup -->
-        <div class="cv-top-nav-bar flex justify-between items-center mb-6 max-w-4xl mx-auto gap-2 sm:gap-3">
-            <button type="button" onclick="cancelEdit(); loadHistory();" class="btn-cta-primary" style="background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; box-shadow:none;">
-                <span>←</span><span> Quay lại bảng Quản lý Hồ Sơ</span>
-            </button>
-            <button type="button" onclick="document.getElementById('importFileInput').click()" class="btn-cta-primary" style="background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; box-shadow:none;">
-                <span>📂 Nạp file backup</span>
-            </button>
+        <!-- THANH ĐIỀU HƯỚNG & THAO TÁC TRÊN ĐỈNH FORM (TOP ACTION BAR) -->
+        <div class="cv-top-nav-bar flex flex-wrap justify-between items-center mb-6 max-w-4xl mx-auto gap-2.5 sm:gap-3 bg-white p-3 sm:p-3.5 rounded-2xl border border-gray-200/90 shadow-sm">
+            <div class="flex items-center gap-2">
+                <button type="button" onclick="cancelEdit(); loadHistory();" class="btn-cta-primary" style="background:#f8fafc; color:#475569; border:1.5px solid #e2e8f0; box-shadow:none; padding:8px 14px; font-size:12.5px; border-radius:10px;">
+                    <span>←</span><span> Quay lại Quản lý Hồ Sơ</span>
+                </button>
+            </div>
+            
+            <div class="flex items-center gap-2 flex-wrap">
+                <button type="button" onclick="document.getElementById('importFileInput').click()" class="btn-cta-primary" style="background:#f0fdf4; color:#166534; border:1.5px solid #bbf7d0; box-shadow:none; padding:8px 14px; font-size:12.5px; border-radius:10px;">
+                    <span>📂 Nạp backup</span>
+                </button>
+
+                <!-- Nút Hủy chế độ sửa (trên đỉnh) -->
+                <button type="button" id="btnTopCancel" onclick="cancelEdit(); loadHistory();"
+                    class="btn-bar-danger"
+                    style="display:none; align-items:center; padding:8px 14px; font-size:12.5px; border-radius:10px; font-weight:700; cursor:pointer;">
+                    ✕ Hủy
+                </button>
+
+                <!-- Nút Cập nhật chế độ sửa (trên đỉnh) -->
+                <button type="button" id="btnTopUpdate" onclick="handleSubmit('save')"
+                    class="btn-update-action"
+                    style="display:none; align-items:center; gap:6px; padding:8px 20px; font-size:13px; border-radius:10px; font-weight:800; cursor:pointer;">
+                    💾 <span>Cập nhật</span>
+                </button>
+
+                <!-- Nút Lưu Form tạo mới (trên đỉnh) -->
+                <button type="button" id="btnTopSave" onclick="handleSubmit('save_only')"
+                    class="btn-save-action"
+                    style="display:inline-flex; align-items:center; gap:6px; padding:8px 22px; font-size:13px; border-radius:10px; font-weight:800; cursor:pointer;">
+                    💾 <span>Lưu Form</span>
+                </button>
+            </div>
         </div>
 
         <form id="resumeForm" autocomplete="off" class="max-w-4xl mx-auto space-y-12 pb-32">
@@ -2297,8 +2340,8 @@
             </section>
         </form>
 
-        <!-- ===== THANH NÚT THAO TÁC ===== -->
-        <div class="glass-bottom-bar" style="padding:12px 20px; padding-bottom:max(16px, env(safe-area-inset-bottom, 16px)); position:sticky; bottom:0; left:0; width:100%; box-sizing:border-box; z-index:1000;">
+        <!-- ===== THANH NÚT THAO TÁC DƯỚI ĐÁY FORM (BOTTOM ACTION BAR) ===== -->
+        <div class="glass-bottom-bar" style="position:static !important; background:transparent !important; border-top:1.5px dashed #cbd5e1 !important; box-shadow:none !important; margin-top:28px; padding:24px 0 60px 0; width:100%;">
             <div style="display:flex; justify-content:center; align-items:center; gap:12px; flex-wrap:wrap; max-width:800px; margin:0 auto;">
 
                 <!-- Hủy (chỉ hiện khi đang sửa) -->
@@ -3264,6 +3307,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             // Hiển thị nút Cập nhật và Hủy
             document.getElementById('btnUpdateOnly').style.display = 'flex';
             document.getElementById('btnCancelEdit').style.display = 'flex';
+            syncTopActionButtons(true);
             
             // Cuộn lên đầu và đóng popup
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -6184,6 +6228,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             document.getElementById('existingDonhang').value = '';
             document.getElementById('btnUpdateOnly').style.display = 'none';
             document.getElementById('btnCancelEdit').style.display = 'none';
+            syncTopActionButtons(false);
             document.getElementById('resumeForm').reset();
 
             // Khôi phục nhân viên NPT đang chọn (nếu có trong sessionStorage)
@@ -6229,6 +6274,22 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             if (docInput) docInput.value = '';
             const docPreview = document.getElementById('documentPreview');
             if (docPreview) docPreview.innerHTML = '';
+        }
+
+        // Đồng bộ trạng thái các nút thao tác trên đỉnh (Top Action Bar) với chế độ Tạo mới / Chỉnh sửa
+        function syncTopActionButtons(isEdit) {
+            const topSave = document.getElementById('btnTopSave');
+            const topUpdate = document.getElementById('btnTopUpdate');
+            const topCancel = document.getElementById('btnTopCancel');
+            if (topSave) {
+                topSave.style.setProperty('display', isEdit ? 'none' : 'inline-flex', 'important');
+            }
+            if (topUpdate) {
+                topUpdate.style.setProperty('display', isEdit ? 'inline-flex' : 'none', 'important');
+            }
+            if (topCancel) {
+                topCancel.style.setProperty('display', isEdit ? 'inline-flex' : 'none', 'important');
+            }
         }
 
         // === NẠP DỮ LIỆU TỪ FILE HTML ĐÃ TẢI VỀ ===
