@@ -1340,15 +1340,6 @@ def index():
     resp.headers['Expires'] = '0'
     return resp
 
-@app.route('/demo-das-form')
-def demo_das_form():
-    """Bản thử nghiệm giao diện nhập liệu DAS Form tối ưu UX/UI (Desktop & Mobile)"""
-    resp = make_response(render_template('prototype_das_form.html'))
-    resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
-    resp.headers['Pragma'] = 'no-cache'
-    resp.headers['Expires'] = '0'
-    return resp
-
 @app.route('/static/<path:filename>')
 def serve_static(filename):
     return send_from_directory(os.path.join(app.root_path, 'static'), filename)

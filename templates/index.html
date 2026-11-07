@@ -326,19 +326,19 @@
             border: 1px solid rgba(226,232,240,0.8);
         }
 
-        /* ── Glass Bottom Bar ── */
+        /* ── Glass Bottom Bar (Thanh Tác Vụ Đáy Cao Cấp) ── */
         .glass-bottom-bar {
-            background: rgba(15,23,42,0.95) !important;
-            backdrop-filter: blur(12px) !important;
-            -webkit-backdrop-filter: blur(12px) !important;
-            border-top: 1px solid rgba(8,145,178,0.3) !important;
-            box-shadow: 0 -4px 24px rgba(0,0,0,0.25) !important;
+            background: rgba(255, 255, 255, 0.9) !important;
+            backdrop-filter: blur(16px) saturate(180%) !important;
+            -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+            border-top: 1.5px solid rgba(226, 232, 240, 0.85) !important;
+            box-shadow: 0 -8px 25px -4px rgba(15, 23, 42, 0.06), 0 -2px 6px -1px rgba(15, 23, 42, 0.03) !important;
         }
         .btn-bar {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 11px 22px;
+            padding: 10px 22px;
             border-radius: 999px;
             font-weight: 700;
             font-size: 13px;
@@ -347,6 +347,7 @@
             border: 1px solid transparent;
             transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
             white-space: nowrap;
+            user-select: none;
         }
         .btn-bar:hover {
             transform: translateY(-2px);
@@ -407,42 +408,61 @@
         }
 
         .btn-bar-ghost {
-            background: rgba(255,255,255,0.08);
-            color: #94a3b8;
-            border-color: rgba(255,255,255,0.12);
+            background: #f8fafc !important;
+            color: #475569 !important;
+            border: 1.5px solid #e2e8f0 !important;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
         }
         .btn-bar-ghost:hover {
-            background: rgba(255,255,255,0.14);
-            color: #e2e8f0;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            background: #f1f5f9 !important;
+            color: #0f172a !important;
+            border-color: #cbd5e1 !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06) !important;
         }
         .btn-bar-primary {
-            background: linear-gradient(135deg, #0891b2, #0e7490);
-            color: #fff;
-            border-color: rgba(8,145,178,0.5);
-            box-shadow: 0 4px 14px rgba(8,145,178,0.4);
+            background: linear-gradient(135deg, #0891b2, #0e7490) !important;
+            color: #fff !important;
+            border: none !important;
+            box-shadow: 0 4px 14px rgba(8,145,178,0.35) !important;
         }
         .btn-bar-primary:hover {
-            box-shadow: 0 6px 20px rgba(8,145,178,0.6);
+            box-shadow: 0 6px 20px rgba(8,145,178,0.5) !important;
         }
-        .btn-bar-blue {
-            background: linear-gradient(135deg, #0ea5e9, #0284c7);
-            color: #fff;
-            border-color: rgba(14,165,233,0.4);
-            box-shadow: 0 4px 14px rgba(14,165,233,0.35);
+        .btn-bar-blue, .btn-print-action {
+            background: #f0f9ff !important;
+            color: #0369a1 !important;
+            border: 1.5px solid #bae6fd !important;
+            box-shadow: 0 1px 2px rgba(3, 105, 161, 0.06) !important;
         }
-        .btn-bar-blue:hover {
-            box-shadow: 0 6px 20px rgba(14,165,233,0.55);
+        .btn-bar-blue:hover, .btn-print-action:hover {
+            background: #e0f2fe !important;
+            color: #0c4a6e !important;
+            border-color: #7dd3fc !important;
+            box-shadow: 0 4px 12px rgba(3, 105, 161, 0.14) !important;
+        }
+        .btn-word-action {
+            background: #f0fdf4 !important;
+            color: #15803d !important;
+            border: 1.5px solid #bbf7d0 !important;
+            box-shadow: 0 1px 2px rgba(22, 101, 52, 0.06) !important;
+        }
+        .btn-word-action:hover {
+            background: #dcfce7 !important;
+            color: #14532d !important;
+            border-color: #86efac !important;
+            box-shadow: 0 4px 12px rgba(22, 101, 52, 0.14) !important;
         }
         .btn-bar-danger {
-            background: rgba(239,68,68,0.15);
-            color: #fca5a5;
-            border-color: rgba(239,68,68,0.3);
+            background: #fef2f2 !important;
+            color: #dc2626 !important;
+            border: 1.5px solid #fecaca !important;
+            box-shadow: 0 1px 2px rgba(220, 38, 38, 0.05) !important;
         }
         .btn-bar-danger:hover {
-            background: rgba(239,68,68,0.25);
-            color: #fff;
-            box-shadow: 0 4px 12px rgba(239,68,68,0.35);
+            background: #fee2e2 !important;
+            color: #b91c1c !important;
+            border-color: #fca5a5 !important;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15) !important;
         }
 
         /* ── Premium Modal ── */
@@ -897,20 +917,46 @@
         /* Premium style for Lưu Form button */
         .btn-save-action {
             background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%) !important;
-            color: white !important;
-            box-shadow: 0 4px 14px rgba(8, 145, 178, 0.4) !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 16px rgba(8, 145, 178, 0.35) !important;
             border: none !important;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-            padding: 12px 32px !important;
+            padding: 11px 32px !important;
             border-radius: 999px !important;
-            font-size: 14px !important;
+            font-size: 13.5px !important;
             font-weight: 800 !important;
+            letter-spacing: 0.01em !important;
+            cursor: pointer !important;
+            user-select: none !important;
         }
         .btn-save-action:hover {
-            transform: translateY(-2px) scale(1.03) !important;
-            box-shadow: 0 6px 20px rgba(8, 145, 178, 0.55) !important;
+            transform: translateY(-2px) scale(1.02) !important;
+            box-shadow: 0 6px 22px rgba(8, 145, 178, 0.5) !important;
         }
         .btn-save-action:active {
+            transform: translateY(0) scale(1) !important;
+        }
+
+        /* Premium style for Cập nhật button */
+        .btn-update-action {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 16px rgba(37, 99, 235, 0.35) !important;
+            border: none !important;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            padding: 11px 30px !important;
+            border-radius: 999px !important;
+            font-size: 13.5px !important;
+            font-weight: 800 !important;
+            letter-spacing: 0.01em !important;
+            cursor: pointer !important;
+            user-select: none !important;
+        }
+        .btn-update-action:hover {
+            transform: translateY(-2px) scale(1.02) !important;
+            box-shadow: 0 6px 22px rgba(37, 99, 235, 0.5) !important;
+        }
+        .btn-update-action:active {
             transform: translateY(0) scale(1) !important;
         }
 
@@ -2252,8 +2298,8 @@
         </form>
 
         <!-- ===== THANH NÚT THAO TÁC ===== -->
-        <div class="glass-bottom-bar" style="padding:14px 20px; padding-bottom:max(18px, env(safe-area-inset-bottom, 18px)); position:sticky; bottom:0; left:0; width:100%; box-sizing:border-box; z-index:1000;">
-            <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap; max-width:800px; margin:0 auto;">
+        <div class="glass-bottom-bar" style="padding:12px 20px; padding-bottom:max(16px, env(safe-area-inset-bottom, 16px)); position:sticky; bottom:0; left:0; width:100%; box-sizing:border-box; z-index:1000;">
+            <div style="display:flex; justify-content:center; align-items:center; gap:12px; flex-wrap:wrap; max-width:800px; margin:0 auto;">
 
                 <!-- Hủy (chỉ hiện khi đang sửa) -->
                 <button type="button" id="btnCancelEdit" onclick="cancelEdit(); loadHistory();"
@@ -2264,8 +2310,8 @@
 
                 <!-- Cập nhật (chỉ hiện khi đang sửa) -->
                 <button type="button" id="btnUpdateOnly" onclick="handleSubmit('save')"
-                    class="btn-update-action"
-                    style="display:none; align-items:center; gap:6px; padding:11px 22px; border-radius:12px; font-weight:700; font-size:13px; font-family:'Inter',sans-serif; cursor:pointer; background:#2563eb; color:white; border:none; box-shadow:0 4px 10px rgba(37,99,235,0.35); transition:all 0.2s;">
+                    class="btn-bar btn-update-action"
+                    style="display:none; align-items:center; gap:6px;">
                     💾 <span id="btnUpdateText">Cập nhật</span>
                 </button>
  
@@ -2278,21 +2324,21 @@
 
                 <!-- Tải HTML -->
                 <button type="button" onclick="handleSubmit('word')"
-                    class="btn-bar btn-bar-ghost btn-word-action"
+                    class="btn-bar btn-word-action"
                     style="display:flex; align-items:center;">
                     📄 Tải HTML
                 </button>
 
                 <!-- Lưu Form -->
                 <button type="button" onclick="handleSubmit('save_only')"
-                    class="btn-save-action"
+                    class="btn-bar btn-save-action"
                     style="display:flex; align-items:center;">
                     💾 Lưu Form
                 </button>
 
                 <!-- Xem & In -->
                 <button type="button" onclick="handleSubmit('html')"
-                    class="btn-bar btn-bar-blue btn-print-action"
+                    class="btn-bar btn-print-action"
                     style="display:flex; align-items:center; gap:6px;">
                     <span id="btnText">🖨️ Xem &amp; In</span>
                     <div id="loading" style="display:none; width:14px; height:14px; border:2px solid rgba(255,255,255,0.4); border-top-color:white; border-radius:50%;"></div>
@@ -7202,18 +7248,23 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 white-space: nowrap !important;
             }
             .glass-bottom-bar {
-                padding: 8px 10px calc(10px + env(safe-area-inset-bottom, 0px)) 10px !important;
+                padding: 10px 14px calc(12px + env(safe-area-inset-bottom, 0px)) 14px !important;
             }
             .glass-bottom-bar > div {
-                gap: 6px !important;
+                gap: 8px !important;
             }
             .glass-bottom-bar button {
-                padding: 9px 10px !important;
-                font-size: 11.5px !important;
-                border-radius: 10px !important;
+                padding: 10px 14px !important;
+                font-size: 12px !important;
+                border-radius: 999px !important;
                 flex: 1 1 auto !important;
                 justify-content: center !important;
                 min-width: 0 !important;
+            }
+            .glass-bottom-bar .btn-save-action,
+            .glass-bottom-bar .btn-update-action {
+                flex: 1.8 1 auto !important;
+                font-size: 13px !important;
             }
 
             /* ===== TAB 2: DANH SÁCH TRÚNG TUYỂN TRÊN MOBILE ===== */
