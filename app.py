@@ -1043,7 +1043,7 @@ def prepare_render_data(raw_data: dict, record=None) -> dict:
     data = {}
     fields = [
         'Maso', 'Hoten', 'TentiengTrung', 'Ngaysinh', 'Tuoi', 'Chieucao', 'Cannang', 
-        'Lienhe', 'Noio', 'HotenBo', 'TB', 'HotenMe', 'TM', 'VoChong', 'VC', 
+        'Lienhe', 'CCCD', 'Noio', 'HotenBo', 'TB', 'HotenMe', 'TM', 'VoChong', 'VC', 
         'Socon', 'Anhchiem', 'Xepthu', 'f48', 'N1', 'N2', 'N3', 'ndcv1', 'ndcv2', 'ndcv3', 
         'loi_binh_1', 'Honnhan', 'Hocvan', 'QG1', 'QG2', 'QG3', 'video_link_1', 'video_link_2'
     ]
@@ -2005,6 +2005,195 @@ def _process_form_data(request):
     else: data = request.get_json() or {}
     return data
 
+# ═══════════════════════════════════════════════════════════════
+# CƠ CHẾ KIỂM TRA & CẢNH BÁO TRÙNG LẶP HỒ SƠ ỨNG VIÊN
+# ═══════════════════════════════════════════════════════════════
+
+import unicodedata
+
+def remove_accents_str(input_str: str) -> str:
+    if not input_str:
+        return ""
+    nfkd = unicodedata.normalize('NFKD', str(input_str))
+    return "".join([c for c in nfkd if not unicodedata.combining(c)]).replace('đ', 'd').replace('Đ', 'D').lower().strip()
+
+def normalize_candidate_name(name: str) -> str:
+    if not name:
+        return ""
+    return " ".join(str(name).strip().lower().split())
+
+def normalize_candidate_dob(dob_str: str) -> str:
+    if not dob_str:
+        return ""
+    s = str(dob_str).strip().replace('/', '-').replace('.', '-')
+    parts = [p.strip() for p in s.split('-') if p.strip()]
+    if len(parts) == 3:
+        try:
+            if len(parts[0]) == 4: # YYYY-MM-DD
+                return f"{int(parts[0]):04d}-{int(parts[1]):02d}-{int(parts[2]):02d}"
+            elif len(parts[2]) == 4: # DD-MM-YYYY
+                return f"{int(parts[2]):04d}-{int(parts[1]):02d}-{int(parts[0]):02d}"
+        except Exception:
+            pass
+    return s
+
+def find_duplicate_candidates(hoten='', ngaysinh='', cccd='', phone='', exclude_id=None):
+    hoten = (hoten or '').strip()
+    ngaysinh = (ngaysinh or '').strip()
+    cccd = (cccd or '').strip()
+    phone = (phone or '').strip()
+
+    norm_name = normalize_candidate_name(hoten)
+    no_accent_name = remove_accents_str(norm_name)
+    norm_dob = normalize_candidate_dob(ngaysinh)
+    norm_cccd = re.sub(r'[\s\-.]', '', cccd).upper() if cccd else ''
+    norm_phone = re.sub(r'\D', '', phone) if phone else ''
+    if norm_phone.startswith('84') and len(norm_phone) >= 10:
+        norm_phone = '0' + norm_phone[2:]
+
+    duplicates = []
+    seen_ids = set()
+
+    if exclude_id:
+        try:
+            exclude_id = int(exclude_id)
+        except Exception:
+            exclude_id = None
+
+    # 1. Kiểm tra Họ tên & Ngày tháng năm sinh (Hỗ trợ cả có dấu và không dấu)
+    if norm_name and norm_dob:
+        query = FormHistory.query.filter(FormHistory.is_deleted == False)
+        if exclude_id:
+            query = query.filter(FormHistory.id != exclude_id)
+        
+        candidates = query.all()
+        for cand in candidates:
+            if cand.id in seen_ids:
+                continue
+            cand_norm = normalize_candidate_name(cand.ho_ten)
+            cand_no_accent = remove_accents_str(cand_norm)
+            
+            if cand_norm == norm_name or (no_accent_name and cand_no_accent == no_accent_name):
+                try:
+                    d_json = json.loads(cand.data_json or '{}')
+                    cand_dob = normalize_candidate_dob(d_json.get('Ngaysinh', ''))
+                    if cand_dob and cand_dob == norm_dob:
+                        seen_ids.add(cand.id)
+                        duplicates.append({
+                            'id': cand.id,
+                            'ma_so': cand.ma_so,
+                            'ho_ten': cand.ho_ten,
+                            'ngaysinh': d_json.get('Ngaysinh', ''),
+                            'nguoi_phu_trach': cand.nguoi_phu_trach or '',
+                            'don_hang': cand.don_hang or '',
+                            'match_reason': 'Trùng Họ tên & Ngày tháng năm sinh',
+                            'match_field': 'name_dob',
+                            'ngay_tao': cand.ngay_tao.strftime('%d/%m/%Y') if cand.ngay_tao else ''
+                        })
+                except Exception:
+                    pass
+
+    # 2. Kiểm tra Số CCCD / Hộ chiếu
+    if norm_cccd and len(norm_cccd) >= 6:
+        query = FormHistory.query.filter(
+            FormHistory.is_deleted == False,
+            FormHistory.data_json.ilike(f'%{norm_cccd}%')
+        )
+        if exclude_id:
+            query = query.filter(FormHistory.id != exclude_id)
+        
+        candidates = query.all()
+        for cand in candidates:
+            if cand.id in seen_ids:
+                continue
+            try:
+                d_json = json.loads(cand.data_json or '{}')
+                cand_cccd = re.sub(r'[\s\-.]', '', str(d_json.get('CCCD', ''))).upper()
+                cand_passport = re.sub(r'[\s\-.]', '', str(d_json.get('Hochieu', ''))).upper()
+                if (cand_cccd and cand_cccd == norm_cccd) or (cand_passport and cand_passport == norm_cccd):
+                    seen_ids.add(cand.id)
+                    duplicates.append({
+                        'id': cand.id,
+                        'ma_so': cand.ma_so,
+                        'ho_ten': cand.ho_ten,
+                        'ngaysinh': d_json.get('Ngaysinh', ''),
+                        'nguoi_phu_trach': cand.nguoi_phu_trach or '',
+                        'don_hang': cand.don_hang or '',
+                        'match_reason': f'Trùng số CCCD/Hộ chiếu ({norm_cccd})',
+                        'match_field': 'cccd',
+                        'ngay_tao': cand.ngay_tao.strftime('%d/%m/%Y') if cand.ngay_tao else ''
+                    })
+            except Exception:
+                pass
+
+    # 3. Kiểm tra Số điện thoại
+    if norm_phone and len(norm_phone) >= 8:
+        query = FormHistory.query.filter(
+            FormHistory.is_deleted == False,
+            FormHistory.data_json.ilike(f'%{norm_phone[-8:]}%')
+        )
+        if exclude_id:
+            query = query.filter(FormHistory.id != exclude_id)
+        
+        candidates = query.all()
+        for cand in candidates:
+            if cand.id in seen_ids:
+                continue
+            try:
+                d_json = json.loads(cand.data_json or '{}')
+                cand_phone = re.sub(r'\D', '', str(d_json.get('Lienhe', '')))
+                if cand_phone.startswith('84') and len(cand_phone) >= 10:
+                    cand_phone = '0' + cand_phone[2:]
+                if cand_phone and cand_phone == norm_phone:
+                    seen_ids.add(cand.id)
+                    duplicates.append({
+                        'id': cand.id,
+                        'ma_so': cand.ma_so,
+                        'ho_ten': cand.ho_ten,
+                        'ngaysinh': d_json.get('Ngaysinh', ''),
+                        'nguoi_phu_trach': cand.nguoi_phu_trach or '',
+                        'don_hang': cand.don_hang or '',
+                        'match_reason': f'Trùng số điện thoại ({phone})',
+                        'match_field': 'phone',
+                        'ngay_tao': cand.ngay_tao.strftime('%d/%m/%Y') if cand.ngay_tao else ''
+                    })
+            except Exception:
+                pass
+
+    return duplicates
+
+@app.route('/api/check-duplicate', methods=['POST', 'GET'])
+def api_check_duplicate():
+    try:
+        if request.method == 'POST':
+            payload = request.get_json() or {}
+        else:
+            payload = request.args
+
+        hoten = payload.get('hoten', '')
+        ngaysinh = payload.get('ngaysinh', '')
+        cccd = payload.get('cccd', '')
+        phone = payload.get('phone', '')
+        exclude_id = payload.get('exclude_id')
+
+        duplicates = find_duplicate_candidates(
+            hoten=hoten,
+            ngaysinh=ngaysinh,
+            cccd=cccd,
+            phone=phone,
+            exclude_id=exclude_id
+        )
+
+        return jsonify({
+            'success': True,
+            'is_duplicate': len(duplicates) > 0,
+            'count': len(duplicates),
+            'duplicates': duplicates
+        })
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @app.route('/api/submit-only', methods=['POST'])
 def api_submit_only():
     try:
@@ -2086,6 +2275,24 @@ def api_submit_only():
         data.pop('_form_rendered_at', None)
         data.pop('cf-turnstile-response', None)
         data.pop('turnstile_token', None)
+        allow_duplicate = bool(data.pop('allow_duplicate', False))
+
+        # Kiểm tra trùng lặp hồ sơ khi tạo mới (trùng Họ tên + Ngày sinh, số CCCD/Hộ chiếu hoặc Số điện thoại)
+        if not record_id and not allow_duplicate:
+            dups = find_duplicate_candidates(
+                hoten=ho_ten,
+                ngaysinh=str(data.get('Ngaysinh', '')).strip(),
+                cccd=str(data.get('CCCD', '')).strip(),
+                phone=str(data.get('Lienhe', '')).strip()
+            )
+            if dups:
+                first_dup = dups[0]
+                return jsonify({
+                    'success': False,
+                    'is_duplicate': True,
+                    'error': f'Phát hiện trùng lặp với ứng viên [{first_dup["ma_so"]}] - {first_dup["ho_ten"]} ({first_dup["match_reason"]}). Vui lòng kiểm tra lại!',
+                    'duplicates': dups
+                }), 409
 
         if ma_so and ma_so.upper() != 'CHO_DUYET':
             existing = FormHistory.query.filter_by(ma_so=ma_so, is_deleted=False).first()

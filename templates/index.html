@@ -1923,12 +1923,42 @@
                     <span class="section-heading-text">Thông tin cá nhân</span>
                     <span class="section-heading-bar"></span>
                 </div>
+
+                <!-- KHUNG CẢNH BÁO TRÙNG LẶP HỒ SƠ ỨNG VIÊN -->
+                <div id="duplicateWarningBox" class="hidden mb-6 p-4 rounded-2xl border-2 border-amber-400 bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 shadow-md transition-all duration-300">
+                    <div class="flex items-start gap-3">
+                        <div class="text-2xl flex-shrink-0 animate-bounce">⚠️</div>
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between flex-wrap gap-2 mb-1.5">
+                                <h4 class="font-extrabold text-amber-900 text-sm flex items-center gap-1.5">
+                                    <span>CẢNH BÁO: PHÁT HIỆN HỒ SƠ CÓ DẤU HIỆU TRÙNG LẶP!</span>
+                                </h4>
+                                <button type="button" onclick="dismissDuplicateWarning()" class="text-xs text-amber-700 hover:text-amber-900 font-bold px-2 py-0.5 rounded hover:bg-amber-100 transition-colors">✕ Đóng cảnh báo</button>
+                            </div>
+                            <p class="text-xs text-amber-800 mb-2.5">
+                                Hệ thống phát hiện thông tin ứng viên đang nhập trùng với hồ sơ đã lưu để tránh một lao động bị nộp nhiều lần qua các nguồn khác nhau:
+                            </p>
+                            <div id="duplicateListContainer" class="space-y-2">
+                                <!-- Danh sách ứng viên trùng lặp sẽ render tại đây -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Mã số</label><input type="text" name="Maso" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
-                    <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Họ tên (Tiếng Việt)</label><input type="text" name="Hoten" onblur="translateName(this.value)" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
+                    <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Họ tên (Tiếng Việt)</label><input type="text" name="Hoten" onblur="translateName(this.value); checkDuplicateCandidate();" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
                     <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tên tiếng Trung</label><input type="text" name="TentiengTrung" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
-                    <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Ngày sinh</label><input type="date" name="Ngaysinh" id="birthDate" onchange="calcAge()" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
+                    <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Ngày sinh</label><input type="date" name="Ngaysinh" id="birthDate" onchange="calcAge(); checkDuplicateCandidate();" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
                     <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tuổi</label><input type="text" name="Tuoi" id="displayAge" readonly class="w-full border-b-2 border-gray-200 bg-gray-50 py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Số CCCD / Hộ chiếu</label>
+                        <input type="text" name="CCCD" id="inputCCCD" onblur="checkDuplicateCandidate();" placeholder="Nhập số CCCD hoặc Hộ chiếu" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Số điện thoại liên hệ</label>
+                        <input type="tel" name="Lienhe" id="inputLienhe" onblur="checkDuplicateCandidate();" placeholder="Nhập số điện thoại liên hệ" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors">
+                    </div>
                     
                     <div class="sm:col-span-2 grid grid-cols-2 gap-6">
                         <div>
@@ -6187,6 +6217,19 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             // Luôn gửi document_images kể cả khi rỗng để tránh Backend tự động khôi phục từ bản ghi cũ
             plainData['document_images'] = currentDocumentImages || [];
 
+            // Kiểm tra cảnh báo trùng lặp trước khi gửi (khi tạo mới)
+            if (!recordId && currentDuplicates && currentDuplicates.length > 0) {
+                const firstDup = currentDuplicates[0];
+                const confirmMsg = `⚠️ CẢNH BÁO TRÙNG LẶP HỒ SƠ:\n\nỨng viên này có thông tin trùng với hồ sơ đã lưu trong hệ thống:\n• Mã số: ${firstDup.ma_so}\n• Họ tên: ${firstDup.ho_ten}\n• Lý do: ${firstDup.match_reason}\n• Người phụ trách: ${firstDup.nguoi_phu_trach || 'Chưa phân bổ'}\n\nBạn có chắc chắn vẫn muốn lưu thêm hồ sơ này không?`;
+                if (!confirm(confirmMsg)) {
+                    if (btnText) btnText.innerText = originalText;
+                    if (btnUpdateText) btnUpdateText.innerText = "Cập nhật";
+                    if (loading) loading.style.display = 'none';
+                    return;
+                }
+                plainData['allow_duplicate'] = true;
+            }
+
             try {
                 const response = await fetch('/api/submit-only', {
                     method: 'POST',
@@ -6231,6 +6274,30 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                         await loadHistory();
                     }
                     document.getElementById('historyModal').style.display = 'block';
+                } else if (response.status === 409 || result.is_duplicate) {
+                    if (result.duplicates) {
+                        renderDuplicateWarning(result.duplicates);
+                    }
+                    const dupMsg = result.error || 'Phát hiện hồ sơ trùng lặp với ứng viên đã có trong hệ thống!';
+                    if (confirm(`⚠️ ${dupMsg}\n\nBạn có chắc chắn muốn bỏ qua cảnh báo và tiếp tục lưu hồ sơ này không?`)) {
+                        plainData['allow_duplicate'] = true;
+                        const retryRes = await fetch('/api/submit-only', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(plainData),
+                            credentials: 'same-origin'
+                        });
+                        const retryResult = await retryRes.json();
+                        if (retryResult.success) {
+                            alert("Đã lưu hồ sơ thành công!");
+                            cancelEdit();
+                            await loadHistory(retryResult.ma_so || '');
+                            document.getElementById('historyModal').style.display = 'block';
+                            return;
+                        } else {
+                            alert("Lỗi khi lưu: " + (retryResult.error || 'Không xác định'));
+                        }
+                    }
                 } else {
                     alert("Lỗi: " + result.error);
                 }
@@ -6249,6 +6316,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             document.getElementById('btnUpdateOnly').style.display = 'none';
             document.getElementById('btnCancelEdit').style.display = 'none';
             syncTopActionButtons(false);
+            dismissDuplicateWarning();
             document.getElementById('resumeForm').reset();
 
             // Khôi phục nhân viên NPT đang chọn (nếu có trong sessionStorage)
@@ -6310,6 +6378,105 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             if (topCancel) {
                 topCancel.style.setProperty('display', isEdit ? 'inline-flex' : 'none', 'important');
             }
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // CƠ CHẾ KIỂM TRA & CẢNH BÁO TRÙNG LẶP HỒ SƠ (CCCD, SĐT, TÊN + NGÀY SINH)
+        // ═══════════════════════════════════════════════════════════════
+        let duplicateCheckTimeout = null;
+        let currentDuplicates = [];
+
+        async function checkDuplicateCandidate() {
+            clearTimeout(duplicateCheckTimeout);
+            duplicateCheckTimeout = setTimeout(async () => {
+                const form = document.getElementById('resumeForm');
+                if (!form) return;
+
+                const hoten = form.elements['Hoten']?.value?.trim() || '';
+                const ngaysinh = form.elements['Ngaysinh']?.value?.trim() || '';
+                const cccd = form.elements['CCCD']?.value?.trim() || '';
+                const phone = form.elements['Lienhe']?.value?.trim() || '';
+                const editingId = document.getElementById('editingRecordId')?.value || '';
+
+                // Điều kiện kiểm tra: Có (Họ tên >= 2 ký tự & Ngày sinh >= 4 ký tự) HOẶC (CCCD >= 6 ký tự) HOẶC (SĐT >= 8 ký tự)
+                const hasNameDob = (hoten.length >= 2 && ngaysinh.length >= 4);
+                const hasCccd = (cccd.length >= 6);
+                const hasPhone = (phone.length >= 8);
+
+                if (!hasNameDob && !hasCccd && !hasPhone) {
+                    dismissDuplicateWarning();
+                    return;
+                }
+
+                try {
+                    const res = await fetch('/api/check-duplicate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            hoten: hoten,
+                            ngaysinh: ngaysinh,
+                            cccd: cccd,
+                            phone: phone,
+                            exclude_id: editingId
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.success && data.is_duplicate) {
+                        renderDuplicateWarning(data.duplicates);
+                    } else {
+                        dismissDuplicateWarning();
+                    }
+                } catch (e) {
+                    console.error('Lỗi khi kiểm tra trùng lặp:', e);
+                }
+            }, 300);
+        }
+
+        function renderDuplicateWarning(duplicates) {
+            currentDuplicates = duplicates || [];
+            const box = document.getElementById('duplicateWarningBox');
+            const container = document.getElementById('duplicateListContainer');
+            if (!box || !container) return;
+
+            if (currentDuplicates.length === 0) {
+                box.classList.add('hidden');
+                return;
+            }
+
+            let html = '';
+            currentDuplicates.forEach((item) => {
+                html += `
+                    <div class="bg-white/95 p-3 rounded-xl border border-amber-300 text-xs flex flex-wrap items-center justify-between gap-2 shadow-xs">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="font-extrabold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-lg border border-blue-200">Mã số: ${escapeHtml(item.ma_so || '')}</span>
+                                <span class="font-bold text-slate-900 text-sm">${escapeHtml(item.ho_ten || '')}</span>
+                                ${item.ngaysinh ? `<span class="text-slate-600">(Sinh ngày: <strong>${escapeHtml(item.ngaysinh)}</strong>)</span>` : ''}
+                                <span class="text-amber-800 font-semibold bg-amber-100 px-2 py-0.5 rounded-md border border-amber-200">⚡ ${escapeHtml(item.match_reason || '')}</span>
+                            </div>
+                            <div class="text-[11.5px] text-slate-600 flex items-center gap-3 flex-wrap">
+                                <span>👤 Phụ trách: <strong>${escapeHtml(item.nguoi_phu_trach || 'Chưa phân bổ')}</strong></span>
+                                <span>💼 Đơn hàng: <strong>${escapeHtml(item.don_hang || 'Chưa gán')}</strong></span>
+                                ${item.ngay_tao ? `<span>📅 Ngày nhập: ${escapeHtml(item.ngay_tao)}</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <a href="/cv/${encodeURIComponent(item.ma_so)}" target="_blank" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm transition-all active:scale-95">
+                                👁️ Xem hồ sơ
+                            </a>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            box.classList.remove('hidden');
+        }
+
+        function dismissDuplicateWarning() {
+            currentDuplicates = [];
+            const box = document.getElementById('duplicateWarningBox');
+            if (box) box.classList.add('hidden');
         }
 
         // === NẠP DỮ LIỆU TỪ FILE HTML ĐÃ TẢI VỀ ===
