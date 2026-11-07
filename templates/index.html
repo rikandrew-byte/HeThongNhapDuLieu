@@ -1570,7 +1570,7 @@
         </div>
 
         <!-- Tab 3: Thống kê & Hiệu suất Pipeline Content Area -->
-        <div id="tabContent-analytics" style="display: none; padding:16px 20px;">
+        <div id="tabContent-analytics" style="display: none; padding:16px 20px 60px 20px;">
             <!-- Header bar -->
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px; padding:16px 20px; background:linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%); border:1px solid #bae6fd; border-radius:14px;">
                 <div>
@@ -7200,7 +7200,8 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
         #tabContent-passed,
         #tabContent-archived,
         #tabContent-jobs,
-        #tabContent-configs {
+        #tabContent-configs,
+        #tabContent-analytics {
             flex: 1 !important;
             overflow-y: auto !important;
             min-height: 0 !important;
@@ -7212,7 +7213,9 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
         #tabContent-jobs[style*="display: block"],
         #tabContent-jobs[style*="display:block"],
         #tabContent-configs[style*="display: block"],
-        #tabContent-configs[style*="display:block"] {
+        #tabContent-configs[style*="display:block"],
+        #tabContent-analytics[style*="display: block"],
+        #tabContent-analytics[style*="display:block"] {
             display: block !important;
         }
 
