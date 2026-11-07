@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bản Mẫu Thử Nghiệm UX/UI Form Nhập Liệu DAS - FCT HR System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f1f5f9;
+            color: #0f172a;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        h1, h2, h3, h4, .font-heading {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* ── Scrollbar Tinh Tế ── */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #0891b2; }
+
+        /* ── Khung Giả Lập Màn Hình (Device Simulator) ── */
+        .simulator-bar {
+            background: #0f172a;
+            color: #f8fafc;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            font-size: 13px;
+        }
+        .simulator-mode-btn {
+            background: #1e293b;
+            color: #cbd5e1;
+            border: 1px solid #334155;
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .simulator-mode-btn:hover,
+        .simulator-mode-btn.active {
+            background: #0891b2;
+            color: #ffffff;
+            border-color: #06b6d4;
+            box-shadow: 0 0 10px rgba(8,145,178,0.4);
+        }
+
+        /* Khung chứa giao diện form chính */
+        #viewportWrapper {
+            transition: max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
+            margin: 0 auto;
+            background: #ffffff;
+            min-height: calc(100vh - 45px);
+            position: relative;
+        }
+        #viewportWrapper.mode-desktop {
+            max-width: 100%;
+            box-shadow: none;
+        }
+        #viewportWrapper.mode-mobile {
+            max-width: 390px;
+            margin: 20px auto;
+            border-radius: 36px;
+            border: 10px solid #1e293b;
+            box-shadow: 0 25px 60px -15px rgba(0,0,0,0.3);
+            min-height: 844px;
+            height: 844px;
+            overflow-y: auto;
+        }
+
+        /* ── Sticky Stepper Navigation ── */
+        .sticky-stepper-bar {
+            position: sticky;
+            top: 0;
+            z-index: 45;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid #e2e8f0;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px -2px rgba(8, 145, 178, 0.04);
+            overflow-x: auto;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        .sticky-stepper-bar::-webkit-scrollbar { display: none; }
+
+        .step-pill-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 14px;
+            border-radius: 999px;
+            background: #f1f5f9;
+            color: #475569;
+            font-size: 13px;
+            font-weight: 700;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .step-pill-btn .step-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            color: #475569;
+            font-size: 11px;
+            font-weight: 800;
+            transition: all 0.2s;
+        }
+        .step-pill-btn:hover {
+            background: #e0f2fe;
+            color: #0369a1;
+            border-color: #bae6fd;
+        }
+        .step-pill-btn.active {
+            background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+            color: #ffffff;
+            border-color: #0891b2;
+            box-shadow: 0 4px 12px rgba(8, 145, 178, 0.25);
+            transform: scale(1.02);
+        }
+        .step-pill-btn.active .step-num {
+            background: #ffffff;
+            color: #0891b2;
+        }
+
+        /* ── Sticky Action Footer ── */
+        .sticky-action-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 40;
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-top: 1px solid #e2e8f0;
+            padding: 12px 24px;
+            padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: transform 0.25s ease-out, opacity 0.25s ease-out;
+        }
+        /* Trong chế độ giả lập mobile thì footer gắn vào đáy khung máy */
+        #viewportWrapper.mode-mobile .sticky-action-footer {
+            position: sticky;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+        .sticky-action-footer.keyboard-hidden {
+            transform: translateY(110%);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* ── Offset Cuộn Cho Các Section ── */
+        .form-section-card {
+            scroll-margin-top: 76px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 4px 16px -2px rgba(8, 145, 178, 0.04);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-section-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 6px 24px -4px rgba(8, 145, 178, 0.08);
+        }
+
+        /* Tiêu đề mục */
+        .section-header-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+            color: #ffffff;
+            font-family: 'Outfit', sans-serif;
+            font-size: 15px;
+            font-weight: 800;
+            box-shadow: 0 4px 10px rgba(8,145,178,0.25);
+        }
+
+        /* ── Segmented Control / Pill Toggle (Sức khỏe) ── */
+        .pill-switch {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+        }
+        .pill-switch:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+        .pill-switch.checked {
+            background: #ecfeff;
+            border-color: #06b6d4;
+            box-shadow: 0 2px 8px rgba(6, 182, 212, 0.15);
+        }
+        .pill-switch input[type="checkbox"] {
+            display: none;
+        }
+        .pill-switch-indicator {
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            background: #ffffff;
+            border: 2px solid #cbd5e1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+            color: transparent;
+            font-size: 13px;
+            font-weight: 900;
+            flex-shrink: 0;
+        }
+        .pill-switch.checked .pill-switch-indicator {
+            background: #0891b2;
+            border-color: #0891b2;
+            color: #ffffff;
+            transform: scale(1.05);
+        }
+
+        /* Cảnh báo bệnh lý loại trừ */
+        .pill-switch.caution.checked {
+            background: #fef2f2;
+            border-color: #ef4444;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
+        }
+        .pill-switch.caution.checked .pill-switch-indicator {
+            background: #dc2626;
+            border-color: #dc2626;
+            color: #ffffff;
+        }
+
+        /* ── Thẻ 26 Kỹ Năng Thông Minh ── */
+        .skill-chip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.15s;
+            user-select: none;
+        }
+        .skill-chip:hover {
+            border-color: #94a3b8;
+            background: #f1f5f9;
+        }
+        .skill-chip.selected {
+            background: #f0fdf4;
+            border-color: #22c55e;
+            box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);
+        }
+        .skill-chip input[type="checkbox"] { display: none; }
+        .skill-checkbox-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 6px;
+            border: 2px solid #cbd5e1;
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 900;
+            color: transparent;
+            transition: all 0.15s;
+            flex-shrink: 0;
+        }
+        .skill-chip.selected .skill-checkbox-box {
+            background: #16a34a;
+            border-color: #16a34a;
+            color: #ffffff;
+        }
+
+        /* Toast thông báo */
+        .toast-msg {
+            position: fixed;
+            top: 60px;
+            right: 24px;
+            z-index: 1000;
+            background: #0f172a;
+            color: #ffffff;
+            padding: 12px 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13.5px;
+            font-weight: 600;
+            transform: translateY(-20px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+        .toast-msg.show {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* ── Media Queries cho Thiết Bị Di Động Thực Tế (< 768px) ── */
+        @media (max-width: 768px) {
+            .sticky-stepper-bar {
+                padding: 6px 10px;
+                gap: 6px;
+            }
+            .step-pill-btn {
+                padding: 5px 10px;
+                font-size: 12px;
+                gap: 5px;
+            }
+            .step-pill-btn .step-text-full {
+                display: none;
+            }
+            .step-pill-btn .step-text-short {
+                display: inline;
+            }
+            .form-section-card {
+                padding: 16px;
+                border-radius: 16px;
+            }
+            .sticky-action-footer {
+                padding: 10px 14px;
+            }
+            .footer-desktop-status {
+                display: none !important;
+            }
+            .footer-action-btns {
+                width: 100%;
+                display: flex;
+                gap: 8px;
+            }
+            .footer-action-btns > button {
+                flex: 1;
+                font-size: 13px !important;
+                padding: 10px 6px !important;
+                justify-content: center;
+            }
+            .footer-action-btns > button.btn-save-primary {
+                flex: 2;
+            }
+        }
+        @media (min-width: 769px) {
+            .step-pill-btn .step-text-short {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         THANH ĐIỀU KHIỂN GIẢ LẬP GIAO DIỆN (DEVICE PREVIEW CONTROLLER)
+         ═══════════════════════════════════════════════════════════════ -->
+    <header class="simulator-bar">
+        <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-cyan-400 animate-pulse"></span>
+            <span class="font-extrabold text-white tracking-wide">FCT HR · DAS FORM PROTOTYPE V3.0</span>
+            <span class="hidden sm:inline bg-cyan-950 text-cyan-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-cyan-800">Bản Thử Nghiệm Nội Bộ</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-400 hidden md:inline">Chế độ xem:</span>
+            <button type="button" class="simulator-mode-btn active" onclick="switchViewMode('desktop')">
+                💻 Desktop / Laptop
+            </button>
+            <button type="button" class="simulator-mode-btn" onclick="switchViewMode('mobile')">
+                📱 Mobile (iPhone 14 · 390px)
+            </button>
+        </div>
+    </header>
+
+    <!-- Hộp ghi chú phân tích UX/UI cho Người dùng -->
+    <div class="max-w-4xl mx-auto my-4 px-4">
+        <div class="bg-gradient-to-r from-cyan-50 via-teal-50 to-emerald-50 border border-cyan-200 rounded-2xl p-4 shadow-sm text-xs sm:text-sm text-cyan-950">
+            <div class="font-bold text-cyan-900 flex items-center gap-2 mb-1">
+                <span>💡</span> <strong>Bản mẫu tối ưu theo 6 nguyên tắc của Người:</strong>
+            </div>
+            <ul class="list-disc list-inside space-y-1 text-slate-700">
+                <li><strong>Thanh Stepper cố định đỉnh:</strong> Nhấp vào mục nào cuộn mượt tới mục đó. Trên Desktop hiện đầy đủ chữ; trên Mobile tự động co thành viên thuốc nhỏ gọn chống choán màn hình.</li>
+                <li><strong>Thanh tác vụ cố định đáy:</strong> Nút <code>💾 Lưu Form</code> luôn nổi trong tầm mắt; hỗ trợ phím tắt <code>Ctrl + S</code>. Trên Mobile tự động ẩn khi mở bàn phím ảo.</li>
+                <li><strong>Phần Sức khỏe & 26 Kỹ năng:</strong> Đổi checkbox nhỏ thành <em>Pill Switch</em> và <em>Skill Chip</em> chạm cực êm, highlight trực quan, chia 2 cột an toàn trên điện thoại.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         KHUNG KHÔNG GIAN LÀM VIỆC CỦA FORM (WORKSPACE WRAPPER)
+         ═══════════════════════════════════════════════════════════════ -->
+    <main id="viewportWrapper" class="mode-desktop">
+
+        <!-- 1. STICKY STEPPER NAVIGATION (Thanh Neo Điều Hướng Nhanh) -->
+        <nav class="sticky-stepper-bar" id="stepperNav">
+            <button type="button" class="step-pill-btn active" data-target="#sec-1" onclick="scrollToSection('#sec-1')">
+                <span class="step-num">1</span>
+                <span class="step-text-full">Thông tin cá nhân</span>
+                <span class="step-text-short">Cá nhân</span>
+            </button>
+            <button type="button" class="step-pill-btn" data-target="#sec-2" onclick="scrollToSection('#sec-2')">
+                <span class="step-num">2</span>
+                <span class="step-text-full">Sức khỏe &amp; Thói quen</span>
+                <span class="step-text-short">Sức khỏe</span>
+            </button>
+            <button type="button" class="step-pill-btn" data-target="#sec-3" onclick="scrollToSection('#sec-3')">
+                <span class="step-num">3</span>
+                <span class="step-text-full">Danh mục 26 Kỹ năng</span>
+                <span class="step-text-short">Kỹ năng</span>
+            </button>
+            <button type="button" class="step-pill-btn" data-target="#sec-4" onclick="scrollToSection('#sec-4')">
+                <span class="step-num">4</span>
+                <span class="step-text-full">Kinh nghiệm &amp; Đánh giá</span>
+                <span class="step-text-short">Kinh nghiệm</span>
+            </button>
+            <button type="button" class="step-pill-btn" data-target="#sec-5" onclick="scrollToSection('#sec-5')">
+                <span class="step-num">5</span>
+                <span class="step-text-full">Tài liệu &amp; Scan</span>
+                <span class="step-text-short">Giấy tờ</span>
+            </button>
+        </nav>
+
+        <!-- Container nội dung Form (Đệm đáy 100px để không bị thanh đáy che) -->
+        <div class="max-w-4xl mx-auto px-4 py-6 space-y-8 pb-32">
+
+            <!-- ══════════════════════════════════════════════════════════
+                 MỤC 1: THÔNG TIN CÁ NHÂN
+                 ══════════════════════════════════════════════════════════ -->
+            <section id="sec-1" class="form-section-card">
+                <div class="flex items-center gap-3 mb-6 pb-3 border-b border-gray-100">
+                    <span class="section-header-badge">1</span>
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800">Thông tin cá nhân ứng viên</h2>
+                        <p class="text-xs text-slate-400">Các thông tin cơ bản phục vụ trích xuất hồ sơ song ngữ Việt - Trung</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Mã số hồ sơ</label>
+                        <input type="text" value="MD13514" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm font-mono font-bold text-cyan-700 focus:border-cyan-600 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Họ tên (Tiếng Việt)</label>
+                        <input type="text" value="NGUYỄN VĂN AN" placeholder="Nhập họ và tên..." class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm font-bold text-slate-800 focus:border-cyan-600 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tên tiếng Trung (AI tự dịch)</label>
+                        <input type="text" value="阮文安" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm font-semibold text-slate-700 focus:border-cyan-600 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày sinh &amp; Tuổi</label>
+                        <div class="flex gap-2">
+                            <input type="date" value="1998-05-15" class="w-2/3 border-b-2 border-gray-200 bg-transparent py-2 text-sm text-slate-800 focus:border-cyan-600 focus:outline-none">
+                            <input type="text" value="28 tuổi" readonly class="w-1/3 border-b-2 border-gray-200 bg-slate-50 py-2 text-sm text-center font-bold text-cyan-600 focus:outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tình trạng hôn nhân</label>
+                        <select class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm text-slate-800 focus:border-cyan-600 focus:outline-none cursor-pointer">
+                            <option>Độc thân</option>
+                            <option selected>Đã kết hôn</option>
+                            <option>Ly hôn</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Trình độ học vấn</label>
+                        <select class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm text-slate-800 focus:border-cyan-600 focus:outline-none cursor-pointer">
+                            <option>Cấp 2 (國中)</option>
+                            <option selected>Cấp 3 (高中)</option>
+                            <option>Trung cấp (中專)</option>
+                            <option>Cao đẳng (大專)</option>
+                            <option>Đại học (大學)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Chiều cao / Cân nặng</label>
+                        <div class="flex gap-2">
+                            <input type="text" value="168 cm" class="w-1/2 border-b-2 border-gray-200 bg-transparent py-2 text-sm text-slate-800 focus:border-cyan-600 focus:outline-none">
+                            <input type="text" value="62 kg" class="w-1/2 border-b-2 border-gray-200 bg-transparent py-2 text-sm text-slate-800 focus:border-cyan-600 focus:outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Số điện thoại liên hệ</label>
+                        <input type="tel" value="0987 654 321" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm text-slate-800 focus:border-cyan-600 focus:outline-none">
+                    </div>
+                </div>
+            </section>
+
+            <!-- ══════════════════════════════════════════════════════════
+                 MỤC 2: SỨC KHỎE & THÓI QUEN (ĐƯỢC PHÂN NHÓM RÕ RÀNG)
+                 ══════════════════════════════════════════════════════════ -->
+            <section id="sec-2" class="form-section-card">
+                <div class="flex items-center gap-3 mb-6 pb-3 border-b border-gray-100">
+                    <span class="section-header-badge">2</span>
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800">Sức khỏe &amp; Thói quen sinh hoạt</h2>
+                        <p class="text-xs text-slate-400">Các chỉ số thể lực thực tế và sàng lọc bệnh lý</p>
+                    </div>
+                </div>
+
+                <!-- Nhóm A: Chỉ số kiểm tra thể lực & thói quen -->
+                <div class="mb-6">
+                    <h3 class="text-xs font-extrabold text-cyan-800 uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <span>💪</span> Nhóm chỉ số lâm sàng &amp; Thói quen:
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                        <label class="pill-switch checked" onclick="togglePill(this)">
+                            <span class="text-xs font-semibold text-slate-800">Thuận tay phải</span>
+                            <div class="pill-switch-indicator">✓</div>
+                            <input type="checkbox" checked>
+                        </label>
+                        <label class="pill-switch" onclick="togglePill(this)">
+                            <span class="text-xs font-semibold text-slate-800">Thuận tay trái</span>
+                            <div class="pill-switch-indicator">✓</div>
+                            <input type="checkbox">
+                        </label>
+                        <label class="pill-switch" onclick="togglePill(this)">
+                            <span class="text-xs font-semibold text-slate-800">Cận thị</span>
+                            <div class="pill-switch-indicator">✓</div>
+                            <input type="checkbox">
+                        </label>
+                        <label class="pill-switch" onclick="togglePill(this)">
+                            <span class="text-xs font-semibold text-slate-800">Hút thuốc</span>
+                            <div class="pill-switch-indicator">✓</div>
+                            <input type="checkbox">
+                        </label>
+                        <label class="pill-switch checked" onclick="togglePill(this)">
+                            <span class="text-xs font-semibold text-slate-800">Không hút thuốc</span>
+                            <div class="pill-switch-indicator">✓</div>
+                            <input type="checkbox" checked>
+                        </label>
+                        <label class="pill-switch checked" onclick="togglePill(this)">
+                            <span class="text-xs font-semibold text-slate-800">Không uống rượu</span>
+                            <div class="pill-switch-indicator">✓</div>
+                            <input type="checkbox" checked>
+                        </label>
+                        <label class="pill-switch checked" onclick="togglePill(this)">
+                            <span class="text-xs font-semibold text-slate-800">Chống đẩy 10 ~ 30 cái</span>
+                            <div class="pill-switch-indicator">✓</div>
+                            <input type="checkbox" checked>
+                        </label>
+                        <label class="pill-switch checked" onclick="togglePill(this)">
+                            <span class="text-xs font-semibold text-slate-800">Bê vác 20 ~ 40 kg</span>
+                            <div class="pill-switch-indicator">✓</div>
+                            <input type="checkbox" checked>
+                        </label>
+                        <label class="pill-switch" onclick="togglePill(this)">
+                            <span class="text-xs font-semibold text-slate-800">Mồ hôi tay</span>
+                            <div class="pill-switch-indicator">✓</div>
+                            <input type="checkbox">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Nhóm B: Bệnh lý loại trừ & Chấn thương -->
+                <div>
+                    <h3 class="text-xs font-extrabold text-red-700 uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <span>⚠️</span> Bệnh lý loại trừ &amp; Tiền sử chấn thương (Chọn nếu có):
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                        <label class="pill-switch caution" onclick="togglePill(this)">
+                            <span class="text-xs font-semibold text-slate-800">Viêm gan (B/C)</span>
+                            <div class="pill-switch-indicator">✕</div>
+                            <input type="checkbox">
+                        </label>
+                        <label class="pill-switch caution" onclick="togglePill(this)">
+                            <span class="text-xs font-semibold text-slate-800">Mù màu</span>
+                            <div class="pill-switch-indicator">✕</div>
+                            <input type="checkbox">
+                        </label>
+                        <label class="pill-switch caution" onclick="togglePill(this)">
+                            <span class="text-xs font-semibold text-slate-800">Hình xăm</span>
+                            <div class="pill-switch-indicator">✕</div>
+                            <input type="checkbox">
+                        </label>
+                        <label class="pill-switch caution" onclick="togglePill(this)">
+                            <span class="text-xs font-semibold text-slate-800">Chấn thương cột sống</span>
+                            <div class="pill-switch-indicator">✕</div>
+                            <input type="checkbox">
+                        </label>
+                        <label class="pill-switch caution" onclick="togglePill(this)">
+                            <span class="text-xs font-semibold text-slate-800">Gãy xương</span>
+                            <div class="pill-switch-indicator">✕</div>
+                            <input type="checkbox">
+                        </label>
+                        <label class="pill-switch caution" onclick="togglePill(this)">
+                            <span class="text-xs font-semibold text-slate-800">Hen suyễn</span>
+                            <div class="pill-switch-indicator">✕</div>
+                            <input type="checkbox">
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ══════════════════════════════════════════════════════════
+                 MỤC 3: DANH MỤC 26 KỸ NĂNG (SMART RESPONSIVE GRID)
+                 ══════════════════════════════════════════════════════════ -->
+            <section id="sec-3" class="form-section-card">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-6 pb-3 border-b border-gray-100">
+                    <div class="flex items-center gap-3">
+                        <span class="section-header-badge">3</span>
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-800">Danh mục 26 kỹ năng chuyên môn</h2>
+                            <p class="text-xs text-slate-400">Chọn các kỹ năng tay nghề mà ứng viên đáp ứng</p>
+                        </div>
+                    </div>
+                    <span id="skillCounterBadge" class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-extrabold px-3 py-1 rounded-full">
+                        Đã chọn: <span id="selectedSkillCount">3</span> / 26
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5" id="skillGrid">
+                    <!-- Danh sách 26 kỹ năng mẫu -->
+                    <label class="skill-chip selected" onclick="toggleSkill(this)"><div class="skill-checkbox-box">✓</div><span class="text-xs font-semibold">Hàn điện</span><input type="checkbox" checked></label>
+                    <label class="skill-chip selected" onclick="toggleSkill(this)"><div class="skill-checkbox-box">✓</div><span class="text-xs font-semibold">Hàn argon</span><input type="checkbox" checked></label>
+                    <label class="skill-chip" onclick="toggleSkill(this)"><div class="skill-checkbox-box">✓</div><span class="text-xs font-semibold">Hàn CO2</span><input type="checkbox"></label>
+                    <label class="skill-chip" onclick="toggleSkill(this)"><div class="skill-checkbox-box">✓</div><span class="text-xs font-semibold">Tig Mig</span><input type="checkbox"></label>
+                    <label class="skill-chip selected" onclick="toggleSkill(this)"><div class="skill-checkbox-box">✓</div><span class="text-xs font-semibold">Tiện</span><input type="checkbox" checked></label>
+                    <label class="skill-chip" onclick="toggleSkill(this)"><div class="skill-checkbox-box">✓</div><span class="text-xs font-semibold">Phay</span><input type="checkbox"></label>
+                    <label class="skill-chip" onclick="toggleSkill(this)"><div class="skill-checkbox-box">✓</div><span class="text-xs font-semibold">Bào</span><input type="checkbox"></label>
+                    <label class="skill-chip" onclick="toggleSkill(this)"><div class="skill-checkbox-box">✓</div><span class="text-xs font-semibold">CNC</span><input type="checkbox"></label>
+                    <label class="skill-chip" onclick="toggleSkill(this)"><div class="skill-checkbox-box">✓</div><span class="text-xs font-semibold">Đột dập</span><input type="checkbox"></label>
+                    <label class="skill-chip" onclick="toggleSkill(this)"><div class="skill-checkbox-box">✓</div><span class="text-xs font-semibold">Sửa chữa máy</span><input type="checkbox"></label>
+                    <label class="skill-chip" onclick="toggleSkill(this)"><div class="skill-checkbox-box">✓</div><span class="text-xs font-semibold">Lắp ráp cơ khí</span><input type="checkbox"></label>
+                    <label class="skill-chip" onclick="toggleSkill(this)"><div class="skill-checkbox-box">✓</div><span class="text-xs font-semibold">Đúc</span><input type="checkbox"></label>
+                    <label class="skill-chip" onclick="toggleSkill(this)"><div class="skill-checkbox-box">✓</div><span class="text-xs font-semibold">Công nhân điện tử</span><input type="checkbox"></label>
+                    <label class="skill-chip" onclick="toggleSkill(this)"><div class="skill-checkbox-box">✓</div><span class="text-xs font-semibold">Nhựa</span><input type="checkbox"></label>
+                    <label class="skill-chip" onclick="toggleSkill(this)"><div class="skill-checkbox-box">✓</div><span class="text-xs font-semibold">In ấn</span><input type="checkbox"></label>
+                    <label class="skill-chip" onclick="toggleSkill(this)"><div class="skill-checkbox-box">✓</div><span class="text-xs font-semibold">Dệt</span><input type="checkbox"></label>
+                    <label class="skill-chip" onclick="toggleSkill(this)"><div class="skill-checkbox-box">✓</div><span class="text-xs font-semibold">May</span><input type="checkbox"></label>
+                    <label class="skill-chip" onclick="toggleSkill(this)"><div class="skill-checkbox-box">✓</div><span class="text-xs font-semibold">Xây dựng</span><input type="checkbox"></label>
+                    <label class="skill-chip" onclick="toggleSkill(this)"><div class="skill-checkbox-box">✓</div><span class="text-xs font-semibold">Thợ mộc</span><input type="checkbox"></label>
+                    <label class="skill-chip" onclick="toggleSkill(this)"><div class="skill-checkbox-box">✓</div><span class="text-xs font-semibold">Lái xe tải/khách</span><input type="checkbox"></label>
+                    <label class="skill-chip" onclick="toggleSkill(this)"><div class="skill-checkbox-box">✓</div><span class="text-xs font-semibold">Xe nâng</span><input type="checkbox"></label>
+                    <label class="skill-chip" onclick="toggleSkill(this)"><div class="skill-checkbox-box">✓</div><span class="text-xs font-semibold">Xe cẩu</span><input type="checkbox"></label>
+                    <label class="skill-chip" onclick="toggleSkill(this)"><div class="skill-checkbox-box">✓</div><span class="text-xs font-semibold">Cẩu trục</span><input type="checkbox"></label>
+                    <label class="skill-chip" onclick="toggleSkill(this)"><div class="skill-checkbox-box">✓</div><span class="text-xs font-semibold">Máy xúc</span><input type="checkbox"></label>
+                    <label class="skill-chip" onclick="toggleSkill(this)"><div class="skill-checkbox-box">✓</div><span class="text-xs font-semibold">Điều dưỡng</span><input type="checkbox"></label>
+                    <label class="skill-chip" onclick="toggleSkill(this)"><div class="skill-checkbox-box">✓</div><span class="text-xs font-semibold">Giúp việc</span><input type="checkbox"></label>
+                </div>
+            </section>
+
+            <!-- ══════════════════════════════════════════════════════════
+                 MỤC 4: KINH NGHIỆM LÀM VIỆC & ĐÁNH GIÁ
+                 ══════════════════════════════════════════════════════════ -->
+            <section id="sec-4" class="form-section-card">
+                <div class="flex items-center gap-3 mb-6 pb-3 border-b border-gray-100">
+                    <span class="section-header-badge">4</span>
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800">Kinh nghiệm làm việc &amp; Đánh giá</h2>
+                        <p class="text-xs text-slate-400">Lịch sử xuất khẩu lao động và kinh nghiệm chuyên môn</p>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <!-- Kinh nghiệm 1 -->
+                    <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl grid grid-cols-1 sm:grid-cols-4 gap-3 text-sm">
+                        <div class="sm:col-span-1">
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Quốc gia 1</label>
+                            <select class="w-full border-b-2 border-gray-300 bg-transparent py-1.5 text-xs font-bold focus:border-cyan-600 focus:outline-none">
+                                <option>Đài Loan</option>
+                                <option>Nhật Bản</option>
+                                <option>Hàn Quốc</option>
+                                <option selected>Việt Nam</option>
+                            </select>
+                        </div>
+                        <div class="sm:col-span-1">
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Thời gian (Năm)</label>
+                            <input type="text" value="2020 - 2023" class="w-full border-b-2 border-gray-300 bg-transparent py-1.5 text-xs font-semibold focus:border-cyan-600 focus:outline-none">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Nội dung công việc</label>
+                            <input type="text" value="Thợ hàn kết cấu nhà xưởng thép tiền chế" class="w-full border-b-2 border-gray-300 bg-transparent py-1.5 text-xs font-semibold focus:border-cyan-600 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Ghi chú, lời bình -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ghi chú &amp; Lời bình đánh giá</label>
+                        <textarea rows="3" class="w-full border border-gray-200 rounded-xl p-3 text-xs text-slate-800 focus:border-cyan-600 focus:outline-none bg-slate-50" placeholder="Đánh giá thái độ, độ khéo tay, sức khỏe...">Ngoan ngoãn, chăm chỉ, tay nghề hàn tốt, chịu khó tăng ca.</textarea>
+                    </div>
+
+                    <!-- Link Video -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">🎬 Link Video kiểm tra tay nghề (Youtube / Drive)</label>
+                        <input type="url" placeholder="https://youtu.be/..." class="w-full border-b-2 border-gray-200 bg-transparent py-1.5 text-xs text-slate-700 focus:border-cyan-600 focus:outline-none">
+                    </div>
+                </div>
+            </section>
+
+            <!-- ══════════════════════════════════════════════════════════
+                 MỤC 5: TÀI LIỆU & GIẤY TỜ SCAN
+                 ══════════════════════════════════════════════════════════ -->
+            <section id="sec-5" class="form-section-card">
+                <div class="flex items-center gap-3 mb-6 pb-3 border-b border-gray-100">
+                    <span class="section-header-badge">5</span>
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800">Tài liệu &amp; Giấy tờ scan</h2>
+                        <p class="text-xs text-slate-400">Kéo thả ảnh Hộ chiếu, CCCD, Giấy khám sức khỏe, Bằng lái...</p>
+                    </div>
+                </div>
+
+                <!-- Dropzone kéo thả -->
+                <div class="border-2 border-dashed border-cyan-300 hover:border-cyan-500 bg-cyan-50/40 rounded-2xl p-6 text-center cursor-pointer transition-colors" onclick="mockAddPhoto()">
+                    <div class="w-12 h-12 rounded-full bg-cyan-100 text-cyan-600 mx-auto flex items-center justify-center text-xl mb-2">📸</div>
+                    <p class="text-sm font-bold text-cyan-900">Nhấp để tải ảnh hoặc Kéo thả tài liệu vào đây</p>
+                    <p class="text-xs text-slate-500 mt-1">Hỗ trợ JPG, PNG (tối đa 10 ảnh, mỗi ảnh ≤ 10MB)</p>
+                </div>
+
+                <!-- Lưới ảnh đã tải lên -->
+                <div class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3" id="mockPhotoGrid">
+                    <div class="relative bg-slate-100 border border-slate-200 rounded-xl p-2 text-center group">
+                        <div class="h-20 bg-slate-200 rounded-lg flex items-center justify-center text-slate-400 text-xs font-bold">📄 CCCD Mặt trước</div>
+                        <p class="text-[10px] text-slate-500 mt-1 truncate">cccd_mat_truoc.jpg (1.8 MB)</p>
+                        <button type="button" class="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full text-[10px] font-bold flex items-center justify-center shadow" onclick="this.parentElement.remove()">✕</button>
+                    </div>
+                    <div class="relative bg-slate-100 border border-slate-200 rounded-xl p-2 text-center group">
+                        <div class="h-20 bg-slate-200 rounded-lg flex items-center justify-center text-slate-400 text-xs font-bold">📄 Hộ chiếu (Passport)</div>
+                        <p class="text-[10px] text-slate-500 mt-1 truncate">ho_chieu.jpg (2.3 MB)</p>
+                        <button type="button" class="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full text-[10px] font-bold flex items-center justify-center shadow" onclick="this.parentElement.remove()">✕</button>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- 2. STICKY ACTION FOOTER (Thanh Tác Vụ Cố Định Đáy) -->
+        <footer class="sticky-action-footer" id="actionFooter">
+            <!-- Trạng thái bên trái (Ẩn trên mobile để tiết kiệm diện tích) -->
+            <div class="footer-desktop-status flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="text-xs font-bold text-slate-700">Trạng thái:</span>
+                <span class="text-xs font-extrabold text-cyan-700 bg-cyan-50 border border-cyan-200 px-2.5 py-0.5 rounded-full">
+                    Đang sửa: MD13514 - Nguyễn Văn An
+                </span>
+            </div>
+
+            <!-- Nhóm nút tác vụ -->
+            <div class="footer-action-btns flex items-center gap-2">
+                <button type="button" class="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-100 transition-colors" onclick="showToast('ℹ️ Đã hủy các chỉnh sửa!')">
+                    ✕ Hủy bỏ
+                </button>
+                <button type="button" class="hidden sm:inline-flex px-4 py-2.5 rounded-xl border border-cyan-200 bg-cyan-50 text-cyan-700 font-bold text-xs hover:bg-cyan-100 transition-colors" onclick="showToast('📄 Đang kết xuất file HTML song ngữ...')">
+                    📄 Tải HTML
+                </button>
+                <button type="button" class="hidden sm:inline-flex px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-100 transition-colors" onclick="showToast('🖨️ Mở cửa sổ Xem & In hồ sơ...')">
+                    🖨️ Xem &amp; In
+                </button>
+                <button type="button" id="btnSavePrimary" class="btn-save-primary px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-700 text-white font-extrabold text-xs shadow-lg shadow-cyan-600/30 hover:from-cyan-500 hover:to-teal-600 transition-all transform hover:-translate-y-0.5" onclick="triggerSaveForm()">
+                    💾 Lưu Form <span class="hidden md:inline text-[10px] opacity-80 font-normal">(Ctrl + S)</span>
+                </button>
+            </div>
+        </footer>
+
+    </main>
+
+    <!-- Toast Thông Báo -->
+    <div id="toastBox" class="toast-msg">
+        <span id="toastIcon">💾</span>
+        <span id="toastText">Đã lưu dữ liệu hồ sơ thành công!</span>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         JAVASCRIPT XỬ LÝ SCROLL-SPY, PHÍM TẮT & RESPONSIVE
+         ═══════════════════════════════════════════════════════════════ -->
+    <script>
+        // ── 1. Chuyển đổi chế độ xem Desktop / Mobile ──
+        function switchViewMode(mode) {
+            const wrapper = document.getElementById('viewportWrapper');
+            const btns = document.querySelectorAll('.simulator-mode-btn');
+            btns.forEach(b => b.classList.remove('active'));
+
+            if (mode === 'mobile') {
+                wrapper.className = 'mode-mobile';
+                btns[1].classList.add('active');
+                showToast('📱 Đã chuyển sang chế độ Giả lập Mobile iPhone 14 (390px)');
+            } else {
+                wrapper.className = 'mode-desktop';
+                btns[0].classList.add('active');
+                showToast('💻 Đã trở lại chế độ xem Desktop chuẩn');
+            }
+        }
+
+        // ── 2. Click-to-Scroll mượt mà ──
+        function scrollToSection(targetSelector) {
+            const targetEl = document.querySelector(targetSelector);
+            if (!targetEl) return;
+
+            const wrapper = document.getElementById('viewportWrapper');
+            if (wrapper.classList.contains('mode-mobile')) {
+                // Trong khung cuộn mobile
+                wrapper.scrollTo({
+                    top: targetEl.offsetTop - 60,
+                    behavior: 'smooth'
+                });
+            } else {
+                // Trong window bình thường
+                window.scrollTo({
+                    top: targetEl.offsetTop - 70,
+                    behavior: 'smooth'
+                });
+            }
+        }
+
+        // ── 3. Scroll-Spy nhận diện bước đang đứng ──
+        function initScrollSpy() {
+            const sections = document.querySelectorAll('.form-section-card');
+            const stepBtns = document.querySelectorAll('.step-pill-btn');
+
+            function onScrollHandler() {
+                const wrapper = document.getElementById('viewportWrapper');
+                const isMobileWrapper = wrapper.classList.contains('mode-mobile');
+                const scrollPos = isMobileWrapper ? wrapper.scrollTop : window.scrollY;
+
+                let currentId = '';
+                sections.forEach(sec => {
+                    const top = sec.offsetTop - 120;
+                    const height = sec.offsetHeight;
+                    if (scrollPos >= top && scrollPos < top + height) {
+                        currentId = '#' + sec.id;
+                    }
+                });
+
+                if (currentId) {
+                    stepBtns.forEach(btn => {
+                        const target = btn.getAttribute('data-target');
+                        if (target === currentId) {
+                            btn.classList.add('active');
+                            // Tự động cuộn thanh stepper để pill active luôn nằm trong tầm nhìn
+                            btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                        } else {
+                            btn.classList.remove('active');
+                        }
+                    });
+                }
+            }
+
+            window.addEventListener('scroll', onScrollHandler, { passive: true });
+            document.getElementById('viewportWrapper').addEventListener('scroll', onScrollHandler, { passive: true });
+        }
+
+        // ── 4. Phím tắt Ctrl + S / Cmd + S ──
+        window.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
+                e.preventDefault();
+                triggerSaveForm();
+            }
+        });
+
+        function triggerSaveForm() {
+            showToast('💾 Đã lưu dữ liệu hồ sơ thành công! (Phím tắt Ctrl+S hoạt động chuẩn)');
+        }
+
+        // ── 5. Toast Thông Báo Nhẹ Nhàng ──
+        let toastTimeout;
+        function showToast(msg) {
+            const toast = document.getElementById('toastBox');
+            const text = document.getElementById('toastText');
+            text.textContent = msg;
+            toast.classList.add('show');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ── 6. Tương tác Pill Switch (Sức khỏe) & Skill Chip (Kỹ năng) ──
+        function togglePill(label) {
+            const cb = label.querySelector('input[type="checkbox"]');
+            cb.checked = !cb.checked;
+            if (cb.checked) {
+                label.classList.add('checked');
+            } else {
+                label.classList.remove('checked');
+            }
+        }
+
+        function toggleSkill(label) {
+            const cb = label.querySelector('input[type="checkbox"]');
+            cb.checked = !cb.checked;
+            if (cb.checked) {
+                label.classList.add('selected');
+            } else {
+                label.classList.remove('selected');
+            }
+            updateSkillCount();
+        }
+
+        function updateSkillCount() {
+            const count = document.querySelectorAll('.skill-chip.selected').length;
+            document.getElementById('selectedSkillCount').textContent = count;
+        }
+
+        // ── 7. Giả lập Thêm ảnh vào Section 5 ──
+        function mockAddPhoto() {
+            const grid = document.getElementById('mockPhotoGrid');
+            const newCard = document.createElement('div');
+            newCard.className = 'relative bg-slate-100 border border-slate-200 rounded-xl p-2 text-center group animate-fade-in';
+            newCard.innerHTML = `
+                <div class="h-20 bg-emerald-100 text-emerald-700 rounded-lg flex items-center justify-center text-xs font-bold">📄 Bằng Lái Xe A1</div>
+                <p class="text-[10px] text-slate-500 mt-1 truncate">bang_lai_a1.jpg (1.2 MB)</p>
+                <button type="button" class="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full text-[10px] font-bold flex items-center justify-center shadow" onclick="this.parentElement.remove()">✕</button>
+            `;
+            grid.appendChild(newCard);
+            showToast('📸 Đã thêm ảnh mới vào danh sách!');
+        }
+
+        // ── 8. Mobile Keyboard-Aware: Tự động ẩn Sticky Footer khi mở bàn phím ──
+        const inputs = document.querySelectorAll('input, select, textarea');
+        const footer = document.getElementById('actionFooter');
+        inputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                // Trên màn hình nhỏ, khi focus ô nhập thì ẩn nhẹ thanh footer
+                if (window.innerWidth < 768 || document.getElementById('viewportWrapper').classList.contains('mode-mobile')) {
+                    footer.classList.add('keyboard-hidden');
+                }
+            });
+            input.addEventListener('blur', () => {
+                footer.classList.remove('keyboard-hidden');
+            });
+        });
+
+        // Khởi động khi tải xong
+        document.addEventListener('DOMContentLoaded', () => {
+            initScrollSpy();
+            updateSkillCount();
+        });
+    </script>
+</body>
+</html>
