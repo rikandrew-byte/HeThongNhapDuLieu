@@ -5106,16 +5106,16 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 tr.onmouseout = () => { tr.style.background = index % 2 === 0 ? '#ffffff' : '#f5f7ff'; };
                 
                 tr.innerHTML = `
-                    <td style="padding:12px 16px; font-weight:800; color:#0e7490; text-transform:uppercase; font-size:13px; white-space:nowrap;">${job}</td>
-                    <td style="padding:12px 16px; color:#155e75; font-size:12px;">
+                    <td class="job-col-name" style="padding:12px 16px; font-weight:800; color:#0e7490; text-transform:uppercase; font-size:13px;">${job}</td>
+                    <td class="job-col-badges" style="padding:12px 16px; color:#155e75; font-size:12px;">
                         <div style="display:flex; flex-wrap:wrap; align-items:center; gap:4px;">
                             ${masoBadgesHtml}
                         </div>
                     </td>
-                    <td style="padding:12px 16px; text-align:center; font-weight:700; color:#0891b2;">
-                        <span style="background:rgba(8,145,178,0.12); color:#0891b2; padding:3px 10px; border-radius:999px; font-size:12px; font-weight:800;">${applicants.length}</span>
+                    <td class="job-col-count" style="padding:12px 16px; text-align:center; font-weight:700; color:#0891b2;">
+                        <span class="job-count-badge" style="background:rgba(8,145,178,0.12); color:#0891b2; padding:3px 10px; border-radius:999px; font-size:12px; font-weight:800;">${applicants.length}</span>
                     </td>
-                    <td style="padding:12px 16px; text-align:center; white-space:nowrap;">
+                    <td class="job-col-actions" style="padding:12px 16px; text-align:center;">
                         <div class="job-action-group" style="display:flex; gap:6px; justify-content:center; align-items:center; flex-wrap:nowrap; white-space:nowrap;">
                             <button type="button" onclick="copyJobMasoList('${masoList.replace(/'/g, "\\'")}', this)" 
                                 style="padding:6px 10px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:4px;"
@@ -6950,14 +6950,29 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
 
             /* ===== TỔNG HỢP ĐƠN HÀNG - Mobile Card Layout ===== */
 
-            /* Panel ngoài: giảm padding để vừa màn hình nhỏ */
-            #jobSummaryPanel { padding: 12px !important; }
+            /* Panel ngoài: padding gọn gàng để vừa vặn màn hình điện thoại */
+            #jobSummaryPanel { padding: 12px 10px !important; }
 
             /* Tiêu đề panel: cho phép xuống dòng trên màn hình nhỏ */
             #jobSummaryPanel > div:first-child {
                 flex-wrap: wrap !important;
                 gap: 8px !important;
                 align-items: center !important;
+            }
+
+            /* Banner khi đang sửa đơn hàng: xếp dọc trên mobile */
+            #quickJobEditingBanner {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 10px !important;
+                padding: 10px 12px !important;
+            }
+            #quickJobEditingBanner > button {
+                width: 100% !important;
+                padding: 8px 12px !important;
+                font-size: 13px !important;
+                text-align: center !important;
+                justify-content: center !important;
             }
 
             /* Form ghép nhanh: xếp dọc hoàn toàn trên mobile */
@@ -6969,6 +6984,12 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 min-width: unset !important;
                 width: 100% !important;
             }
+            /* Tránh hiện tượng tự phóng to (iOS auto-zoom) khi focus input trên mobile */
+            #quickJobNameInput,
+            #quickJobMasoInput {
+                font-size: 15px !important;
+                padding: 10px 12px !important;
+            }
             /* Nút Ghép ngay: chiếm toàn bộ chiều ngang */
             .quick-job-assign-fields > button {
                 width: 100% !important;
@@ -6977,92 +6998,197 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 font-size: 14px !important;
             }
 
-            /* Bảng đơn hàng -> Card layout: tắt max-height và overflow dọc để thẻ dàn đầy */
+            /* Bảng đơn hàng -> Chuyển thành Card Layout di động hiện đại */
             .job-table-wrapper {
                 max-height: none !important;
                 overflow-y: visible !important;
+                overflow-x: hidden !important;
             }
 
-            /* Biến bảng thành dạng khối */
             .job-summary-table thead { display: none !important; }
             .job-summary-table,
-            .job-summary-table tbody,
-            .job-summary-table tr,
+            .job-summary-table tbody {
+                display: block !important;
+                width: 100% !important;
+            }
+
+            /* Mỗi hàng đơn hàng là một thẻ Card riêng biệt */
+            .job-summary-table tr.job-summary-row {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 10px !important;
+                background: #ffffff !important;
+                border: 1.5px solid #c7d2fe !important;
+                border-radius: 14px !important;
+                margin-bottom: 14px !important;
+                padding: 14px 12px !important;
+                box-shadow: 0 3px 10px rgba(79, 70, 229, 0.08) !important;
+                box-sizing: border-box !important;
+                width: 100% !important;
+            }
+            .job-summary-table tr.job-summary-row:hover {
+                background: #ffffff !important;
+            }
+
+            /* Reset toàn bộ ô td */
             .job-summary-table td {
                 display: block !important;
+                padding: 0 !important;
+                border: none !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+                min-height: 0 !important;
+                text-align: left !important;
+            }
+
+            /* Cột 1: Tên đơn hàng (Header của thẻ card) */
+            .job-summary-table td.job-col-name,
+            .job-summary-table td:nth-child(1) {
+                font-family: 'Outfit', sans-serif !important;
+                font-size: 16px !important;
+                font-weight: 800 !important;
+                color: #0e7490 !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.02em !important;
+                word-break: break-word !important;
+                line-height: 1.35 !important;
+                border-bottom: 1px solid #f1f5f9 !important;
+                padding-bottom: 8px !important;
+                order: 1 !important;
+            }
+            .job-summary-table td.job-col-name::before,
+            .job-summary-table td:nth-child(1)::before {
+                content: "💼 ĐƠN HÀNG: " !important;
+                font-size: 11px !important;
+                font-weight: 700 !important;
+                color: #64748b !important;
+                display: block !important;
+                margin-bottom: 3px !important;
+                letter-spacing: 0.04em !important;
+            }
+
+            /* Cột 3: Số lượng ứng viên - đưa lên trước danh sách mã số */
+            .job-summary-table td.job-col-count,
+            .job-summary-table td:nth-child(3) {
+                display: flex !important;
+                align-items: center !important;
+                gap: 8px !important;
+                order: 2 !important;
+            }
+            .job-summary-table td.job-col-count::before,
+            .job-summary-table td:nth-child(3)::before {
+                content: "Số lượng ứng viên:" !important;
+                font-size: 12px !important;
+                font-weight: 700 !important;
+                color: #64748b !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.03em !important;
+            }
+            .job-summary-table .job-count-badge {
+                display: inline-flex !important;
+                align-items: center !important;
+                background: #e0f2fe !important;
+                color: #0369a1 !important;
+                font-weight: 800 !important;
+                font-size: 13px !important;
+                padding: 2px 10px !important;
+                border-radius: 999px !important;
+            }
+
+            /* Cột 2: Danh sách mã số ứng viên */
+            .job-summary-table td.job-col-badges,
+            .job-summary-table td:nth-child(2) {
+                order: 3 !important;
+                overflow: visible !important;
+            }
+            .job-summary-table td.job-col-badges::before,
+            .job-summary-table td:nth-child(2)::before {
+                content: "Danh sách dự tuyển:" !important;
+                font-size: 12px !important;
+                font-weight: 700 !important;
+                color: #64748b !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.03em !important;
+                display: block !important;
+                margin-bottom: 6px !important;
+            }
+            .job-summary-table td.job-col-badges > div,
+            .job-summary-table td:nth-child(2) > div {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 6px !important;
+                width: 100% !important;
+                margin-bottom: 0 !important;
+            }
+
+            /* Badge mã số: tự co giãn đẹp mắt, không tràn viền */
+            .job-maso-badge,
+            .job-maso-badge-success,
+            .job-maso-badge-warning {
+                font-size: 12px !important;
+                padding: 4px 8px !important;
+                border-radius: 8px !important;
+                white-space: nowrap !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                line-height: 1.2 !important;
+            }
+
+            /* Nút Xóa (×) trên badge: vùng bấm ngón tay rộng (22px), không bị bấm trượt */
+            .job-badge-remove-btn {
+                width: 22px !important;
+                height: 22px !important;
+                border-radius: 50% !important;
+                background: rgba(0, 0, 0, 0.06) !important;
+                color: #ef4444 !important;
+                font-size: 15px !important;
+                line-height: 1 !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                margin-left: 6px !important;
+                padding: 0 !important;
+                flex-shrink: 0 !important;
+                touch-action: manipulation !important;
+                cursor: pointer !important;
+            }
+
+            /* Cột 4: Thao tác (Footer của card, dàn đều 2x2) */
+            .job-summary-table td.job-col-actions,
+            .job-summary-table td:nth-child(4) {
+                order: 4 !important;
+                padding-top: 10px !important;
+                margin-top: 4px !important;
+                border-top: 1px dashed #e2e8f0 !important;
+                width: 100% !important;
+            }
+            /* Xóa bỏ hoàn toàn ::before của cột thao tác để tránh chiếm chỗ gây tràn màn hình */
+            .job-summary-table td.job-col-actions::before,
+            .job-summary-table td:nth-child(4)::before {
+                display: none !important;
+                content: none !important;
+            }
+
+            /* Nhóm nút bấm thao tác: Grid 2 cột đều nhau, 100% chiều ngang */
+            .job-action-group {
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 8px !important;
                 width: 100% !important;
                 box-sizing: border-box !important;
             }
-
-            /* Mỗi hàng là một thẻ Card */
-            .job-summary-table tr.job-summary-row {
-                background: #ffffff !important;
-                border: 1px solid #c7d2fe !important;
-                border-radius: 12px !important;
-                margin-bottom: 12px !important;
-                padding: 12px !important;
-                box-shadow: 0 2px 8px rgba(79,70,229,0.06) !important;
-            }
-            .job-summary-table tr.job-summary-row:hover {
-                background: #f5f3ff !important;
-            }
-
-            /* Mỗi ô td: layout hàng ngang với nhãn trước */
-            .job-summary-table td {
-                padding: 5px 0 !important;
-                border: none !important;
-                display: flex !important;
-                align-items: flex-start !important;
-                gap: 8px !important;
-                min-height: 0 !important;
-            }
-
-            /* Thêm nhãn trước mỗi ô bằng data-label (đặt qua JS) hoặc dùng CSS ::before */
-            .job-summary-table td:nth-child(1)::before { content: "Đơn hàng:"; }
-            .job-summary-table td:nth-child(2)::before { content: "Dự tuyển:"; }
-            .job-summary-table td:nth-child(3)::before { content: "Số lượng:"; }
-            .job-summary-table td:nth-child(4)::before { content: "Thao tác:"; }
-            .job-summary-table td::before {
-                min-width: 72px !important;
-                font-size: 10px !important;
-                font-weight: 700 !important;
-                color: #94a3b8 !important;
-                text-transform: uppercase !important;
-                letter-spacing: 0.05em !important;
-                padding-top: 3px !important;
-                flex-shrink: 0 !important;
-            }
-
-            /* Cột thao tác: xuống dòng lưới 2x2 */
-            .job-summary-table td:nth-child(4) { align-items: flex-start !important; }
-            .job-action-group {
-                display: grid !important;
-                grid-template-columns: 1fr 1fr !important;
-                gap: 6px !important;
-                width: 100% !important;
-            }
             .job-action-group > button {
                 width: 100% !important;
+                height: 38px !important;
+                display: inline-flex !important;
+                align-items: center !important;
                 justify-content: center !important;
-                font-size: 11px !important;
-                padding: 8px 4px !important;
-            }
-
-            /* Badge hàng mã số: cuộn ngang trên mobile nếu quá dài */
-            .job-summary-table td:nth-child(2) {
-                overflow-x: auto !important;
-                -webkit-overflow-scrolling: touch !important;
-            }
-            .job-summary-table td:nth-child(2) > div {
-                flex-wrap: wrap !important; /* trên mobile cho phép xuống hàng */
-            }
-
-            /* Badge mã số: tự xuống dòng theo cụm, không bẻ gãy chữ cái */
-            .job-maso-badge {
-                word-break: keep-all !important;
-                white-space: nowrap !important;
-                font-size: 11px !important;
-                padding: 2px 6px !important;
+                font-size: 12px !important;
+                font-weight: 700 !important;
+                border-radius: 8px !important;
+                padding: 0 6px !important;
+                box-sizing: border-box !important;
+                touch-action: manipulation !important;
             }
 
             /* ===== FORM CV & THANH CÔNG CỤ ĐÁY TRÊN MOBILE ===== */
