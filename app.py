@@ -1699,11 +1699,21 @@ CẨM NANG HƯỚNG DẪN NGHIỆP VỤ CHI TIẾT TỪNG TÍNH NĂNG CỦA FCT 
 9. SAO LƯU & DỰ PHÒNG DỮ LIỆU AN TOÀN:
    - Định kỳ xuất file backup JSON từ hệ thống để lưu trữ an toàn trong máy tính hoặc Google Drive cá nhân. Khi cần chuyển đổi máy chủ hoặc phục hồi dữ liệu cũ, chỉ cần nạp lại file JSON dự phòng này.
 
+10. THỐNG KÊ CHUYÊN SÂU & HIỆU SUẤT PIPELINE (PIPELINE ANALYTICS):
+   - Mục đích: Đo lường chính xác hiệu suất tuyển dụng, tỷ lệ trúng tuyển theo từng Chuyên viên FCT / NPT và đánh giá tiến độ lấp đầy của 10 đơn hàng hiện hữu.
+   - Thao tác chi tiết:
+     + Bấm vào tab "📊 Thống kê & Hiệu suất" trên thanh điều hướng hoặc nhấp vào khối "Đã trúng tuyển" / "Xem Phân tích Pipeline" ở thanh bên trái (Sidebar).
+     + Bảng chỉ số KPI tổng quát: Tổng số hồ sơ (687+), Số lao động trúng tuyển thực tế (đã loại trừ hồ sơ HỦY), Tỷ lệ trúng tuyển toàn hệ thống, Số hồ sơ hủy sau trúng, Số lao động đã xuất cảnh và Số lượng đơn hàng đang tuyển.
+     + Bảng Xếp Hạng NPT (Leaderboard): Xếp hạng chuyên viên FCT theo tỷ lệ trúng tuyển (AT, Kelly, Tâm, VC, v.v.), hiển thị chi tiết số lượng nộp, trúng, hủy, đang xử lý và đã xuất cảnh. Có thể bấm "🔍 Lọc ứng viên" để xem ngay danh sách hồ sơ của từng NPT.
+     + Bảng Hiệu suất 10 Đơn hàng: Giám sát đơn hàng nào đã tuyển đủ (100%), đơn nào đang ứ đọng nhiều ứng viên nhưng chưa ghép được người (như Bội Nhĩ, HHO, Đại Trung...) để kịp thời điều chỉnh nguồn cung.
+     + Công cụ Chuẩn hóa NPT CSDL: Cho phép xem trước và tự động chuẩn hóa các biến thể tên chuyên viên/đối tác trong CSDL.
+
 Thẻ hành động tắt hỗ trợ mở nhanh (đặt ở cuối câu trả lời khi thích hợp):
 - Mở form nhập hồ sơ: [ACTION:OPEN_FORM]
 - Xuất Excel: [ACTION:EXPORT_EXCEL]
 - Xem danh sách trúng tuyển: [ACTION:OPEN_PASSED]
 - Xem ghép đơn hàng: [ACTION:OPEN_JOBS]
+- Mở Thống kê & Hiệu suất Pipeline: [ACTION:OPEN_ANALYTICS]
 - Bắt đầu xem tour hướng dẫn: [ACTION:START_TOUR]
 """
 
@@ -1934,6 +1944,27 @@ def get_milo_fallback_response(user_msg: str) -> str:
             "2. **Khôi phục dữ liệu (Restore)**: Khi cần chuyển đổi môi trường hoặc phục hồi dữ liệu từ một mốc thời gian trước đó, chỉ cần nạp lại tệp backup JSON.\n"
             "💡 *Khuyến nghị nghiệp vụ*: Anh/chị nên xuất và lưu trữ tệp sao lưu dữ liệu định kỳ hàng tuần trên máy tính hoặc Google Drive để luôn chủ động trong mọi tình huống nhé ạ!"
         )
+
+    # 12. THỐNG KÊ CHUYÊN SÂU & HIỆU SUẤT PIPELINE
+    elif any(k in msg for k in ['thống kê', 'hiệu suất', 'pipeline', 'tỷ lệ trúng', 'tỉ lệ trúng', 'npt', 'đầu mối', 'năng lực npt', 'báo cáo trúng', 'tỷ lệ chuyển đổi', 'tiến độ đơn']):
+        return (
+            "Dạ, hệ thống FCT DAS V3.0 cung cấp phân hệ **Thống Kê Chuyên Sâu (Pipeline Analytics)** giúp ban lãnh đạo và chuyên viên FCT đo lường toàn diện hiệu suất:\n\n"
+            "### 1. 📈 Các chỉ số KPI cốt lõi:\n"
+            "- **Tổng hồ sơ tiếp nhận**: Phản ánh quy mô nguồn ứng viên toàn hệ thống.\n"
+            "- **Trúng tuyển thực tế & Tỷ lệ trúng (%)**: Đo lường tỷ lệ chuyển đổi thực chất (đã tự động loại trừ các hồ sơ bị HỦY theo đúng nguyên tắc).\n"
+            "- **Cảnh báo hồ sơ đã hủy**: Giúp nhận diện rủi ro rút hồ sơ sau khi trúng tuyển của từng đầu mối.\n"
+            "- **Tiến độ xuất cảnh**: Tách bạch số lượng đã xuất cảnh và số hồ sơ đang xử lý (Gom hồ sơ / Trình cục / Visa).\n\n"
+            "### 2. 🏆 Bảng Xếp Hạng Năng Lực NPT (FCT Staff Leaderboard):\n"
+            "- Xếp hạng các chuyên viên tuyển dụng FCT (AT, Kelly, Tâm, VC, v.v.) theo **Tỷ lệ trúng tuyển**.\n"
+            "- Nhìn thấy ngay đầu mối nào nguồn vào nhiều nhưng trúng ít, hoặc đầu mối nào chất lượng ứng viên cao để tối ưu nguồn cung.\n"
+            "- Bấm nút **'🔍 Lọc ứng viên'** trên từng dòng để lọc nhanh hồ sơ của chuyên viên đó.\n\n"
+            "### 3. 💼 Hiệu Suất 10 Đơn Hàng Tuyển Dụng:\n"
+            "- Theo dõi số ứng viên đã nộp vào từng đơn và số người đã trúng tuyển.\n"
+            "- Nhận diện rõ đơn hàng nào đã tuyển đủ 100%, đơn nào đang ứ đọng nhiều ứng viên nhưng chưa ghép được người để đẩy nhanh tiến độ phỏng vấn.\n\n"
+            "### 4. 🛠️ Công cụ Chuẩn hóa Dữ liệu NPT CSDL:\n"
+            "- Tự động phát hiện và chuẩn hóa các biến thể tên chuyên viên/đối tác trong CSDL một cách an toàn.\n\n"
+            "[ACTION:OPEN_ANALYTICS]"
+        )
         
     # CÂU CHÀO & TỔNG QUAN
     else:
@@ -1948,7 +1979,8 @@ def get_milo_fallback_response(user_msg: str) -> str:
             "6. ⚠️ **Hệ thống cảnh báo hạn giấy tờ** (Theo dõi Hộ chiếu, CCCD, KSK, LLTP2 với mã màu Đỏ/Vàng/Xanh)\n"
             "7. 🏗️ **Cấu hình Nhà máy, Môi giới & Quota** (Kiểm soát hạn ngạch Tờ thẩm định & Tờ Visa, chống vượt slots)\n"
             "8. 📊 **Xuất Excel có tích hợp biểu đồ** (Báo cáo tự động dạng cột BarChart và tròn PieChart)\n"
-            "9. 🖨️ **Xem & In ấn CV chuyên nghiệp** (Form tiếng Trung Ver 2026, in PDF hàng loạt Streaming, tải ZIP trọn gói)\n\n"
+            "9. 🖨️ **Xem & In ấn CV chuyên nghiệp** (Form tiếng Trung Ver 2026, in PDF hàng loạt Streaming, tải ZIP trọn gói)\n"
+            "10. 📈 **Thống kê chuyên sâu & Hiệu suất Pipeline** (Xếp hạng NPT, tỷ lệ chuyển đổi, giám sát 10 đơn hàng)\n\n"
             "🎯 **Đặc biệt**: Anh/chị hãy bấm sang tab **'🎯 Cầm tay chỉ việc'** ở khung bên cạnh để em trực tiếp dẫn anh/chị đi qua từng nút bấm trên màn hình nhé!\n\n"
             "[ACTION:START_TOUR]"
         )
@@ -4826,6 +4858,333 @@ def api_update_placement(record_id):
             
     db.session.commit()
     return jsonify({'success': True})
+
+
+# ==============================================================================
+# PIPELINE ANALYTICS & NPT STANDARDIZATION ENDPOINTS
+# ==============================================================================
+
+STAFF_CANONICAL = {
+    'vc': 'VC', 'v.c': 'VC', 'v c': 'VC',
+    'at': 'AT', 'a.t': 'AT', 'a t': 'AT', 'vũ': 'AT', 'vu': 'AT',
+    'tâm': 'Tâm', 'tam': 'Tâm', 'tâm c': 'Tâm',
+    'kelly': 'Kelly', 'k': 'Kelly',
+    'yến': 'Yến SG', 'yen': 'Yến SG',
+    'hòa na': 'Hòa NA', 'hoa na': 'Hòa NA', 'hòa': 'Hòa NA',
+    'chinh': 'Chinh',
+    'chỉ': 'Chỉ định', 'chi': 'Chỉ định', 'chỉ định': 'Chỉ định'
+}
+
+PARTNER_CANONICAL = {
+    'hai': 'Hải',
+    'sam': 'Sâm',
+    'hung': 'Hùng',
+    'ja': 'Javiko',
+    'c đông': 'Chị Đông',
+    'chi dong': 'Chị Đông',
+    'kien ht': 'Kiên HT',
+    'hoa na': 'Hòa NA',
+    'hoà na': 'Hòa NA',
+    'mg hoa na': 'MG Hòa NA',
+    'mg hoà na': 'MG Hòa NA',
+    'mg hồng mẫn': 'MG Hồng Mẫn',
+    'mg minh an': 'MG Minh An'
+}
+
+def clean_npt_standard(raw):
+    if not raw or not str(raw).strip():
+        return ''
+    raw_str = str(raw).strip()
+    
+    if raw_str.lower() in ('javiko', 'ja'):
+        return 'AT - Javiko'
+    if raw_str.lower() in ('vinasem', 'emico'):
+        return raw_str.upper()
+    if raw_str.lower() in ('chỉ - định', 'chỉ định', 'chi dinh'):
+        return 'Chỉ định'
+    if raw_str.lower() in ('hòa - na', 'hoa na', 'hòa na'):
+        return 'Hòa NA'
+    if raw_str.lower() in ('yến - sg', 'yen sg', 'yến sg'):
+        return 'Yến SG'
+    if raw_str.lower() in ('mg minh - an', 'mg minh an'):
+        return 'VC - MG Minh An'
+
+    if '-' in raw_str:
+        p1, p2 = raw_str.split('-', 1)
+        staff_raw = p1.strip()
+        partner_raw = p2.strip()
+    else:
+        parts = raw_str.split()
+        if len(parts) >= 2 and parts[0].lower() in STAFF_CANONICAL:
+            staff_raw = parts[0]
+            partner_raw = " ".join(parts[1:])
+        else:
+            staff_raw = raw_str
+            partner_raw = ""
+
+    staff_clean = STAFF_CANONICAL.get(staff_raw.lower(), staff_raw)
+    partner_clean = PARTNER_CANONICAL.get(partner_raw.lower(), partner_raw.title() if partner_raw else "")
+
+    if partner_clean:
+        return f"{staff_clean} - {partner_clean}"
+    return staff_clean
+
+def get_staff_from_clean(clean_str):
+    if not clean_str:
+        return 'Chưa phân bổ'
+    if '-' in clean_str:
+        return clean_str.split('-')[0].strip()
+    return clean_str.strip()
+
+
+@app.route('/api/analytics/pipeline', methods=['GET'])
+@auth_required
+def api_pipeline_analytics():
+    try:
+        records = FormHistory.query.filter_by(is_deleted=False).all()
+        
+        total_candidates = len(records)
+        total_selected_raw = 0
+        total_selected_effective = 0
+        total_cancelled = 0
+        total_exported = 0
+        total_in_progress = 0
+        
+        staff_map = {}
+        order_map = {}
+        need_standardize_count = 0
+        
+        for r in records:
+            raw_npt = (r.nguoi_phu_trach or '').strip()
+            std_npt = clean_npt_standard(raw_npt)
+            if raw_npt and std_npt != raw_npt:
+                need_standardize_count += 1
+                
+            staff_name = get_staff_from_clean(std_npt)
+            partner_name = std_npt.split('-')[1].strip() if '-' in std_npt else ''
+            
+            if staff_name not in staff_map:
+                staff_map[staff_name] = {
+                    'staff': staff_name,
+                    'total': 0,
+                    'selected': 0,
+                    'cancelled': 0,
+                    'exported': 0,
+                    'in_progress': 0,
+                    'partners': {}
+                }
+            s_item = staff_map[staff_name]
+            s_item['total'] += 1
+            
+            if partner_name:
+                if partner_name not in s_item['partners']:
+                    s_item['partners'][partner_name] = {'partner': partner_name, 'total': 0, 'selected': 0, 'cancelled': 0}
+                s_item['partners'][partner_name]['total'] += 1
+                
+            is_sel = bool(r.is_selected)
+            status = getattr(r, 'placement_status', '') or ''
+            is_arch = bool(getattr(r, 'is_archived', False))
+            
+            if is_sel:
+                total_selected_raw += 1
+                if status == 'CANCELLED':
+                    total_cancelled += 1
+                    s_item['cancelled'] += 1
+                    if partner_name:
+                        s_item['partners'][partner_name]['cancelled'] += 1
+                else:
+                    total_selected_effective += 1
+                    s_item['selected'] += 1
+                    if partner_name:
+                        s_item['partners'][partner_name]['selected'] += 1
+                    if status == 'XUAT_CANH' or is_arch:
+                        total_exported += 1
+                        s_item['exported'] += 1
+                    else:
+                        total_in_progress += 1
+                        s_item['in_progress'] += 1
+
+            # Ghép đơn hàng
+            cand_jobs = []
+            if r.don_hang:
+                cand_jobs = [j.strip().upper() for j in re.split(r'[,;]+', r.don_hang) if j.strip()]
+                
+            sel_job = (getattr(r, 'selected_job', '') or '').strip().upper()
+            if sel_job and (',' in sel_job or ';' in sel_job):
+                sel_job = re.split(r'[,;]+', sel_job)[0].strip()
+                
+            for cj in cand_jobs:
+                if cj not in order_map:
+                    order_map[cj] = {
+                        'order_name': cj,
+                        'applied': 0,
+                        'selected': 0,
+                        'cancelled': 0,
+                        'exported': 0,
+                        'in_progress': 0
+                    }
+                o_item = order_map[cj]
+                o_item['applied'] += 1
+                if is_sel and sel_job == cj:
+                    if status == 'CANCELLED':
+                        o_item['cancelled'] += 1
+                    else:
+                        o_item['selected'] += 1
+                        if status == 'XUAT_CANH' or is_arch:
+                            o_item['exported'] += 1
+                        else:
+                            o_item['in_progress'] += 1
+
+        # Leaderboard theo Nhân viên FCT
+        leaderboard = []
+        for staff, d in staff_map.items():
+            rate = round((d['selected'] / d['total']) * 100, 1) if d['total'] > 0 else 0
+            p_list = []
+            for p_name, p_data in d['partners'].items():
+                p_rate = round((p_data['selected'] / p_data['total']) * 100, 1) if p_data['total'] > 0 else 0
+                p_list.append({
+                    'partner': p_name,
+                    'total': p_data['total'],
+                    'selected': p_data['selected'],
+                    'cancelled': p_data['cancelled'],
+                    'conversion_rate': p_rate
+                })
+            p_list.sort(key=lambda x: (-x['selected'], -x['total']))
+            leaderboard.append({
+                'staff': staff,
+                'total': d['total'],
+                'selected': d['selected'],
+                'cancelled': d['cancelled'],
+                'conversion_rate': rate,
+                'exported': d['exported'],
+                'in_progress': d['in_progress'],
+                'sub_sources': p_list
+            })
+            
+        def sort_staff(x):
+            is_unassigned = 1 if x['staff'] == 'Chưa phân bổ' else 0
+            return (is_unassigned, -x['conversion_rate'], -x['selected'], -x['total'])
+        leaderboard.sort(key=sort_staff)
+
+        # Thống kê tiến độ 10 đơn hàng
+        orders = []
+        for job, d in order_map.items():
+            rate = round((d['selected'] / d['applied']) * 100, 1) if d['applied'] > 0 else 0
+            if d['selected'] > 0 and d['selected'] == d['applied']:
+                status_text = 'Đã tuyển đủ 100%'
+                status_type = 'success'
+            elif d['selected'] > 0:
+                status_text = 'Đã ghép thành công'
+                status_type = 'primary'
+            elif d['applied'] >= 15:
+                status_text = 'Chờ ghép người (Nguồn dồi dào)'
+                status_type = 'warning'
+            else:
+                status_text = 'Đang tiếp nhận ứng viên'
+                status_type = 'info'
+                
+            orders.append({
+                'order_name': job,
+                'applied': d['applied'],
+                'selected': d['selected'],
+                'cancelled': d['cancelled'],
+                'conversion_rate': rate,
+                'exported': d['exported'],
+                'in_progress': d['in_progress'],
+                'status_text': status_text,
+                'status_type': status_type
+            })
+        orders.sort(key=lambda x: (-x['applied'], -x['selected']))
+
+        sys_rate = round((total_selected_effective / total_candidates) * 100, 1) if total_candidates > 0 else 0
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'summary': {
+                    'total_candidates': total_candidates,
+                    'total_selected_raw': total_selected_raw,
+                    'total_selected': total_selected_effective,
+                    'total_cancelled': total_cancelled,
+                    'system_conversion_rate': sys_rate,
+                    'total_exported': total_exported,
+                    'total_in_progress': total_in_progress,
+                    'total_orders': len(orders),
+                    'need_standardize_count': need_standardize_count
+                },
+                'npt_leaderboard': leaderboard,
+                'order_stats': orders
+            }
+        })
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/analytics/standardize-npt', methods=['POST'])
+@auth_required
+def api_standardize_npt():
+    try:
+        data = request.json or {}
+        action = data.get('action', 'preview')  # 'preview' | 'apply'
+        
+        records = FormHistory.query.filter_by(is_deleted=False).all()
+        changes = []
+        for r in records:
+            current = (r.nguoi_phu_trach or '').strip()
+            if not current:
+                continue
+            suggested = clean_npt_standard(current)
+            if suggested and suggested != current:
+                changes.append({
+                    'id': r.id,
+                    'ma_so': r.ma_so or f"ID:{r.id}",
+                    'ho_ten': r.ho_ten or '',
+                    'current': current,
+                    'suggested': suggested
+                })
+                
+        if action == 'preview':
+            return jsonify({
+                'success': True,
+                'count': len(changes),
+                'changes': changes
+            })
+            
+        elif action == 'apply':
+            updated_count = 0
+            for item in changes:
+                r = FormHistory.query.get(item['id'])
+                if r:
+                    r.nguoi_phu_trach = item['suggested']
+                    if r.data_json:
+                        try:
+                            dj = json.loads(r.data_json)
+                            dj['f48'] = item['suggested']
+                            if '-' in item['suggested']:
+                                p = item['suggested'].split('-', 1)
+                                dj['f48_emp'] = p[0].strip()
+                                dj['f48_partner'] = p[1].strip()
+                            else:
+                                dj['f48_emp'] = item['suggested']
+                                dj['f48_partner'] = ''
+                            r.data_json = json.dumps(dj, ensure_ascii=False)
+                        except Exception:
+                            pass
+                    updated_count += 1
+            db.session.commit()
+            return jsonify({
+                'success': True,
+                'updated_count': updated_count,
+                'message': f'Đã chuẩn hóa thành công {updated_count} hồ sơ trong cơ sở dữ liệu!'
+            })
+        else:
+            return jsonify({'success': False, 'error': 'Invalid action'}), 400
+    except Exception as e:
+        db.session.rollback()
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
