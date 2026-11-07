@@ -1924,40 +1924,32 @@
                     <span class="section-heading-bar"></span>
                 </div>
 
-                <!-- KHUNG CẢNH BÁO TRÙNG LẶP HỒ SƠ ỨNG VIÊN -->
-                <div id="duplicateWarningBox" class="hidden mb-6 p-4 rounded-2xl border-2 border-amber-400 bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 shadow-md transition-all duration-300">
-                    <div class="flex items-start gap-3">
-                        <div class="text-2xl flex-shrink-0 animate-bounce">⚠️</div>
-                        <div class="flex-1">
-                            <div class="flex items-center justify-between flex-wrap gap-2 mb-1.5">
-                                <h4 class="font-extrabold text-amber-900 text-sm flex items-center gap-1.5">
-                                    <span>CẢNH BÁO: PHÁT HIỆN HỒ SƠ CÓ DẤU HIỆU TRÙNG LẶP!</span>
-                                </h4>
-                                <button type="button" onclick="dismissDuplicateWarning()" class="text-xs text-amber-700 hover:text-amber-900 font-bold px-2 py-0.5 rounded hover:bg-amber-100 transition-colors">✕ Đóng cảnh báo</button>
-                            </div>
-                            <p class="text-xs text-amber-800 mb-2.5">
-                                Hệ thống phát hiện thông tin ứng viên đang nhập trùng với hồ sơ đã lưu để tránh một lao động bị nộp nhiều lần qua các nguồn khác nhau:
-                            </p>
-                            <div id="duplicateListContainer" class="space-y-2">
-                                <!-- Danh sách ứng viên trùng lặp sẽ render tại đây -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Mã số</label><input type="text" name="Maso" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
-                    <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Họ tên (Tiếng Việt)</label><input type="text" name="Hoten" onblur="translateName(this.value); checkDuplicateCandidate();" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
+                    <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Họ tên (Tiếng Việt)</label><input type="text" name="Hoten" onblur="translateName(this.value); checkDuplicateCandidate();" oninput="checkDuplicateCandidate();" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
                     <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tên tiếng Trung</label><input type="text" name="TentiengTrung" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
-                    <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Ngày sinh</label><input type="date" name="Ngaysinh" id="birthDate" onchange="calcAge(); checkDuplicateCandidate();" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
-                    <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tuổi</label><input type="text" name="Tuoi" id="displayAge" readonly class="w-full border-b-2 border-gray-200 bg-gray-50 py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Số CCCD / Hộ chiếu</label>
-                        <input type="text" name="CCCD" id="inputCCCD" onblur="checkDuplicateCandidate();" placeholder="Nhập số CCCD hoặc Hộ chiếu" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Số điện thoại liên hệ</label>
-                        <input type="tel" name="Lienhe" id="inputLienhe" onblur="checkDuplicateCandidate();" placeholder="Nhập số điện thoại liên hệ" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors">
+                    <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Ngày sinh</label><input type="date" name="Ngaysinh" id="birthDate" onchange="calcAge(); checkDuplicateCandidate();" oninput="calcAge(); checkDuplicateCandidate();" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
+                    <div class="sm:col-span-2 md:col-span-1"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tuổi</label><input type="text" name="Tuoi" id="displayAge" readonly class="w-full border-b-2 border-gray-200 bg-gray-50 py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
+
+                    <!-- KHUNG CẢNH BÁO TRÙNG LẶP HỒ SƠ ỨNG VIÊN (TỰ ĐỘNG HIỆN KHI TRÙNG TÊN & NGÀY SINH) -->
+                    <div id="duplicateWarningBox" class="hidden sm:col-span-2 p-4 rounded-2xl border-2 border-amber-400 bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 shadow-md transition-all duration-300">
+                        <div class="flex items-start gap-3">
+                            <div class="text-2xl flex-shrink-0 animate-bounce">⚠️</div>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between flex-wrap gap-2 mb-1.5">
+                                    <h4 class="font-extrabold text-amber-900 text-sm flex items-center gap-1.5">
+                                        <span>CẢNH BÁO: PHÁT HIỆN ỨNG VIÊN ĐÃ CÓ TRONG HỆ THỐNG!</span>
+                                    </h4>
+                                    <button type="button" onclick="dismissDuplicateWarning()" class="text-xs text-amber-700 hover:text-amber-900 font-bold px-2 py-0.5 rounded hover:bg-amber-100 transition-colors">✕ Đóng cảnh báo</button>
+                                </div>
+                                <p class="text-xs text-amber-800 mb-2.5">
+                                    Hệ thống kiểm tra thấy có ứng viên trùng <strong>Họ tên và Ngày tháng năm sinh</strong> với thông tin bạn vừa điền để tránh nộp lặp lại nhiều lần từ các nguồn khác nhau:
+                                </p>
+                                <div id="duplicateListContainer" class="space-y-2">
+                                    <!-- Danh sách ứng viên trùng lặp sẽ render tại đây -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="sm:col-span-2 grid grid-cols-2 gap-6">
@@ -2895,6 +2887,7 @@
                 if (result.success && result.translated) {
                     document.querySelector('input[name="TentiengTrung"]').value = result.translated;
                 }
+                checkDuplicateCandidate();
             } catch (error) {
                 console.error("Lỗi khi dịch tên:", error);
             }
@@ -6130,6 +6123,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 age--;
             }
             document.getElementById('displayAge').value = age;
+            checkDuplicateCandidate();
         }
 
         // Mutual exclusion: Hút thuốc <-> Không hút thuốc, Uống rượu <-> Không uống rượu
@@ -6394,16 +6388,10 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
 
                 const hoten = form.elements['Hoten']?.value?.trim() || '';
                 const ngaysinh = form.elements['Ngaysinh']?.value?.trim() || '';
-                const cccd = form.elements['CCCD']?.value?.trim() || '';
-                const phone = form.elements['Lienhe']?.value?.trim() || '';
                 const editingId = document.getElementById('editingRecordId')?.value || '';
 
-                // Điều kiện kiểm tra: Có (Họ tên >= 2 ký tự & Ngày sinh >= 4 ký tự) HOẶC (CCCD >= 6 ký tự) HOẶC (SĐT >= 8 ký tự)
-                const hasNameDob = (hoten.length >= 2 && ngaysinh.length >= 4);
-                const hasCccd = (cccd.length >= 6);
-                const hasPhone = (phone.length >= 8);
-
-                if (!hasNameDob && !hasCccd && !hasPhone) {
+                // Chỉ kiểm tra khi đã nhập cả Họ tên (ít nhất 2 ký tự) VÀ Ngày sinh (ít nhất 4 ký tự)
+                if (hoten.length < 2 || ngaysinh.length < 4) {
                     dismissDuplicateWarning();
                     return;
                 }
@@ -6415,10 +6403,9 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                         body: JSON.stringify({
                             hoten: hoten,
                             ngaysinh: ngaysinh,
-                            cccd: cccd,
-                            phone: phone,
                             exclude_id: editingId
-                        })
+                        }),
+                        credentials: 'same-origin'
                     });
                     const data = await res.json();
                     if (data.success && data.is_duplicate) {
@@ -6429,7 +6416,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 } catch (e) {
                     console.error('Lỗi khi kiểm tra trùng lặp:', e);
                 }
-            }, 300);
+            }, 250);
         }
 
         function renderDuplicateWarning(duplicates) {

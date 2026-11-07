@@ -1043,7 +1043,7 @@ def prepare_render_data(raw_data: dict, record=None) -> dict:
     data = {}
     fields = [
         'Maso', 'Hoten', 'TentiengTrung', 'Ngaysinh', 'Tuoi', 'Chieucao', 'Cannang', 
-        'Lienhe', 'CCCD', 'Noio', 'HotenBo', 'TB', 'HotenMe', 'TM', 'VoChong', 'VC', 
+        'Lienhe', 'Noio', 'HotenBo', 'TB', 'HotenMe', 'TM', 'VoChong', 'VC', 
         'Socon', 'Anhchiem', 'Xepthu', 'f48', 'N1', 'N2', 'N3', 'ndcv1', 'ndcv2', 'ndcv3', 
         'loi_binh_1', 'Honnhan', 'Hocvan', 'QG1', 'QG2', 'QG3', 'video_link_1', 'video_link_2'
     ]
