@@ -519,7 +519,6 @@
                     <span class="section-header-badge">1</span>
                     <div>
                         <h2 class="text-lg font-bold text-slate-800">Thông tin cá nhân</h2>
-                        <p class="text-xs text-slate-400">Các thông tin cơ bản phục vụ trích xuất hồ sơ song ngữ Việt - Trung</p>
                     </div>
                 </div>
 
@@ -583,7 +582,6 @@
                     <span class="section-header-badge">2</span>
                     <div>
                         <h2 class="text-lg font-bold text-slate-800">Sức khỏe &amp; Thói quen</h2>
-                        <p class="text-xs text-slate-400">Các chỉ số thể lực và tình trạng sức khỏe ứng viên</p>
                     </div>
                 </div>
 
@@ -711,7 +709,6 @@
                         <span class="section-header-badge">3</span>
                         <div>
                             <h2 class="text-lg font-bold text-slate-800">Kỹ năng</h2>
-                            <p class="text-xs text-slate-400">Chọn các kỹ năng tay nghề mà ứng viên đáp ứng</p>
                         </div>
                     </div>
                     <span id="skillCounterBadge" class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-extrabold px-3 py-1 rounded-full">
@@ -750,129 +747,131 @@
             </section>
 
             <!-- ══════════════════════════════════════════════════════════
-                 MỤC 4: KINH NGHIỆM LÀM VIỆC (ĐẦY ĐỦ 3 DÒNG) & ĐÁNH GIÁ
+                 MỤC 4: KINH NGHIỆM LÀM VIỆC & ĐÁNH GIÁ
                  ══════════════════════════════════════════════════════════ -->
             <section id="sec-4" class="form-section-card">
                 <div class="flex items-center gap-3 mb-6 pb-3 border-b border-gray-100">
                     <span class="section-header-badge">4</span>
                     <div>
                         <h2 class="text-lg font-bold text-slate-800">Kinh nghiệm làm việc &amp; Đánh giá</h2>
-                        <p class="text-xs text-slate-400">Lịch sử xuất khẩu lao động (đầy đủ 3 giai đoạn) và kinh nghiệm thực tế</p>
                     </div>
                 </div>
 
                 <div class="space-y-4">
                     <!-- DÒNG KINH NGHIỆM 1 (QG1, N1, ndcv1) -->
-                    <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
-                        <div class="text-[11px] font-extrabold text-cyan-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                            <span class="w-2 h-2 rounded-full bg-cyan-600"></span> Giai đoạn 1 (Gần nhất)
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 pb-4 border-b border-gray-100">
+                        <div class="col-span-1">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Quốc gia 1</label>
+                            <select class="w-full border-b-2 border-gray-200 py-1.5 text-xs font-bold focus:border-cyan-600 focus:outline-none cursor-pointer">
+                                <option value=""></option>
+                                <option selected>Đài Loan</option>
+                                <option>Nhật Bản</option>
+                                <option>Hàn Quốc</option>
+                                <option>Việt Nam</option>
+                                <option>Thái Lan</option>
+                                <option>Malaysia</option>
+                                <option>Trung Quốc</option>
+                                <option>Macau</option>
+                                <option>Trung Đông</option>
+                                <option>Nga</option>
+                            </select>
                         </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-sm">
-                            <div class="sm:col-span-1">
-                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Quốc gia 1</label>
-                                <select class="w-full border-b-2 border-gray-300 bg-transparent py-1.5 text-xs font-bold focus:border-cyan-600 focus:outline-none cursor-pointer">
-                                    <option value="">-- Chọn quốc gia --</option>
-                                    <option selected>Đài Loan</option>
-                                    <option>Nhật Bản</option>
-                                    <option>Hàn Quốc</option>
-                                    <option>Việt Nam</option>
-                                    <option>Thái Lan</option>
-                                    <option>Malaysia</option>
-                                    <option>Trung Quốc</option>
-                                </select>
-                            </div>
-                            <div class="sm:col-span-1">
-                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Thời gian (Năm)</label>
-                                <input type="text" value="2020 - 2023" class="w-full border-b-2 border-gray-300 bg-transparent py-1.5 text-xs font-semibold focus:border-cyan-600 focus:outline-none">
-                            </div>
-                            <div class="sm:col-span-2">
-                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Nội dung công việc 1</label>
-                                <input type="text" value="Thợ hàn kết cấu nhà xưởng thép tiền chế" class="w-full border-b-2 border-gray-300 bg-transparent py-1.5 text-xs font-semibold focus:border-cyan-600 focus:outline-none">
-                            </div>
+                        <div class="col-span-1">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Năm</label>
+                            <input type="text" value="2020 - 2023" class="w-full border-b-2 border-gray-200 py-1.5 text-xs font-semibold focus:border-cyan-600 focus:outline-none">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Công việc</label>
+                            <input type="text" value="Thợ hàn kết cấu nhà xưởng thép tiền chế" class="w-full border-b-2 border-gray-200 py-1.5 text-xs font-semibold focus:border-cyan-600 focus:outline-none">
                         </div>
                     </div>
 
                     <!-- DÒNG KINH NGHIỆM 2 (QG2, N2, ndcv2) -->
-                    <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
-                        <div class="text-[11px] font-extrabold text-cyan-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                            <span class="w-2 h-2 rounded-full bg-cyan-600"></span> Giai đoạn 2
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 pb-4 border-b border-gray-100">
+                        <div class="col-span-1">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Quốc gia 2</label>
+                            <select class="w-full border-b-2 border-gray-200 py-1.5 text-xs font-bold focus:border-cyan-600 focus:outline-none cursor-pointer">
+                                <option value=""></option>
+                                <option>Đài Loan</option>
+                                <option selected>Nhật Bản</option>
+                                <option>Hàn Quốc</option>
+                                <option>Việt Nam</option>
+                                <option>Thái Lan</option>
+                                <option>Malaysia</option>
+                                <option>Trung Quốc</option>
+                                <option>Macau</option>
+                                <option>Trung Đông</option>
+                                <option>Nga</option>
+                            </select>
                         </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-sm">
-                            <div class="sm:col-span-1">
-                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Quốc gia 2</label>
-                                <select class="w-full border-b-2 border-gray-300 bg-transparent py-1.5 text-xs font-bold focus:border-cyan-600 focus:outline-none cursor-pointer">
-                                    <option value="">-- Chọn quốc gia --</option>
-                                    <option>Đài Loan</option>
-                                    <option selected>Nhật Bản</option>
-                                    <option>Hàn Quốc</option>
-                                    <option>Việt Nam</option>
-                                    <option>Thái Lan</option>
-                                    <option>Malaysia</option>
-                                    <option>Trung Quốc</option>
-                                </select>
-                            </div>
-                            <div class="sm:col-span-1">
-                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Thời gian (Năm)</label>
-                                <input type="text" value="2017 - 2020" class="w-full border-b-2 border-gray-300 bg-transparent py-1.5 text-xs font-semibold focus:border-cyan-600 focus:outline-none">
-                            </div>
-                            <div class="sm:col-span-2">
-                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Nội dung công việc 2</label>
-                                <input type="text" value="Vận hành máy tiện cơ khí và gia công phay CNC" class="w-full border-b-2 border-gray-300 bg-transparent py-1.5 text-xs font-semibold focus:border-cyan-600 focus:outline-none">
-                            </div>
+                        <div class="col-span-1">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Năm</label>
+                            <input type="text" value="2017 - 2020" class="w-full border-b-2 border-gray-200 py-1.5 text-xs font-semibold focus:border-cyan-600 focus:outline-none">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Công việc 2</label>
+                            <input type="text" value="Vận hành máy tiện cơ khí và gia công phay CNC" class="w-full border-b-2 border-gray-200 py-1.5 text-xs font-semibold focus:border-cyan-600 focus:outline-none">
                         </div>
                     </div>
 
                     <!-- DÒNG KINH NGHIỆM 3 (QG3, N3, ndcv3) -->
-                    <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
-                        <div class="text-[11px] font-extrabold text-cyan-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                            <span class="w-2 h-2 rounded-full bg-cyan-600"></span> Giai đoạn 3
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 pb-4 border-b border-gray-100">
+                        <div class="col-span-1">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Quốc gia 3</label>
+                            <select class="w-full border-b-2 border-gray-200 py-1.5 text-xs font-bold focus:border-cyan-600 focus:outline-none cursor-pointer">
+                                <option value=""></option>
+                                <option>Đài Loan</option>
+                                <option>Nhật Bản</option>
+                                <option>Hàn Quốc</option>
+                                <option selected>Việt Nam</option>
+                                <option>Thái Lan</option>
+                                <option>Malaysia</option>
+                                <option>Trung Quốc</option>
+                                <option>Macau</option>
+                                <option>Trung Đông</option>
+                                <option>Nga</option>
+                            </select>
                         </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-sm">
-                            <div class="sm:col-span-1">
-                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Quốc gia 3</label>
-                                <select class="w-full border-b-2 border-gray-300 bg-transparent py-1.5 text-xs font-bold focus:border-cyan-600 focus:outline-none cursor-pointer">
-                                    <option value="">-- Chọn quốc gia --</option>
-                                    <option>Đài Loan</option>
-                                    <option>Nhật Bản</option>
-                                    <option>Hàn Quốc</option>
-                                    <option selected>Việt Nam</option>
-                                    <option>Thái Lan</option>
-                                    <option>Malaysia</option>
-                                    <option>Trung Quốc</option>
-                                </select>
-                            </div>
-                            <div class="sm:col-span-1">
-                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Thời gian (Năm)</label>
-                                <input type="text" value="2015 - 2017" class="w-full border-b-2 border-gray-300 bg-transparent py-1.5 text-xs font-semibold focus:border-cyan-600 focus:outline-none">
-                            </div>
-                            <div class="sm:col-span-2">
-                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Nội dung công việc 3</label>
-                                <input type="text" value="Công nhân lắp ráp linh kiện cơ khí động cơ" class="w-full border-b-2 border-gray-300 bg-transparent py-1.5 text-xs font-semibold focus:border-cyan-600 focus:outline-none">
-                            </div>
+                        <div class="col-span-1">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Năm</label>
+                            <input type="text" value="2015 - 2017" class="w-full border-b-2 border-gray-200 py-1.5 text-xs font-semibold focus:border-cyan-600 focus:outline-none">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Công việc 3</label>
+                            <input type="text" value="Công nhân lắp ráp linh kiện cơ khí động cơ" class="w-full border-b-2 border-gray-200 py-1.5 text-xs font-semibold focus:border-cyan-600 focus:outline-none">
                         </div>
                     </div>
 
-                    <!-- Ghi chú, lời bình -->
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ghi chú &amp; Lời bình đánh giá</label>
-                        <textarea rows="3" class="w-full border border-gray-200 rounded-xl p-3 text-xs text-slate-800 focus:border-cyan-600 focus:outline-none bg-slate-50" placeholder="Đánh giá thái độ, độ khéo tay, sức khỏe...">Ngoan ngoãn, chăm chỉ, tay nghề hàn tốt, chịu khó tăng ca. Sức khỏe tốt, hòa đồng với đồng nghiệp.</textarea>
+                    <!-- Ghi chú, Lời bình -->
+                    <div class="pt-2">
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Ghi chú, Lời bình</label>
+                        <textarea rows="3" class="w-full border-2 border-gray-200 rounded-xl p-3 text-sm focus:border-cyan-600 focus:outline-none h-24 bg-gray-50" placeholder="Đánh giá thái độ, độ khéo tay, sức khỏe...">Ngoan ngoãn, chăm chỉ, tay nghề hàn tốt, chịu khó tăng ca. Sức khỏe tốt, hòa đồng với đồng nghiệp.</textarea>
                     </div>
 
                     <!-- Link Video -->
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">🎬 Link Video kiểm tra tay nghề (Youtube / Drive)</label>
-                        <div class="space-y-2">
-                            <input type="url" value="https://youtu.be/test-tay-nghe-fct" placeholder="Link 1: https://youtu.be/..." class="w-full border-b-2 border-gray-200 bg-transparent py-1.5 text-xs text-slate-700 focus:border-cyan-600 focus:outline-none">
-                            <input type="url" placeholder="Link 2: https://youtu.be/... (không bắt buộc)" class="w-full border-b-2 border-gray-200 bg-transparent py-1.5 text-xs text-slate-700 focus:border-cyan-600 focus:outline-none">
-                        </div>
+                    <div class="mt-4">
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">
+                            🎬 Link video giới thiệu / kiểm tra tay nghề
+                        </label>
+                        <input type="url" value="https://youtu.be/test-tay-nghe-fct" placeholder="Link 1: https://youtu.be/..." class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-cyan-600 focus:outline-none mb-3">
+                        <input type="url" placeholder="Link 2: https://youtu.be/... (không bắt buộc)" class="w-full border-b-2 border-gray-200 py-2 text-sm focus:border-cyan-600 focus:outline-none">
                     </div>
 
                     <!-- Người phụ trách & Đối tác -->
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Người phụ trách &amp; Đối tác / Nguồn</label>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <input type="text" value="Nguyễn Văn Admin" class="w-full border-b-2 border-gray-200 bg-transparent py-1.5 text-xs text-slate-800 focus:border-cyan-600 focus:outline-none" placeholder="Tên nhân viên phụ trách">
-                            <input type="text" value="Nguồn Đài Trung" class="w-full border-b-2 border-gray-200 bg-transparent py-1.5 text-xs text-slate-800 focus:border-cyan-600 focus:outline-none" placeholder="Đối tác / Nguồn">
+                    <div class="mt-4">
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Người phụ trách &amp; Đối tác</label>
+                        <div class="flex gap-4">
+                            <div class="w-1/2">
+                                <label class="block text-[10px] text-slate-500 mb-1">Tên Nhân viên (NPT)</label>
+                                <select class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-cyan-600 focus:outline-none bg-blue-50/30 px-2 rounded-t-md">
+                                    <option value="">-- Chọn nhân viên --</option>
+                                    <option selected>Nguyễn Văn Admin</option>
+                                </select>
+                            </div>
+                            <div class="w-1/2">
+                                <label class="block text-[10px] text-slate-500 mb-1">Đối tác / Nguồn</label>
+                                <input type="text" value="Nguồn Đài Trung" class="w-full border-b-2 border-gray-200 py-1 text-sm focus:border-cyan-600 focus:outline-none bg-blue-50/30 px-2 rounded-t-md">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -886,7 +885,6 @@
                     <span class="section-header-badge">5</span>
                     <div>
                         <h2 class="text-lg font-bold text-slate-800">Tài liệu &amp; Giấy tờ</h2>
-                        <p class="text-xs text-slate-400">Kéo thả ảnh Hộ chiếu, CCCD, Giấy khám sức khỏe, Bằng lái...</p>
                     </div>
                 </div>
 
