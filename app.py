@@ -1602,7 +1602,11 @@ CẨM NANG HƯỚNG DẪN NGHIỆP VỤ CHI TIẾT TỪNG TÍNH NĂNG CỦA FCT 
        * Có thể bấm chọn file từ máy tính hoặc dùng phím tắt: Chụp màn hình/sao chép ảnh rồi bấm Ctrl+V trực tiếp vào khung ảnh.
        * Tải ảnh mã QR Line cá nhân để nhà máy/môi giới quét kết bạn phỏng vấn trực tiếp.
      + Bước 5 (Đính kèm hồ sơ pháp lý): Tải lên ảnh chụp Hộ chiếu, CCCD 2 mặt, Giấy khám sức khỏe, Phiếu lý lịch tư pháp số 2, Bằng cấp/Chứng chỉ.
-     + Bước 6 (Lưu trữ): Cuộn xuống cuối form và bấm nút "💾 Lưu Form" màu xanh dương. Hệ thống sẽ kiểm tra trùng mã số/CCCD và lưu an toàn vào cơ sở dữ liệu.
+     + Bước 6 (Lưu trữ siêu tốc & Phím tắt Ctrl + S):
+       * Cách 1 (Phím tắt nhanh nhất): Nhấn tổ hợp phím Ctrl + S (hoặc Cmd + S trên Mac) ở bất kỳ đâu trên form để Lưu mới (hoặc Cập nhật khi đang sửa) ngay lập tức mà không cần dùng chuột!
+       * Cách 2 (Nút Lưu trên đỉnh - Top Bar): Ngay trên đầu form (trên Mục 1) có sẵn nút "💾 Lưu Form" (hoặc "💾 Cập nhật" khi sửa). Rất tiện lợi khi chỉ sửa thông tin ở đầu hồ sơ (như họ tên, ngày sinh, CCCD) mà không cần cuộn chuột xuống dưới.
+       * Cách 3 (Nút Lưu dưới đáy - Bottom Bar): Sau khi điền đến cuối cùng (Mục 5 - Giấy tờ scan), nhấp nút "💾 Lưu Form" ở thanh công cụ dưới đáy.
+       * Toàn bộ thanh đen lơ lửng cũ đã được loại bỏ hoàn toàn, khu vực nhập liệu giữa form luôn thông thoáng 100% không bị che khuất.
      + Bước 7: Sau khi lưu, có thể bấm nút "🖨️ Xem & In" để kiểm tra bản in CV hoàn chỉnh.
 
 3. GHÉP ĐƠN HÀNG & THEO DÕI PHÂN BỔ:
@@ -1748,6 +1752,26 @@ def get_milo_fallback_response(user_msg: str) -> str:
             "- Bất kỳ lúc nào muốn quay về danh sách ban đầu, chỉ cần bấm nút đỏ **'✕ Xóa lọc'** ở góc phải thanh công cụ nhé anh/chị!"
         )
 
+    # 2.5 PHÍM TẮT CTRL+S & CƠ CHẾ LƯU FORM NHANH 2 ĐẦU
+    elif any(k in msg for k in ['ctrl', 'ctrl-s', 'ctrl+s', 'phím tắt', 'lưu nhanh', 'cách lưu', 'nút lưu', 'lưu form', 'sao lưu nhanh']):
+        return (
+            "Dạ, hệ thống FCT DAS V3.0 vừa được nâng cấp **Cơ chế Lưu Hồ Sơ Siêu Tốc & Bố Cục Nút 2 Đầu Thông Minh** cực kỳ tiện lợi ạ:\n\n"
+            "### 1. ⚡ Phím tắt nhanh `Ctrl + S` (hoặc `Cmd + S` trên Mac):\n"
+            "- Anh/chị có thể nhấn tổ hợp phím **Ctrl + S** (trên máy Windows) hoặc **Cmd + S** (trên máy Mac) **ở bất kỳ đâu trên form** khi đang nhập hoặc chỉnh sửa hồ sơ.\n"
+            "- Hệ thống sẽ tự động bắt lệnh và thực hiện **Lưu mới** (hoặc **Cập nhật**) ngay tức khắc mà anh/chị không cần dùng chuột rê tìm nút bấm!\n"
+            "- Lệnh `Ctrl + S` đã được lập trình chặn triệt để popup 'Lưu trang web' của trình duyệt, đảm bảo trải nghiệm liền mạch 100%.\n\n"
+            "### 2. 🔝 Nút Lưu/Cập nhật ngay trên đỉnh form (Top Action Bar):\n"
+            "- Nằm ngay phía trên Mục 1 (cạnh nút *'Quay lại Quản lý Hồ sơ'* và *'Nạp backup'*).\n"
+            "- Khi anh/chị chỉ cần sửa một vài thông tin ở đầu form (như họ tên, ngày sinh, CCCD, chiều cao...), chỉ cần bấm nút **'💾 Lưu Form'** (hoặc **'💾 Cập nhật'**) ngay trên đỉnh mà **không cần phải cuộn chuột xuống tận đáy form**!\n\n"
+            "### 3. 🔻 Nút Lưu dưới đáy form (Bottom Action Bar):\n"
+            "- Nằm ngay sau Mục 5 (phần tải ảnh giấy tờ scan).\n"
+            "- Khi anh/chị nhập liệu một mạch đến phần tài liệu cuối cùng, cụm nút bấm đầy đủ (*'Lưu Form'*, *'Xem & In'*, *'Tải HTML'*) đã chờ sẵn ngay bên dưới để thao tác ngay mà không cần cuộn ngược lên đỉnh.\n\n"
+            "### 4. ✨ Không gian nhập liệu 100% thông thoáng:\n"
+            "- Thanh tác vụ đáy màu đen lơ lửng trước đây đã được loại bỏ hoàn toàn.\n"
+            "- Các mục giữa form (Mục 2, Mục 3 - Kỹ năng, Mục 4 - Kinh nghiệm & Người phụ trách) luôn sạch đẹp, rõ ràng, không bao giờ bị bất kỳ thanh nổi nào che khuất các ô nhập liệu nữa ạ!\n\n"
+            "[ACTION:OPEN_FORM]"
+        )
+
     # 3. NHẬP HỒ SƠ ỨNG VIÊN MỚI
     elif any(k in msg for k in ['nhập hồ sơ', 'tạo mới', 'thêm mới', 'thêm hồ sơ', 'nhập ứng viên', 'hồ sơ mới', 'tạo form', 'điền form', 'nhập form', 'mở form', 'làm form']):
         return (
@@ -1764,8 +1788,9 @@ def get_milo_fallback_response(user_msg: str) -> str:
             "- Tải ảnh mã QR Line cá nhân để nhà máy Đài Loan có thể quét kết bạn phỏng vấn trực tuyến.\n\n"
             "### Bước 5: Đính kèm hồ sơ pháp lý\n"
             "- Tải ảnh chụp rõ nét của: Hộ chiếu, CCCD 2 mặt, Giấy khám sức khỏe (KSK), Phiếu Lý lịch tư pháp số 2 (LLTP2), Bằng cấp / Chứng chỉ nghề.\n\n"
-            "### Bước 6: Lưu trữ an toàn\n"
-            "- Cuộn xuống dưới cùng và bấm nút **'💾 Lưu Form'** màu xanh dương.\n"
+            "### Bước 6: Lưu trữ siêu tốc & Phím tắt Ctrl + S\n"
+            "- **Phím tắt nhanh nhất**: Nhấn **Ctrl + S** (hoặc **Cmd + S** trên Mac) ở bất kỳ đâu trên form để lưu ngay lập tức!\n"
+            "- **Nút Lưu ở cả 2 đầu**: Có sẵn nút **'💾 Lưu Form'** (hoặc **'💾 Cập nhật'**) ở cả **trên đỉnh form (Mục 1)** và **dưới đáy form (sau Mục 5)** giúp anh/chị lưu tức thì mà không cần cuộn chuột.\n"
             "- Hệ thống sẽ tự động kiểm tra trùng lặp số CCCD và mã số trước khi lưu vào cơ sở dữ liệu an toàn.\n\n"
             "[ACTION:OPEN_FORM]"
         )
@@ -1915,14 +1940,15 @@ def get_milo_fallback_response(user_msg: str) -> str:
         return (
             "Dạ, em là **Daisy** - Nữ trợ lý Hành chính ảo của Hệ thống Quản trị Nhân sự FCT!\n\n"
             "Em đã được đào tạo nghiệp vụ chuyên sâu và luôn sẵn sàng hỗ trợ anh/chị cặn kẽ về mọi tính năng trên hệ thống:\n\n"
-            "1. 🔍 **Tìm kiếm & 7 cách lọc hồ sơ đa chiều** (Lọc tên, mã số, tay nghề, kinh nghiệm, NPT, năm, tiền tố MD/FD/KD)\n"
-            "2. ➕ **Quy trình nhập hồ sơ mới** (Tự động dịch tiếng Trung Phồn Thể, dán ảnh Ctrl+V, đính kèm giấy tờ pháp lý)\n"
-            "3. 💼 **Ghép đơn hàng & Phân bổ công xưởng** (Ghép hàng loạt bằng checkbox hoặc dán danh sách mã số từ Zalo)\n"
-            "4. 🏆 **Quản lý danh sách trúng tuyển & Tiến độ 5 giai đoạn** (Quy trình Kanban: Gom hồ sơ ➔ Trình cục ➔ Làm Visa ➔ Có Visa ➔ Xuất cảnh)\n"
-            "5. ⚠️ **Hệ thống cảnh báo hạn giấy tờ** (Theo dõi Hộ chiếu, CCCD, KSK, LLTP2 với mã màu Đỏ/Vàng/Xanh)\n"
-            "6. 🏗️ **Cấu hình Nhà máy, Môi giới & Quota** (Kiểm soát hạn ngạch Tờ thẩm định & Tờ Visa, chống vượt slots)\n"
-            "7. 📊 **Xuất Excel có tích hợp biểu đồ** (Báo cáo tự động dạng cột BarChart và tròn PieChart)\n"
-            "8. 🖨️ **Xem & In ấn CV chuyên nghiệp** (Form tiếng Trung Ver 2026, in PDF hàng loạt Streaming, tải ZIP trọn gói)\n\n"
+            "1. ⚡ **Lưu form siêu tốc & Phím tắt Ctrl + S** (Lưu/cập nhật tức thì không cần chuột, nút Lưu tiện lợi ở cả đỉnh & đáy form)\n"
+            "2. 🔍 **Tìm kiếm & 7 cách lọc hồ sơ đa chiều** (Lọc tên, mã số, tay nghề, kinh nghiệm, NPT, năm, tiền tố MD/FD/KD)\n"
+            "3. ➕ **Quy trình nhập hồ sơ mới** (Tự động dịch tiếng Trung Phồn Thể, dán ảnh Ctrl+V, đính kèm giấy tờ pháp lý)\n"
+            "4. 💼 **Ghép đơn hàng & Phân bổ công xưởng** (Ghép hàng loạt bằng checkbox hoặc dán danh sách mã số từ Zalo)\n"
+            "5. 🏆 **Quản lý danh sách trúng tuyển & Tiến độ 5 giai đoạn** (Quy trình Kanban: Gom hồ sơ ➔ Trình cục ➔ Làm Visa ➔ Có Visa ➔ Xuất cảnh)\n"
+            "6. ⚠️ **Hệ thống cảnh báo hạn giấy tờ** (Theo dõi Hộ chiếu, CCCD, KSK, LLTP2 với mã màu Đỏ/Vàng/Xanh)\n"
+            "7. 🏗️ **Cấu hình Nhà máy, Môi giới & Quota** (Kiểm soát hạn ngạch Tờ thẩm định & Tờ Visa, chống vượt slots)\n"
+            "8. 📊 **Xuất Excel có tích hợp biểu đồ** (Báo cáo tự động dạng cột BarChart và tròn PieChart)\n"
+            "9. 🖨️ **Xem & In ấn CV chuyên nghiệp** (Form tiếng Trung Ver 2026, in PDF hàng loạt Streaming, tải ZIP trọn gói)\n\n"
             "🎯 **Đặc biệt**: Anh/chị hãy bấm sang tab **'🎯 Cầm tay chỉ việc'** ở khung bên cạnh để em trực tiếp dẫn anh/chị đi qua từng nút bấm trên màn hình nhé!\n\n"
             "[ACTION:START_TOUR]"
         )

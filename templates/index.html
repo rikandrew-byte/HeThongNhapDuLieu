@@ -2638,6 +2638,26 @@
             });
         }
 
+        // ── Phím tắt Ctrl + S (hoặc Cmd + S trên Mac) để Lưu / Cập nhật form siêu tốc ──
+        window.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
+                // Kiểm tra xem bảng quản lý lịch sử có đang mở hay không
+                const historyModal = document.getElementById('historyModal');
+                const isHistoryOpen = historyModal && historyModal.style.display !== 'none';
+                
+                // Chỉ kích hoạt khi đang ở màn hình điền/sửa form (không mở bảng lịch sử)
+                if (!isHistoryOpen) {
+                    e.preventDefault(); // Chặn triệt để popup "Lưu trang web" (Save As) mặc định của trình duyệt
+                    const editingId = document.getElementById('editingRecordId')?.value;
+                    if (editingId) {
+                        handleSubmit('save'); // Đang ở chế độ chỉnh sửa -> Cập nhật
+                    } else {
+                        handleSubmit('save_only'); // Đang ở chế độ tạo mới -> Lưu Form
+                    }
+                }
+            }
+        });
+
         // --- Xử lý Kéo Thả và Dán Ảnh ---
         document.addEventListener('DOMContentLoaded', () => {
             const dropzone = document.getElementById('dropzone');
@@ -8384,6 +8404,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
 
             <!-- Quick Suggestions -->
             <div class="milo-chips-wrapper">
+                <div class="milo-chip" onclick="sendMiloQuickPrompt('Hướng dẫn lưu hồ sơ nhanh và phím tắt Ctrl-S?')">⚡ Lưu nhanh &amp; Ctrl-S</div>
                 <div class="milo-chip" onclick="sendMiloQuickPrompt('Có những cách lọc form và tìm kiếm hồ sơ như thế nào?')">🔍 Cách lọc hồ sơ</div>
                 <div class="milo-chip" onclick="sendMiloQuickPrompt('Hướng dẫn cách nhập hồ sơ mới và tự động dịch tiếng Trung?')">📝 Nhập hồ sơ mới</div>
                 <div class="milo-chip" onclick="sendMiloQuickPrompt('Cách ghép đơn hàng và phân bổ ứng viên?')">💼 Ghép đơn hàng</div>
@@ -8674,8 +8695,8 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 },
                 {
                     target: '.btn-save-action',
-                    title: '💾 Lưu Form Vào Cơ Sở Dữ Liệu',
-                    text: 'Sau khi kiểm tra thông tin, bấm nút <strong>💾 Lưu Form</strong> ở thanh công cụ dưới đáy. Dữ liệu sẽ được lưu an toàn vào cơ sở dữ liệu Neon PostgreSQL và tự động tạo mã số định danh.',
+                    title: '💾 Lưu Form Siêu Tốc (Phím tắt: Ctrl + S)',
+                    text: 'Sau khi điền hoặc sửa thông tin, anh/chị có thể lưu cực nhanh bằng các cách:<br>• <strong>Phím tắt nhanh nhất:</strong> Nhấn tổ hợp phím <strong>Ctrl + S</strong> (hoặc <strong>Cmd + S</strong> trên Mac) bất cứ lúc nào để lưu ngay lập tức!<br>• <strong>Bố cục nút 2 đầu:</strong> Bấm nút <strong>💾 Lưu Form</strong> (hoặc <strong>💾 Cập nhật</strong>) ở ngay trên đỉnh Mục 1 hoặc dưới đáy form sau Mục 5 mà không cần cuộn chuột.<br>• Toàn bộ màn hình giữa form luôn thông thoáng 100%, không còn thanh đen lơ lửng che chữ.',
                     before: () => {}
                 },
                 {
