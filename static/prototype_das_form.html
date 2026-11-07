@@ -568,8 +568,55 @@
                         </div>
                     </div>
                     <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nơi ở (63 Tỉnh Thành)</label>
+                        <select class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm text-slate-800 focus:border-cyan-600 focus:outline-none cursor-pointer">
+                            <option value="Hà Nội" selected>Hà Nội (河內)</option>
+                            <option value="Hải Phòng">Hải Phòng (海防)</option>
+                            <option value="Đà Nẵng">Đà Nẵng (峴港)</option>
+                            <option value="TP Hồ Chí Minh">TP Hồ Chí Minh (胡志明市)</option>
+                            <option value="Bắc Ninh">Bắc Ninh (北寧)</option>
+                            <option value="Hải Dương">Hải Dương (海陽)</option>
+                            <option value="Nghệ An">Nghệ An (乂安)</option>
+                            <option value="Thanh Hóa">Thanh Hóa (清化)</option>
+                        </select>
+                    </div>
+                    <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Số điện thoại liên hệ</label>
                         <input type="tel" value="0987 654 321" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm text-slate-800 focus:border-cyan-600 focus:outline-none">
+                    </div>
+
+                    <!-- ẢNH CHÂN DUNG -->
+                    <div class="col-span-1">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ảnh chân dung</label>
+                        <div class="relative">
+                            <div id="dropzone" class="w-full border-2 border-dashed border-gray-300 rounded-xl p-3 text-center cursor-pointer hover:border-cyan-500 transition-colors relative h-36 flex flex-col items-center justify-center bg-gray-50 overflow-hidden">
+                                <input type="file" id="photoInput" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="handlePhotoUpload(event)">
+                                <div id="dropzoneText" class="text-xs text-gray-400 hidden">
+                                    <span class="text-cyan-600 font-semibold">Chọn ảnh</span>, kéo thả hoặc nhấn <span class="text-cyan-600 font-semibold">Ctrl+V</span> để dán
+                                </div>
+                                <img id="photoPreview" class="absolute inset-0 w-full h-full object-contain bg-white z-0" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop&q=80" alt="Preview">
+                            </div>
+                            <div class="absolute top-1.5 right-1.5 z-20 flex gap-1">
+                                <button id="clearPhotoBtn" type="button" class="bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow" title="Xóa ảnh" onclick="clearPhoto()">✕</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- QR CODE LINE -->
+                    <div class="col-span-1">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">QR Code LINE</label>
+                        <div class="relative">
+                            <div id="qrDropzone" class="w-full border-2 border-dashed border-gray-300 rounded-xl p-3 text-center cursor-pointer hover:border-green-500 transition-colors relative h-36 flex flex-col items-center justify-center bg-gray-50 overflow-hidden">
+                                <input type="file" id="qrInput" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="handleQrUpload(event)">
+                                <div id="qrDropzoneText" class="text-xs text-gray-400 hidden">
+                                    <span class="text-green-600 font-semibold">Chọn ảnh QR</span> LINE — kéo thả hoặc Ctrl+V
+                                </div>
+                                <img id="qrPreview" class="absolute inset-0 w-full h-full object-contain bg-white z-0" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://line.me/ti/p/~fct_nguyenvanan" alt="QR Preview">
+                            </div>
+                            <div class="absolute top-1.5 right-1.5 z-20 flex gap-1">
+                                <button id="clearQrBtn" type="button" class="bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow" title="Xóa QR" onclick="clearQr()">✕</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -1150,7 +1197,58 @@
             document.getElementById('selectedSkillCount').textContent = count;
         }
 
-        // ── 7. Giả lập Thêm ảnh vào Section 5 ──
+        // ── 7. Xử lý Ảnh Chân Dung & QR Code LINE ──
+        function handlePhotoUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const img = document.getElementById('photoPreview');
+                img.src = evt.target.result;
+                img.classList.remove('hidden');
+                document.getElementById('dropzoneText').classList.add('hidden');
+                document.getElementById('clearPhotoBtn').classList.remove('hidden');
+                showToast('📸 Đã nạp ảnh chân dung ứng viên!');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearPhoto() {
+            const img = document.getElementById('photoPreview');
+            img.src = '';
+            img.classList.add('hidden');
+            document.getElementById('dropzoneText').classList.remove('hidden');
+            document.getElementById('clearPhotoBtn').classList.add('hidden');
+            document.getElementById('photoInput').value = '';
+            showToast('🗑️ Đã xóa ảnh chân dung');
+        }
+
+        function handleQrUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const img = document.getElementById('qrPreview');
+                img.src = evt.target.result;
+                img.classList.remove('hidden');
+                document.getElementById('qrDropzoneText').classList.add('hidden');
+                document.getElementById('clearQrBtn').classList.remove('hidden');
+                showToast('📱 Đã nạp mã QR LINE!');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearQr() {
+            const img = document.getElementById('qrPreview');
+            img.src = '';
+            img.classList.add('hidden');
+            document.getElementById('qrDropzoneText').classList.remove('hidden');
+            document.getElementById('clearQrBtn').classList.add('hidden');
+            document.getElementById('qrInput').value = '';
+            showToast('🗑️ Đã xóa mã QR LINE');
+        }
+
+        // ── 8. Giả lập Thêm ảnh vào Section 5 ──
         function mockAddPhoto() {
             const grid = document.getElementById('mockPhotoGrid');
             const newCard = document.createElement('div');
@@ -1164,7 +1262,7 @@
             showToast('📸 Đã thêm ảnh mới vào danh sách!');
         }
 
-        // ── 8. Mobile Keyboard-Aware: Tự động ẩn Sticky Footer khi mở bàn phím ──
+        // ── 9. Mobile Keyboard-Aware: Tự động ẩn Sticky Footer khi mở bàn phím ──
         const inputs = document.querySelectorAll('input, select, textarea');
         const footer = document.getElementById('actionFooter');
         inputs.forEach(input => {
