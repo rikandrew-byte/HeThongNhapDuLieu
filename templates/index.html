@@ -1032,7 +1032,7 @@
                         </div>
                         <span id="sidebarTotalCount" class="font-bold text-cyan-700 bg-cyan-50 rounded-full" style="font-size: 13px; padding: 3px 8px;">0</span>
                     </div>
-                    <div onclick="switchHistoryTab('analytics')" class="flex items-center justify-between bg-white hover:bg-teal-50/50 border border-slate-100 hover:border-teal-300 rounded-xl shadow-sm cursor-pointer transition-all" style="padding: 13px;" title="Xem Phân tích Thống kê & Tỷ lệ chuyển đổi">
+                    <div onclick="switchHistoryTab('passed')" class="flex items-center justify-between bg-white hover:bg-teal-50/50 border border-slate-100 hover:border-teal-300 rounded-xl shadow-sm cursor-pointer transition-all" style="padding: 13px;" title="Xem Danh sách trúng tuyển">
                         <div class="flex items-center gap-2">
                             <span style="font-size: 16px;">🏆</span>
                             <span class="font-semibold text-slate-600" style="font-size: 13px;">Đã trúng tuyển</span>
@@ -1045,14 +1045,6 @@
                             <span class="font-semibold text-slate-600" style="font-size: 13px;">Đơn hàng hiện tại</span>
                         </div>
                         <span id="sidebarJobsCount" class="font-bold text-amber-600 bg-amber-50 rounded-full" style="font-size: 13px; padding: 3px 8px;">0</span>
-                    </div>
-                    <!-- Quick Jump to Pipeline Analytics -->
-                    <div onclick="switchHistoryTab('analytics')" class="flex items-center justify-between bg-gradient-to-r from-cyan-50 to-blue-50 hover:from-cyan-100 hover:to-blue-100 border border-cyan-200/90 rounded-xl shadow-sm cursor-pointer transition-all" style="padding: 11px 13px;" title="Mở bảng Thống kê Chuyên sâu & Năng lực NPT">
-                        <div class="flex items-center gap-2">
-                            <span style="font-size: 15px;">📊</span>
-                            <span class="font-bold text-cyan-800" style="font-size: 12.5px;">Phân tích Pipeline</span>
-                        </div>
-                        <span class="text-cyan-700 font-extrabold" style="font-size: 13px;">→</span>
                     </div>
                     <div onclick="openSystemSettingsModal()" class="flex items-center justify-between bg-white border border-slate-100 hover:border-cyan-300 hover:bg-cyan-50/40 transition-all rounded-xl shadow-sm cursor-pointer" style="padding: 13px;" title="Mở Cài đặt hệ thống & Giám sát tài nguyên">
                         <div class="flex items-center gap-2">
@@ -1677,11 +1669,10 @@
                                     <th style="padding:10px 14px; text-align:center;">Đã hủy</th>
                                     <th style="padding:10px 14px; text-align:center;">Đang xử lý</th>
                                     <th style="padding:10px 14px; text-align:center;">Đã xuất cảnh</th>
-                                    <th style="padding:10px 14px; text-align:center;">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody id="nptLeaderboardBody">
-                                <tr><td colspan="9" style="padding:20px; text-align:center; color:#94a3b8;">Đang tải dữ liệu xếp hạng...</td></tr>
+                                <tr><td colspan="8" style="padding:20px; text-align:center; color:#94a3b8;">Đang tải dữ liệu xếp hạng...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -1707,11 +1698,10 @@
                                     <th style="padding:10px 14px; min-width:160px;">Tỉ lệ trúng</th>
                                     <th style="padding:10px 14px; text-align:center;">Đã xuất cảnh</th>
                                     <th style="padding:10px 14px; text-align:center;">Tình trạng đơn</th>
-                                    <th style="padding:10px 14px; text-align:center;">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody id="jobOrdersFulfillmentBody">
-                                <tr><td colspan="8" style="padding:20px; text-align:center; color:#94a3b8;">Đang tải tiến độ đơn hàng...</td></tr>
+                                <tr><td colspan="7" style="padding:20px; text-align:center; color:#94a3b8;">Đang tải tiến độ đơn hàng...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -3948,7 +3938,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             if (tbodyNpt) {
                 const list = data.npt_leaderboard || [];
                 if (list.length === 0) {
-                    tbodyNpt.innerHTML = '<tr><td colspan="9" style="padding:20px; text-align:center; color:#94a3b8;">Chưa có dữ liệu chuyên viên.</td></tr>';
+                    tbodyNpt.innerHTML = '<tr><td colspan="8" style="padding:20px; text-align:center; color:#94a3b8;">Chưa có dữ liệu chuyên viên.</td></tr>';
                 } else {
                     let html = '';
                     let rankCount = 1;
@@ -4020,11 +4010,6 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                                 <td style="padding:12px 14px; text-align:center;">${cancelBadge}</td>
                                 <td style="padding:12px 14px; text-align:center; font-weight:600; color:#475569;">${item.in_progress}</td>
                                 <td style="padding:12px 14px; text-align:center; font-weight:800; color:#0891b2;">✈️ ${item.exported}</td>
-                                <td style="padding:12px 14px; text-align:center;">
-                                    <button type="button" onclick="filterCandidatesByStaff('${escapeHtml(item.staff)}')" class="px-2.5 py-1 text-xs font-bold text-cyan-700 bg-cyan-50 hover:bg-cyan-100 border border-cyan-200 rounded-lg shadow-sm transition-all" title="Lọc toàn bộ hồ sơ của ${escapeHtml(item.staff)}">
-                                        🔍 Xem hồ sơ
-                                    </button>
-                                </td>
                             </tr>
                         `;
 
@@ -4032,7 +4017,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                         if (hasSubs) {
                             html += `
                                 <tr id="${safeId}" style="display:none; background:#f8fafc; border-bottom:1px solid #e2e8f0;">
-                                    <td colspan="9" style="padding:10px 14px 14px 40px;">
+                                    <td colspan="8" style="padding:10px 14px 14px 40px;">
                                         <div style="font-size:11.5px; font-weight:800; color:#475569; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
                                             <span>📂</span> Chi tiết nguồn đối tác cấp dưới của <b>${escapeHtml(item.staff)}</b>:
                                         </div>
@@ -4065,7 +4050,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             if (tbodyJobs) {
                 const orders = data.order_stats || [];
                 if (orders.length === 0) {
-                    tbodyJobs.innerHTML = '<tr><td colspan="8" style="padding:20px; text-align:center; color:#94a3b8;">Chưa có dữ liệu đơn hàng.</td></tr>';
+                    tbodyJobs.innerHTML = '<tr><td colspan="7" style="padding:20px; text-align:center; color:#94a3b8;">Chưa có dữ liệu đơn hàng.</td></tr>';
                 } else {
                     let html = '';
                     orders.forEach((o, idx) => {
@@ -4102,11 +4087,6 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                                 </td>
                                 <td style="padding:12px 14px; text-align:center; font-weight:750; color:#0891b2;">✈️ ${o.exported}</td>
                                 <td style="padding:12px 14px; text-align:center;">${statusBadge}</td>
-                                <td style="padding:12px 14px; text-align:center;">
-                                    <button type="button" onclick="filterCandidatesByJob('${escapeHtml(o.order_name)}')" class="px-2.5 py-1 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg shadow-sm transition-all" title="Lọc ứng viên thuộc đơn ${escapeHtml(o.order_name)}">
-                                        💼 Xem hồ sơ
-                                    </button>
-                                </td>
                             </tr>
                         `;
                     });
