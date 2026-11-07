@@ -11,13 +11,15 @@
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
         }
+        html {
+            scroll-behavior: smooth;
+        }
         body {
             font-family: 'Inter', sans-serif;
             background: #f1f5f9;
             color: #0f172a;
             margin: 0;
             padding: 0;
-            overflow-x: hidden;
         }
         h1, h2, h3, h4, .font-heading {
             font-family: 'Outfit', sans-serif;
@@ -29,7 +31,9 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
         ::-webkit-scrollbar-thumb:hover { background: #0891b2; }
 
-        /* ── Khung Giả Lập Màn Hình (Device Simulator) ── */
+        /* ═══════════════════════════════════════════════════════════
+           1. THANH ĐIỀU KHIỂN GIẢ LẬP TRÊN LAPTOP (SIMULATOR BAR)
+           ═══════════════════════════════════════════════════════════ */
         .simulator-bar {
             background: #0f172a;
             color: #f8fafc;
@@ -38,11 +42,13 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            font-size: 13px;
             position: sticky;
             top: 0;
+            left: 0;
+            right: 0;
             z-index: 100;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            font-size: 13px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.25);
         }
         .simulator-mode-btn {
             background: #1e293b;
@@ -57,6 +63,7 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            touch-action: manipulation;
         }
         .simulator-mode-btn:hover,
         .simulator-mode-btn.active {
@@ -66,60 +73,54 @@
             box-shadow: 0 0 10px rgba(8,145,178,0.4);
         }
 
-        /* Khung chứa giao diện form chính */
-        #viewportWrapper {
-            transition: max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
-            margin: 0 auto;
-            background: #ffffff;
-            min-height: calc(100vh - 45px);
-            position: relative;
-        }
-        #viewportWrapper.mode-desktop {
-            max-width: 100%;
-            box-shadow: none;
-        }
-        #viewportWrapper.mode-mobile {
-            max-width: 390px;
-            margin: 20px auto;
-            border-radius: 36px;
-            border: 10px solid #1e293b;
-            box-shadow: 0 25px 60px -15px rgba(0,0,0,0.3);
-            min-height: 844px;
-            height: 844px;
-            overflow-y: auto;
-        }
-
-        /* ── Sticky Stepper Navigation ── */
+        /* ═══════════════════════════════════════════════════════════
+           2. THANH STEPPER TABS (NẰM TRONG FORM / KHUNG MÁY)
+           ═══════════════════════════════════════════════════════════ */
         .sticky-stepper-bar {
-            position: sticky;
-            top: 42px; /* Luôn dính ngay dưới thanh simulator 42px trên Desktop */
-            z-index: 80;
-            background: rgba(255, 255, 255, 0.97);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            border-bottom: 1.5px solid #cbd5e1;
-            padding: 9px 16px;
             display: flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 4px 15px rgba(8, 145, 178, 0.08);
             overflow-x: auto;
             scrollbar-width: none;
             -webkit-overflow-scrolling: touch;
         }
         .sticky-stepper-bar::-webkit-scrollbar { display: none; }
 
-        /* Khi ở khung giả lập iPhone */
+        /* Ở chế độ Desktop: Dính ngay dưới thanh simulator 42px */
+        #viewportWrapper.mode-desktop .sticky-stepper-bar {
+            position: sticky;
+            top: 42px;
+            z-index: 70;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-bottom: 1.5px solid #cbd5e1;
+            padding: 9px 16px;
+            box-shadow: 0 4px 15px rgba(8, 145, 178, 0.08);
+        }
+
+        /* Ở chế độ Giả Lập Mobile: NẰM GỌN TRONG KHUNG IPHONE! Dính ở đỉnh iPhone */
         #viewportWrapper.mode-mobile .sticky-stepper-bar {
+            position: sticky;
             top: 0 !important;
+            left: 0;
+            right: 0;
+            z-index: 70;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-bottom: 1.5px solid #cbd5e1;
+            padding: 8px 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
             border-top-left-radius: 26px;
             border-top-right-radius: 26px;
         }
 
+        /* Nút viên thuốc (Tab) */
         .step-pill-btn {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 7px;
             padding: 7px 14px;
             border-radius: 999px;
             background: #f1f5f9;
@@ -156,42 +157,72 @@
             border-color: #bae6fd;
         }
         .step-pill-btn.active {
-            background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
-            color: #ffffff;
-            border-color: #0891b2;
-            box-shadow: 0 4px 12px rgba(8, 145, 178, 0.25);
+            background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%) !important;
+            color: #ffffff !important;
+            border-color: #0891b2 !important;
+            box-shadow: 0 4px 12px rgba(8, 145, 178, 0.3) !important;
             transform: scale(1.02);
         }
         .step-pill-btn.active .step-num {
-            background: #ffffff;
-            color: #0891b2;
+            background: #ffffff !important;
+            color: #0891b2 !important;
         }
 
-        /* ── Sticky Action Footer ── */
+        /* ═══════════════════════════════════════════════════════════
+           3. KHUNG VIEWPORT (DESKTOP HOẶC KHUNG IPHONE)
+           ═══════════════════════════════════════════════════════════ */
+        #viewportWrapper {
+            transition: max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
+            margin: 0 auto;
+            position: relative;
+        }
+        #viewportWrapper.mode-desktop {
+            max-width: 100%;
+            box-shadow: none;
+            background: transparent;
+        }
+        #viewportWrapper.mode-mobile {
+            max-width: 390px;
+            margin: 20px auto;
+            border-radius: 36px;
+            border: 10px solid #1e293b;
+            box-shadow: 0 25px 60px -15px rgba(0,0,0,0.35);
+            min-height: 844px;
+            height: 844px;
+            overflow-y: auto;
+            background: #ffffff;
+            scroll-behavior: smooth;
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+           4. STICKY ACTION FOOTER (THANH TÁC VỤ ĐÁY)
+           ═══════════════════════════════════════════════════════════ */
         .sticky-action-footer {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
             z-index: 40;
-            background: rgba(255, 255, 255, 0.94);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(14px);
             -webkit-backdrop-filter: blur(14px);
-            border-top: 1px solid #e2e8f0;
+            border-top: 1.5px solid #cbd5e1;
             padding: 12px 24px;
             padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));
-            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
             display: flex;
             align-items: center;
             justify-content: space-between;
             transition: transform 0.25s ease-out, opacity 0.25s ease-out;
         }
-        /* Trong chế độ giả lập mobile thì footer gắn vào đáy khung máy */
+        /* Trong chế độ giả lập mobile thì footer gắn vào đáy khung iPhone */
         #viewportWrapper.mode-mobile .sticky-action-footer {
             position: sticky;
             bottom: 0;
             left: 0;
             right: 0;
+            border-bottom-left-radius: 26px;
+            border-bottom-right-radius: 26px;
         }
         .sticky-action-footer.keyboard-hidden {
             transform: translateY(110%);
@@ -199,9 +230,8 @@
             pointer-events: none;
         }
 
-        /* ── Offset Cuộn Cho Các Section ── */
+        /* ── Thẻ Card Section ── */
         .form-section-card {
-            scroll-margin-top: 115px; /* Offset trên Desktop: 42px thanh đen + 50px thanh tab + 23px khoảng thở */
             background: #ffffff;
             border: 1px solid #e2e8f0;
             border-radius: 20px;
@@ -209,85 +239,216 @@
             box-shadow: 0 4px 16px -2px rgba(8, 145, 178, 0.04);
             transition: border-color 0.2s, box-shadow 0.2s;
         }
-        .form-section-card:hover {
-            border-color: #cbd5e1;
-            box-shadow: 0 6px 24px -4px rgba(8, 145, 178, 0.08);
+        #viewportWrapper.mode-desktop .form-section-card {
+            scroll-margin-top: 110px;
         }
         #viewportWrapper.mode-mobile .form-section-card {
-            scroll-margin-top: 65px !important;
+            scroll-margin-top: 60px;
+            padding: 16px;
+            border-radius: 16px;
+        }
+
+        .section-header-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+            color: #ffffff;
+            font-family: 'Outfit', sans-serif;
+            font-size: 15px;
+            font-weight: 800;
+            box-shadow: 0 4px 10px rgba(8,145,178,0.25);
+            flex-shrink: 0;
+        }
+
+        /* ── Segmented Control / Pill Toggle (Sức khỏe) ── */
+        .pill-switch {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+            touch-action: manipulation;
+        }
+        .pill-switch:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+        .pill-switch.checked {
+            background: #ecfeff;
+            border-color: #06b6d4;
+            box-shadow: 0 2px 8px rgba(6, 182, 212, 0.15);
+        }
+        .pill-switch input[type="checkbox"] { display: none; }
+        .pill-switch-indicator {
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            background: #ffffff;
+            border: 2px solid #cbd5e1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+            color: transparent;
+            font-size: 13px;
+            font-weight: 900;
+            flex-shrink: 0;
+        }
+        .pill-switch.checked .pill-switch-indicator {
+            background: #0891b2;
+            border-color: #0891b2;
+            color: #ffffff;
+            transform: scale(1.05);
+        }
+        .pill-switch.caution.checked {
+            background: #fef2f2;
+            border-color: #ef4444;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
+        }
+        .pill-switch.caution.checked .pill-switch-indicator {
+            background: #dc2626;
+            border-color: #dc2626;
+            color: #ffffff;
+        }
+
+        /* ── Thẻ 26 Kỹ Năng ── */
+        .skill-chip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.15s;
+            user-select: none;
+            touch-action: manipulation;
+        }
+        .skill-chip:hover {
+            border-color: #94a3b8;
+            background: #f1f5f9;
+        }
+        .skill-chip.selected {
+            background: #f0fdf4;
+            border-color: #22c55e;
+            box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);
+        }
+        .skill-chip input[type="checkbox"] { display: none; }
+        .skill-checkbox-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 6px;
+            border: 2px solid #cbd5e1;
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 900;
+            color: transparent;
+            transition: all 0.15s;
+            flex-shrink: 0;
+        }
+        .skill-chip.selected .skill-checkbox-box {
+            background: #16a34a;
+            border-color: #16a34a;
+            color: #ffffff;
+        }
+
+        /* Toast thông báo */
+        .toast-msg {
+            position: fixed;
+            top: 60px;
+            right: 24px;
+            z-index: 1000;
+            background: #0f172a;
+            color: #ffffff;
+            padding: 12px 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13.5px;
+            font-weight: 600;
+            transform: translateY(-20px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+        .toast-msg.show {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
         }
 
         /* ── Media Queries cho Thiết Bị Di Động Thực Tế (< 768px) ── */
         @media (max-width: 768px) {
             .simulator-bar {
-                position: static !important; /* Không ghim cố định trên điện thoại thật */
-                height: auto;
-                padding: 6px 12px;
-                flex-wrap: wrap;
-                gap: 6px;
+                display: none !important; /* Trên điện thoại thật: ẩn thanh điều khiển laptop */
             }
-            .sticky-stepper-bar {
-                top: 0 !important; /* Ghim sát đỉnh màn hình điện thoại thật */
-                padding: 6px 10px;
-                gap: 6px;
+            #viewportWrapper.mode-desktop .sticky-stepper-bar {
+                position: sticky;
+                top: 0 !important;
+                padding: 6px 10px !important;
+                gap: 6px !important;
             }
             .step-pill-btn {
-                padding: 5px 10px;
-                font-size: 12px;
-                gap: 5px;
+                padding: 5px 10px !important;
+                font-size: 12px !important;
             }
-            .step-pill-btn .step-text-full {
-                display: none !important;
-            }
-            .step-pill-btn .step-text-short {
-                display: inline !important;
-            }
+            .step-pill-btn .step-text-full { display: none !important; }
+            .step-pill-btn .step-text-short { display: inline !important; }
             .form-section-card {
-                scroll-margin-top: 65px !important;
+                scroll-margin-top: 60px !important;
                 padding: 16px !important;
-                border-radius: 16px;
+                border-radius: 16px !important;
             }
             .sticky-action-footer {
-                padding: 10px 14px;
+                padding: 10px 14px !important;
             }
             .footer-desktop-status {
                 display: none !important;
             }
             .footer-action-btns {
-                width: 100%;
-                display: flex;
-                gap: 8px;
+                width: 100% !important;
+                display: flex !important;
+                gap: 8px !important;
             }
             .footer-action-btns > button {
-                flex: 1;
+                flex: 1 !important;
                 font-size: 13px !important;
                 padding: 10px 6px !important;
-                justify-content: center;
+                justify-content: center !important;
             }
             .footer-action-btns > button.btn-save-primary {
-                flex: 2;
+                flex: 2 !important;
             }
         }
         @media (min-width: 769px) {
-            .step-pill-btn .step-text-short {
-                display: none !important;
-            }
-            .step-pill-btn .step-text-full {
-                display: inline !important;
-            }
+            .step-pill-btn .step-text-short { display: none !important; }
+            .step-pill-btn .step-text-full { display: inline !important; }
         }
     </style>
 </head>
 <body>
 
-    <!-- ═══════════════════════════════════════════════════════════════
-         THANH ĐIỀU KHIỂN GIẢ LẬP GIAO DIỆN (DEVICE PREVIEW CONTROLLER)
-         ═══════════════════════════════════════════════════════════════ -->
+    <!-- 1. Thanh điều khiển giả lập (đen) - Chỉ dùng trên Laptop để chuyển chế độ xem -->
     <header class="simulator-bar">
         <div class="flex items-center gap-2">
-            <span class="w-3 h-3 rounded-full bg-cyan-400 animate-pulse"></span>
-            <span class="font-extrabold text-white tracking-wide">FCT HR · DAS FORM PROTOTYPE V3.0</span>
-            <span class="hidden sm:inline bg-cyan-950 text-cyan-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-cyan-800">Bản Thử Nghiệm Nội Bộ</span>
+            <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
+            <span class="font-extrabold text-white tracking-wide text-xs sm:text-sm">FCT HR · DAS FORM PROTOTYPE V3.0</span>
+            <span class="hidden sm:inline bg-cyan-950 text-cyan-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-cyan-800">Bản Thử Nghiệm</span>
         </div>
         <div class="flex items-center gap-2">
             <span class="text-xs text-slate-400 hidden md:inline">Chế độ xem:</span>
@@ -301,15 +462,14 @@
     </header>
 
     <!-- Hộp ghi chú phân tích UX/UI cho Người dùng -->
-    <div class="max-w-4xl mx-auto my-4 px-4">
-        <div class="bg-gradient-to-r from-cyan-50 via-teal-50 to-emerald-50 border border-cyan-200 rounded-2xl p-4 shadow-sm text-xs sm:text-sm text-cyan-950">
+    <div class="max-w-4xl mx-auto my-3 px-4" id="introNoteBox">
+        <div class="bg-gradient-to-r from-cyan-50 via-teal-50 to-emerald-50 border border-cyan-200 rounded-2xl p-3.5 shadow-sm text-xs sm:text-sm text-cyan-950">
             <div class="font-bold text-cyan-900 flex items-center gap-2 mb-1">
-                <span>💡</span> <strong>Bản mẫu tối ưu theo 6 nguyên tắc của Người:</strong>
+                <span>💡</span> <strong>Bản mẫu tinh chỉnh theo chỉ thị của Người:</strong>
             </div>
-            <ul class="list-disc list-inside space-y-1 text-slate-700">
-                <li><strong>Thanh Stepper cố định đỉnh:</strong> Nhấp vào mục nào cuộn mượt tới mục đó. Trên Desktop hiện đầy đủ chữ; trên Mobile tự động co thành viên thuốc nhỏ gọn chống choán màn hình.</li>
-                <li><strong>Thanh tác vụ cố định đáy:</strong> Nút <code>💾 Lưu Form</code> luôn nổi trong tầm mắt; hỗ trợ phím tắt <code>Ctrl + S</code>. Trên Mobile tự động ẩn khi mở bàn phím ảo.</li>
-                <li><strong>Phần Sức khỏe & 26 Kỹ năng:</strong> Đổi checkbox nhỏ thành <em>Pill Switch</em> và <em>Skill Chip</em> chạm cực êm, highlight trực quan, chia 2 cột an toàn trên điện thoại.</li>
+            <ul class="list-disc list-inside space-y-0.5 text-slate-700">
+                <li><strong>Thanh tab Stepper nằm gọn trong khung:</strong> Ở chế độ Mobile, các tab được đặt trực tiếp bên trong đỉnh khung điện thoại iPhone; ở chế độ Desktop, tab nằm ghim ngay ngắn dưới thanh simulator.</li>
+                <li><strong>Kinh nghiệm làm việc &amp; Đánh giá:</strong> Đã bổ sung đầy đủ <strong>3 dòng kinh nghiệm (QG1, QG2, QG3)</strong>, kèm phần đánh giá lời bình, video và đối tác như chuẩn hệ thống FCT.</li>
             </ul>
         </div>
     </div>
@@ -319,7 +479,7 @@
          ═══════════════════════════════════════════════════════════════ -->
     <main id="viewportWrapper" class="mode-desktop">
 
-        <!-- 1. STICKY STEPPER NAVIGATION (Thanh Neo Điều Hướng Nhanh) -->
+        <!-- THANH STEPPER TABS: NẰM TRỰC TIẾP BÊN TRONG KHUNG LÀM VIỆC / KHUNG MÁY MOBILE -->
         <nav class="sticky-stepper-bar" id="stepperNav">
             <button type="button" class="step-pill-btn active" data-target="#sec-1" onclick="scrollToSection('#sec-1')">
                 <span class="step-num">1</span>
@@ -348,8 +508,8 @@
             </button>
         </nav>
 
-        <!-- Container nội dung Form (Đệm đáy 100px để không bị thanh đáy che) -->
-        <div class="max-w-4xl mx-auto px-4 py-6 space-y-8 pb-32">
+        <!-- Container nội dung Form -->
+        <div class="max-w-4xl mx-auto px-4 py-5 space-y-8 pb-32">
 
             <!-- ══════════════════════════════════════════════════════════
                  MỤC 1: THÔNG TIN CÁ NHÂN
@@ -416,7 +576,7 @@
             </section>
 
             <!-- ══════════════════════════════════════════════════════════
-                 MỤC 2: SỨC KHỎE & THÓI QUEN (ĐƯỢC PHÂN NHÓM RÕ RÀNG)
+                 MỤC 2: SỨC KHỎE & THÓI QUEN (PHÂN NHÓM RÕ RÀNG)
                  ══════════════════════════════════════════════════════════ -->
             <section id="sec-2" class="form-section-card">
                 <div class="flex items-center gap-3 mb-6 pb-3 border-b border-gray-100">
@@ -539,7 +699,6 @@
                 </div>
 
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5" id="skillGrid">
-                    <!-- Danh sách 26 kỹ năng mẫu -->
                     <label class="skill-chip selected" onclick="toggleSkill(this)"><div class="skill-checkbox-box">✓</div><span class="text-xs font-semibold">Hàn điện</span><input type="checkbox" checked></label>
                     <label class="skill-chip selected" onclick="toggleSkill(this)"><div class="skill-checkbox-box">✓</div><span class="text-xs font-semibold">Hàn argon</span><input type="checkbox" checked></label>
                     <label class="skill-chip" onclick="toggleSkill(this)"><div class="skill-checkbox-box">✓</div><span class="text-xs font-semibold">Hàn CO2</span><input type="checkbox"></label>
@@ -570,49 +729,130 @@
             </section>
 
             <!-- ══════════════════════════════════════════════════════════
-                 MỤC 4: KINH NGHIỆM LÀM VIỆC & ĐÁNH GIÁ
+                 MỤC 4: KINH NGHIỆM LÀM VIỆC (ĐẦY ĐỦ 3 DÒNG) & ĐÁNH GIÁ
                  ══════════════════════════════════════════════════════════ -->
             <section id="sec-4" class="form-section-card">
                 <div class="flex items-center gap-3 mb-6 pb-3 border-b border-gray-100">
                     <span class="section-header-badge">4</span>
                     <div>
                         <h2 class="text-lg font-bold text-slate-800">Kinh nghiệm làm việc &amp; Đánh giá</h2>
-                        <p class="text-xs text-slate-400">Lịch sử xuất khẩu lao động và kinh nghiệm chuyên môn</p>
+                        <p class="text-xs text-slate-400">Lịch sử xuất khẩu lao động (đầy đủ 3 giai đoạn) và kinh nghiệm thực tế</p>
                     </div>
                 </div>
 
                 <div class="space-y-4">
-                    <!-- Kinh nghiệm 1 -->
-                    <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl grid grid-cols-1 sm:grid-cols-4 gap-3 text-sm">
-                        <div class="sm:col-span-1">
-                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Quốc gia 1</label>
-                            <select class="w-full border-b-2 border-gray-300 bg-transparent py-1.5 text-xs font-bold focus:border-cyan-600 focus:outline-none">
-                                <option>Đài Loan</option>
-                                <option>Nhật Bản</option>
-                                <option>Hàn Quốc</option>
-                                <option selected>Việt Nam</option>
-                            </select>
+                    <!-- DÒNG KINH NGHIỆM 1 (QG1, N1, ndcv1) -->
+                    <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                        <div class="text-[11px] font-extrabold text-cyan-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-cyan-600"></span> Giai đoạn 1 (Gần nhất)
                         </div>
-                        <div class="sm:col-span-1">
-                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Thời gian (Năm)</label>
-                            <input type="text" value="2020 - 2023" class="w-full border-b-2 border-gray-300 bg-transparent py-1.5 text-xs font-semibold focus:border-cyan-600 focus:outline-none">
+                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-sm">
+                            <div class="sm:col-span-1">
+                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Quốc gia 1</label>
+                                <select class="w-full border-b-2 border-gray-300 bg-transparent py-1.5 text-xs font-bold focus:border-cyan-600 focus:outline-none cursor-pointer">
+                                    <option value="">-- Chọn quốc gia --</option>
+                                    <option selected>Đài Loan</option>
+                                    <option>Nhật Bản</option>
+                                    <option>Hàn Quốc</option>
+                                    <option>Việt Nam</option>
+                                    <option>Thái Lan</option>
+                                    <option>Malaysia</option>
+                                    <option>Trung Quốc</option>
+                                </select>
+                            </div>
+                            <div class="sm:col-span-1">
+                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Thời gian (Năm)</label>
+                                <input type="text" value="2020 - 2023" class="w-full border-b-2 border-gray-300 bg-transparent py-1.5 text-xs font-semibold focus:border-cyan-600 focus:outline-none">
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Nội dung công việc 1</label>
+                                <input type="text" value="Thợ hàn kết cấu nhà xưởng thép tiền chế" class="w-full border-b-2 border-gray-300 bg-transparent py-1.5 text-xs font-semibold focus:border-cyan-600 focus:outline-none">
+                            </div>
                         </div>
-                        <div class="sm:col-span-2">
-                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Nội dung công việc</label>
-                            <input type="text" value="Thợ hàn kết cấu nhà xưởng thép tiền chế" class="w-full border-b-2 border-gray-300 bg-transparent py-1.5 text-xs font-semibold focus:border-cyan-600 focus:outline-none">
+                    </div>
+
+                    <!-- DÒNG KINH NGHIỆM 2 (QG2, N2, ndcv2) -->
+                    <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                        <div class="text-[11px] font-extrabold text-cyan-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-cyan-600"></span> Giai đoạn 2
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-sm">
+                            <div class="sm:col-span-1">
+                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Quốc gia 2</label>
+                                <select class="w-full border-b-2 border-gray-300 bg-transparent py-1.5 text-xs font-bold focus:border-cyan-600 focus:outline-none cursor-pointer">
+                                    <option value="">-- Chọn quốc gia --</option>
+                                    <option>Đài Loan</option>
+                                    <option selected>Nhật Bản</option>
+                                    <option>Hàn Quốc</option>
+                                    <option>Việt Nam</option>
+                                    <option>Thái Lan</option>
+                                    <option>Malaysia</option>
+                                    <option>Trung Quốc</option>
+                                </select>
+                            </div>
+                            <div class="sm:col-span-1">
+                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Thời gian (Năm)</label>
+                                <input type="text" value="2017 - 2020" class="w-full border-b-2 border-gray-300 bg-transparent py-1.5 text-xs font-semibold focus:border-cyan-600 focus:outline-none">
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Nội dung công việc 2</label>
+                                <input type="text" value="Vận hành máy tiện cơ khí và gia công phay CNC" class="w-full border-b-2 border-gray-300 bg-transparent py-1.5 text-xs font-semibold focus:border-cyan-600 focus:outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DÒNG KINH NGHIỆM 3 (QG3, N3, ndcv3) -->
+                    <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                        <div class="text-[11px] font-extrabold text-cyan-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-cyan-600"></span> Giai đoạn 3
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-sm">
+                            <div class="sm:col-span-1">
+                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Quốc gia 3</label>
+                                <select class="w-full border-b-2 border-gray-300 bg-transparent py-1.5 text-xs font-bold focus:border-cyan-600 focus:outline-none cursor-pointer">
+                                    <option value="">-- Chọn quốc gia --</option>
+                                    <option>Đài Loan</option>
+                                    <option>Nhật Bản</option>
+                                    <option>Hàn Quốc</option>
+                                    <option selected>Việt Nam</option>
+                                    <option>Thái Lan</option>
+                                    <option>Malaysia</option>
+                                    <option>Trung Quốc</option>
+                                </select>
+                            </div>
+                            <div class="sm:col-span-1">
+                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Thời gian (Năm)</label>
+                                <input type="text" value="2015 - 2017" class="w-full border-b-2 border-gray-300 bg-transparent py-1.5 text-xs font-semibold focus:border-cyan-600 focus:outline-none">
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Nội dung công việc 3</label>
+                                <input type="text" value="Công nhân lắp ráp linh kiện cơ khí động cơ" class="w-full border-b-2 border-gray-300 bg-transparent py-1.5 text-xs font-semibold focus:border-cyan-600 focus:outline-none">
+                            </div>
                         </div>
                     </div>
 
                     <!-- Ghi chú, lời bình -->
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ghi chú &amp; Lời bình đánh giá</label>
-                        <textarea rows="3" class="w-full border border-gray-200 rounded-xl p-3 text-xs text-slate-800 focus:border-cyan-600 focus:outline-none bg-slate-50" placeholder="Đánh giá thái độ, độ khéo tay, sức khỏe...">Ngoan ngoãn, chăm chỉ, tay nghề hàn tốt, chịu khó tăng ca.</textarea>
+                        <textarea rows="3" class="w-full border border-gray-200 rounded-xl p-3 text-xs text-slate-800 focus:border-cyan-600 focus:outline-none bg-slate-50" placeholder="Đánh giá thái độ, độ khéo tay, sức khỏe...">Ngoan ngoãn, chăm chỉ, tay nghề hàn tốt, chịu khó tăng ca. Sức khỏe tốt, hòa đồng với đồng nghiệp.</textarea>
                     </div>
 
                     <!-- Link Video -->
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">🎬 Link Video kiểm tra tay nghề (Youtube / Drive)</label>
-                        <input type="url" placeholder="https://youtu.be/..." class="w-full border-b-2 border-gray-200 bg-transparent py-1.5 text-xs text-slate-700 focus:border-cyan-600 focus:outline-none">
+                        <div class="space-y-2">
+                            <input type="url" value="https://youtu.be/test-tay-nghe-fct" placeholder="Link 1: https://youtu.be/..." class="w-full border-b-2 border-gray-200 bg-transparent py-1.5 text-xs text-slate-700 focus:border-cyan-600 focus:outline-none">
+                            <input type="url" placeholder="Link 2: https://youtu.be/... (không bắt buộc)" class="w-full border-b-2 border-gray-200 bg-transparent py-1.5 text-xs text-slate-700 focus:border-cyan-600 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Người phụ trách & Đối tác -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Người phụ trách &amp; Đối tác / Nguồn</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <input type="text" value="Nguyễn Văn Admin" class="w-full border-b-2 border-gray-200 bg-transparent py-1.5 text-xs text-slate-800 focus:border-cyan-600 focus:outline-none" placeholder="Tên nhân viên phụ trách">
+                            <input type="text" value="Nguồn Đài Trung" class="w-full border-b-2 border-gray-200 bg-transparent py-1.5 text-xs text-slate-800 focus:border-cyan-600 focus:outline-none" placeholder="Đối tác / Nguồn">
+                        </div>
                     </div>
                 </div>
             </section>
@@ -653,7 +893,7 @@
 
         </div>
 
-        <!-- 2. STICKY ACTION FOOTER (Thanh Tác Vụ Cố Định Đáy) -->
+        <!-- 4. STICKY ACTION FOOTER (THANH TÁC VỤ ĐÁY) -->
         <footer class="sticky-action-footer" id="actionFooter">
             <!-- Trạng thái bên trái (Ẩn trên mobile để tiết kiệm diện tích) -->
             <div class="footer-desktop-status flex items-center gap-2">
@@ -697,20 +937,26 @@
         function switchViewMode(mode) {
             const wrapper = document.getElementById('viewportWrapper');
             const btns = document.querySelectorAll('.simulator-mode-btn');
+            const introBox = document.getElementById('introNoteBox');
             btns.forEach(b => b.classList.remove('active'));
 
             if (mode === 'mobile') {
                 wrapper.className = 'mode-mobile';
                 btns[1].classList.add('active');
-                showToast('📱 Đã chuyển sang chế độ Giả lập Mobile iPhone 14 (390px)');
+                if (introBox) introBox.style.display = 'none';
+                showToast('📱 Đã chuyển sang khung iPhone: Các tab nằm ngay trên đầu màn hình điện thoại!');
+                // Reset cuộn của khung mobile về đỉnh
+                wrapper.scrollTo({ top: 0 });
             } else {
                 wrapper.className = 'mode-desktop';
                 btns[0].classList.add('active');
+                if (introBox) introBox.style.display = 'block';
                 showToast('💻 Đã trở lại chế độ xem Desktop chuẩn');
             }
+            initScrollSpy();
         }
 
-        // ── 2. Click-to-Scroll mượt mà & chính xác tuyệt đối ──
+        // ── 2. Click-to-Scroll mượt mà & chuẩn xác tuyệt đối ──
         let isProgrammaticScrolling = false;
         let scrollTimeout;
 
@@ -721,23 +967,33 @@
             const wrapper = document.getElementById('viewportWrapper');
             const isMobileSimulator = wrapper && wrapper.classList.contains('mode-mobile');
 
-            // Khóa scroll-spy tạm thời để animation cuộn không bị nhảy giật
             isProgrammaticScrolling = true;
             clearTimeout(scrollTimeout);
             setActiveStep(targetSelector);
 
             if (isMobileSimulator) {
-                // Trong khung giả lập iPhone
-                const wrapperRect = wrapper.getBoundingClientRect();
-                const targetRect = targetEl.getBoundingClientRect();
-                const scrollOffset = targetRect.top - wrapperRect.top + wrapper.scrollTop - 52;
+                // Trong khung giả lập iPhone: Tính khoảng cách chính xác từ section đến đỉnh khung iPhone
+                const stepper = document.getElementById('stepperNav');
+                const stepperHeight = stepper ? stepper.offsetHeight : 50;
+                const scrollOffset = targetEl.getBoundingClientRect().top - wrapper.getBoundingClientRect().top + wrapper.scrollTop - stepperHeight - 8;
                 wrapper.scrollTo({
                     top: Math.max(0, scrollOffset),
                     behavior: 'smooth'
                 });
             } else {
-                // Trên màn hình Laptop hoặc Thiết bị Di Động thật: Dùng scrollIntoView chuẩn W3C
-                targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Trên Desktop hoặc Thiết bị Mobile thật
+                const stepper = document.getElementById('stepperNav');
+                const stepperHeight = stepper ? stepper.offsetHeight : 50;
+                const simBar = document.querySelector('.simulator-bar');
+                const simBarHeight = (simBar && window.getComputedStyle(simBar).position === 'sticky') ? simBar.offsetHeight : 0;
+                
+                const targetAbsTop = targetEl.getBoundingClientRect().top + window.scrollY;
+                const finalPos = targetAbsTop - simBarHeight - stepperHeight - 16;
+
+                window.scrollTo({
+                    top: Math.max(0, finalPos),
+                    behavior: 'smooth'
+                });
             }
 
             scrollTimeout = setTimeout(() => {
@@ -751,7 +1007,6 @@
                 const target = btn.getAttribute('data-target');
                 if (target === targetSelector) {
                     btn.classList.add('active');
-                    // Tự động cuộn thanh stepper để viên thuốc active luôn trượt vào giữa
                     btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
                 } else {
                     btn.classList.remove('active');
@@ -769,13 +1024,12 @@
 
                 const isMobileSimulator = wrapper && wrapper.classList.contains('mode-mobile');
                 const viewTop = isMobileSimulator ? wrapper.getBoundingClientRect().top : 0;
-                const offsetThreshold = isMobileSimulator ? 90 : 140;
+                const threshold = isMobileSimulator ? 80 : 130;
 
                 let currentId = '';
                 sections.forEach(sec => {
                     const rect = sec.getBoundingClientRect();
-                    // Khi đỉnh section đi vào phạm vi dưới stepper bar và đáy section vẫn chưa cuộn qua
-                    if (rect.top - viewTop <= offsetThreshold && rect.bottom - viewTop > 60) {
+                    if (rect.top - viewTop <= threshold && rect.bottom - viewTop > 60) {
                         currentId = '#' + sec.id;
                     }
                 });
@@ -785,8 +1039,10 @@
                 }
             }
 
+            window.removeEventListener('scroll', checkActiveSection);
             window.addEventListener('scroll', checkActiveSection, { passive: true });
             if (wrapper) {
+                wrapper.removeEventListener('scroll', checkActiveSection);
                 wrapper.addEventListener('scroll', checkActiveSection, { passive: true });
             }
         }
@@ -862,7 +1118,6 @@
         const footer = document.getElementById('actionFooter');
         inputs.forEach(input => {
             input.addEventListener('focus', () => {
-                // Trên màn hình nhỏ, khi focus ô nhập thì ẩn nhẹ thanh footer
                 if (window.innerWidth < 768 || document.getElementById('viewportWrapper').classList.contains('mode-mobile')) {
                     footer.classList.add('keyboard-hidden');
                 }

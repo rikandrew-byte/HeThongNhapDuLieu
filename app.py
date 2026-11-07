@@ -51,6 +51,8 @@ groq_client = Groq(api_key=groq_api_key) if (Groq and groq_api_key) else None
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 app.debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
+app.config['TEMPLATES_AUTO_RELOAD'] = True
+app.jinja_env.auto_reload = True
 CORS(app, resources={r"/*": {"origins": ["https://cv.fct.vn", "http://127.0.0.1:5000", "http://localhost:5000"]}})
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB limit
 app.config['MAX_FORM_MEMORY_SIZE'] = 50 * 1024 * 1024  # 50MB limit for form fields
@@ -1342,7 +1344,9 @@ def index():
 def demo_das_form():
     """Bản thử nghiệm giao diện nhập liệu DAS Form tối ưu UX/UI (Desktop & Mobile)"""
     resp = make_response(render_template('prototype_das_form.html'))
-    resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+    resp.headers['Pragma'] = 'no-cache'
+    resp.headers['Expires'] = '0'
     return resp
 
 @app.route('/static/<path:filename>')
