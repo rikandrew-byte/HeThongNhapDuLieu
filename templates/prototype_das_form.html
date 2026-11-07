@@ -465,11 +465,11 @@
     <div class="max-w-4xl mx-auto my-3 px-4" id="introNoteBox">
         <div class="bg-gradient-to-r from-cyan-50 via-teal-50 to-emerald-50 border border-cyan-200 rounded-2xl p-3.5 shadow-sm text-xs sm:text-sm text-cyan-950">
             <div class="font-bold text-cyan-900 flex items-center gap-2 mb-1">
-                <span>💡</span> <strong>Bản mẫu tinh chỉnh theo chỉ thị của Người:</strong>
+                <span>💡</span> <strong>Bản mẫu chuẩn 100% theo đúng cấu trúc gốc của Người:</strong>
             </div>
             <ul class="list-disc list-inside space-y-0.5 text-slate-700">
-                <li><strong>Thanh tab Stepper nằm gọn trong khung:</strong> Ở chế độ Mobile, các tab được đặt trực tiếp bên trong đỉnh khung điện thoại iPhone; ở chế độ Desktop, tab nằm ghim ngay ngắn dưới thanh simulator.</li>
-                <li><strong>Kinh nghiệm làm việc &amp; Đánh giá:</strong> Đã bổ sung đầy đủ <strong>3 dòng kinh nghiệm (QG1, QG2, QG3)</strong>, kèm phần đánh giá lời bình, video và đối tác như chuẩn hệ thống FCT.</li>
+                <li><strong>Tiêu đề 5 mục chuẩn xác 100%:</strong> Giữ nguyên từng chữ như bản gốc: <em>1. Thông tin cá nhân</em>, <em>2. Sức khỏe &amp; Thói quen</em>, <em>3. Kỹ năng</em>, <em>4. Kinh nghiệm làm việc &amp; Đánh giá</em>, <em>5. Tài liệu &amp; Giấy tờ</em>.</li>
+                <li><strong>Đầy đủ 22 ô tick Sức khỏe &amp; Thói quen:</strong> Bao gồm toàn bộ 22 ô tick từ f01 đến f22 theo đúng thứ tự và nhãn gốc trong hệ thống FCT.</li>
             </ul>
         </div>
     </div>
@@ -493,18 +493,18 @@
             </button>
             <button type="button" class="step-pill-btn" data-target="#sec-3" onclick="scrollToSection('#sec-3')">
                 <span class="step-num">3</span>
-                <span class="step-text-full">Danh mục 26 Kỹ năng</span>
+                <span class="step-text-full">Kỹ năng</span>
                 <span class="step-text-short">Kỹ năng</span>
             </button>
             <button type="button" class="step-pill-btn" data-target="#sec-4" onclick="scrollToSection('#sec-4')">
                 <span class="step-num">4</span>
-                <span class="step-text-full">Kinh nghiệm &amp; Đánh giá</span>
+                <span class="step-text-full">Kinh nghiệm làm việc &amp; Đánh giá</span>
                 <span class="step-text-short">Kinh nghiệm</span>
             </button>
             <button type="button" class="step-pill-btn" data-target="#sec-5" onclick="scrollToSection('#sec-5')">
                 <span class="step-num">5</span>
-                <span class="step-text-full">Tài liệu &amp; Scan</span>
-                <span class="step-text-short">Giấy tờ</span>
+                <span class="step-text-full">Tài liệu &amp; Giấy tờ</span>
+                <span class="step-text-short">Tài liệu</span>
             </button>
         </nav>
 
@@ -518,7 +518,7 @@
                 <div class="flex items-center gap-3 mb-6 pb-3 border-b border-gray-100">
                     <span class="section-header-badge">1</span>
                     <div>
-                        <h2 class="text-lg font-bold text-slate-800">Thông tin cá nhân ứng viên</h2>
+                        <h2 class="text-lg font-bold text-slate-800">Thông tin cá nhân</h2>
                         <p class="text-xs text-slate-400">Các thông tin cơ bản phục vụ trích xuất hồ sơ song ngữ Việt - Trung</p>
                     </div>
                 </div>
@@ -576,120 +576,141 @@
             </section>
 
             <!-- ══════════════════════════════════════════════════════════
-                 MỤC 2: SỨC KHỎE & THÓI QUEN (PHÂN NHÓM RÕ RÀNG)
+                 MỤC 2: SỨC KHỎE & THÓI QUEN (ĐẦY ĐỦ 22 Ô TICK CHUẨN FCT)
                  ══════════════════════════════════════════════════════════ -->
             <section id="sec-2" class="form-section-card">
                 <div class="flex items-center gap-3 mb-6 pb-3 border-b border-gray-100">
                     <span class="section-header-badge">2</span>
                     <div>
-                        <h2 class="text-lg font-bold text-slate-800">Sức khỏe &amp; Thói quen sinh hoạt</h2>
-                        <p class="text-xs text-slate-400">Các chỉ số thể lực thực tế và sàng lọc bệnh lý</p>
+                        <h2 class="text-lg font-bold text-slate-800">Sức khỏe &amp; Thói quen</h2>
+                        <p class="text-xs text-slate-400">Các chỉ số thể lực và tình trạng sức khỏe ứng viên</p>
                     </div>
                 </div>
 
-                <!-- Nhóm A: Chỉ số kiểm tra thể lực & thói quen -->
-                <div class="mb-6">
-                    <h3 class="text-xs font-extrabold text-cyan-800 uppercase tracking-wider mb-3 flex items-center gap-2">
-                        <span>💪</span> Nhóm chỉ số lâm sàng &amp; Thói quen:
-                    </h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                        <label class="pill-switch checked" onclick="togglePill(this)">
-                            <span class="text-xs font-semibold text-slate-800">Thuận tay phải</span>
-                            <div class="pill-switch-indicator">✓</div>
-                            <input type="checkbox" checked>
-                        </label>
-                        <label class="pill-switch" onclick="togglePill(this)">
-                            <span class="text-xs font-semibold text-slate-800">Thuận tay trái</span>
-                            <div class="pill-switch-indicator">✓</div>
-                            <input type="checkbox">
-                        </label>
-                        <label class="pill-switch" onclick="togglePill(this)">
-                            <span class="text-xs font-semibold text-slate-800">Cận thị</span>
-                            <div class="pill-switch-indicator">✓</div>
-                            <input type="checkbox">
-                        </label>
-                        <label class="pill-switch" onclick="togglePill(this)">
-                            <span class="text-xs font-semibold text-slate-800">Hút thuốc</span>
-                            <div class="pill-switch-indicator">✓</div>
-                            <input type="checkbox">
-                        </label>
-                        <label class="pill-switch checked" onclick="togglePill(this)">
-                            <span class="text-xs font-semibold text-slate-800">Không hút thuốc</span>
-                            <div class="pill-switch-indicator">✓</div>
-                            <input type="checkbox" checked>
-                        </label>
-                        <label class="pill-switch checked" onclick="togglePill(this)">
-                            <span class="text-xs font-semibold text-slate-800">Không uống rượu</span>
-                            <div class="pill-switch-indicator">✓</div>
-                            <input type="checkbox" checked>
-                        </label>
-                        <label class="pill-switch checked" onclick="togglePill(this)">
-                            <span class="text-xs font-semibold text-slate-800">Chống đẩy 10 ~ 30 cái</span>
-                            <div class="pill-switch-indicator">✓</div>
-                            <input type="checkbox" checked>
-                        </label>
-                        <label class="pill-switch checked" onclick="togglePill(this)">
-                            <span class="text-xs font-semibold text-slate-800">Bê vác 20 ~ 40 kg</span>
-                            <div class="pill-switch-indicator">✓</div>
-                            <input type="checkbox" checked>
-                        </label>
-                        <label class="pill-switch" onclick="togglePill(this)">
-                            <span class="text-xs font-semibold text-slate-800">Mồ hôi tay</span>
-                            <div class="pill-switch-indicator">✓</div>
-                            <input type="checkbox">
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Nhóm B: Bệnh lý loại trừ & Chấn thương -->
-                <div>
-                    <h3 class="text-xs font-extrabold text-red-700 uppercase tracking-wider mb-3 flex items-center gap-2">
-                        <span>⚠️</span> Bệnh lý loại trừ &amp; Tiền sử chấn thương (Chọn nếu có):
-                    </h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                        <label class="pill-switch caution" onclick="togglePill(this)">
-                            <span class="text-xs font-semibold text-slate-800">Viêm gan (B/C)</span>
-                            <div class="pill-switch-indicator">✕</div>
-                            <input type="checkbox">
-                        </label>
-                        <label class="pill-switch caution" onclick="togglePill(this)">
-                            <span class="text-xs font-semibold text-slate-800">Mù màu</span>
-                            <div class="pill-switch-indicator">✕</div>
-                            <input type="checkbox">
-                        </label>
-                        <label class="pill-switch caution" onclick="togglePill(this)">
-                            <span class="text-xs font-semibold text-slate-800">Hình xăm</span>
-                            <div class="pill-switch-indicator">✕</div>
-                            <input type="checkbox">
-                        </label>
-                        <label class="pill-switch caution" onclick="togglePill(this)">
-                            <span class="text-xs font-semibold text-slate-800">Chấn thương cột sống</span>
-                            <div class="pill-switch-indicator">✕</div>
-                            <input type="checkbox">
-                        </label>
-                        <label class="pill-switch caution" onclick="togglePill(this)">
-                            <span class="text-xs font-semibold text-slate-800">Gãy xương</span>
-                            <div class="pill-switch-indicator">✕</div>
-                            <input type="checkbox">
-                        </label>
-                        <label class="pill-switch caution" onclick="togglePill(this)">
-                            <span class="text-xs font-semibold text-slate-800">Hen suyễn</span>
-                            <div class="pill-switch-indicator">✕</div>
-                            <input type="checkbox">
-                        </label>
-                    </div>
+                <!-- Lưới 22 ô tick chuẩn FCT -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3 text-sm" id="healthGrid">
+                    <label class="pill-switch checked" onclick="toggleHealthPill(this, 'f01')">
+                        <span class="text-xs font-semibold text-slate-800">Thuận tay phải</span>
+                        <div class="pill-switch-indicator">✓</div>
+                        <input type="checkbox" name="f01" checked>
+                    </label>
+                    <label class="pill-switch" onclick="toggleHealthPill(this, 'f07')">
+                        <span class="text-xs font-semibold text-slate-800">Thuận tay trái</span>
+                        <div class="pill-switch-indicator">✓</div>
+                        <input type="checkbox" name="f07">
+                    </label>
+                    <label class="pill-switch" onclick="toggleHealthPill(this, 'f15')">
+                        <span class="text-xs font-semibold text-slate-800">Cận thị</span>
+                        <div class="pill-switch-indicator">✓</div>
+                        <input type="checkbox" name="f15">
+                    </label>
+                    <label class="pill-switch" onclick="toggleHealthPill(this, 'f02')">
+                        <span class="text-xs font-semibold text-slate-800">Hỏng mắt phải</span>
+                        <div class="pill-switch-indicator">✓</div>
+                        <input type="checkbox" name="f02">
+                    </label>
+                    <label class="pill-switch" onclick="toggleHealthPill(this, 'f08')">
+                        <span class="text-xs font-semibold text-slate-800">Hỏng mắt trái</span>
+                        <div class="pill-switch-indicator">✓</div>
+                        <input type="checkbox" name="f08">
+                    </label>
+                    <label class="pill-switch" onclick="toggleHealthPill(this, 'f16')">
+                        <span class="text-xs font-semibold text-slate-800">Loạn thị</span>
+                        <div class="pill-switch-indicator">✓</div>
+                        <input type="checkbox" name="f16">
+                    </label>
+                    <label class="pill-switch" onclick="toggleHealthPill(this, 'f03')">
+                        <span class="text-xs font-semibold text-slate-800">Hút thuốc</span>
+                        <div class="pill-switch-indicator">✓</div>
+                        <input type="checkbox" name="f03">
+                    </label>
+                    <label class="pill-switch checked" onclick="toggleHealthPill(this, 'f09')">
+                        <span class="text-xs font-semibold text-slate-800">Không hút thuốc</span>
+                        <div class="pill-switch-indicator">✓</div>
+                        <input type="checkbox" name="f09" checked>
+                    </label>
+                    <label class="pill-switch" onclick="toggleHealthPill(this, 'f17')">
+                        <span class="text-xs font-semibold text-slate-800">Mù màu</span>
+                        <div class="pill-switch-indicator">✓</div>
+                        <input type="checkbox" name="f17">
+                    </label>
+                    <label class="pill-switch" onclick="toggleHealthPill(this, 'f04')">
+                        <span class="text-xs font-semibold text-slate-800">Uống rượu</span>
+                        <div class="pill-switch-indicator">✓</div>
+                        <input type="checkbox" name="f04">
+                    </label>
+                    <label class="pill-switch checked" onclick="toggleHealthPill(this, 'f10')">
+                        <span class="text-xs font-semibold text-slate-800">Không uống rượu</span>
+                        <div class="pill-switch-indicator">✓</div>
+                        <input type="checkbox" name="f10" checked>
+                    </label>
+                    <label class="pill-switch" onclick="toggleHealthPill(this, 'f18')">
+                        <span class="text-xs font-semibold text-slate-800">Viêm gan</span>
+                        <div class="pill-switch-indicator">✓</div>
+                        <input type="checkbox" name="f18">
+                    </label>
+                    <label class="pill-switch" onclick="toggleHealthPill(this, 'f05')">
+                        <span class="text-xs font-semibold text-slate-800">Gãy xương</span>
+                        <div class="pill-switch-indicator">✓</div>
+                        <input type="checkbox" name="f05">
+                    </label>
+                    <label class="pill-switch" onclick="toggleHealthPill(this, 'f11')">
+                        <span class="text-xs font-semibold text-slate-800">Chấn thương cột sống</span>
+                        <div class="pill-switch-indicator">✓</div>
+                        <input type="checkbox" name="f11">
+                    </label>
+                    <label class="pill-switch" onclick="toggleHealthPill(this, 'f19')">
+                        <span class="text-xs font-semibold text-slate-800">Cụt đốt ngón tay</span>
+                        <div class="pill-switch-indicator">✓</div>
+                        <input type="checkbox" name="f19">
+                    </label>
+                    <label class="pill-switch" onclick="toggleHealthPill(this, 'f06')">
+                        <span class="text-xs font-semibold text-slate-800">Mồ hôi tay</span>
+                        <div class="pill-switch-indicator">✓</div>
+                        <input type="checkbox" name="f06">
+                    </label>
+                    <label class="pill-switch" onclick="toggleHealthPill(this, 'f12')">
+                        <span class="text-xs font-semibold text-slate-800">Hình xăm</span>
+                        <div class="pill-switch-indicator">✓</div>
+                        <input type="checkbox" name="f12">
+                    </label>
+                    <label class="pill-switch" onclick="toggleHealthPill(this, 'f20')">
+                        <span class="text-xs font-semibold text-slate-800">Hen suyễn</span>
+                        <div class="pill-switch-indicator">✓</div>
+                        <input type="checkbox" name="f20">
+                    </label>
+                    <label class="pill-switch checked" onclick="toggleHealthPill(this, 'f13')">
+                        <span class="text-xs font-semibold text-slate-800">Chống đẩy 10~30 cái</span>
+                        <div class="pill-switch-indicator">✓</div>
+                        <input type="checkbox" name="f13" checked>
+                    </label>
+                    <label class="pill-switch" onclick="toggleHealthPill(this, 'f21')">
+                        <span class="text-xs font-semibold text-slate-800">Chống đẩy &gt;50 cái</span>
+                        <div class="pill-switch-indicator">✓</div>
+                        <input type="checkbox" name="f21">
+                    </label>
+                    <label class="pill-switch checked" onclick="toggleHealthPill(this, 'f14')">
+                        <span class="text-xs font-semibold text-slate-800">Bê vác 20~40 kg</span>
+                        <div class="pill-switch-indicator">✓</div>
+                        <input type="checkbox" name="f14" checked>
+                    </label>
+                    <label class="pill-switch" onclick="toggleHealthPill(this, 'f22')">
+                        <span class="text-xs font-semibold text-slate-800">Bê vác &gt;50kg</span>
+                        <div class="pill-switch-indicator">✓</div>
+                        <input type="checkbox" name="f22">
+                    </label>
                 </div>
             </section>
 
             <!-- ══════════════════════════════════════════════════════════
-                 MỤC 3: DANH MỤC 26 KỸ NĂNG (SMART RESPONSIVE GRID)
+                 MỤC 3: KỸ NĂNG (SMART RESPONSIVE GRID)
                  ══════════════════════════════════════════════════════════ -->
             <section id="sec-3" class="form-section-card">
                 <div class="flex flex-wrap items-center justify-between gap-2 mb-6 pb-3 border-b border-gray-100">
                     <div class="flex items-center gap-3">
                         <span class="section-header-badge">3</span>
                         <div>
-                            <h2 class="text-lg font-bold text-slate-800">Danh mục 26 kỹ năng chuyên môn</h2>
+                            <h2 class="text-lg font-bold text-slate-800">Kỹ năng</h2>
                             <p class="text-xs text-slate-400">Chọn các kỹ năng tay nghề mà ứng viên đáp ứng</p>
                         </div>
                     </div>
@@ -858,13 +879,13 @@
             </section>
 
             <!-- ══════════════════════════════════════════════════════════
-                 MỤC 5: TÀI LIỆU & GIẤY TỜ SCAN
+                 MỤC 5: TÀI LIỆU & GIẤY TỜ
                  ══════════════════════════════════════════════════════════ -->
             <section id="sec-5" class="form-section-card">
                 <div class="flex items-center gap-3 mb-6 pb-3 border-b border-gray-100">
                     <span class="section-header-badge">5</span>
                     <div>
-                        <h2 class="text-lg font-bold text-slate-800">Tài liệu &amp; Giấy tờ scan</h2>
+                        <h2 class="text-lg font-bold text-slate-800">Tài liệu &amp; Giấy tờ</h2>
                         <p class="text-xs text-slate-400">Kéo thả ảnh Hộ chiếu, CCCD, Giấy khám sức khỏe, Bằng lái...</p>
                     </div>
                 </div>
@@ -1072,15 +1093,47 @@
             }, 3000);
         }
 
-        // ── 6. Tương tác Pill Switch (Sức khỏe) & Skill Chip (Kỹ năng) ──
-        function togglePill(label) {
-            const cb = label.querySelector('input[type="checkbox"]');
-            cb.checked = !cb.checked;
-            if (cb.checked) {
-                label.classList.add('checked');
+        // ── 6. Tương tác Pill Switch (Sức khỏe 22 ô tick) & Skill Chip (Kỹ năng) ──
+        function toggleHealthPill(labelEl, name) {
+            const input = labelEl.querySelector('input[type="checkbox"]');
+            if (!input) return;
+
+            input.checked = !input.checked;
+            if (input.checked) {
+                labelEl.classList.add('checked');
             } else {
-                label.classList.remove('checked');
+                labelEl.classList.remove('checked');
             }
+
+            // Xử lý loại trừ tương hỗ các cặp nghịch đảo
+            const pairs = [
+                ['f01', 'f07'], // Thuận tay phải <-> Thuận tay trái
+                ['f03', 'f09'], // Hút thuốc <-> Không hút thuốc
+                ['f04', 'f10'], // Uống rượu <-> Không uống rượu
+                ['f13', 'f21'], // Chống đẩy 10~30 cái <-> Chống đẩy >50 cái
+                ['f14', 'f22']  // Bê vác 20~40 kg <-> Bê vác >50kg
+            ];
+
+            if (input.checked) {
+                pairs.forEach(([a, b]) => {
+                    let oppName = null;
+                    if (name === a) oppName = b;
+                    if (name === b) oppName = a;
+
+                    if (oppName) {
+                        const oppInput = document.querySelector(`input[name="${oppName}"]`);
+                        if (oppInput && oppInput.checked) {
+                            oppInput.checked = false;
+                            const oppLabel = oppInput.closest('.pill-switch');
+                            if (oppLabel) oppLabel.classList.remove('checked');
+                        }
+                    }
+                });
+            }
+        }
+
+        function togglePill(label) {
+            toggleHealthPill(label);
         }
 
         function toggleSkill(label) {
