@@ -2118,16 +2118,16 @@
                             <span id="smartCodeBadge" class="hidden text-[10.5px] font-bold px-2 py-0.5 rounded-full"></span>
                         </div>
                         <div class="flex items-center gap-2 border-b-2 border-gray-200 focus-within:border-blue-600 transition-colors py-1">
-                            <!-- Dropdown chọn nhanh loại ứng viên tích hợp ngay đầu ô -->
+                            <!-- Dropdown chọn nhanh loại ứng viên chỉ hiện tiền tố gọn gàng -->
                             <div class="relative flex items-center">
-                                <select id="candidatePrefixSelect" onchange="selectCandidatePrefix(this.value, true)" class="appearance-none font-bold text-xs rounded-lg pl-2.5 pr-6 py-1.5 border transition-all cursor-pointer outline-none bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 shadow-2xs">
-                                    <option value="MD">🏭 Nam (MD)</option>
-                                    <option value="FD">👩 Nữ (FD)</option>
-                                    <option value="KD">🏥 Đ.Dưỡng (KD)</option>
-                                    <option value="G">🧹 Giúp việc (G)</option>
-                                    <option value="CD">🔄 Khác (CD)</option>
+                                <select id="candidatePrefixSelect" onchange="selectCandidatePrefix(this.value, true)" title="Chọn loại tiền tố ứng viên" class="appearance-none font-bold text-xs rounded-lg pl-2 pr-5 py-1 border transition-all cursor-pointer outline-none bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 shadow-2xs">
+                                    <option value="MD">MD</option>
+                                    <option value="FD">FD</option>
+                                    <option value="KD">KD</option>
+                                    <option value="G">G</option>
+                                    <option value="CD">CD</option>
                                 </select>
-                                <span class="pointer-events-none absolute right-2 text-[10px] text-blue-600 font-bold">▼</span>
+                                <span class="pointer-events-none absolute right-1.5 text-[9px] text-blue-600 font-bold">▼</span>
                             </div>
 
                             <!-- Ô nhập mã số -->
@@ -2138,9 +2138,9 @@
                                 🔄
                             </button>
                         </div>
-                        <div id="smartCodeHint" class="text-[11px] text-slate-400 mt-1 min-h-[16px] flex items-center justify-between">
-                            <span id="smartCodeHintText">✨ Tự động gán mã kế tiếp</span>
-                            <span id="smartCodeMaxText" class="font-mono text-slate-400 text-[10.5px]"></span>
+                        <div id="smartCodeHint" class="text-[11px] text-slate-500 mt-1 min-h-[16px] flex items-center justify-between">
+                            <span id="smartCodeHintText"></span>
+                            <span id="smartCodeMaxText" class="font-mono text-slate-500 text-[11px]"></span>
                         </div>
                     </div>
                     <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Họ tên (Tiếng Việt)</label><input type="text" name="Hoten" onblur="translateName(this.value); checkDuplicateCandidate();" oninput="checkDuplicateCandidate();" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
@@ -2202,16 +2202,7 @@
                     <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Cân nặng (kg)</label><input type="text" name="Cannang" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
                     
             <div class="relative" id="noioComboboxContainer">
-                <div class="flex items-center justify-between mb-1">
-                    <label class="block text-xs font-bold text-slate-400 uppercase">Nơi ở (63 Tỉnh Thành)</label>
-                    <!-- Quick-pick chips 1 chạm cho các tỉnh phổ biến nhất -->
-                    <div class="flex items-center gap-1 flex-wrap">
-                        <button type="button" onclick="selectNoioOption('藝安', 'Nghệ An')" class="px-1.5 py-0.5 text-[10.5px] font-semibold bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white rounded transition-colors shadow-2xs" title="Chọn nhanh Nghệ An">Nghệ An</button>
-                        <button type="button" onclick="selectNoioOption('河靜', 'Hà Tĩnh')" class="px-1.5 py-0.5 text-[10.5px] font-semibold bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white rounded transition-colors shadow-2xs" title="Chọn nhanh Hà Tĩnh">Hà Tĩnh</button>
-                        <button type="button" onclick="selectNoioOption('清化', 'Thanh Hóa')" class="px-1.5 py-0.5 text-[10.5px] font-semibold bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white rounded transition-colors shadow-2xs" title="Chọn nhanh Thanh Hóa">Thanh Hóa</button>
-                        <button type="button" onclick="selectNoioOption('海陽', 'Hải Dương')" class="px-1.5 py-0.5 text-[10.5px] font-semibold bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white rounded transition-colors shadow-2xs" title="Chọn nhanh Hải Dương">Hải Dương</button>
-                    </div>
-                </div>
+                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nơi ở (63 Tỉnh Thành)</label>
 
                 <!-- Input tìm kiếm & hiển thị tỉnh thành -->
                 <div class="relative flex items-center border-b-2 border-gray-200 focus-within:border-blue-600 transition-colors">
@@ -3660,9 +3651,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             const smartHintText = document.getElementById('smartCodeHintText');
             const smartMaxText = document.getElementById('smartCodeMaxText');
             if (smartBadge) {
-                smartBadge.className = 'text-[10.5px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-300';
-                smartBadge.innerText = '🔒 Hồ sơ gốc';
-                smartBadge.classList.remove('hidden');
+                smartBadge.classList.add('hidden');
             }
             if (smartHintText) {
                 smartHintText.innerHTML = `<span class="text-slate-600 font-semibold">🔒 Đang sửa: <b>${escapeHtml(item.ma_so || '')}</b></span>`;
@@ -7128,15 +7117,15 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             if (!sel) return;
             sel.value = prefix;
             if (prefix === 'MD') {
-                sel.className = 'appearance-none font-bold text-xs rounded-lg pl-2.5 pr-6 py-1.5 border transition-all cursor-pointer outline-none bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 shadow-2xs';
+                sel.className = 'appearance-none font-bold text-xs rounded-lg pl-2 pr-5 py-1 border transition-all cursor-pointer outline-none bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 shadow-2xs';
             } else if (prefix === 'FD') {
-                sel.className = 'appearance-none font-bold text-xs rounded-lg pl-2.5 pr-6 py-1.5 border transition-all cursor-pointer outline-none bg-pink-50 text-pink-700 border-pink-200 hover:bg-pink-100 shadow-2xs';
+                sel.className = 'appearance-none font-bold text-xs rounded-lg pl-2 pr-5 py-1 border transition-all cursor-pointer outline-none bg-pink-50 text-pink-700 border-pink-200 hover:bg-pink-100 shadow-2xs';
             } else if (prefix === 'KD') {
-                sel.className = 'appearance-none font-bold text-xs rounded-lg pl-2.5 pr-6 py-1.5 border transition-all cursor-pointer outline-none bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100 shadow-2xs';
+                sel.className = 'appearance-none font-bold text-xs rounded-lg pl-2 pr-5 py-1 border transition-all cursor-pointer outline-none bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100 shadow-2xs';
             } else if (prefix === 'G') {
-                sel.className = 'appearance-none font-bold text-xs rounded-lg pl-2.5 pr-6 py-1.5 border transition-all cursor-pointer outline-none bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 shadow-2xs';
+                sel.className = 'appearance-none font-bold text-xs rounded-lg pl-2 pr-5 py-1 border transition-all cursor-pointer outline-none bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 shadow-2xs';
             } else if (prefix === 'CD') {
-                sel.className = 'appearance-none font-bold text-xs rounded-lg pl-2.5 pr-6 py-1.5 border transition-all cursor-pointer outline-none bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200 shadow-2xs';
+                sel.className = 'appearance-none font-bold text-xs rounded-lg pl-2 pr-5 py-1 border transition-all cursor-pointer outline-none bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200 shadow-2xs';
             }
         }
 
@@ -7152,18 +7141,15 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
 
             // Nếu đang trong chế độ chỉnh sửa hồ sơ cũ và không ép buộc fetch, không ghi đè mã số
             if (editingId && !forceFetch) {
-                if (badge) {
-                    badge.className = 'text-[10.5px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-300';
-                    badge.innerText = '🔒 Hồ sơ gốc';
-                    badge.classList.remove('hidden');
-                }
+                if (badge) badge.classList.add('hidden');
                 return;
             }
 
             if (!input || isFetchingNextCode) return;
             isFetchingNextCode = true;
 
-            if (hintText) hintText.innerHTML = `<span class="text-slate-400 animate-pulse">⏳ Đang lấy số mới...</span>`;
+            if (badge) badge.classList.add('hidden');
+            if (hintText) hintText.innerHTML = `<span class="text-slate-400 animate-pulse text-[11px]">⏳ Đang lấy số...</span>`;
 
             try {
                 const res = await fetch(`/api/candidate/next-code?prefix=${currentSelectedPrefix}`, { credentials: 'same-origin' });
@@ -7172,31 +7158,22 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                     const d = json.data;
                     input.value = d.next_code;
 
-                    if (badge) {
-                        badge.classList.remove('hidden');
-                        if (d.is_gap) {
-                            badge.className = 'text-[10.5px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 animate-pulse';
-                            badge.innerText = '⚡ Lấp mã trống';
-                        } else {
-                            badge.className = 'text-[10.5px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-300';
-                            badge.innerText = '✨ Tự động';
-                        }
-                    }
+                    if (badge) badge.classList.add('hidden');
 
                     if (hintText) {
                         if (d.is_gap) {
-                            hintText.innerHTML = `<span class="text-emerald-700 font-semibold">⚡ Tự động lấp mã trống: <b>${d.next_code}</b></span>`;
+                            hintText.innerHTML = `<span class="text-emerald-700 font-semibold text-[11px]">⚡ Lấp mã khuyết: <b>${escapeHtml(d.next_code)}</b></span>`;
                         } else {
-                            hintText.innerHTML = `<span class="text-blue-700 font-semibold">✨ Mã kế tiếp liên tục: <b>${d.next_code}</b></span>`;
+                            hintText.innerHTML = '';
                         }
                     }
                     if (maxText) {
-                        maxText.innerText = `Max: ${d.max_code}`;
+                        maxText.innerHTML = d.max_code ? `Mã form mới nhất: <b class="text-slate-700 font-mono">${escapeHtml(d.max_code)}</b>` : '';
                     }
                 }
             } catch (err) {
                 console.error("Lỗi lấy mã số tiếp theo:", err);
-                if (hintText) hintText.innerHTML = `<span class="text-red-500 font-semibold">❌ Lỗi kết nối</span>`;
+                if (hintText) hintText.innerHTML = `<span class="text-red-500 font-semibold text-[11px]">❌ Lỗi kết nối</span>`;
             } finally {
                 isFetchingNextCode = false;
             }
@@ -7216,8 +7193,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
 
             if (!val) {
                 if (badge) badge.classList.add('hidden');
-                if (hintText) hintText.innerHTML = '<span>✨ Tự động gán mã liên tục</span>';
-                if (maxText) maxText.innerText = '';
+                if (hintText) hintText.innerHTML = '';
                 return;
             }
 
@@ -7228,13 +7204,9 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 updatePrefixPillStyle(m[1]);
             }
 
-            if (badge) {
-                badge.className = 'text-[10.5px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-300';
-                badge.innerText = '✏️ Nhập tay';
-                badge.classList.remove('hidden');
-            }
+            if (badge) badge.classList.add('hidden');
             if (hintText) {
-                hintText.innerHTML = `<span class="text-slate-600 font-semibold">✏️ Đang nhập tay: <b>${escapeHtml(val)}</b></span>`;
+                hintText.innerHTML = `<span class="text-slate-500 font-medium text-[11px]">✏️ Nhập tay</span>`;
             }
         }
 
@@ -7245,7 +7217,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             const hintText = document.getElementById('smartCodeHintText');
             const maxText = document.getElementById('smartCodeMaxText');
             if (badge) badge.classList.add('hidden');
-            if (hintText) hintText.innerHTML = '<span>✨ Tự động gán mã liên tục</span>';
+            if (hintText) hintText.innerHTML = '';
             if (maxText) maxText.innerText = '';
         }
 
