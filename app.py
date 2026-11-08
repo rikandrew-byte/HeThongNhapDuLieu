@@ -2226,6 +2226,90 @@ def api_check_duplicate():
         traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
 
+# ════════════════════════════════════════════════════════════════════════════
+# HỆ THỐNG THÔNG MINH CẤP MÃ SỐ ỨNG VIÊN & LẤP LỖ HỔNG (SMART GAP FILLING)
+# ════════════════════════════════════════════════════════════════════════════
+def get_next_candidate_code(prefix='MD'):
+    """
+    Tìm mã số tiếp theo an toàn cho tiền tố (MD, FD, KD, G, CD)
+    kết hợp cơ chế phát hiện & tự động lấp lỗ hổng (Gap Filling) sát đỉnh chuỗi.
+    """
+    prefix = str(prefix or 'MD').strip().upper()
+    if prefix == 'GV':
+        prefix = 'G'
+    valid_prefixes = ['MD', 'FD', 'KD', 'G', 'CD']
+    if prefix not in valid_prefixes:
+        prefix = 'MD'
+
+    records = FormHistory.query.with_entities(FormHistory.ma_so).filter(
+        FormHistory.ma_so.isnot(None),
+        FormHistory.is_deleted == False
+    ).all()
+
+    nums = []
+    pattern = re.compile(rf'^{prefix}(\d+)$', re.IGNORECASE)
+    for (r_code,) in records:
+        if not r_code:
+            continue
+        m = pattern.match(r_code.strip())
+        if m:
+            try:
+                nums.append(int(m.group(1)))
+            except ValueError:
+                pass
+
+    if not nums:
+        defaults = {'MD': 13578, 'FD': 4284, 'KD': 1438, 'G': 712, 'CD': 10}
+        next_n = defaults.get(prefix, 1)
+        return {
+            'prefix': prefix,
+            'next_code': f'{prefix}{next_n}',
+            'max_code': f'{prefix}{next_n}',
+            'is_gap': False,
+            'gaps_count': 0,
+            'total_count': 0
+        }
+
+    max_num = max(nums)
+    sorted_unique = sorted(list(set(nums)))
+
+    # Quét tìm lỗ hổng giữa các bản ghi gần đây nhất (10 bản ghi gần nhất ở đỉnh chuỗi)
+    gaps = []
+    recent_tail = sorted_unique[-10:] if len(sorted_unique) >= 2 else []
+    for i in range(len(recent_tail) - 1):
+        a = recent_tail[i]
+        b = recent_tail[i + 1]
+        diff = b - a
+        if 1 < diff <= 5:  # Chỉ lấp các lỗ hổng nhỏ sát đỉnh chuỗi do người out ngang để lại
+            for g in range(a + 1, b):
+                gaps.append(g)
+
+    if gaps:
+        next_num = gaps[0]
+        is_gap = True
+    else:
+        next_num = max_num + 1
+        is_gap = False
+
+    return {
+        'prefix': prefix,
+        'next_code': f'{prefix}{next_num}',
+        'max_code': f'{prefix}{max_num}',
+        'is_gap': is_gap,
+        'gaps_count': len(gaps),
+        'total_count': len(nums)
+    }
+
+@app.route('/api/candidate/next-code', methods=['GET'])
+def api_next_candidate_code():
+    try:
+        prefix = request.args.get('prefix', 'MD')
+        data = get_next_candidate_code(prefix)
+        return jsonify({'success': True, 'data': data})
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @app.route('/api/submit-only', methods=['POST'])
 def api_submit_only():
     try:
@@ -2233,6 +2317,8 @@ def api_submit_only():
         record_id = data.get('_record_id')
         ma_so = str(data.get('Maso', '')).strip()
         ho_ten = str(data.get('Hoten', '')).strip()
+        code_auto_adjusted = False
+        original_ma_so = ma_so
 
         # Kiểm tra xác thực Admin
         is_admin = False
@@ -2329,7 +2415,18 @@ def api_submit_only():
         if ma_so and ma_so.upper() != 'CHO_DUYET':
             existing = FormHistory.query.filter_by(ma_so=ma_so, is_deleted=False).first()
             if existing and (not record_id or int(record_id) != existing.id):
-                return jsonify({'success': False, 'error': f'Mã số "{ma_so}" đã tồn tại.'}), 400
+                # NẾU LÀ TẠO MỚI (not record_id) VÀ MÃ THUỘC CÁC TIỀN TỐ TỰ ĐỘNG
+                # Thay vì báo lỗi chặn người dùng -> Tự động thăng cấp mã kế tiếp còn trống (Zero-Error Conflict Resolver)!
+                m_pref = re.match(r'^([A-Za-z]+)(\d+)$', ma_so.strip())
+                if not record_id and m_pref and m_pref.group(1).upper() in ['MD', 'FD', 'KD', 'G', 'CD', 'GV']:
+                    pref = m_pref.group(1).upper()
+                    new_code_info = get_next_candidate_code(pref)
+                    original_ma_so = ma_so
+                    ma_so = new_code_info['next_code']
+                    data['Maso'] = ma_so
+                    code_auto_adjusted = True
+                else:
+                    return jsonify({'success': False, 'error': f'Mã số "{ma_so}" đã tồn tại.'}), 400
 
         if record_id:
             record = FormHistory.query.get(int(record_id))
@@ -2393,7 +2490,14 @@ def api_submit_only():
             db.session.commit()
             msg = 'Đã nộp form.'
 
-        return jsonify({'success': True, 'id': record.id, 'ma_so': record.ma_so, 'msg': msg})
+        return jsonify({
+            'success': True,
+            'id': record.id,
+            'ma_so': record.ma_so,
+            'msg': msg,
+            'code_auto_adjusted': code_auto_adjusted,
+            'original_ma_so': original_ma_so
+        })
     except Exception as e:
         traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
