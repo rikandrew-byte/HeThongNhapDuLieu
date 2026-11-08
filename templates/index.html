@@ -2201,81 +2201,154 @@
                     <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Chiều cao (cm)</label><input type="text" name="Chieucao" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
                     <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Cân nặng (kg)</label><input type="text" name="Cannang" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
                     
-            <div>
-            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nơi ở (63 Tỉnh Thành)</label>
-            <select name="Noio" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors cursor-pointer">
-                <option value=""></option>
-                <optgroup label="--- Miền Bắc ---">
-                    <option value="萊州">Lai Châu</option>
-                    <option value="奠邊">Điện Biên</option>
-                    <option value="山羅">Sơn La</option>
-                    <option value="和平">Hòa Bình</option>
-                    <option value="安沛">Yên Bái</option>
-                    <option value="老街">Lào Cai</option>
-                    <option value="河江">Hà Giang</option>
-                    <option value="高平">Cao Bằng</option>
-                    <option value="北𣴓">Bắc Kạn</option>
-                    <option value="諒山">Lạng Sơn</option>
-                    <option value="宣光">Tuyên Quang</option>
-                    <option value="太原">Thái Nguyên</option>
-                    <option value="富壽">Phú Thọ</option>
-                    <option value="北江">Bắc Giang</option>
-                    <option value="廣寧">Quảng Ninh</option>
-                    <option value="北寧">Bắc Ninh</option>
-                    <option value="河南">Hà Nam</option>
-                    <option value="河內">Hà Nội</option>
-                    <option value="海陽">Hải Dương</option>
-                    <option value="海防">Hải Phòng</option>
-                    <option value="興安">Hưng Yên</option>
-                    <option value="南定">Nam Định</option>
-                    <option value="寧平">Ninh Bình</option>
-                    <option value="太平">Thái Bình</option>
-                    <option value="永福">Vĩnh Phúc</option>
-                </optgroup>
-                <optgroup label="--- Miền Trung ---">
-                    <option value="清化">Thanh Hóa</option>
-                    <option value="藝安">Nghệ An</option>
-                    <option value="河靜">Hà Tĩnh</option>
-                    <option value="廣平">Quảng Bình</option>
-                    <option value="廣治">Quảng Trị</option>
-                    <option value="承天順化">Thừa Thiên Huế</option>
-                    <option value="峴港">Đà Nẵng</option>
-                    <option value="廣南">Quảng Nam</option>
-                    <option value="廣義">Quảng Ngãi</option>
-                    <option value="平定">Bình Định</option>
-                    <option value="富安">Phú Yên</option>
-                    <option value="慶和">Khánh Hòa</option>
-                    <option value="寧順">Ninh Thuận</option>
-                    <option value="平順">Bình Thuận</option>
-                    <option value="崑嵩">Kon Tum</option>
-                    <option value="嘉萊">Gia Lai</option>
-                    <option value="多樂">Đắk Lắk</option>
-                    <option value="得農">Đắk Nông</option>
-                    <option value="林同">Lâm Đồng</option>
-                </optgroup>
-                <optgroup label="--- Miền Nam ---">
-                    <option value="平福">Bình Phước</option>
-                    <option value="平陽">Bình Dương</option>
-                    <option value="同奈">Đồng Nai</option>
-                    <option value="西寧">Tây Ninh</option>
-                    <option value="巴地頭頓">Bà Rịa - Vũng Tàu</option>
-                    <option value="胡志明市">TP Hồ Chí Minh</option>
-                    <option value="隆安">Long An</option>
-                    <option value="同塔">Đồng Tháp</option>
-                    <option value="前江">Tiền Giang</option>
-                    <option value="安江">An Giang</option>
-                    <option value="檳椥">Bến Tre</option>
-                    <option value="永隆">Vĩnh Long</option>
-                    <option value="茶榮">Trà Vinh</option>
-                    <option value="後江">Hậu Giang</option>
-                    <option value="堅江">Kiên Giang</option>
-                    <option value="朔莊">Sóc Trăng</option>
-                    <option value="薄遼">Bạc Liêu</option>
-                    <option value="金甌">Cà Mau</option>
-                    <option value="芹苴">Cần Thơ</option>
-                </optgroup>
-            </select>
-        </div>
+            <div class="relative" id="noioComboboxContainer">
+                <div class="flex items-center justify-between mb-1">
+                    <label class="block text-xs font-bold text-slate-400 uppercase">Nơi ở (63 Tỉnh Thành)</label>
+                    <!-- Quick-pick chips 1 chạm cho các tỉnh phổ biến nhất -->
+                    <div class="flex items-center gap-1 flex-wrap">
+                        <button type="button" onclick="selectNoioOption('藝安', 'Nghệ An')" class="px-1.5 py-0.5 text-[10.5px] font-semibold bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white rounded transition-colors shadow-2xs" title="Chọn nhanh Nghệ An">Nghệ An</button>
+                        <button type="button" onclick="selectNoioOption('河靜', 'Hà Tĩnh')" class="px-1.5 py-0.5 text-[10.5px] font-semibold bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white rounded transition-colors shadow-2xs" title="Chọn nhanh Hà Tĩnh">Hà Tĩnh</button>
+                        <button type="button" onclick="selectNoioOption('清化', 'Thanh Hóa')" class="px-1.5 py-0.5 text-[10.5px] font-semibold bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white rounded transition-colors shadow-2xs" title="Chọn nhanh Thanh Hóa">Thanh Hóa</button>
+                        <button type="button" onclick="selectNoioOption('海陽', 'Hải Dương')" class="px-1.5 py-0.5 text-[10.5px] font-semibold bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white rounded transition-colors shadow-2xs" title="Chọn nhanh Hải Dương">Hải Dương</button>
+                    </div>
+                </div>
+
+                <!-- Input tìm kiếm & hiển thị tỉnh thành -->
+                <div class="relative flex items-center border-b-2 border-gray-200 focus-within:border-blue-600 transition-colors">
+                    <span class="text-slate-400 pl-0.5 pr-2 text-sm select-none">📍</span>
+                    <input type="text" 
+                           id="noioSearchInput" 
+                           autocomplete="off" 
+                           placeholder="Gõ tìm tỉnh (VD: Nghệ An, Hà Tĩnh, HCM)..." 
+                           onfocus="openNoioDropdown()" 
+                           onclick="openNoioDropdown()"
+                           oninput="filterNoioDropdown(this.value)" 
+                           onkeydown="handleNoioKeyDown(event)"
+                           class="w-full bg-transparent py-2 text-sm font-semibold text-slate-800 focus:outline-none cursor-pointer placeholder:font-normal placeholder:text-slate-400">
+                    
+                    <button type="button" 
+                            id="noioClearBtn" 
+                            onclick="clearNoioSelection(event)" 
+                            class="hidden p-1 text-slate-400 hover:text-rose-500 text-xs transition-colors rounded-full hover:bg-slate-100 mr-1" 
+                            title="Xóa lựa chọn">
+                        ✕
+                    </button>
+                    <button type="button" 
+                            onclick="toggleNoioDropdown(event)" 
+                            class="p-1 text-slate-400 hover:text-blue-600 text-xs transition-colors rounded hover:bg-slate-100 flex items-center" 
+                            title="Mở danh sách tỉnh thành">
+                        <span id="noioArrowIcon" class="transition-transform duration-200 text-[10px]">▼</span>
+                    </button>
+                </div>
+
+                <!-- Hidden native select giữ nguyên 100% 63 option gốc để bảo toàn luồng submit form, FormData, backend, Excel, in CV -->
+                <select name="Noio" id="realNoioSelect" class="hidden">
+                    <option value=""></option>
+                    <optgroup label="--- Miền Bắc ---">
+                        <option value="萊州">Lai Châu</option>
+                        <option value="奠邊">Điện Biên</option>
+                        <option value="山羅">Sơn La</option>
+                        <option value="和平">Hòa Bình</option>
+                        <option value="安沛">Yên Bái</option>
+                        <option value="老街">Lào Cai</option>
+                        <option value="河江">Hà Giang</option>
+                        <option value="高平">Cao Bằng</option>
+                        <option value="北𣴓">Bắc Kạn</option>
+                        <option value="諒山">Lạng Sơn</option>
+                        <option value="宣光">Tuyên Quang</option>
+                        <option value="太原">Thái Nguyên</option>
+                        <option value="富壽">Phú Thọ</option>
+                        <option value="北江">Bắc Giang</option>
+                        <option value="廣寧">Quảng Ninh</option>
+                        <option value="北寧">Bắc Ninh</option>
+                        <option value="河南">Hà Nam</option>
+                        <option value="河內">Hà Nội</option>
+                        <option value="海陽">Hải Dương</option>
+                        <option value="海防">Hải Phòng</option>
+                        <option value="興安">Hưng Yên</option>
+                        <option value="南定">Nam Định</option>
+                        <option value="寧平">Ninh Bình</option>
+                        <option value="太平">Thái Bình</option>
+                        <option value="永福">Vĩnh Phúc</option>
+                    </optgroup>
+                    <optgroup label="--- Miền Trung ---">
+                        <option value="清化">Thanh Hóa</option>
+                        <option value="藝安">Nghệ An</option>
+                        <option value="河靜">Hà Tĩnh</option>
+                        <option value="廣平">Quảng Bình</option>
+                        <option value="廣治">Quảng Trị</option>
+                        <option value="承天順化">Thừa Thiên Huế</option>
+                        <option value="峴港">Đà Nẵng</option>
+                        <option value="廣南">Quảng Nam</option>
+                        <option value="廣義">Quảng Ngãi</option>
+                        <option value="平定">Bình Định</option>
+                        <option value="富安">Phú Yên</option>
+                        <option value="慶和">Khánh Hòa</option>
+                        <option value="寧順">Ninh Thuận</option>
+                        <option value="平順">Bình Thuận</option>
+                        <option value="崑嵩">Kon Tum</option>
+                        <option value="嘉萊">Gia Lai</option>
+                        <option value="多樂">Đắk Lắk</option>
+                        <option value="得農">Đắk Nông</option>
+                        <option value="林同">Lâm Đồng</option>
+                    </optgroup>
+                    <optgroup label="--- Miền Nam ---">
+                        <option value="平福">Bình Phước</option>
+                        <option value="平陽">Bình Dương</option>
+                        <option value="同奈">Đồng Nai</option>
+                        <option value="西寧">Tây Ninh</option>
+                        <option value="巴地頭頓">Bà Rịa - Vũng Tàu</option>
+                        <option value="胡志明市">TP Hồ Chí Minh</option>
+                        <option value="隆安">Long An</option>
+                        <option value="同塔">Đồng Tháp</option>
+                        <option value="前江">Tiền Giang</option>
+                        <option value="安江">An Giang</option>
+                        <option value="檳椥">Bến Tre</option>
+                        <option value="永隆">Vĩnh Long</option>
+                        <option value="茶榮">Trà Vinh</option>
+                        <option value="後江">Hậu Giang</option>
+                        <option value="堅江">Kiên Giang</option>
+                        <option value="朔莊">Sóc Trăng</option>
+                        <option value="薄遼">Bạc Liêu</option>
+                        <option value="金甌">Cà Mau</option>
+                        <option value="芹苴">Cần Thơ</option>
+                    </optgroup>
+                </select>
+
+                <!-- Dropdown panel nổi thông minh -->
+                <div id="noioDropdownPanel" 
+                     class="hidden absolute left-0 right-0 top-full mt-1.5 bg-white rounded-xl shadow-2xl border border-slate-200 z-50 overflow-hidden text-sm">
+                    
+                    <!-- Quick-pick section trong dropdown -->
+                    <div class="p-2.5 bg-slate-50/90 border-b border-slate-100">
+                        <div class="text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                            <span>⚡ Chọn nhanh 1 chạm:</span>
+                            <span class="text-[10px] text-slate-400 font-normal">Gõ để lọc 63 tỉnh</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1">
+                            <button type="button" onclick="selectNoioOption('藝安', 'Nghệ An')" class="px-2 py-0.5 text-xs font-semibold bg-white border border-blue-200 text-blue-700 hover:bg-blue-600 hover:text-white rounded-md transition-all shadow-2xs">Nghệ An</button>
+                            <button type="button" onclick="selectNoioOption('河靜', 'Hà Tĩnh')" class="px-2 py-0.5 text-xs font-semibold bg-white border border-blue-200 text-blue-700 hover:bg-blue-600 hover:text-white rounded-md transition-all shadow-2xs">Hà Tĩnh</button>
+                            <button type="button" onclick="selectNoioOption('清化', 'Thanh Hóa')" class="px-2 py-0.5 text-xs font-semibold bg-white border border-blue-200 text-blue-700 hover:bg-blue-600 hover:text-white rounded-md transition-all shadow-2xs">Thanh Hóa</button>
+                            <button type="button" onclick="selectNoioOption('海陽', 'Hải Dương')" class="px-2 py-0.5 text-xs font-semibold bg-white border border-blue-200 text-blue-700 hover:bg-blue-600 hover:text-white rounded-md transition-all shadow-2xs">Hải Dương</button>
+                            <button type="button" onclick="selectNoioOption('富壽', 'Phú Thọ')" class="px-2 py-0.5 text-xs font-semibold bg-white border border-blue-200 text-blue-700 hover:bg-blue-600 hover:text-white rounded-md transition-all shadow-2xs">Phú Thọ</button>
+                            <button type="button" onclick="selectNoioOption('河內', 'Hà Nội')" class="px-2 py-0.5 text-xs font-semibold bg-white border border-blue-200 text-blue-700 hover:bg-blue-600 hover:text-white rounded-md transition-all shadow-2xs">Hà Nội</button>
+                            <button type="button" onclick="selectNoioOption('北江', 'Bắc Giang')" class="px-2 py-0.5 text-xs font-semibold bg-white border border-blue-200 text-blue-700 hover:bg-blue-600 hover:text-white rounded-md transition-all shadow-2xs">Bắc Giang</button>
+                            <button type="button" onclick="selectNoioOption('胡志明市', 'TP Hồ Chí Minh')" class="px-2 py-0.5 text-xs font-semibold bg-white border border-blue-200 text-blue-700 hover:bg-blue-600 hover:text-white rounded-md transition-all shadow-2xs">TP.HCM</button>
+                            <button type="button" onclick="selectNoioOption('南定', 'Nam Định')" class="px-2 py-0.5 text-xs font-semibold bg-white border border-blue-200 text-blue-700 hover:bg-blue-600 hover:text-white rounded-md transition-all shadow-2xs">Nam Định</button>
+                            <button type="button" onclick="selectNoioOption('廣平', 'Quảng Bình')" class="px-2 py-0.5 text-xs font-semibold bg-white border border-blue-200 text-blue-700 hover:bg-blue-600 hover:text-white rounded-md transition-all shadow-2xs">Quảng Bình</button>
+                        </div>
+                    </div>
+
+                    <!-- Danh sách các tỉnh có cuộn và nhóm miền -->
+                    <div id="noioOptionsList" class="max-h-60 overflow-y-auto divide-y divide-slate-100 py-1">
+                        <!-- Sẽ được render bởi JS -->
+                    </div>
+
+                    <div id="noioEmptyState" class="hidden p-4 text-center text-xs text-slate-400">
+                        🔍 Không tìm thấy tỉnh thành nào khớp với từ khóa
+                    </div>
+                </div>
+            </div>
             <div>
                 <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Ảnh chân dung</label>
                 <div class="relative">
@@ -3618,6 +3691,9 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                     }
                 }
             }
+
+            // Đồng bộ hiển thị Nơi ở (63 Tỉnh Thành) lên combobox
+            syncNoioDisplayFromSelect();
 
             // Đảm bảo trường Donhang được nạp đúng
             const donHangEl = document.getElementsByName('Donhang')[0];
@@ -6978,6 +7054,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             dismissDuplicateWarning();
             document.getElementById('resumeForm').reset();
             resetSmartCodeState();
+            clearNoioSelection(null);
 
             // Khôi phục nhân viên NPT đang chọn (nếu có trong sessionStorage)
             const empSelect = document.getElementById('npt-emp-select');
@@ -7171,6 +7248,353 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             if (hintText) hintText.innerHTML = '<span>✨ Tự động gán mã liên tục</span>';
             if (maxText) maxText.innerText = '';
         }
+
+        // ═══════════════════════════════════════════════════════════════
+        // BỘ CHỌN & TÌM KIẾM NHANH NƠI Ở (63 TỈNH THÀNH COMBOBOX)
+        // ═══════════════════════════════════════════════════════════════
+        const NOIO_PROVINCES = [
+            // Miền Bắc (25 tỉnh thành)
+            { zh: '萊州', vi: 'Lai Châu', region: 'Miền Bắc', aliases: ['lai chau', 'lc'] },
+            { zh: '奠邊', vi: 'Điện Biên', region: 'Miền Bắc', aliases: ['dien bien', 'db'] },
+            { zh: '山羅', vi: 'Sơn La', region: 'Miền Bắc', aliases: ['son la', 'sl'] },
+            { zh: '和平', vi: 'Hòa Bình', region: 'Miền Bắc', aliases: ['hoa binh', 'hb'] },
+            { zh: '安沛', vi: 'Yên Bái', region: 'Miền Bắc', aliases: ['yen bai', 'yb'] },
+            { zh: '老街', vi: 'Lào Cai', region: 'Miền Bắc', aliases: ['lao cai'] },
+            { zh: '河江', vi: 'Hà Giang', region: 'Miền Bắc', aliases: ['ha giang', 'hg'] },
+            { zh: '高平', vi: 'Cao Bằng', region: 'Miền Bắc', aliases: ['cao bang', 'cb'] },
+            { zh: '北𣴓', vi: 'Bắc Kạn', region: 'Miền Bắc', aliases: ['bac kan', 'bac can', 'bk'] },
+            { zh: '諒山', vi: 'Lạng Sơn', region: 'Miền Bắc', aliases: ['lang son', 'ls'] },
+            { zh: '宣光', vi: 'Tuyên Quang', region: 'Miền Bắc', aliases: ['tuyen quang', 'tq'] },
+            { zh: '太原', vi: 'Thái Nguyên', region: 'Miền Bắc', aliases: ['thai nguyen', 'tn'] },
+            { zh: '富壽', vi: 'Phú Thọ', region: 'Miền Bắc', aliases: ['phu tho', 'pt'] },
+            { zh: '北江', vi: 'Bắc Giang', region: 'Miền Bắc', aliases: ['bac giang', 'bg'] },
+            { zh: '廣寧', vi: 'Quảng Ninh', region: 'Miền Bắc', aliases: ['quang ninh', 'qn'] },
+            { zh: '北寧', vi: 'Bắc Ninh', region: 'Miền Bắc', aliases: ['bac ninh', 'bn'] },
+            { zh: '河南', vi: 'Hà Nam', region: 'Miền Bắc', aliases: ['ha nam'] },
+            { zh: '河內', vi: 'Hà Nội', region: 'Miền Bắc', aliases: ['ha noi', 'hn', 'hanoi'] },
+            { zh: '海陽', vi: 'Hải Dương', region: 'Miền Bắc', aliases: ['hai duong', 'hd'] },
+            { zh: '海防', vi: 'Hải Phòng', region: 'Miền Bắc', aliases: ['hai phong', 'hp'] },
+            { zh: '興安', vi: 'Hưng Yên', region: 'Miền Bắc', aliases: ['hung yen', 'hy'] },
+            { zh: '南定', vi: 'Nam Định', region: 'Miền Bắc', aliases: ['nam dinh', 'nd'] },
+            { zh: '寧平', vi: 'Ninh Bình', region: 'Miền Bắc', aliases: ['ninh binh', 'nb'] },
+            { zh: '太平', vi: 'Thái Bình', region: 'Miền Bắc', aliases: ['thai binh', 'tb'] },
+            { zh: '永福', vi: 'Vĩnh Phúc', region: 'Miền Bắc', aliases: ['vinh phuc', 'vp'] },
+            // Miền Trung (19 tỉnh thành)
+            { zh: '清化', vi: 'Thanh Hóa', region: 'Miền Trung', aliases: ['thanh hoa', 'th'] },
+            { zh: '藝安', vi: 'Nghệ An', region: 'Miền Trung', aliases: ['nghe an', 'na'] },
+            { zh: '河靜', vi: 'Hà Tĩnh', region: 'Miền Trung', aliases: ['ha tinh', 'ht'] },
+            { zh: '廣平', vi: 'Quảng Bình', region: 'Miền Trung', aliases: ['quang binh', 'qb'] },
+            { zh: '廣治', vi: 'Quảng Trị', region: 'Miền Trung', aliases: ['quang tri', 'qt'] },
+            { zh: '承天順化', vi: 'Thừa Thiên Huế', region: 'Miền Trung', aliases: ['hue', 'thua thien hue', 'tth'] },
+            { zh: '峴港', vi: 'Đà Nẵng', region: 'Miền Trung', aliases: ['da nang', 'dn', 'danang'] },
+            { zh: '廣南', vi: 'Quảng Nam', region: 'Miền Trung', aliases: ['quang nam'] },
+            { zh: '廣義', vi: 'Quảng Ngãi', region: 'Miền Trung', aliases: ['quang ngai'] },
+            { zh: '平定', vi: 'Bình Định', region: 'Miền Trung', aliases: ['binh dinh'] },
+            { zh: '富安', vi: 'Phú Yên', region: 'Miền Trung', aliases: ['phu yen', 'py'] },
+            { zh: '慶和', vi: 'Khánh Hòa', region: 'Miền Trung', aliases: ['khanh hoa', 'nha trang', 'nt'] },
+            { zh: '寧順', vi: 'Ninh Thuận', region: 'Miền Trung', aliases: ['ninh thuan', 'phan rang'] },
+            { zh: '平順', vi: 'Bình Thuận', region: 'Miền Trung', aliases: ['binh thuan', 'phan thiet'] },
+            { zh: '崑嵩', vi: 'Kon Tum', region: 'Miền Trung', aliases: ['kon tum', 'kt'] },
+            { zh: '嘉萊', vi: 'Gia Lai', region: 'Miền Trung', aliases: ['gia lai', 'gl', 'pleiku'] },
+            { zh: '多樂', vi: 'Đắk Lắk', region: 'Miền Trung', aliases: ['dak lak', 'daklak', 'dlk', 'bmt'] },
+            { zh: '得農', vi: 'Đắk Nông', region: 'Miền Trung', aliases: ['dak nong', 'daknong'] },
+            { zh: '林同', vi: 'Lâm Đồng', region: 'Miền Trung', aliases: ['lam dong', 'da lat', 'dalat'] },
+            // Miền Nam (19 tỉnh thành)
+            { zh: '平福', vi: 'Bình Phước', region: 'Miền Nam', aliases: ['binh phuoc', 'bp'] },
+            { zh: '平陽', vi: 'Bình Dương', region: 'Miền Nam', aliases: ['binh duong', 'bd'] },
+            { zh: '同奈', vi: 'Đồng Nai', region: 'Miền Nam', aliases: ['dong nai'] },
+            { zh: '西寧', vi: 'Tây Ninh', region: 'Miền Nam', aliases: ['tay ninh', 'tn'] },
+            { zh: '巴地頭頓', vi: 'Bà Rịa - Vũng Tàu', region: 'Miền Nam', aliases: ['ba ria vung tau', 'vung tau', 'vt', 'brvt'] },
+            { zh: '胡志明市', vi: 'TP Hồ Chí Minh', region: 'Miền Nam', aliases: ['tp ho chi minh', 'ho chi minh', 'hcm', 'tphcm', 'tp hcm', 'sai gon', 'saigon', 'sg'] },
+            { zh: '隆安', vi: 'Long An', region: 'Miền Nam', aliases: ['long an', 'la'] },
+            { zh: '同塔', vi: 'Đồng Tháp', region: 'Miền Nam', aliases: ['dong thap', 'dt'] },
+            { zh: '前江', vi: 'Tiền Giang', region: 'Miền Nam', aliases: ['tien giang', 'tg', 'my tho'] },
+            { zh: '安江', vi: 'An Giang', region: 'Miền Nam', aliases: ['an giang', 'ag', 'long xuyen'] },
+            { zh: '檳椥', vi: 'Bến Tre', region: 'Miền Nam', aliases: ['ben tre', 'bt'] },
+            { zh: '永隆', vi: 'Vĩnh Long', region: 'Miền Nam', aliases: ['vinh long', 'vl'] },
+            { zh: '茶榮', vi: 'Trà Vinh', region: 'Miền Nam', aliases: ['tra vinh', 'tv'] },
+            { zh: '後江', vi: 'Hậu Giang', region: 'Miền Nam', aliases: ['hau giang', 'hg'] },
+            { zh: '堅江', vi: 'Kiên Giang', region: 'Miền Nam', aliases: ['kien giang', 'kg', 'rach gia', 'phu quoc'] },
+            { zh: '朔莊', vi: 'Sóc Trăng', region: 'Miền Nam', aliases: ['soc trang', 'st'] },
+            { zh: '薄遼', vi: 'Bạc Liêu', region: 'Miền Nam', aliases: ['bac lieu', 'bl'] },
+            { zh: '金甌', vi: 'Cà Mau', region: 'Miền Nam', aliases: ['ca mau', 'cm'] },
+            { zh: '芹苴', vi: 'Cần Thơ', region: 'Miền Nam', aliases: ['can tho', 'ct'] }
+        ];
+
+        let noioHighlightedIndex = -1;
+        let currentFilteredNoioList = [...NOIO_PROVINCES];
+
+        function removeVietnameseTones(str) {
+            if (!str) return '';
+            return str
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/đ/g, 'd')
+                .replace(/Đ/g, 'd')
+                .toLowerCase()
+                .trim();
+        }
+
+        function openNoioDropdown() {
+            const panel = document.getElementById('noioDropdownPanel');
+            const arrow = document.getElementById('noioArrowIcon');
+            if (panel) {
+                panel.classList.remove('hidden');
+                if (arrow) arrow.style.transform = 'rotate(180deg)';
+                const input = document.getElementById('noioSearchInput');
+                filterNoioDropdown(input ? input.value : '');
+            }
+        }
+
+        function closeNoioDropdown() {
+            const panel = document.getElementById('noioDropdownPanel');
+            const arrow = document.getElementById('noioArrowIcon');
+            if (panel) {
+                panel.classList.add('hidden');
+                if (arrow) arrow.style.transform = 'rotate(0deg)';
+                noioHighlightedIndex = -1;
+            }
+        }
+
+        function toggleNoioDropdown(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            const panel = document.getElementById('noioDropdownPanel');
+            if (panel && !panel.classList.contains('hidden')) {
+                closeNoioDropdown();
+            } else {
+                openNoioDropdown();
+                const input = document.getElementById('noioSearchInput');
+                if (input) input.focus();
+            }
+        }
+
+        function filterNoioDropdown(query) {
+            const listEl = document.getElementById('noioOptionsList');
+            const emptyEl = document.getElementById('noioEmptyState');
+            if (!listEl) return;
+
+            const qRaw = (query || '').trim().toLowerCase();
+            const qClean = removeVietnameseTones(qRaw);
+
+            if (!qClean) {
+                currentFilteredNoioList = [...NOIO_PROVINCES];
+            } else {
+                currentFilteredNoioList = NOIO_PROVINCES.filter(item => {
+                    const viNorm = removeVietnameseTones(item.vi);
+                    if (viNorm.includes(qClean)) return true;
+                    if (item.vi.toLowerCase().includes(qRaw)) return true;
+                    if (item.zh.includes(qRaw)) return true;
+                    if (item.aliases && item.aliases.some(a => removeVietnameseTones(a).includes(qClean) || a.includes(qClean))) return true;
+                    return false;
+                });
+            }
+
+            renderNoioList(currentFilteredNoioList, qClean);
+            noioHighlightedIndex = currentFilteredNoioList.length > 0 ? 0 : -1;
+            updateNoioHighlightStyle();
+
+            if (currentFilteredNoioList.length === 0) {
+                if (emptyEl) emptyEl.classList.remove('hidden');
+            } else {
+                if (emptyEl) emptyEl.classList.add('hidden');
+            }
+        }
+
+        function renderNoioList(items, qClean) {
+            const listEl = document.getElementById('noioOptionsList');
+            const realSelect = document.getElementById('realNoioSelect');
+            const currentVal = realSelect ? realSelect.value : '';
+            if (!listEl) return;
+
+            if (items.length === 0) {
+                listEl.innerHTML = '';
+                return;
+            }
+
+            // Nếu không có tìm kiếm, gom theo vùng miền
+            if (!qClean) {
+                const regions = ['Miền Bắc', 'Miền Trung', 'Miền Nam'];
+                let html = '';
+                let globalIdx = 0;
+                regions.forEach(reg => {
+                    const regItems = items.filter(it => it.region === reg);
+                    if (regItems.length > 0) {
+                        html += `<div class="px-3 py-1.5 bg-slate-100/70 text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">
+                            <span>--- ${reg} ---</span>
+                            <span class="text-[10px] text-slate-400 font-normal">${regItems.length} tỉnh</span>
+                        </div>`;
+                        regItems.forEach(item => {
+                            const isSelected = item.zh === currentVal;
+                            html += `<div class="noio-option-item px-3 py-2 cursor-pointer flex items-center justify-between text-xs transition-colors ${isSelected ? 'bg-blue-50 text-blue-700 font-bold' : 'text-slate-700 hover:bg-slate-50'}"
+                                          data-index="${globalIdx}" 
+                                          data-zh="${escapeHtml(item.zh)}" 
+                                          data-vi="${escapeHtml(item.vi)}" 
+                                          onclick="selectNoioOption('${escapeHtml(item.zh)}', '${escapeHtml(item.vi)}')">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-sm">${isSelected ? '✓' : '📍'}</span>
+                                            <span>${escapeHtml(item.vi)}</span>
+                                        </div>
+                                        <span class="font-mono text-[11px] text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">${escapeHtml(item.zh)}</span>
+                                     </div>`;
+                            globalIdx++;
+                        });
+                    }
+                });
+                listEl.innerHTML = html;
+            } else {
+                // Đang tìm kiếm -> hiện danh sách kết quả phù hợp
+                let html = '';
+                items.forEach((item, idx) => {
+                    const isSelected = item.zh === currentVal;
+                    html += `<div class="noio-option-item px-3 py-2 cursor-pointer flex items-center justify-between text-xs transition-colors ${isSelected ? 'bg-blue-50 text-blue-700 font-bold' : 'text-slate-700 hover:bg-slate-50'}"
+                                  data-index="${idx}" 
+                                  data-zh="${escapeHtml(item.zh)}" 
+                                  data-vi="${escapeHtml(item.vi)}" 
+                                  onclick="selectNoioOption('${escapeHtml(item.zh)}', '${escapeHtml(item.vi)}')">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm">${isSelected ? '✓' : '📍'}</span>
+                                    <span>${escapeHtml(item.vi)}</span>
+                                    <span class="text-[10px] text-slate-400 font-normal">(${item.region})</span>
+                                </div>
+                                <span class="font-mono text-[11px] text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">${escapeHtml(item.zh)}</span>
+                             </div>`;
+                });
+                listEl.innerHTML = html;
+            }
+        }
+
+        function updateNoioHighlightStyle() {
+            const elements = document.querySelectorAll('.noio-option-item');
+            elements.forEach((el, idx) => {
+                if (idx === noioHighlightedIndex) {
+                    el.classList.add('bg-blue-100/70', 'font-semibold');
+                    el.scrollIntoView({ block: 'nearest' });
+                } else {
+                    el.classList.remove('bg-blue-100/70');
+                }
+            });
+        }
+
+        function handleNoioKeyDown(e) {
+            const panel = document.getElementById('noioDropdownPanel');
+            const isClosed = !panel || panel.classList.contains('hidden');
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (isClosed) {
+                    openNoioDropdown();
+                    return;
+                }
+                if (currentFilteredNoioList.length > 0) {
+                    noioHighlightedIndex = (noioHighlightedIndex + 1) % currentFilteredNoioList.length;
+                    updateNoioHighlightStyle();
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (isClosed) {
+                    openNoioDropdown();
+                    return;
+                }
+                if (currentFilteredNoioList.length > 0) {
+                    noioHighlightedIndex = (noioHighlightedIndex - 1 + currentFilteredNoioList.length) % currentFilteredNoioList.length;
+                    updateNoioHighlightStyle();
+                }
+            } else if (e.key === 'Enter') {
+                if (!isClosed && noioHighlightedIndex >= 0 && noioHighlightedIndex < currentFilteredNoioList.length) {
+                    e.preventDefault();
+                    const item = currentFilteredNoioList[noioHighlightedIndex];
+                    selectNoioOption(item.zh, item.vi);
+                }
+            } else if (e.key === 'Escape') {
+                closeNoioDropdown();
+            }
+        }
+
+        function selectNoioOption(zh, vi) {
+            const realSelect = document.getElementById('realNoioSelect');
+            const input = document.getElementById('noioSearchInput');
+            const clearBtn = document.getElementById('noioClearBtn');
+
+            if (realSelect) {
+                realSelect.value = zh;
+                realSelect.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            if (input) {
+                input.value = vi;
+            }
+            if (clearBtn) {
+                clearBtn.classList.remove('hidden');
+            }
+            closeNoioDropdown();
+        }
+
+        function clearNoioSelection(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            const realSelect = document.getElementById('realNoioSelect');
+            const input = document.getElementById('noioSearchInput');
+            const clearBtn = document.getElementById('noioClearBtn');
+
+            if (realSelect) {
+                realSelect.value = '';
+                realSelect.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            if (input) {
+                input.value = '';
+                input.focus();
+            }
+            if (clearBtn) {
+                clearBtn.classList.add('hidden');
+            }
+            filterNoioDropdown('');
+        }
+
+        function syncNoioDisplayFromSelect() {
+            const realSelect = document.getElementById('realNoioSelect');
+            const input = document.getElementById('noioSearchInput');
+            const clearBtn = document.getElementById('noioClearBtn');
+            if (!realSelect || !input) return;
+
+            const val = realSelect.value;
+            if (!val) {
+                input.value = '';
+                if (clearBtn) clearBtn.classList.add('hidden');
+                return;
+            }
+
+            const found = NOIO_PROVINCES.find(p => p.zh === val);
+            if (found) {
+                input.value = found.vi;
+            } else {
+                const opt = realSelect.querySelector(`option[value="${val}"]`);
+                input.value = opt ? opt.textContent : val;
+            }
+            if (clearBtn) clearBtn.classList.remove('hidden');
+        }
+
+        // Tự động đóng dropdown khi click ra ngoài
+        document.addEventListener('click', (e) => {
+            const container = document.getElementById('noioComboboxContainer');
+            if (container && !container.contains(e.target)) {
+                closeNoioDropdown();
+            }
+        });
+
+        // Khởi tạo và lắng nghe sự kiện đồng bộ
+        document.addEventListener('DOMContentLoaded', () => {
+            syncNoioDisplayFromSelect();
+            const resumeForm = document.getElementById('resumeForm');
+            if (resumeForm) {
+                resumeForm.addEventListener('reset', () => {
+                    setTimeout(syncNoioDisplayFromSelect, 50);
+                });
+            }
+        });
 
         // ═══════════════════════════════════════════════════════════════
         // CƠ CHẾ KIỂM TRA & CẢNH BÁO TRÙNG LẶP HỒ SƠ (CCCD, SĐT, TÊN + NGÀY SINH)
