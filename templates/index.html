@@ -3637,35 +3637,55 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             // Ghi nhớ ID để UPDATE thay vì INSERT mới
             document.getElementById('editingRecordId').value = item.id;
             
-            // Hiển thị nút Cập nhật và Hủy
+            const isApproving = (!item.ma_so || (item.ma_so + '').trim().toUpperCase() === 'CHO_DUYET');
+
+            // Hiển thị nút Cập nhật / Phê duyệt và Hủy
             document.getElementById('btnUpdateOnly').style.display = 'flex';
             document.getElementById('btnCancelEdit').style.display = 'flex';
-            syncTopActionButtons(true);
+            syncTopActionButtons(true, isApproving);
             
             // Cuộn lên đầu và đóng popup
             window.scrollTo({ top: 0, behavior: 'smooth' });
             document.getElementById('historyModal').style.display = 'none';
 
-            // Đồng bộ trạng thái Mã số khi chỉnh sửa hồ sơ
+            // Đồng bộ trạng thái Mã số khi chỉnh sửa / duyệt hồ sơ
             const smartBadge = document.getElementById('smartCodeBadge');
             const smartHintText = document.getElementById('smartCodeHintText');
             const smartMaxText = document.getElementById('smartCodeMaxText');
             if (smartBadge) {
                 smartBadge.classList.add('hidden');
             }
-            if (smartHintText) {
-                smartHintText.innerHTML = `<span class="text-slate-600 font-semibold">🔒 Đang sửa: <b>${escapeHtml(item.ma_so || '')}</b></span>`;
-            }
-            if (smartMaxText) smartMaxText.innerText = '';
-            if (item.ma_so) {
-                const mPref = item.ma_so.trim().toUpperCase().match(/^([A-Z]+)/);
-                if (mPref && ['MD', 'FD', 'KD', 'G', 'CD'].includes(mPref[1])) {
-                    updatePrefixPillStyle(mPref[1]);
-                    currentSelectedPrefix = mPref[1];
+
+            if (isApproving) {
+                if (smartHintText) {
+                    smartHintText.innerHTML = `<span class="text-amber-700 font-semibold text-[11px]">⚡ Cấp mã cho hồ sơ chờ duyệt</span>`;
+                }
+                // Nhận diện tiền tố ban đầu dựa theo đơn hàng hoặc mặc định MD
+                let initPrefix = 'MD';
+                const donHangStr = ((item.don_hang || data['Donhang'] || '') + '').toLowerCase();
+                if (donHangStr.includes('điều dưỡng') || donHangStr.includes('hộ lý') || donHangStr.includes('y tá')) {
+                    initPrefix = 'KD';
+                } else if (donHangStr.includes('giúp việc') || donHangStr.includes('khán hộ công')) {
+                    initPrefix = 'G';
+                }
+                currentSelectedPrefix = initPrefix;
+                updatePrefixPillStyle(initPrefix);
+            } else {
+                if (smartHintText) {
+                    smartHintText.innerHTML = `<span class="text-slate-600 font-semibold">🔒 Đang sửa: <b>${escapeHtml(item.ma_so || '')}</b></span>`;
+                }
+                if (smartMaxText) smartMaxText.innerText = '';
+                if (item.ma_so) {
+                    const mPref = item.ma_so.trim().toUpperCase().match(/^([A-Z]+)/);
+                    if (mPref && ['MD', 'FD', 'KD', 'G', 'CD'].includes(mPref[1])) {
+                        updatePrefixPillStyle(mPref[1]);
+                        currentSelectedPrefix = mPref[1];
+                    }
                 }
             }
 
             for (const key in data) {
+                if (isApproving && key === 'Maso') continue;
                 const elements = document.getElementsByName(key);
                 if (elements.length > 0) {
                     const el = elements[0];
@@ -3785,11 +3805,9 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             displayDocumentPreview();
 
             
-            // Xóa mã số nếu là CHO_DUYET để Admin nhập mã mới
-            const maSoInput = document.getElementsByName("Maso")[0];
-            if (maSoInput && (maSoInput.value === 'CHO_DUYET' || maSoInput.value === '')) {
-                maSoInput.value = '';
-                maSoInput.focus();
+            if (isApproving) {
+                // Tự động gán mã số thông minh kế tiếp cho hồ sơ duyệt
+                selectCandidatePrefix(currentSelectedPrefix, true);
             }
 
             calcAge();
@@ -6968,6 +6986,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 }
                 
                 if (result.success) {
+                    const isAppr = !!(document.getElementById('btnUpdateText')?.innerText?.includes('Phê duyệt') || document.getElementById('smartCodeHintText')?.innerText?.includes('chờ duyệt'));
                     if (mode === 'html') {
                         // IN PDF: mở tab mới với giao diện CV inline → có nút SAVE AS PDF
                         const slug = (result.ma_so === 'CHO_DUYET' ? `${result.id}/` : '') + result.ma_so + (plainData['Hoten'] ? '_' + sanitizeSlug(plainData['Hoten']) : '');
@@ -6976,10 +6995,13 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                         // TẢI FILE: tải xuống file HTML qua API riêng
                         window.location.href = `/api/download-cv/${encodeURIComponent(result.ma_so)}`;
                     } else if (result.code_auto_adjusted) {
-                        alert(`🎉 Hồ sơ đã được lưu thành công với mã [${result.ma_so}]!\n\n(Lưu ý: Mã ${result.original_ma_so || ''} vừa được đồng nghiệp lưu trước trong tích tắc, hệ thống đã tự động gán mã kế tiếp để tránh trùng lặp và không gián đoạn công việc).`);
+                        alert(`🎉 Hồ sơ đã được ${isAppr ? 'phê duyệt và cấp mã' : 'lưu'} thành công với mã [${result.ma_so}]!\n\n(Lưu ý: Mã ${result.original_ma_so || ''} vừa được đồng nghiệp lưu trước trong tích tắc, hệ thống đã tự động gán mã kế tiếp để tránh trùng lặp và không gián đoạn công việc).`);
                     } else if (mode === 'save') {
-                        // CHỈ CẬP NHẬT: không mở file, chỉ báo thành công
-                        alert("Đã lưu cập nhật dữ liệu thành công!");
+                        if (isAppr) {
+                            alert(`🎉 Đã phê duyệt và cấp mã số [${result.ma_so}] cho ứng viên thành công!`);
+                        } else {
+                            alert("Đã lưu cập nhật dữ liệu thành công!");
+                        }
                     } else if (mode === 'save_only') {
                         // LƯU FORM: lưu vào hệ thống mà không mở hay tải
                         alert("Đã lưu form vào hệ thống thành công!");
@@ -7090,16 +7112,24 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             if (docPreview) docPreview.innerHTML = '';
         }
 
-        // Đồng bộ trạng thái các nút thao tác trên đỉnh (Top Action Bar) với chế độ Tạo mới / Chỉnh sửa
-        function syncTopActionButtons(isEdit) {
+        // Đồng bộ trạng thái các nút thao tác trên đỉnh (Top Action Bar) với chế độ Tạo mới / Chỉnh sửa / Phê duyệt
+        function syncTopActionButtons(isEdit, isApproving = false) {
             const topSave = document.getElementById('btnTopSave');
             const topUpdate = document.getElementById('btnTopUpdate');
             const topCancel = document.getElementById('btnTopCancel');
+            const bottomUpdateText = document.getElementById('btnUpdateText');
+            const actionText = isApproving ? "Phê duyệt & Cấp mã" : "Cập nhật";
+
             if (topSave) {
                 topSave.style.setProperty('display', isEdit ? 'none' : 'inline-flex', 'important');
             }
             if (topUpdate) {
                 topUpdate.style.setProperty('display', isEdit ? 'inline-flex' : 'none', 'important');
+                const span = topUpdate.querySelector('span');
+                if (span) span.innerText = actionText;
+            }
+            if (bottomUpdateText) {
+                bottomUpdateText.innerText = actionText;
             }
             if (topCancel) {
                 topCancel.style.setProperty('display', isEdit ? 'inline-flex' : 'none', 'important');

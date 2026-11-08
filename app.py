@@ -2415,10 +2415,16 @@ def api_submit_only():
         if ma_so and ma_so.upper() != 'CHO_DUYET':
             existing = FormHistory.query.filter_by(ma_so=ma_so, is_deleted=False).first()
             if existing and (not record_id or int(record_id) != existing.id):
-                # NẾU LÀ TẠO MỚI (not record_id) VÀ MÃ THUỘC CÁC TIỀN TỐ TỰ ĐỘNG
-                # Thay vì báo lỗi chặn người dùng -> Tự động thăng cấp mã kế tiếp còn trống (Zero-Error Conflict Resolver)!
+                # NẾU LÀ TẠO MỚI HOẶC PHÊ DUYỆT HỒ SƠ CHƯA CÓ MÃ (CHO_DUYET)
+                # Tự động thăng cấp mã kế tiếp còn trống (Zero-Error Conflict Resolver)!
+                is_new_or_approving = not record_id
+                if record_id:
+                    rec_check = FormHistory.query.get(int(record_id))
+                    if rec_check and (not rec_check.ma_so or str(rec_check.ma_so).strip().upper() == 'CHO_DUYET'):
+                        is_new_or_approving = True
+
                 m_pref = re.match(r'^([A-Za-z]+)(\d+)$', ma_so.strip())
-                if not record_id and m_pref and m_pref.group(1).upper() in ['MD', 'FD', 'KD', 'G', 'CD', 'GV']:
+                if is_new_or_approving and m_pref and m_pref.group(1).upper() in ['MD', 'FD', 'KD', 'G', 'CD', 'GV']:
                     pref = m_pref.group(1).upper()
                     new_code_info = get_next_candidate_code(pref)
                     original_ma_so = ma_so
