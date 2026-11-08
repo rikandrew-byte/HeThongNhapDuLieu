@@ -1118,7 +1118,7 @@
                 </div>
             </div>
             <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
-                <button type="button" id="btnNewCandidateHeader" onclick="cancelEdit(); document.getElementById('historyModal').style.display='none';" class="modal-header-btn modal-header-btn-ghost" style="background:rgba(8,145,178,0.15); color:#0891b2; border-color:rgba(8,145,178,0.35);" title="Nhập hồ sơ mới">
+                <button type="button" id="btnNewCandidateHeader" onclick="cancelEdit(); document.getElementById('historyModal').style.display='none'; selectCandidatePrefix('MD', true);" class="modal-header-btn modal-header-btn-ghost" style="background:rgba(8,145,178,0.15); color:#0891b2; border-color:rgba(8,145,178,0.35);" title="Nhập hồ sơ mới">
                     <span>➕ Nhập Hồ Sơ Mới</span>
                 </button>
                 <button type="button" id="btnBulkExcelHeader" onclick="bulkExportExcelHistory(true, event)" class="modal-header-btn modal-header-btn-green" title="Xuất Excel tất cả">
@@ -2113,43 +2113,34 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     <div>
-                        <div class="flex items-center justify-between mb-1.5">
-                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide">Mã số</label>
-                            <span id="smartCodeBadge" class="hidden text-[10.5px] font-extrabold px-2 py-0.5 rounded-full shadow-2xs"></span>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="block text-xs font-bold text-slate-400 uppercase">Mã số</label>
+                            <span id="smartCodeBadge" class="hidden text-[10.5px] font-bold px-2 py-0.5 rounded-full"></span>
                         </div>
-                        
-                        <!-- Thanh chọn nhanh tiền tố thông minh -->
-                        <div class="flex items-center flex-wrap gap-1.5 mb-2" id="prefixButtonGroup">
-                            <button type="button" onclick="selectCandidatePrefix('MD')" class="prefix-pill-btn px-2.5 py-1 rounded-lg text-xs font-bold transition-all border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 shadow-2xs" data-prefix="MD" title="Lao động Nam công xưởng">
-                                🏭 Nam (MD)
-                            </button>
-                            <button type="button" onclick="selectCandidatePrefix('FD')" class="prefix-pill-btn px-2.5 py-1 rounded-lg text-xs font-bold transition-all border border-pink-200 bg-pink-50 text-pink-700 hover:bg-pink-100 shadow-2xs" data-prefix="FD" title="Lao động Nữ công xưởng">
-                                👩 Nữ (FD)
-                            </button>
-                            <button type="button" onclick="selectCandidatePrefix('KD')" class="prefix-pill-btn px-2.5 py-1 rounded-lg text-xs font-bold transition-all border border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100 shadow-2xs" data-prefix="KD" title="Điều dưỡng / Hộ lý">
-                                🏥 Đ.Dưỡng (KD)
-                            </button>
-                            <button type="button" onclick="selectCandidatePrefix('G')" class="prefix-pill-btn px-2.5 py-1 rounded-lg text-xs font-bold transition-all border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 shadow-2xs" data-prefix="G" title="Giúp việc gia đình">
-                                🧹 Giúp việc (G)
-                            </button>
-                            <button type="button" onclick="selectCandidatePrefix('CD')" class="prefix-pill-btn px-2.5 py-1 rounded-lg text-xs font-bold transition-all border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 shadow-2xs" data-prefix="CD" title="Chuyển đổi / Khác">
-                                🔄 Khác (CD)
-                            </button>
-                        </div>
-
-                        <!-- Ô nhập mã số + nút làm mới mã -->
-                        <div class="relative flex items-center">
-                            <input type="text" name="Maso" id="candidateMasoInput" oninput="handleMasoManualInput(this.value)" placeholder="Chọn loại ứng viên ở trên để gán mã..." class="w-full border-b-2 border-gray-200 bg-transparent py-2 pr-20 text-sm font-mono font-bold text-slate-800 focus:border-blue-600 focus:outline-none transition-colors">
-                            <div class="absolute right-0 flex items-center gap-1">
-                                <button type="button" id="btnRefreshNextCode" onclick="refreshCurrentPrefixCode()" style="display:none;" class="text-[11px] font-bold text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 transition-colors flex items-center gap-1" title="Kiểm tra lại số mới nhất trong CSDL">
-                                    <span>🔄</span> Cập nhật
-                                </button>
+                        <div class="flex items-center gap-2 border-b-2 border-gray-200 focus-within:border-blue-600 transition-colors py-1">
+                            <!-- Dropdown chọn nhanh loại ứng viên tích hợp ngay đầu ô -->
+                            <div class="relative flex items-center">
+                                <select id="candidatePrefixSelect" onchange="selectCandidatePrefix(this.value, true)" class="appearance-none font-bold text-xs rounded-lg pl-2.5 pr-6 py-1.5 border transition-all cursor-pointer outline-none bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 shadow-2xs">
+                                    <option value="MD">🏭 Nam (MD)</option>
+                                    <option value="FD">👩 Nữ (FD)</option>
+                                    <option value="KD">🏥 Đ.Dưỡng (KD)</option>
+                                    <option value="G">🧹 Giúp việc (G)</option>
+                                    <option value="CD">🔄 Khác (CD)</option>
+                                </select>
+                                <span class="pointer-events-none absolute right-2 text-[10px] text-blue-600 font-bold">▼</span>
                             </div>
-                        </div>
 
-                        <!-- Gợi ý thông minh bên dưới ô mã số -->
-                        <div id="smartCodeHint" class="text-[11px] text-slate-400 mt-1 min-h-[18px] flex items-center gap-1.5 transition-all">
-                            <span>💡 Bấm nút loại ứng viên để hệ thống tự động gán mã liên tục, tránh trùng lặp.</span>
+                            <!-- Ô nhập mã số -->
+                            <input type="text" name="Maso" id="candidateMasoInput" oninput="handleMasoManualInput(this.value)" placeholder="MD13578..." class="flex-1 bg-transparent py-1 text-sm font-mono font-bold text-slate-800 focus:outline-none">
+
+                            <!-- Nút cập nhật số mới nhất -->
+                            <button type="button" id="btnRefreshNextCode" onclick="refreshCurrentPrefixCode()" class="text-slate-400 hover:text-blue-600 p-1 text-sm transition-colors rounded hover:bg-slate-100 flex items-center" title="Kiểm tra lại số mới nhất trong CSDL">
+                                🔄
+                            </button>
+                        </div>
+                        <div id="smartCodeHint" class="text-[11px] text-slate-400 mt-1 min-h-[16px] flex items-center justify-between">
+                            <span id="smartCodeHintText">✨ Tự động gán mã kế tiếp</span>
+                            <span id="smartCodeMaxText" class="font-mono text-slate-400 text-[10.5px]"></span>
                         </div>
                     </div>
                     <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Họ tên (Tiếng Việt)</label><input type="text" name="Hoten" onblur="translateName(this.value); checkDuplicateCandidate();" oninput="checkDuplicateCandidate();" class="w-full border-b-2 border-gray-200 bg-transparent py-2 text-sm focus:border-blue-600 focus:outline-none transition-colors"></div>
@@ -2908,6 +2899,15 @@
 
         // --- Xử lý Kéo Thả và Dán Ảnh ---
         document.addEventListener('DOMContentLoaded', () => {
+            // Khởi tạo mã số thông minh nếu đang tạo form mới
+            setTimeout(() => {
+                const masoInput = document.getElementById('candidateMasoInput');
+                const editingId = document.getElementById('editingRecordId')?.value;
+                if (masoInput && !masoInput.value && !editingId) {
+                    selectCandidatePrefix('MD', true);
+                }
+            }, 300);
+
             const dropzone = document.getElementById('dropzone');
             const photoInput = document.getElementById('photoInput');
             const photoPreview = document.getElementById('photoPreview');
@@ -3584,19 +3584,22 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
 
             // Đồng bộ trạng thái Mã số khi chỉnh sửa hồ sơ
             const smartBadge = document.getElementById('smartCodeBadge');
-            const smartHint = document.getElementById('smartCodeHint');
+            const smartHintText = document.getElementById('smartCodeHintText');
+            const smartMaxText = document.getElementById('smartCodeMaxText');
             if (smartBadge) {
-                smartBadge.className = 'text-[10.5px] font-extrabold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-300';
-                smartBadge.innerText = '🔒 Mã hồ sơ gốc';
+                smartBadge.className = 'text-[10.5px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-300';
+                smartBadge.innerText = '🔒 Hồ sơ gốc';
                 smartBadge.classList.remove('hidden');
             }
-            if (smartHint) {
-                smartHint.innerHTML = `<span class="text-slate-600 font-semibold">🔒 Đang chỉnh sửa hồ sơ: <b>${escapeHtml(item.ma_so || '')}</b>. Mã số gốc được giữ nguyên.</span>`;
+            if (smartHintText) {
+                smartHintText.innerHTML = `<span class="text-slate-600 font-semibold">🔒 Đang sửa: <b>${escapeHtml(item.ma_so || '')}</b></span>`;
             }
+            if (smartMaxText) smartMaxText.innerText = '';
             if (item.ma_so) {
                 const mPref = item.ma_so.trim().toUpperCase().match(/^([A-Z]+)/);
                 if (mPref && ['MD', 'FD', 'KD', 'G', 'CD'].includes(mPref[1])) {
-                    selectCandidatePrefix(mPref[1], false);
+                    updatePrefixPillStyle(mPref[1]);
+                    currentSelectedPrefix = mPref[1];
                 }
             }
 
@@ -7040,43 +7043,41 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
         // ═══════════════════════════════════════════════════════════════
         // HỆ THỐNG THÔNG MINH GÁN MÃ SỐ & LẤP LỖ HỔNG (SMART CODE GENERATOR)
         // ═══════════════════════════════════════════════════════════════
-        let currentSelectedPrefix = null;
+        let currentSelectedPrefix = 'MD';
         let isFetchingNextCode = false;
 
-        async function selectCandidatePrefix(prefix, forceFetch = true) {
-            currentSelectedPrefix = prefix;
-            const input = document.getElementById('candidateMasoInput');
-            const hint = document.getElementById('smartCodeHint');
-            const badge = document.getElementById('smartCodeBadge');
-            const refreshBtn = document.getElementById('btnRefreshNextCode');
-            const editingId = document.getElementById('editingRecordId')?.value;
+        function updatePrefixPillStyle(prefix) {
+            const sel = document.getElementById('candidatePrefixSelect');
+            if (!sel) return;
+            sel.value = prefix;
+            if (prefix === 'MD') {
+                sel.className = 'appearance-none font-bold text-xs rounded-lg pl-2.5 pr-6 py-1.5 border transition-all cursor-pointer outline-none bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 shadow-2xs';
+            } else if (prefix === 'FD') {
+                sel.className = 'appearance-none font-bold text-xs rounded-lg pl-2.5 pr-6 py-1.5 border transition-all cursor-pointer outline-none bg-pink-50 text-pink-700 border-pink-200 hover:bg-pink-100 shadow-2xs';
+            } else if (prefix === 'KD') {
+                sel.className = 'appearance-none font-bold text-xs rounded-lg pl-2.5 pr-6 py-1.5 border transition-all cursor-pointer outline-none bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100 shadow-2xs';
+            } else if (prefix === 'G') {
+                sel.className = 'appearance-none font-bold text-xs rounded-lg pl-2.5 pr-6 py-1.5 border transition-all cursor-pointer outline-none bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 shadow-2xs';
+            } else if (prefix === 'CD') {
+                sel.className = 'appearance-none font-bold text-xs rounded-lg pl-2.5 pr-6 py-1.5 border transition-all cursor-pointer outline-none bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200 shadow-2xs';
+            }
+        }
 
-            // Highlight active button
-            const buttons = document.querySelectorAll('#prefixButtonGroup .prefix-pill-btn');
-            buttons.forEach(btn => {
-                const btnPref = btn.getAttribute('data-prefix');
-                if (btnPref === prefix) {
-                    btn.classList.add('ring-2', 'ring-offset-1', 'font-black', 'scale-105');
-                    if (prefix === 'MD') btn.className = 'prefix-pill-btn px-2.5 py-1 rounded-lg text-xs font-black transition-all border border-blue-500 bg-blue-600 text-white shadow-sm ring-2 ring-blue-300 ring-offset-1 scale-105';
-                    else if (prefix === 'FD') btn.className = 'prefix-pill-btn px-2.5 py-1 rounded-lg text-xs font-black transition-all border border-pink-500 bg-pink-600 text-white shadow-sm ring-2 ring-pink-300 ring-offset-1 scale-105';
-                    else if (prefix === 'KD') btn.className = 'prefix-pill-btn px-2.5 py-1 rounded-lg text-xs font-black transition-all border border-purple-500 bg-purple-600 text-white shadow-sm ring-2 ring-purple-300 ring-offset-1 scale-105';
-                    else if (prefix === 'G') btn.className = 'prefix-pill-btn px-2.5 py-1 rounded-lg text-xs font-black transition-all border border-amber-500 bg-amber-600 text-white shadow-sm ring-2 ring-amber-300 ring-offset-1 scale-105';
-                    else if (prefix === 'CD') btn.className = 'prefix-pill-btn px-2.5 py-1 rounded-lg text-xs font-black transition-all border border-slate-600 bg-slate-700 text-white shadow-sm ring-2 ring-slate-400 ring-offset-1 scale-105';
-                } else {
-                    btn.classList.remove('ring-2', 'ring-offset-1', 'font-black', 'scale-105');
-                    if (btnPref === 'MD') btn.className = 'prefix-pill-btn px-2.5 py-1 rounded-lg text-xs font-bold transition-all border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 shadow-2xs';
-                    else if (btnPref === 'FD') btn.className = 'prefix-pill-btn px-2.5 py-1 rounded-lg text-xs font-bold transition-all border border-pink-200 bg-pink-50 text-pink-700 hover:bg-pink-100 shadow-2xs';
-                    else if (btnPref === 'KD') btn.className = 'prefix-pill-btn px-2.5 py-1 rounded-lg text-xs font-bold transition-all border border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100 shadow-2xs';
-                    else if (btnPref === 'G') btn.className = 'prefix-pill-btn px-2.5 py-1 rounded-lg text-xs font-bold transition-all border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 shadow-2xs';
-                    else if (btnPref === 'CD') btn.className = 'prefix-pill-btn px-2.5 py-1 rounded-lg text-xs font-bold transition-all border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 shadow-2xs';
-                }
-            });
+        async function selectCandidatePrefix(prefix, forceFetch = true) {
+            currentSelectedPrefix = prefix || 'MD';
+            updatePrefixPillStyle(currentSelectedPrefix);
+
+            const input = document.getElementById('candidateMasoInput');
+            const hintText = document.getElementById('smartCodeHintText');
+            const maxText = document.getElementById('smartCodeMaxText');
+            const badge = document.getElementById('smartCodeBadge');
+            const editingId = document.getElementById('editingRecordId')?.value;
 
             // Nếu đang trong chế độ chỉnh sửa hồ sơ cũ và không ép buộc fetch, không ghi đè mã số
             if (editingId && !forceFetch) {
                 if (badge) {
-                    badge.className = 'text-[10.5px] font-extrabold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-300';
-                    badge.innerText = '🔒 Mã hồ sơ gốc';
+                    badge.className = 'text-[10.5px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-300';
+                    badge.innerText = '🔒 Hồ sơ gốc';
                     badge.classList.remove('hidden');
                 }
                 return;
@@ -7085,117 +7086,90 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             if (!input || isFetchingNextCode) return;
             isFetchingNextCode = true;
 
-            if (hint) hint.innerHTML = `<span class="text-slate-400 animate-pulse">⏳ Đang lấy số tiếp theo cho nhóm ${prefix}...</span>`;
+            if (hintText) hintText.innerHTML = `<span class="text-slate-400 animate-pulse">⏳ Đang lấy số mới...</span>`;
 
             try {
-                const res = await fetch(`/api/candidate/next-code?prefix=${prefix}`, { credentials: 'same-origin' });
+                const res = await fetch(`/api/candidate/next-code?prefix=${currentSelectedPrefix}`, { credentials: 'same-origin' });
                 const json = await res.json();
                 if (json.success && json.data) {
                     const d = json.data;
                     input.value = d.next_code;
-                    if (refreshBtn) refreshBtn.style.display = 'inline-flex';
 
                     if (badge) {
                         badge.classList.remove('hidden');
                         if (d.is_gap) {
-                            badge.className = 'text-[10.5px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 animate-pulse';
-                            badge.innerText = '⚡ Tự động lấp mã trống';
+                            badge.className = 'text-[10.5px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 animate-pulse';
+                            badge.innerText = '⚡ Lấp mã trống';
                         } else {
-                            badge.className = 'text-[10.5px] font-extrabold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-300';
-                            badge.innerText = '✨ Gán mã kế tiếp';
+                            badge.className = 'text-[10.5px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-300';
+                            badge.innerText = '✨ Tự động';
                         }
                     }
 
-                    if (hint) {
+                    if (hintText) {
                         if (d.is_gap) {
-                            hint.innerHTML = `<span class="text-emerald-700 font-bold">⚡ Đã tự động lấp mã bị bỏ trống: <b>${d.next_code}</b> (Mã lớn nhất hiện tại: <b>${d.max_code}</b>).</span>`;
+                            hintText.innerHTML = `<span class="text-emerald-700 font-semibold">⚡ Tự động lấp mã trống: <b>${d.next_code}</b></span>`;
                         } else {
-                            hint.innerHTML = `<span class="text-blue-700 font-bold">✨ Mã kế tiếp liên tục: <b>${d.next_code}</b> (Mã lớn nhất hiện tại: <b>${d.max_code}</b>).</span>`;
+                            hintText.innerHTML = `<span class="text-blue-700 font-semibold">✨ Mã kế tiếp liên tục: <b>${d.next_code}</b></span>`;
                         }
+                    }
+                    if (maxText) {
+                        maxText.innerText = `Max: ${d.max_code}`;
                     }
                 }
             } catch (err) {
                 console.error("Lỗi lấy mã số tiếp theo:", err);
-                if (hint) hint.innerHTML = `<span class="text-red-500 font-semibold">❌ Không thể tải mã số tự động. Bạn có thể nhập tay.</span>`;
+                if (hintText) hintText.innerHTML = `<span class="text-red-500 font-semibold">❌ Lỗi kết nối</span>`;
             } finally {
                 isFetchingNextCode = false;
             }
         }
 
         function refreshCurrentPrefixCode() {
-            if (currentSelectedPrefix) {
-                selectCandidatePrefix(currentSelectedPrefix, true);
-            } else {
-                const input = document.getElementById('candidateMasoInput');
-                const val = input ? input.value.trim().toUpperCase() : '';
-                const m = val.match(/^([A-Z]+)/);
-                if (m && ['MD', 'FD', 'KD', 'G', 'CD'].includes(m[1])) {
-                    selectCandidatePrefix(m[1], true);
-                } else {
-                    selectCandidatePrefix('MD', true);
-                }
-            }
+            const sel = document.getElementById('candidatePrefixSelect');
+            const pref = sel ? sel.value : (currentSelectedPrefix || 'MD');
+            selectCandidatePrefix(pref, true);
         }
 
         function handleMasoManualInput(val) {
             val = (val || '').trim().toUpperCase();
             const badge = document.getElementById('smartCodeBadge');
-            const hint = document.getElementById('smartCodeHint');
-            const refreshBtn = document.getElementById('btnRefreshNextCode');
+            const hintText = document.getElementById('smartCodeHintText');
+            const maxText = document.getElementById('smartCodeMaxText');
 
             if (!val) {
                 if (badge) badge.classList.add('hidden');
-                if (hint) hint.innerHTML = '<span>💡 Bấm nút loại ứng viên để hệ thống tự động gán mã liên tục, tránh trùng lặp.</span>';
-                if (refreshBtn) refreshBtn.style.display = 'none';
+                if (hintText) hintText.innerHTML = '<span>✨ Tự động gán mã liên tục</span>';
+                if (maxText) maxText.innerText = '';
                 return;
             }
 
-            // Đồng bộ sáng nút tiền tố tương ứng
+            // Đồng bộ dropdown nếu phát hiện tiền tố
             const m = val.match(/^([A-Z]+)/);
             if (m && ['MD', 'FD', 'KD', 'G', 'CD'].includes(m[1])) {
                 currentSelectedPrefix = m[1];
-                if (refreshBtn) refreshBtn.style.display = 'inline-flex';
-                const buttons = document.querySelectorAll('#prefixButtonGroup .prefix-pill-btn');
-                buttons.forEach(btn => {
-                    const btnPref = btn.getAttribute('data-prefix');
-                    if (btnPref === m[1]) {
-                        btn.className = 'prefix-pill-btn px-2.5 py-1 rounded-lg text-xs font-black transition-all border border-blue-400 bg-blue-100 text-blue-900 shadow-sm ring-1 ring-blue-300';
-                    } else {
-                        btn.classList.remove('ring-2', 'ring-offset-1', 'font-black', 'scale-105');
-                    }
-                });
+                updatePrefixPillStyle(m[1]);
             }
 
             if (badge) {
-                badge.className = 'text-[10.5px] font-extrabold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-300';
+                badge.className = 'text-[10.5px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-300';
                 badge.innerText = '✏️ Nhập tay';
                 badge.classList.remove('hidden');
             }
-            if (hint) {
-                hint.innerHTML = `<span class="text-slate-600 font-semibold">✏️ Đang nhập mã thủ công: <b>${escapeHtml(val)}</b>.</span>`;
+            if (hintText) {
+                hintText.innerHTML = `<span class="text-slate-600 font-semibold">✏️ Đang nhập tay: <b>${escapeHtml(val)}</b></span>`;
             }
         }
 
         function resetSmartCodeState() {
-            currentSelectedPrefix = null;
-            const input = document.getElementById('candidateMasoInput');
+            currentSelectedPrefix = 'MD';
+            updatePrefixPillStyle('MD');
             const badge = document.getElementById('smartCodeBadge');
-            const hint = document.getElementById('smartCodeHint');
-            const refreshBtn = document.getElementById('btnRefreshNextCode');
+            const hintText = document.getElementById('smartCodeHintText');
+            const maxText = document.getElementById('smartCodeMaxText');
             if (badge) badge.classList.add('hidden');
-            if (refreshBtn) refreshBtn.style.display = 'none';
-            if (hint) hint.innerHTML = '<span>💡 Bấm nút loại ứng viên để hệ thống tự động gán mã liên tục, tránh trùng lặp.</span>';
-
-            const buttons = document.querySelectorAll('#prefixButtonGroup .prefix-pill-btn');
-            buttons.forEach(btn => {
-                btn.classList.remove('ring-2', 'ring-offset-1', 'font-black', 'scale-105');
-                const btnPref = btn.getAttribute('data-prefix');
-                if (btnPref === 'MD') btn.className = 'prefix-pill-btn px-2.5 py-1 rounded-lg text-xs font-bold transition-all border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 shadow-2xs';
-                else if (btnPref === 'FD') btn.className = 'prefix-pill-btn px-2.5 py-1 rounded-lg text-xs font-bold transition-all border border-pink-200 bg-pink-50 text-pink-700 hover:bg-pink-100 shadow-2xs';
-                else if (btnPref === 'KD') btn.className = 'prefix-pill-btn px-2.5 py-1 rounded-lg text-xs font-bold transition-all border border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100 shadow-2xs';
-                else if (btnPref === 'G') btn.className = 'prefix-pill-btn px-2.5 py-1 rounded-lg text-xs font-bold transition-all border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 shadow-2xs';
-                else if (btnPref === 'CD') btn.className = 'prefix-pill-btn px-2.5 py-1 rounded-lg text-xs font-bold transition-all border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 shadow-2xs';
-            });
+            if (hintText) hintText.innerHTML = '<span>✨ Tự động gán mã liên tục</span>';
+            if (maxText) maxText.innerText = '';
         }
 
         // ═══════════════════════════════════════════════════════════════
