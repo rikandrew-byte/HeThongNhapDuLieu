@@ -19,27 +19,24 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=Plus+Jakarta+Sans:ital,wght@0,500;0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Hệ màu Teal chuẩn #008080 theo yêu cầu */
-            --teal-main: #008080;          /* Mã màu chuẩn #008080 */
+            /* Hệ màu cân bằng: Màu Teal #008080 đóng vai trò Accent nhận diện thương hiệu, kết hợp tông Slate/Charcoal sang trọng */
+            --teal-main: #008080;          /* Mã màu chuẩn #008080 làm điểm nhấn */
             --teal-dark: #005959;          /* Teal bóng sâu */
-            --teal-bright: #009999;        /* Teal sáng */
-            --teal-soft: #00a3a3;          /* Teal tươi */
-            --teal-tint: rgba(0, 128, 128, 0.08); /* Nền mờ dải tiêu đề */
-            --teal-light: #e6f4f4;         /* Nền nhạt */
-            --teal-surface: #f2f9f9;       /* Nền ô dữ liệu */
+            --teal-soft: #0d9488;          /* Teal tươi */
             
-            --ink-black: #0c1a1a;
-            --ink-slate: #1e293b;
-            --ink-muted: #475569;
-            --ink-subtle: #64748b;
+            --ink-black: #0f172a;          /* Đen tuyền sắc sảo cho chữ chính, tiêu đề lớn */
+            --ink-slate: #1e293b;          /* Màu chữ nội dung chính */
+            --ink-muted: #64748b;          /* Màu nhãn phụ */
+            --ink-subtle: #94a3b8;         
             
-            --border-teal: #008080;
-            --border-soft: #80c0c0;
-            --border-light: #b3d9d9;
-            --border-dashed: #e2e8f0;
+            --border-frame: #334155;       /* Viền khung chính trang giấy (charcoal trang trọng) */
+            --border-neutral: #cbd5e1;     /* Viền trung tính thanh lịch */
+            --border-light: #e2e8f0;       
+            --border-dashed: #e2e8f0;      
             
             --page-bg: #f1f5f9;
             --paper-bg: #ffffff;
+            --surface-neutral: #f8fafc;    /* Nền ô dữ liệu trung tính sang trọng */
         }
 
         * {
@@ -56,20 +53,20 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Top Action Bar (Screen Only) */
+        /* Top Action Bar (Screen Only) - Obsidian Slate với viền Teal mảnh */
         .top-action-bar {
             position: sticky;
             top: 0;
             z-index: 1000;
-            background: rgba(0, 128, 128, 0.97);
+            background: rgba(15, 23, 42, 0.96);
             backdrop-filter: blur(12px);
-            border-bottom: 2px solid var(--teal-soft);
+            border-bottom: 2px solid var(--teal-main);
             padding: 12px 28px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 16px;
-            box-shadow: 0 4px 20px rgba(0, 128, 128, 0.25);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
             color: #ffffff;
         }
 
@@ -98,9 +95,9 @@
             font-weight: 700;
             letter-spacing: 0.08em;
             text-transform: uppercase;
-            background: #005959;
-            color: #ccfbf1;
-            border: 1px solid #5eead4;
+            background: #1e293b;
+            color: #38bdf8;
+            border: 1px solid #475569;
         }
 
         .bar-actions {
@@ -127,26 +124,25 @@
         }
 
         .btn-primary {
-            background: #ffffff;
-            color: var(--teal-main);
+            background: var(--teal-main);
+            color: #ffffff;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
             font-weight: 800;
         }
 
         .btn-primary:hover {
-            background: #e6f4f4;
-            color: var(--teal-dark);
+            background: #006666;
             transform: translateY(-1px);
         }
 
         .btn-secondary {
             background: transparent;
             color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.4);
         }
 
         .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.12);
             border-color: #ffffff;
         }
 
@@ -157,15 +153,15 @@
             padding: 0 16px;
         }
 
-        /* Presidential Document Paper Frame - Viền kép màu #008080 */
+        /* Presidential Document Paper Frame - Viền kép Charcoal & Light Slate uy nghiêm */
         .document-paper {
             background: var(--paper-bg);
-            border: 2px solid var(--teal-main);
+            border: 1.5px solid var(--border-frame);
             padding: 42px 48px;
             position: relative;
-            box-shadow: 0 16px 40px rgba(0, 128, 128, 0.12);
-            outline: 1px solid var(--border-soft);
-            outline-offset: -8px;
+            box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+            outline: 1px solid var(--border-neutral);
+            outline-offset: -7px;
         }
 
         /* Eagle Watermark (Discreet Seal) */
@@ -181,7 +177,7 @@
             background-repeat: no-repeat;
             background-position: center;
             background-size: contain;
-            opacity: 0.04;
+            opacity: 0.035;
             pointer-events: none;
             z-index: 1;
         }
@@ -215,12 +211,12 @@
             flex-shrink: 0;
         }
 
-        /* Logo đại bàng điều chỉnh to thêm chút */
+        /* Logo đại bàng to rõ, điểm nhấn màu ngọc */
         .doc-eagle-seal {
             height: 82px;
             width: auto;
             object-fit: contain;
-            filter: drop-shadow(0 3px 8px rgba(0, 128, 128, 0.28));
+            filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.12));
         }
 
         .header-center-box {
@@ -228,7 +224,7 @@
             text-align: center;
         }
 
-        /* FCT 2026 ở góc trên bên phải */
+        /* FCT 2026 ở góc trên bên phải - Tông xám trung tính thanh lịch */
         .header-right-box {
             width: 120px;
             display: flex;
@@ -243,21 +239,20 @@
             font-size: 13px;
             font-weight: 850;
             letter-spacing: 0.1em;
-            color: var(--teal-main);
+            color: #475569;
             text-transform: uppercase;
-            background: #f0fdfa;
-            border: 1px solid var(--border-soft);
+            background: #f8fafc;
+            border: 1px solid var(--border-light);
             padding: 4px 12px;
             border-radius: 4px;
-            box-shadow: 0 1px 3px rgba(0, 128, 128, 0.08);
         }
 
-        /* Main Document Title - Tiêu đề BẢNG CÔNG VIỆC màu #008080 */
+        /* Main Document Title - Tiêu đề BẢNG CÔNG VIỆC màu Đen Tuyển Obsidian uy quyền */
         .doc-main-title {
             font-family: 'Playfair Display', Georgia, serif;
             font-size: 34px;
             font-weight: 900;
-            color: var(--teal-main);
+            color: var(--ink-black);
             letter-spacing: 0.06em;
             text-transform: uppercase;
             line-height: 1.2;
@@ -270,9 +265,9 @@
             gap: 8px;
             font-size: 13px;
             font-weight: 700;
-            color: var(--teal-main);
-            background: #f0fdfa;
-            border: 1px solid var(--border-soft);
+            color: #334155;
+            background: #f8fafc;
+            border: 1px solid var(--border-light);
             padding: 4px 18px;
             border-radius: 4px;
         }
@@ -288,18 +283,14 @@
             font-weight: 800;
         }
 
-        .doc-meta-divider {
-            color: var(--border-soft);
-        }
-
-        /* Federal Rule Divider */
+        /* Federal Rule Divider - Thanh kẻ đen & xám chuẩn mực công văn */
         .federal-rule {
             border: none;
-            border-top: 2px solid var(--teal-main);
-            border-bottom: 1px solid var(--border-soft);
+            border-top: 2px solid var(--ink-black);
+            border-bottom: 1px solid var(--border-neutral);
             height: 4px;
             margin-top: 16px;
-            opacity: 0.95;
+            opacity: 0.9;
         }
 
         /* Section Architecture with Visual Distinction */
@@ -311,23 +302,23 @@
             margin-bottom: 0;
         }
 
-        /* Section Banner Bar - Tiêu đề màu chuẩn mã #008080 */
+        /* Section Banner Bar - Nền trắng xám thanh thoát, chữ #008080 làm điểm nhấn sắc sảo */
         .section-header-bar {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: linear-gradient(90deg, rgba(0, 128, 128, 0.08) 0%, rgba(0, 128, 128, 0.02) 55%, #ffffff 100%);
-            border-left: 4.5px solid #008080;
-            border-bottom: 1px solid rgba(0, 128, 128, 0.22);
-            padding: 7px 14px;
+            background: var(--surface-neutral);
+            border-left: 3.5px solid var(--teal-main);
+            border-bottom: 1px solid var(--border-light);
+            padding: 6px 14px;
             margin-bottom: 10px;
             border-radius: 0 4px 4px 0;
         }
 
         .section-title {
-            font-size: 14px;
-            font-weight: 850;
-            color: #008080 !important;  /* Màu chuẩn mã #008080 */
+            font-size: 13.5px;
+            font-weight: 800;
+            color: var(--teal-main) !important;  /* Màu chuẩn mã #008080 */
             letter-spacing: 0.05em;
             text-transform: uppercase;
             display: flex;
@@ -336,7 +327,7 @@
         }
 
         .section-num-badge {
-            background: #008080 !important;  /* Nền huy hiệu chuẩn mã #008080 */
+            background: var(--teal-main);
             color: #ffffff !important;
             font-size: 11px;
             font-weight: 800;
@@ -347,8 +338,7 @@
         .section-submark {
             font-size: 10px;
             font-weight: 750;
-            color: #008080 !important;
-            opacity: 0.85;
+            color: var(--ink-muted);
             letter-spacing: 0.08em;
             text-transform: uppercase;
         }
@@ -376,7 +366,7 @@
         .col-label {
             width: 215px;
             font-weight: 750;
-            color: #334e68;
+            color: #475569;
             text-transform: uppercase;
             font-size: 11px;
             letter-spacing: 0.03em;
@@ -393,7 +383,7 @@
         .factory-title-zh {
             font-size: 15px;
             font-weight: 800;
-            color: var(--teal-main);
+            color: var(--ink-black);
             line-height: 1.35;
         }
 
@@ -406,7 +396,7 @@
         }
 
         .criteria-box {
-            border: 1px solid #cbd5e1;
+            border: 1px solid var(--border-neutral);
             padding: 10px 14px;
             border-radius: 4px;
         }
@@ -473,23 +463,23 @@
             color: #db2777;
         }
 
-        /* Job Scope Statement Box */
+        /* Job Scope Statement Box - Nền trắng xám thanh lịch */
         .scope-box {
-            border-left: 4px solid var(--teal-main);
-            background: var(--teal-surface);
+            border-left: 3.5px solid var(--teal-main);
+            background: var(--surface-neutral);
             padding: 12px 16px;
             font-size: 13px;
-            color: var(--teal-main);
+            color: var(--ink-slate);
             font-weight: 600;
             line-height: 1.6;
             border-radius: 0 4px 4px 0;
         }
 
-        /* Financial Ledger Grid - Canh lề trên */
+        /* Financial Ledger Grid - Viền xám trung tính thanh lịch */
         .finance-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            border: 1.5px solid var(--teal-main);
+            border: 1px solid var(--border-neutral);
             margin-bottom: 12px;
             background: #ffffff;
             border-radius: 4px;
@@ -499,7 +489,7 @@
         .finance-cell {
             padding: 10px 8px;
             text-align: center;
-            border-right: 1px solid #cbd5e1;
+            border-right: 1px solid var(--border-light);
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
@@ -559,9 +549,9 @@
         }
 
         .clause-badge {
-            background: #e6f4f4;
-            color: var(--teal-main);
-            border: 1px solid var(--border-soft);
+            background: #f1f5f9;
+            color: #334155;
+            border: 1px solid var(--border-light);
             font-weight: 800;
             font-size: 11px;
             padding: 1px 7px;
@@ -584,7 +574,7 @@
         }
 
         .gallery-item {
-            border: 1.5px solid var(--teal-main);
+            border: 1px solid var(--border-neutral);
             background: #ffffff;
             aspect-ratio: 4/3;
             overflow: hidden;
@@ -602,7 +592,7 @@
         .doc-footer {
             margin-top: 24px;
             padding-top: 10px;
-            border-top: 1px solid #cbd5e1;
+            border-top: 1px solid var(--border-light);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -633,14 +623,14 @@
 
             .document-paper {
                 box-shadow: none !important;
-                border: 2px solid #008080 !important;
-                outline: 1px solid #80c0c0 !important;
-                outline-offset: -8px !important;
+                border: 1.5px solid #1e293b !important;
+                outline: 1px solid #cbd5e1 !important;
+                outline-offset: -7px !important;
                 padding: 8mm 12mm !important;
             }
 
             .document-paper::after {
-                opacity: 0.04 !important;
+                opacity: 0.035 !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
@@ -785,7 +775,7 @@
                         <tbody>
                             <tr>
                                 <td class="col-label">Sản phẩm sản xuất:</td>
-                                <td class="col-value" style="font-weight:750; color:var(--teal-main);">
+                                <td class="col-value" style="font-weight:750; color:var(--ink-black);">
                                     {{ job.product_job or 'Theo quy định cụ thể của công xưởng' }}
                                 </td>
                             </tr>
