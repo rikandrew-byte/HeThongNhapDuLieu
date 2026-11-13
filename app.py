@@ -5592,7 +5592,7 @@ def view_job_order_public(j_id):
         if og_image.startswith('/'):
             og_image = request.host_url.rstrip('/') + og_image
     else:
-        og_image = url_for('static', filename='eagle_clean_bright_teal.png', _external=True)
+        og_image = url_for('static', filename='eagle_fct_new.png', _external=True)
 
     return render_template(
         'job_order_view.html',

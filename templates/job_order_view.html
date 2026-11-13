@@ -171,13 +171,13 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 460px;
-            height: 460px;
-            background-image: url('{{ url_for('static', filename='eagle_clean_bright_teal.png') }}');
+            width: 500px;
+            height: 200px;
+            background-image: url('{{ url_for('static', filename='eagle_fct_new.png') }}');
             background-repeat: no-repeat;
             background-position: center;
             background-size: contain;
-            opacity: 0.035;
+            opacity: 0.04;
             pointer-events: none;
             z-index: 1;
         }
@@ -204,19 +204,19 @@
         }
 
         .header-logo-box {
-            width: 120px;
+            width: 150px;
             display: flex;
             align-items: center;
             justify-content: flex-start;
             flex-shrink: 0;
         }
 
-        /* Logo đại bàng to rõ, sắc nét, sáng màu, không bị lem */
+        /* Logo đại bàng mới sắc nét, chuẩn nhận diện FCT */
         .doc-eagle-seal {
-            height: 82px;
+            height: 54px;
             width: auto;
             object-fit: contain;
-            filter: none;
+            filter: drop-shadow(0 2px 5px rgba(0, 128, 128, 0.22));
         }
 
         .header-center-box {
@@ -226,7 +226,7 @@
 
         /* FCT 2026 ở góc trên bên phải - Tông xám trung tính thanh lịch */
         .header-right-box {
-            width: 120px;
+            width: 150px;
             display: flex;
             align-items: flex-start;
             justify-content: flex-end;
@@ -694,9 +694,9 @@
                 box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
             }
             .document-paper::after {
-                width: 260px;
-                height: 260px;
-                opacity: 0.03;
+                width: 280px;
+                height: 110px;
+                opacity: 0.035;
             }
 
             /* Header Grid: Dòng 1 gồm Logo (trái) và FCT Tag (phải); Dòng 2 là Tiêu đề chính giữa */
@@ -715,7 +715,7 @@
                 justify-content: flex-start;
             }
             .doc-eagle-seal {
-                height: 54px;
+                height: 40px;
             }
             .header-right-box {
                 grid-column: 2;
@@ -903,7 +903,7 @@
                 <header class="doc-header">
                     <div class="header-grid">
                         <div class="header-logo-box">
-                            <img src="{{ url_for('static', filename='eagle_clean_bright_teal.png') }}" alt="Eagle Seal" class="doc-eagle-seal">
+                            <img src="{{ url_for('static', filename='eagle_fct_new.png') }}" alt="Eagle Seal" class="doc-eagle-seal">
                         </div>
                         <div class="header-center-box">
                             <h1 class="doc-main-title">BẢNG CÔNG VIỆC</h1>
