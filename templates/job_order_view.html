@@ -653,28 +653,225 @@
         }
 
         @media (max-width: 640px) {
-            .document-paper {
-                padding: 20px 14px;
-                outline: none;
-            }
-            .header-grid {
-                flex-direction: column;
+            /* Tinh chỉnh Action Bar trên điện thoại */
+            .top-action-bar {
+                padding: 10px 12px;
                 gap: 8px;
             }
-            .header-logo-box, .header-right-box {
+            .bar-brand {
+                font-size: 13px;
+                letter-spacing: 0.04em;
+            }
+            .status-pill {
+                padding: 2px 7px;
+                font-size: 10px;
+            }
+            .bar-actions {
+                gap: 6px;
+            }
+            .btn {
+                padding: 6px 10px;
+                font-size: 11px;
+                gap: 4px;
+            }
+            .btn-text-full {
+                display: none;
+            }
+            .btn-text-mobile {
+                display: inline;
+            }
+
+            /* Container và khung văn bản trên màn hình nhỏ */
+            .page-container {
+                margin: 10px auto 40px auto;
+                padding: 0 8px;
+            }
+            .document-paper {
+                padding: 18px 14px;
+                border-radius: 6px;
+                border: 1px solid var(--border-frame);
+                outline: none;
+                box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+            }
+            .document-paper::after {
+                width: 260px;
+                height: 260px;
+                opacity: 0.03;
+            }
+
+            /* Header Grid: Dòng 1 gồm Logo (trái) và FCT Tag (phải); Dòng 2 là Tiêu đề chính giữa */
+            .header-grid {
+                display: grid;
+                grid-template-columns: 1fr auto;
+                grid-template-rows: auto auto;
+                gap: 10px 8px;
+                align-items: center;
+                margin-bottom: 10px;
+            }
+            .header-logo-box {
+                grid-column: 1;
+                grid-row: 1;
                 width: auto;
+                justify-content: flex-start;
             }
-            .finance-grid {
-                grid-template-columns: repeat(2, 1fr);
+            .doc-eagle-seal {
+                height: 54px;
             }
-            .col-label {
-                width: 100%;
+            .header-right-box {
+                grid-column: 2;
+                grid-row: 1;
+                width: auto;
+                justify-content: flex-end;
+                padding-top: 0;
+            }
+            .fct-corner-tag {
+                font-size: 11px;
+                padding: 3px 8px;
+            }
+            .header-center-box {
+                grid-column: 1 / -1;
+                grid-row: 2;
+                text-align: center;
+                margin-top: 2px;
+            }
+            .doc-main-title {
+                font-size: 25px !important;
+                letter-spacing: 0.04em;
+                margin: 2px 0 8px 0;
+            }
+            .doc-meta-row {
+                font-size: 11.5px;
+                padding: 3px 12px;
+                gap: 6px;
+            }
+
+            .federal-rule {
+                margin-top: 12px;
+            }
+
+            /* Thanh tiêu đề phân mục trên điện thoại */
+            .section-header-bar {
+                padding: 6px 10px;
+                margin-bottom: 8px;
+            }
+            .section-title {
+                font-size: 12.5px;
+                gap: 6px;
+            }
+            .section-num-badge {
+                font-size: 10px;
+                padding: 1px 6px;
+            }
+            /* Ẩn nhãn tiếng Anh phụ để tiêu đề tiếng Việt luôn nằm trên 1 dòng gọn gàng */
+            .section-submark {
+                display: none;
+            }
+
+            /* Bảng thông tin dạng Card dọc dễ đọc */
+            .ledger-table tr {
                 display: block;
-                padding-bottom: 2px;
+                padding: 7px 0;
+                border-bottom: 1px dashed var(--border-dashed);
+            }
+            .ledger-table tr:last-child {
+                border-bottom: none;
             }
             .ledger-table td {
                 display: block;
-                padding: 4px 0;
+                padding: 1px 0 !important;
+            }
+            .col-label {
+                width: 100%;
+                font-size: 11px;
+                color: #64748b;
+                margin-bottom: 2px;
+            }
+            .col-value {
+                font-size: 13.5px;
+                line-height: 1.5;
+            }
+            .factory-title-zh {
+                font-size: 14.5px;
+            }
+
+            /* Khung tiêu chuẩn Nam/Nữ xếp chồng 1 cột thoáng đãng */
+            .criteria-ledger-grid {
+                grid-template-columns: 1fr;
+                gap: 8px;
+                margin-bottom: 8px;
+            }
+            .criteria-box {
+                padding: 9px 12px;
+            }
+            .criteria-box-header {
+                font-size: 11px;
+                margin-bottom: 5px;
+            }
+            .criteria-row {
+                padding: 3px 0;
+                font-size: 12px;
+            }
+
+            /* Khung 4 chỉ số tài chính dạng 2x2 ngăn nắp có viền chia rõ ràng */
+            .finance-grid {
+                grid-template-columns: repeat(2, 1fr);
+                margin-bottom: 10px;
+            }
+            .finance-cell {
+                padding: 8px 6px;
+                min-height: 72px;
+            }
+            .finance-cell:nth-child(1), .finance-cell:nth-child(2) {
+                border-bottom: 1px solid #e2e8f0;
+            }
+            .finance-cell:nth-child(odd) {
+                border-right: 1px solid #e2e8f0;
+            }
+            .finance-cell:nth-child(even) {
+                border-right: none;
+            }
+            .finance-label {
+                font-size: 9.5px;
+                margin-bottom: 2px;
+            }
+            .finance-amount {
+                font-size: 15px;
+            }
+            .finance-subnote {
+                font-size: 10px;
+            }
+
+            /* Khung phạm vi công việc */
+            .scope-box {
+                padding: 10px 12px;
+                font-size: 12.5px;
+                line-height: 1.55;
+            }
+
+            /* Danh sách điều khoản */
+            .clauses-container {
+                gap: 6px;
+            }
+            .clause-item {
+                font-size: 12px;
+                gap: 8px;
+                line-height: 1.5;
+            }
+            .clause-badge {
+                font-size: 10.5px;
+                padding: 1px 5px;
+            }
+
+            /* Thư viện ảnh */
+            .gallery-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+
+            /* Footer */
+            .doc-footer {
+                margin-top: 18px;
+                font-size: 9.5px;
             }
         }
     </style>
@@ -689,10 +886,10 @@
         </div>
         <div class="bar-actions">
             <button type="button" class="btn btn-secondary" onclick="copyShareLink()">
-                <span>🔗</span> SAO CHÉP LIÊN KẾT
+                <span>🔗</span> <span class="btn-text-full">SAO CHÉP LIÊN KẾT</span><span class="btn-text-mobile" style="display:none;">COPY LINK</span>
             </button>
             <button type="button" class="btn btn-primary" onclick="window.print()">
-                <span>🖨️</span> IN / XUẤT PDF (A4)
+                <span>🖨️</span> <span class="btn-text-full">IN / XUẤT PDF (A4)</span><span class="btn-text-mobile" style="display:none;">IN / PDF</span>
             </button>
         </div>
     </header>
