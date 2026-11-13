@@ -173,7 +173,7 @@
             transform: translate(-50%, -50%);
             width: 460px;
             height: 460px;
-            background-image: url('{{ url_for('static', filename='eagle_teal_008080.png') }}');
+            background-image: url('{{ url_for('static', filename='eagle_clean_bright_teal.png') }}');
             background-repeat: no-repeat;
             background-position: center;
             background-size: contain;
@@ -211,12 +211,12 @@
             flex-shrink: 0;
         }
 
-        /* Logo đại bàng to rõ, điểm nhấn màu ngọc */
+        /* Logo đại bàng to rõ, sắc nét, sáng màu, không bị lem */
         .doc-eagle-seal {
             height: 82px;
             width: auto;
             object-fit: contain;
-            filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.12));
+            filter: none;
         }
 
         .header-center-box {
@@ -247,12 +247,12 @@
             border-radius: 4px;
         }
 
-        /* Main Document Title - Tiêu đề BẢNG CÔNG VIỆC màu Đen Tuyển Obsidian uy quyền */
+        /* Main Document Title - Ba chữ BẢNG CÔNG VIỆC trên cùng màu Xanh Cổ Vịt #008080 */
         .doc-main-title {
             font-family: 'Playfair Display', Georgia, serif;
             font-size: 34px;
             font-weight: 900;
-            color: var(--ink-black);
+            color: var(--teal-main) !important;
             letter-spacing: 0.06em;
             text-transform: uppercase;
             line-height: 1.2;
@@ -706,7 +706,7 @@
                 <header class="doc-header">
                     <div class="header-grid">
                         <div class="header-logo-box">
-                            <img src="{{ url_for('static', filename='eagle_teal_008080.png') }}" alt="Eagle Seal" class="doc-eagle-seal">
+                            <img src="{{ url_for('static', filename='eagle_clean_bright_teal.png') }}" alt="Eagle Seal" class="doc-eagle-seal">
                         </div>
                         <div class="header-center-box">
                             <h1 class="doc-main-title">BẢNG CÔNG VIỆC</h1>
@@ -802,19 +802,19 @@
                         {% if job.gender_type in ['both', 'male'] %}
                         <div class="criteria-box male">
                             <div class="criteria-box-header">
-                                <span>TIÊU CHUẨN NAM GIỚI</span>
+                                <span>LAO ĐỘNG NAM</span>
                                 <span style="font-size:10px; font-weight:700;">MALE</span>
                             </div>
                             <div class="criteria-row">
-                                <span class="criteria-row-label">Chỉ tiêu số lượng:</span>
+                                <span class="criteria-row-label">Số lượng:</span>
                                 <span class="criteria-row-val">{{ criteria.get('male_count', '0') }} Người</span>
                             </div>
                             <div class="criteria-row">
-                                <span class="criteria-row-label">Chiều cao tối thiểu:</span>
+                                <span class="criteria-row-label">Chiều cao:</span>
                                 <span class="criteria-row-val">{{ criteria.get('male_height', '165') }} cm trở lên</span>
                             </div>
                             <div class="criteria-row">
-                                <span class="criteria-row-label">Cân nặng tối thiểu:</span>
+                                <span class="criteria-row-label">Cân nặng:</span>
                                 <span class="criteria-row-val">{{ criteria.get('male_weight', '55') }} kg trở lên</span>
                             </div>
                         </div>
@@ -823,19 +823,19 @@
                         {% if job.gender_type in ['both', 'female'] %}
                         <div class="criteria-box female">
                             <div class="criteria-box-header">
-                                <span>TIÊU CHUẨN NỮ GIỚI</span>
+                                <span>LAO ĐỘNG NỮ</span>
                                 <span style="font-size:10px; font-weight:700;">FEMALE</span>
                             </div>
                             <div class="criteria-row">
-                                <span class="criteria-row-label">Chỉ tiêu số lượng:</span>
+                                <span class="criteria-row-label">Số lượng:</span>
                                 <span class="criteria-row-val">{{ criteria.get('female_count', '0') }} Người</span>
                             </div>
                             <div class="criteria-row">
-                                <span class="criteria-row-label">Chiều cao tối thiểu:</span>
+                                <span class="criteria-row-label">Chiều cao:</span>
                                 <span class="criteria-row-val">{{ criteria.get('female_height', '155') }} cm trở lên</span>
                             </div>
                             <div class="criteria-row">
-                                <span class="criteria-row-label">Cân nặng tối thiểu:</span>
+                                <span class="criteria-row-label">Cân nặng:</span>
                                 <span class="criteria-row-val">{{ criteria.get('female_weight', '50') }} kg trở lên</span>
                             </div>
                         </div>
@@ -858,7 +858,7 @@
                                 <td class="col-value">{{ criteria.get('marriage', 'Không yêu cầu') }}</td>
                             </tr>
                             <tr>
-                                <td class="col-label">Hình thức thi tuyển:</td>
+                                <td class="col-label">Hình thức tuyển:</td>
                                 <td class="col-value" style="font-weight:750; color:#0d9488;">
                                     {{ criteria.get('interview_method', 'Form + Line pv + clip GTBT') }}
                                 </td>
