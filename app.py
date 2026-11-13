@@ -7,7 +7,7 @@ import os, uuid, re, unicodedata, json, base64, traceback, io, zipfile, requests
 from collections import defaultdict
 from threading import Lock
 from datetime import date, datetime, timedelta, timezone
-from flask import Flask, request, jsonify, send_file, render_template, Response, make_response, redirect, send_from_directory
+from flask import Flask, request, jsonify, send_file, render_template, Response, make_response, redirect, send_from_directory, url_for
 from flask_cors import CORS
 from jinja2 import Template
 from deep_translator import GoogleTranslator
@@ -5567,9 +5567,40 @@ def view_job_order_public(j_id):
     except Exception:
         imgs = []
 
+    # Trích xuất tên tiếng Việt ngắn gọn của nhà máy để hiển thị trên link Zalo (VD: '佶慶工業有限公司 Công Ty Cát Khánh' -> 'Cát Khánh')
+    vn_factory = ''
+    if job.factory_name:
+        import re
+        c = re.sub(r'[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff\u3000-\u303f\uff00-\uffef]+', ' ', job.factory_name).strip()
+        c = re.sub(r'\s+', ' ', c).strip(' -:—/()')
+        short = re.sub(r'^(Công\s*ty|Cty\.?|Nhà\s*máy|NM)\s+', '', c, flags=re.IGNORECASE).strip()
+        vn_factory = short if short else (c if c else job.factory_name)
+
+    page_title = f"BẢNG CÔNG VIỆC — {job.code}"
+    if vn_factory:
+        page_title += f" — {vn_factory}"
+
+    og_desc = f"Nhà máy: {job.factory_name or 'Đài Loan'}"
+    if job.work_location:
+        og_desc += f" | {job.work_location}"
+    if job.product_job:
+        og_desc += f" | {job.product_job}"
+
+    og_image = ''
+    if imgs and len(imgs) > 0 and imgs[0]:
+        og_image = imgs[0]
+        if og_image.startswith('/'):
+            og_image = request.host_url.rstrip('/') + og_image
+    else:
+        og_image = url_for('static', filename='eagle_teal_008080.png', _external=True)
+
     return render_template(
         'job_order_view.html',
         job=job,
+        page_title=page_title,
+        vn_factory_name=vn_factory,
+        og_desc=og_desc,
+        og_image=og_image,
         criteria=crit,
         notes=notes,
         images=imgs,
