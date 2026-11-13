@@ -260,6 +260,45 @@ class OrderDoc(db.Model):
     parent_appraisal_id = db.Column(db.String(50), default='')
     note = db.Column(db.Text, default='')
 
+class JobOrder(db.Model):
+    __tablename__ = 'job_order'
+    id = db.Column(db.String(50), primary_key=True)
+    code = db.Column(db.String(100), nullable=False) # Mã đơn hàng (VD: 20261102)
+    title_note = db.Column(db.String(100), default='') # Ghi chú đợt tuyển (VD: 初招 10%, Tuyển mới)
+    factory_name = db.Column(db.String(255), default='') # Tên công xưởng
+    factory_id = db.Column(db.String(50), default='') # Liên kết tới bảng Factory
+    work_location = db.Column(db.String(255), default='') # Địa điểm / Tỉnh thành
+    product_job = db.Column(db.String(255), default='') # Sản phẩm, công việc
+    job_type = db.Column(db.String(100), default='Lao động phổ thông') # Loại hình công việc
+    gender_type = db.Column(db.String(50), default='both') # 'male' | 'female' | 'both'
+    
+    # JSON text: male_count, female_count, total_count, male_height, female_height, male_weight, female_weight, age_range, education, marriage, interview_method, contract_term
+    recruitment_criteria = db.Column(db.Text, default='{}')
+    job_description = db.Column(db.Text, default='')
+    
+    # Chế độ lương & đãi ngộ
+    salary_base = db.Column(db.String(100), default='29,500NT$')
+    salary_overtime = db.Column(db.String(100), default='164NT$/h')
+    shift_policy = db.Column(db.Text, default='Nhà máy làm việc 02 ca, nghỉ luân phiên nhưng không cố định theo Thứ Bảy , CN.')
+    
+    # Tăng ca
+    overtime_hours = db.Column(db.String(100), default='72hr/tháng (Đã gồm Thứ Bảy)')
+    overtime_policy = db.Column(db.Text, default='Nghỉ Chủ Nhật hằng tuần nhưng phải phối hợp tăng ca nếu nhà máy yêu cầu.')
+    
+    # Khấu trừ & Ăn ở
+    deduction_amount = db.Column(db.String(100), default='2500NT$/tháng')
+    meal_allowance = db.Column(db.Text, default='Mỗi tháng người lao động phải chi trả tiền ăn và ở cho công xưởng là 2500NT$/tháng, ngày làm việc công xưởng sẽ chu cấp 01 bữa/ngày và phụ cấp 100NT$/ngày cho người lao động. Ngày nghỉ tự túc 03 bữa.')
+    
+    # Chú ý khác (JSON text array)
+    other_notes = db.Column(db.Text, default='[]')
+    
+    factory_website = db.Column(db.String(255), default='')
+    images_json = db.Column(db.Text, default='[]') # Danh sách URL hoặc Base64 ảnh
+    status = db.Column(db.String(50), default='Đang tuyển')
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
 def normalize_npt(f48_raw):
     f48 = str(f48_raw or '').strip()
     if not f48: return ""
@@ -5294,6 +5333,248 @@ def api_standardize_npt():
         db.session.rollback()
         traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# ==========================================
+# MODULE: BẢNG CÔNG VIỆC / PHIẾU TUYỂN DỤNG (JOB ORDERS)
+# ==========================================
+
+@app.route('/api/job-orders', methods=['GET', 'POST'])
+@auth_required
+def api_manage_job_orders():
+    if request.method == 'GET':
+        jobs = JobOrder.query.order_by(JobOrder.created_at.desc()).all()
+        res = []
+        for j in jobs:
+            c_count = 0
+            if j.code:
+                try:
+                    c_count = FormHistory.query.filter(
+                        FormHistory.is_deleted == False,
+                        FormHistory.don_hang.ilike(f"%{j.code}%")
+                    ).count()
+                except Exception:
+                    c_count = 0
+            
+            crit = {}
+            notes = []
+            imgs = []
+            try:
+                crit = json.loads(j.recruitment_criteria) if j.recruitment_criteria else {}
+            except Exception:
+                crit = {}
+            try:
+                notes = json.loads(j.other_notes) if j.other_notes else []
+            except Exception:
+                notes = []
+            try:
+                imgs = json.loads(j.images_json) if j.images_json else []
+            except Exception:
+                imgs = []
+
+            res.append({
+                'id': j.id,
+                'code': j.code,
+                'title_note': j.title_note or '',
+                'factory_name': j.factory_name or '',
+                'factory_id': j.factory_id or '',
+                'work_location': j.work_location or '',
+                'product_job': j.product_job or '',
+                'job_type': j.job_type or 'Lao động phổ thông',
+                'gender_type': j.gender_type or 'both',
+                'recruitment_criteria': crit,
+                'job_description': j.job_description or '',
+                'salary_base': j.salary_base or '',
+                'salary_overtime': j.salary_overtime or '',
+                'shift_policy': j.shift_policy or '',
+                'overtime_hours': j.overtime_hours or '',
+                'overtime_policy': j.overtime_policy or '',
+                'deduction_amount': j.deduction_amount or '',
+                'meal_allowance': j.meal_allowance or '',
+                'other_notes': notes,
+                'factory_website': j.factory_website or '',
+                'images_json': imgs,
+                'status': j.status or 'Đang tuyển',
+                'candidate_count': c_count,
+                'created_at': j.created_at.strftime('%Y-%m-%d %H:%M') if j.created_at else '',
+                'updated_at': j.updated_at.strftime('%Y-%m-%d %H:%M') if j.updated_at else ''
+            })
+        return jsonify(res)
+
+    # POST - Tạo mới hoặc Cập nhật
+    data = request.get_json() or {}
+    j_id = (data.get('id') or '').strip() or str(uuid.uuid4())[:8]
+    code = (data.get('code') or '').strip()
+    if not code:
+        return jsonify({'success': False, 'error': 'Mã đơn hàng không được để trống'}), 400
+
+    # Xử lý ảnh: nếu có ảnh Base64 mới tải lên, upload lên R2
+    images_raw = data.get('images_json') or []
+    processed_images = []
+    for idx, img in enumerate(images_raw):
+        if isinstance(img, str) and img.startswith('data:image/'):
+            try:
+                uploaded_url = upload_to_r2(img, folder='job_orders', filename=f"job_{code}_{idx}_{uuid.uuid4().hex[:6]}")
+                processed_images.append(uploaded_url)
+            except Exception as e:
+                print(f"Error uploading job image: {e}")
+                processed_images.append(img)
+        elif isinstance(img, str) and img.strip():
+            processed_images.append(img.strip())
+
+    crit_str = json.dumps(data.get('recruitment_criteria') or {}, ensure_ascii=False)
+    notes_str = json.dumps(data.get('other_notes') or [], ensure_ascii=False)
+    imgs_str = json.dumps(processed_images, ensure_ascii=False)
+
+    job = JobOrder.query.get(j_id)
+    if not job:
+        job = JobOrder(
+            id=j_id,
+            code=code,
+            title_note=(data.get('title_note') or '').strip(),
+            factory_name=(data.get('factory_name') or '').strip(),
+            factory_id=(data.get('factory_id') or '').strip(),
+            work_location=(data.get('work_location') or '').strip(),
+            product_job=(data.get('product_job') or '').strip(),
+            job_type=(data.get('job_type') or 'Lao động phổ thông').strip(),
+            gender_type=(data.get('gender_type') or 'both').strip(),
+            recruitment_criteria=crit_str,
+            job_description=(data.get('job_description') or '').strip(),
+            salary_base=(data.get('salary_base') or '29,500NT$').strip(),
+            salary_overtime=(data.get('salary_overtime') or '164NT$/h').strip(),
+            shift_policy=(data.get('shift_policy') or '').strip(),
+            overtime_hours=(data.get('overtime_hours') or '').strip(),
+            overtime_policy=(data.get('overtime_policy') or '').strip(),
+            deduction_amount=(data.get('deduction_amount') or '').strip(),
+            meal_allowance=(data.get('meal_allowance') or '').strip(),
+            other_notes=notes_str,
+            factory_website=(data.get('factory_website') or '').strip(),
+            images_json=imgs_str,
+            status=(data.get('status') or 'Đang tuyển').strip()
+        )
+        db.session.add(job)
+    else:
+        job.code = code
+        job.title_note = (data.get('title_note') or '').strip()
+        job.factory_name = (data.get('factory_name') or '').strip()
+        job.factory_id = (data.get('factory_id') or '').strip()
+        job.work_location = (data.get('work_location') or '').strip()
+        job.product_job = (data.get('product_job') or '').strip()
+        job.job_type = (data.get('job_type') or 'Lao động phổ thông').strip()
+        job.gender_type = (data.get('gender_type') or 'both').strip()
+        job.recruitment_criteria = crit_str
+        job.job_description = (data.get('job_description') or '').strip()
+        job.salary_base = (data.get('salary_base') or '29,500NT$').strip()
+        job.salary_overtime = (data.get('salary_overtime') or '164NT$/h').strip()
+        job.shift_policy = (data.get('shift_policy') or '').strip()
+        job.overtime_hours = (data.get('overtime_hours') or '').strip()
+        job.overtime_policy = (data.get('overtime_policy') or '').strip()
+        job.deduction_amount = (data.get('deduction_amount') or '').strip()
+        job.meal_allowance = (data.get('meal_allowance') or '').strip()
+        job.other_notes = notes_str
+        job.factory_website = (data.get('factory_website') or '').strip()
+        job.images_json = imgs_str
+        job.status = (data.get('status') or 'Đang tuyển').strip()
+        job.updated_at = datetime.utcnow()
+
+    db.session.commit()
+    return jsonify({'success': True, 'id': job.id, 'code': job.code})
+
+
+@app.route('/api/job-orders/<j_id>', methods=['GET', 'DELETE'])
+@auth_required
+def api_single_job_order(j_id):
+    job = JobOrder.query.get(j_id)
+    if not job:
+        job = JobOrder.query.filter_by(code=j_id).first()
+    if not job:
+        return jsonify({'success': False, 'error': 'Không tìm thấy đơn hàng'}), 404
+
+    if request.method == 'DELETE':
+        db.session.delete(job)
+        db.session.commit()
+        return jsonify({'success': True})
+
+    # GET
+    crit = {}
+    notes = []
+    imgs = []
+    try:
+        crit = json.loads(job.recruitment_criteria) if job.recruitment_criteria else {}
+    except Exception:
+        crit = {}
+    try:
+        notes = json.loads(job.other_notes) if job.other_notes else []
+    except Exception:
+        notes = []
+    try:
+        imgs = json.loads(job.images_json) if job.images_json else []
+    except Exception:
+        imgs = []
+
+    return jsonify({
+        'success': True,
+        'job': {
+            'id': job.id,
+            'code': job.code,
+            'title_note': job.title_note or '',
+            'factory_name': job.factory_name or '',
+            'factory_id': job.factory_id or '',
+            'work_location': job.work_location or '',
+            'product_job': job.product_job or '',
+            'job_type': job.job_type or '',
+            'gender_type': job.gender_type or 'both',
+            'recruitment_criteria': crit,
+            'job_description': job.job_description or '',
+            'salary_base': job.salary_base or '',
+            'salary_overtime': job.salary_overtime or '',
+            'shift_policy': job.shift_policy or '',
+            'overtime_hours': job.overtime_hours or '',
+            'overtime_policy': job.overtime_policy or '',
+            'deduction_amount': job.deduction_amount or '',
+            'meal_allowance': job.meal_allowance or '',
+            'other_notes': notes,
+            'factory_website': job.factory_website or '',
+            'images_json': imgs,
+            'status': job.status or 'Đang tuyển',
+            'created_at': job.created_at.strftime('%Y-%m-%d %H:%M') if job.created_at else ''
+        }
+    })
+
+
+@app.route('/job-order/<j_id>')
+def view_job_order_public(j_id):
+    """Trang xem và in Bảng Công Việc công khai (Public Link) dành cho Tuyển dụng & Ứng viên."""
+    job = JobOrder.query.get(j_id)
+    if not job:
+        job = JobOrder.query.filter_by(code=j_id).first()
+    if not job:
+        return "<div style='text-align:center; padding:50px; font-family:sans-serif;'><h2>404 - Không tìm thấy đơn hàng</h2><p>Bảng công việc không tồn tại hoặc đã được gỡ bỏ. Vui lòng liên hệ FCT!</p></div>", 404
+
+    crit = {}
+    notes = []
+    imgs = []
+    try:
+        crit = json.loads(job.recruitment_criteria) if job.recruitment_criteria else {}
+    except Exception:
+        crit = {}
+    try:
+        notes = json.loads(job.other_notes) if job.other_notes else []
+    except Exception:
+        notes = []
+    try:
+        imgs = json.loads(job.images_json) if job.images_json else []
+    except Exception:
+        imgs = []
+
+    return render_template(
+        'job_order_view.html',
+        job=job,
+        criteria=crit,
+        notes=notes,
+        images=imgs,
+        now_year=datetime.now().year
+    )
 
 
 if __name__ == '__main__':

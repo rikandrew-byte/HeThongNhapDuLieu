@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BẢNG CÔNG VIỆC — {{ job.code }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Playfair Display và Plus Jakarta Sans hỗ trợ 100% tiếng Việt chuẩn từng dấu mũ, không xô lệch -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=Plus+Jakarta+Sans:ital,wght@0,500;0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Hệ màu Teal chuẩn #008080 theo yêu cầu */
+            --teal-main: #008080;          /* Mã màu chuẩn #008080 */
+            --teal-dark: #005959;          /* Teal bóng sâu */
+            --teal-bright: #009999;        /* Teal sáng */
+            --teal-soft: #00a3a3;          /* Teal tươi */
+            --teal-tint: rgba(0, 128, 128, 0.08); /* Nền mờ dải tiêu đề */
+            --teal-light: #e6f4f4;         /* Nền nhạt */
+            --teal-surface: #f2f9f9;       /* Nền ô dữ liệu */
+            
+            --ink-black: #0c1a1a;
+            --ink-slate: #1e293b;
+            --ink-muted: #475569;
+            --ink-subtle: #64748b;
+            
+            --border-teal: #008080;
+            --border-soft: #80c0c0;
+            --border-light: #b3d9d9;
+            --border-dashed: #e2e8f0;
+            
+            --page-bg: #f1f5f9;
+            --paper-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--page-bg);
+            color: var(--ink-slate);
+            line-height: 1.55;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Top Action Bar (Screen Only) */
+        .top-action-bar {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(0, 128, 128, 0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--teal-soft);
+            padding: 12px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            box-shadow: 0 4px 20px rgba(0, 128, 128, 0.25);
+            color: #ffffff;
+        }
+
+        .bar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .bar-brand {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-weight: 700;
+            font-size: 15px;
+            letter-spacing: 0.06em;
+            color: #ffffff;
+            text-transform: uppercase;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            background: #005959;
+            color: #ccfbf1;
+            border: 1px solid #5eead4;
+        }
+
+        .bar-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 18px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            text-decoration: none;
+            border: none;
+            white-space: nowrap;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .btn-primary {
+            background: #ffffff;
+            color: var(--teal-main);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            font-weight: 800;
+        }
+
+        .btn-primary:hover {
+            background: #e6f4f4;
+            color: var(--teal-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #ffffff;
+        }
+
+        /* Document Paper Container */
+        .page-container {
+            max-width: 860px;
+            margin: 28px auto 80px auto;
+            padding: 0 16px;
+        }
+
+        /* Presidential Document Paper Frame - Viền kép màu #008080 */
+        .document-paper {
+            background: var(--paper-bg);
+            border: 2px solid var(--teal-main);
+            padding: 42px 48px;
+            position: relative;
+            box-shadow: 0 16px 40px rgba(0, 128, 128, 0.12);
+            outline: 1px solid var(--border-soft);
+            outline-offset: -8px;
+        }
+
+        /* Eagle Watermark (Discreet Seal) */
+        .document-paper::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 460px;
+            height: 460px;
+            background-image: url('{{ url_for('static', filename='eagle_teal_008080.png') }}');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            opacity: 0.04;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .content-layer {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Official Federal Header */
+        .doc-header {
+            padding-bottom: 18px;
+            margin-bottom: 22px;
+            position: relative;
+        }
+
+        /* Header Grid: Logo Đại Bàng bên trái, Tiêu đề chính ở giữa, FCT 2026 góc trên bên phải */
+        .header-grid {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .header-logo-box {
+            width: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            flex-shrink: 0;
+        }
+
+        /* Logo đại bàng điều chỉnh to thêm chút */
+        .doc-eagle-seal {
+            height: 82px;
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 3px 8px rgba(0, 128, 128, 0.28));
+        }
+
+        .header-center-box {
+            flex: 1;
+            text-align: center;
+        }
+
+        /* FCT 2026 ở góc trên bên phải */
+        .header-right-box {
+            width: 120px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-end;
+            flex-shrink: 0;
+            padding-top: 4px;
+        }
+
+        .fct-corner-tag {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 850;
+            letter-spacing: 0.1em;
+            color: var(--teal-main);
+            text-transform: uppercase;
+            background: #f0fdfa;
+            border: 1px solid var(--border-soft);
+            padding: 4px 12px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 128, 128, 0.08);
+        }
+
+        /* Main Document Title - Tiêu đề BẢNG CÔNG VIỆC màu #008080 */
+        .doc-main-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 34px;
+            font-weight: 900;
+            color: var(--teal-main);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            line-height: 1.2;
+            margin: 0 0 10px 0;
+        }
+
+        .doc-meta-row {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--teal-main);
+            background: #f0fdfa;
+            border: 1px solid var(--border-soft);
+            padding: 4px 18px;
+            border-radius: 4px;
+        }
+
+        .doc-meta-code {
+            color: var(--teal-main);
+            font-weight: 800;
+            letter-spacing: 0.03em;
+        }
+
+        .doc-meta-note {
+            color: #0d9488;
+            font-weight: 800;
+        }
+
+        .doc-meta-divider {
+            color: var(--border-soft);
+        }
+
+        /* Federal Rule Divider */
+        .federal-rule {
+            border: none;
+            border-top: 2px solid var(--teal-main);
+            border-bottom: 1px solid var(--border-soft);
+            height: 4px;
+            margin-top: 16px;
+            opacity: 0.95;
+        }
+
+        /* Section Architecture with Visual Distinction */
+        .section-box {
+            margin-bottom: 18px;
+        }
+
+        .section-box:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Section Banner Bar - Tiêu đề màu chuẩn mã #008080 */
+        .section-header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(90deg, rgba(0, 128, 128, 0.08) 0%, rgba(0, 128, 128, 0.02) 55%, #ffffff 100%);
+            border-left: 4.5px solid #008080;
+            border-bottom: 1px solid rgba(0, 128, 128, 0.22);
+            padding: 7px 14px;
+            margin-bottom: 10px;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 850;
+            color: #008080 !important;  /* Màu chuẩn mã #008080 */
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-num-badge {
+            background: #008080 !important;  /* Nền huy hiệu chuẩn mã #008080 */
+            color: #ffffff !important;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 2px 7px;
+            border-radius: 3px;
+        }
+
+        .section-submark {
+            font-size: 10px;
+            font-weight: 750;
+            color: #008080 !important;
+            opacity: 0.85;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        /* Structured Ledger / Table - Canh lề trên (vertical-align: top) */
+        .ledger-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .ledger-table tr {
+            border-bottom: 1px solid var(--border-dashed);
+        }
+
+        .ledger-table tr:last-child {
+            border-bottom: none;
+        }
+
+        .ledger-table td {
+            padding: 8px 6px;
+            vertical-align: top !important;
+        }
+
+        .col-label {
+            width: 215px;
+            font-weight: 750;
+            color: #334e68;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.03em;
+            padding-top: 2px;
+        }
+
+        .col-value {
+            color: var(--ink-black);
+            font-weight: 600;
+            font-size: 13px;
+            line-height: 1.55;
+        }
+
+        .factory-title-zh {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--teal-main);
+            line-height: 1.35;
+        }
+
+        /* Criteria 2-column comparison ledger */
+        .criteria-ledger-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .criteria-box {
+            border: 1px solid #cbd5e1;
+            padding: 10px 14px;
+            border-radius: 4px;
+        }
+
+        .criteria-box.male {
+            border-left: 3.5px solid #0284c7;
+            background: #f0f9ff;
+        }
+
+        .criteria-box.female {
+            border-left: 3.5px solid #db2777;
+            background: #fdf2f8;
+        }
+
+        .criteria-box-header {
+            font-size: 11.5px;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            padding-bottom: 4px;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .criteria-box.male .criteria-box-header {
+            color: #0369a1;
+        }
+
+        .criteria-box.female .criteria-box-header {
+            color: #be185d;
+        }
+
+        .criteria-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 4px 0;
+            font-size: 12px;
+            border-bottom: 1px dashed rgba(0, 0, 0, 0.06);
+        }
+
+        .criteria-row:last-child {
+            border-bottom: none;
+        }
+
+        .criteria-row-label {
+            color: var(--ink-muted);
+            font-weight: 600;
+        }
+
+        .criteria-row-val {
+            font-weight: 750;
+            font-size: 12.5px;
+        }
+
+        .criteria-box.male .criteria-row-val {
+            color: #0284c7;
+        }
+
+        .criteria-box.female .criteria-row-val {
+            color: #db2777;
+        }
+
+        /* Job Scope Statement Box */
+        .scope-box {
+            border-left: 4px solid var(--teal-main);
+            background: var(--teal-surface);
+            padding: 12px 16px;
+            font-size: 13px;
+            color: var(--teal-main);
+            font-weight: 600;
+            line-height: 1.6;
+            border-radius: 0 4px 4px 0;
+        }
+
+        /* Financial Ledger Grid - Canh lề trên */
+        .finance-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            border: 1.5px solid var(--teal-main);
+            margin-bottom: 12px;
+            background: #ffffff;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .finance-cell {
+            padding: 10px 8px;
+            text-align: center;
+            border-right: 1px solid #cbd5e1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            min-height: 80px;
+        }
+
+        .finance-cell:last-child {
+            border-right: none;
+        }
+
+        .finance-label {
+            font-size: 10.5px;
+            font-weight: 800;
+            color: var(--ink-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+
+        .finance-amount {
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: -0.01em;
+            line-height: 1.2;
+        }
+
+        /* Màu sắc chuyên biệt cho từng ô tài chính */
+        .finance-cell.c-base .finance-amount { color: #0284c7; }
+        .finance-cell.c-ot .finance-amount { color: #008080; }
+        .finance-cell.c-hours .finance-amount { color: #0d9488; }
+        .finance-cell.c-deduct .finance-amount { color: #d97706; }
+
+        /* Dòng phụ thứ 2 gọn gàng */
+        .finance-subnote {
+            font-size: 11px;
+            font-weight: 700;
+            color: #047857;
+            margin-top: 3px;
+            line-height: 1.2;
+        }
+
+        /* Legal / Directive Clauses List (§ 1, § 2...) */
+        .clauses-container {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .clause-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 12.5px;
+            line-height: 1.55;
+            color: var(--ink-slate);
+        }
+
+        .clause-badge {
+            background: #e6f4f4;
+            color: var(--teal-main);
+            border: 1px solid var(--border-soft);
+            font-weight: 800;
+            font-size: 11px;
+            padding: 1px 7px;
+            border-radius: 3px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .clause-text {
+            font-weight: 550;
+            flex: 1;
+        }
+
+        /* Gallery Grid (Page 2) */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 14px;
+            margin-top: 10px;
+        }
+
+        .gallery-item {
+            border: 1.5px solid var(--teal-main);
+            background: #ffffff;
+            aspect-ratio: 4/3;
+            overflow: hidden;
+            border-radius: 4px;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Minimalist State Reference Footer */
+        .doc-footer {
+            margin-top: 24px;
+            padding-top: 10px;
+            border-top: 1px solid #cbd5e1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 10.5px;
+            font-weight: 700;
+            color: var(--ink-subtle);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        /* Print Media Styles (A4 Standard) */
+        @media print {
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                font-size: 11pt;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .page-container {
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            .document-paper {
+                box-shadow: none !important;
+                border: 2px solid #008080 !important;
+                outline: 1px solid #80c0c0 !important;
+                outline-offset: -8px !important;
+                padding: 8mm 12mm !important;
+            }
+
+            .document-paper::after {
+                opacity: 0.04 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .section-box {
+                page-break-inside: avoid;
+                margin-bottom: 12px !important;
+            }
+
+            .page-break-print {
+                page-break-before: always !important;
+                margin-top: 0 !important;
+                padding-top: 8mm !important;
+            }
+
+            .finance-grid, .criteria-box, .scope-box, .section-header-bar {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .document-paper {
+                padding: 20px 14px;
+                outline: none;
+            }
+            .header-grid {
+                flex-direction: column;
+                gap: 8px;
+            }
+            .header-logo-box, .header-right-box {
+                width: auto;
+            }
+            .finance-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .col-label {
+                width: 100%;
+                display: block;
+                padding-bottom: 2px;
+            }
+            .ledger-table td {
+                display: block;
+                padding: 4px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Action Bar (Screen Only) -->
+    <header class="top-action-bar no-print">
+        <div class="bar-left">
+            <span class="bar-brand">BẢNG CÔNG VIỆC</span>
+            <span class="status-pill">{{ job.status or 'HIỆU LỰC' }}</span>
+        </div>
+        <div class="bar-actions">
+            <button type="button" class="btn btn-secondary" onclick="copyShareLink()">
+                <span>🔗</span> SAO CHÉP LIÊN KẾT
+            </button>
+            <button type="button" class="btn btn-primary" onclick="window.print()">
+                <span>🖨️</span> IN / XUẤT PDF (A4)
+            </button>
+        </div>
+    </header>
+
+    <!-- Main A4 Document Paper -->
+    <main class="page-container">
+        <article class="document-paper">
+            <div class="content-layer">
+
+                <!-- Header: Đại Bàng Bên Trái To Đẹp (#008080), Tiêu Đề Giữa, FCT 2026 Góc Trên Phải -->
+                <header class="doc-header">
+                    <div class="header-grid">
+                        <div class="header-logo-box">
+                            <img src="{{ url_for('static', filename='eagle_teal_008080.png') }}" alt="Eagle Seal" class="doc-eagle-seal">
+                        </div>
+                        <div class="header-center-box">
+                            <h1 class="doc-main-title">BẢNG CÔNG VIỆC</h1>
+                            <div class="doc-meta-row">
+                                <span>MÃ SỐ: <strong class="doc-meta-code">{{ job.code }}</strong></span>
+                                {% if job.title_note %}
+                                <span class="doc-meta-note">({{ job.title_note }})</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="header-right-box">
+                            <span class="fct-corner-tag">FCT {{ now_year }}</span>
+                        </div>
+                    </div>
+
+                    <hr class="federal-rule">
+                </header>
+
+                <!-- SECTION I: THÔNG TIN CÔNG XƯỞNG -->
+                <section class="section-box">
+                    <div class="section-header-bar">
+                        <h2 class="section-title">
+                            <span class="section-num-badge">I</span>
+                            THÔNG TIN CÔNG XƯỞNG & ĐỊA ĐIỂM
+                        </h2>
+                        <span class="section-submark">ESTABLISHMENT & LOCATION</span>
+                    </div>
+                    <table class="ledger-table">
+                        <tbody>
+                            <tr>
+                                <td class="col-label">Tên nhà máy (Công xưởng):</td>
+                                <td class="col-value">
+                                    <div class="factory-title-zh">{{ job.factory_name or 'Chưa cập nhật' }}</div>
+                                </td>
+                            </tr>
+                            {% if job.work_location %}
+                            <tr>
+                                <td class="col-label">Địa điểm làm việc:</td>
+                                <td class="col-value">{{ job.work_location }}</td>
+                            </tr>
+                            {% endif %}
+                            {% if job.factory_website %}
+                            <tr>
+                                <td class="col-label">Cổng thông tin / Website:</td>
+                                <td class="col-value">
+                                    <a href="{{ job.factory_website }}" target="_blank" rel="noopener noreferrer" style="color:var(--teal-main); font-weight:700; text-decoration:underline;">
+                                        {{ job.factory_website }}
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </section>
+
+                <!-- SECTION II: SẢN PHẨM & LĨNH VỰC HOẠT ĐỘNG -->
+                <section class="section-box">
+                    <div class="section-header-bar">
+                        <h2 class="section-title">
+                            <span class="section-num-badge">II</span>
+                            SẢN PHẨM & NGÀNH NGHỀ CHÍNH
+                        </h2>
+                        <span class="section-submark">INDUSTRY & PRODUCTS</span>
+                    </div>
+                    <table class="ledger-table">
+                        <tbody>
+                            <tr>
+                                <td class="col-label">Sản phẩm sản xuất:</td>
+                                <td class="col-value" style="font-weight:750; color:var(--teal-main);">
+                                    {{ job.product_job or 'Theo quy định cụ thể của công xưởng' }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="col-label">Loại hình công việc:</td>
+                                <td class="col-value">{{ job.job_type or 'Lao động phổ thông' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <!-- SECTION III: ĐIỀU KIỆN TUYỂN DỤNG -->
+                <section class="section-box">
+                    <div class="section-header-bar">
+                        <h2 class="section-title">
+                            <span class="section-num-badge">III</span>
+                            TIÊU CHUẨN & ĐIỀU KIỆN TUYỂN DỤNG
+                        </h2>
+                        <span class="section-submark">RECRUITMENT CRITERIA</span>
+                    </div>
+
+                    <!-- Criteria Ledger Grid (Male / Female) -->
+                    <div class="criteria-ledger-grid">
+                        {% if job.gender_type in ['both', 'male'] %}
+                        <div class="criteria-box male">
+                            <div class="criteria-box-header">
+                                <span>TIÊU CHUẨN NAM GIỚI</span>
+                                <span style="font-size:10px; font-weight:700;">MALE</span>
+                            </div>
+                            <div class="criteria-row">
+                                <span class="criteria-row-label">Chỉ tiêu số lượng:</span>
+                                <span class="criteria-row-val">{{ criteria.get('male_count', '0') }} Người</span>
+                            </div>
+                            <div class="criteria-row">
+                                <span class="criteria-row-label">Chiều cao tối thiểu:</span>
+                                <span class="criteria-row-val">{{ criteria.get('male_height', '165') }} cm trở lên</span>
+                            </div>
+                            <div class="criteria-row">
+                                <span class="criteria-row-label">Cân nặng tối thiểu:</span>
+                                <span class="criteria-row-val">{{ criteria.get('male_weight', '55') }} kg trở lên</span>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if job.gender_type in ['both', 'female'] %}
+                        <div class="criteria-box female">
+                            <div class="criteria-box-header">
+                                <span>TIÊU CHUẨN NỮ GIỚI</span>
+                                <span style="font-size:10px; font-weight:700;">FEMALE</span>
+                            </div>
+                            <div class="criteria-row">
+                                <span class="criteria-row-label">Chỉ tiêu số lượng:</span>
+                                <span class="criteria-row-val">{{ criteria.get('female_count', '0') }} Người</span>
+                            </div>
+                            <div class="criteria-row">
+                                <span class="criteria-row-label">Chiều cao tối thiểu:</span>
+                                <span class="criteria-row-val">{{ criteria.get('female_height', '155') }} cm trở lên</span>
+                            </div>
+                            <div class="criteria-row">
+                                <span class="criteria-row-label">Cân nặng tối thiểu:</span>
+                                <span class="criteria-row-val">{{ criteria.get('female_weight', '50') }} kg trở lên</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- General Criteria Table -->
+                    <table class="ledger-table">
+                        <tbody>
+                            <tr>
+                                <td class="col-label">Độ tuổi yêu cầu:</td>
+                                <td class="col-value">{{ criteria.get('age_range', '20 tuổi trở lên') }}</td>
+                            </tr>
+                            <tr>
+                                <td class="col-label">Học lực / Trình độ:</td>
+                                <td class="col-value">{{ criteria.get('education', 'PTTH trở lên') }}</td>
+                            </tr>
+                            <tr>
+                                <td class="col-label">Tình trạng hôn nhân:</td>
+                                <td class="col-value">{{ criteria.get('marriage', 'Không yêu cầu') }}</td>
+                            </tr>
+                            <tr>
+                                <td class="col-label">Hình thức thi tuyển:</td>
+                                <td class="col-value" style="font-weight:750; color:#0d9488;">
+                                    {{ criteria.get('interview_method', 'Form + Line pv + clip GTBT') }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="col-label">Thời hạn hợp đồng:</td>
+                                <td class="col-value" style="font-weight:750;">
+                                    {{ criteria.get('contract_term', '03 năm + 12') }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <!-- SECTION IV: NỘI DUNG VÀ YÊU CẦU CÔNG VIỆC -->
+                <section class="section-box">
+                    <div class="section-header-bar">
+                        <h2 class="section-title">
+                            <span class="section-num-badge">IV</span>
+                            NỘI DUNG VÀ YÊU CẦU CÔNG VIỆC
+                        </h2>
+                        <span class="section-submark">JOB DESCRIPTION & SCOPE</span>
+                    </div>
+                    <div class="scope-box">
+                        <p style="white-space: pre-line;">{{ job.job_description or 'Sản xuất các loại bánh mì, đóng gói và các công việc khác trong nhà máy theo sự phân công của quản lý.' }}</p>
+                    </div>
+                </section>
+
+                <!-- SECTION V: CHẾ ĐỘ LƯƠNG & ĐÃI NGỘ -->
+                <section class="section-box">
+                    <div class="section-header-bar">
+                        <h2 class="section-title">
+                            <span class="section-num-badge">V</span>
+                            CHẾ ĐỘ LƯƠNG, TĂNG CA & ĐÃI NGỘ
+                        </h2>
+                        <span class="section-submark">COMPENSATION & BENEFITS</span>
+                    </div>
+
+                    <!-- Tách giờ tăng ca & chú thích thành 2 dòng rõ ràng nếu có dấu ngoặc -->
+                    {% set ot_main = job.overtime_hours or '72hr/tháng' %}
+                    {% set ot_sub = '' %}
+                    {% if '(' in ot_main and ')' in ot_main %}
+                        {% set ot_parts = ot_main.split('(') %}
+                        {% set ot_main = ot_parts[0].strip() %}
+                        {% set ot_sub = '(' + ot_parts[1].strip() %}
+                    {% endif %}
+
+                    {% set ded_main = job.deduction_amount or '2500NT$/tháng' %}
+                    {% set ded_sub = '' %}
+                    {% if '(' in ded_main and ')' in ded_main %}
+                        {% set ded_parts = ded_main.split('(') %}
+                        {% set ded_main = ded_parts[0].strip() %}
+                        {% set ded_sub = '(' + ded_parts[1].strip() %}
+                    {% endif %}
+
+                    <!-- Financial Ledger Summary -->
+                    <div class="finance-grid">
+                        <div class="finance-cell c-base">
+                            <div class="finance-label">Lương cơ bản</div>
+                            <div class="finance-amount">{{ job.salary_base or '29,500NT$' }}</div>
+                        </div>
+                        <div class="finance-cell c-ot">
+                            <div class="finance-label">Làm thêm / Giờ</div>
+                            <div class="finance-amount">{{ job.salary_overtime or '164NT$/h' }}</div>
+                        </div>
+                        <div class="finance-cell c-hours">
+                            <div class="finance-label">Tăng ca dự kiến</div>
+                            <div class="finance-amount">{{ ot_main }}</div>
+                            {% if ot_sub %}
+                            <div class="finance-subnote">{{ ot_sub }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="finance-cell c-deduct">
+                            <div class="finance-label">Khấu trừ ăn ở</div>
+                            <div class="finance-amount">{{ ded_main }}</div>
+                            {% if ded_sub %}
+                            <div class="finance-subnote" style="color:#b45309;">{{ ded_sub }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <table class="ledger-table">
+                        <tbody>
+                            <tr>
+                                <td class="col-label">Chế độ ca làm việc:</td>
+                                <td class="col-value">{{ job.shift_policy or 'Nhà máy làm việc 02 ca, nghỉ luân phiên nhưng không cố định theo Thứ Bảy , CN.' }}</td>
+                            </tr>
+                            {% if job.overtime_policy %}
+                            <tr>
+                                <td class="col-label">Quy định làm thêm:</td>
+                                <td class="col-value">{{ job.overtime_policy }}</td>
+                            </tr>
+                            {% endif %}
+                            {% if job.meal_allowance %}
+                            <tr>
+                                <td class="col-label">Ăn uống & Ký túc xá:</td>
+                                <td class="col-value" style="white-space: pre-line;">{{ job.meal_allowance }}</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </section>
+
+                <!-- SECTION VI: CÁC ĐIỀU KHOẢN VÀ QUY ĐỊNH BẮT BUỘC -->
+                {% if notes and notes|length > 0 %}
+                <section class="section-box">
+                    <div class="section-header-bar">
+                        <h2 class="section-title">
+                            <span class="section-num-badge">VI</span>
+                            ĐIỀU KHOẢN BẮT BUỘC & LƯU Ý ĐẶC THÙ
+                        </h2>
+                        <span class="section-submark">MANDATORY CLAUSES & PROVISIONS</span>
+                    </div>
+                    <div class="clauses-container">
+                        {% for n in notes %}
+                        <div class="clause-item">
+                            <span class="clause-badge">§ {{ loop.index }}</span>
+                            <span class="clause-text">{{ n }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </section>
+                {% endif %}
+
+                <!-- SECTION VII: HÌNH ẢNH NHÀ XƯỞNG & HIỆN TRƯỜNG (TRANG 2 NẾU CÓ) -->
+                {% if images and images|length > 0 %}
+                <section class="section-box page-break-print">
+                    <div class="section-header-bar">
+                        <h2 class="section-title">
+                            <span class="section-num-badge">VII</span>
+                            HÌNH ẢNH THỰC TẾ NHÀ XƯỞNG & SẢN PHẨM
+                        </h2>
+                        <span class="section-submark">FIELD PHOTOGRAPHS & SITE INSPECTION</span>
+                    </div>
+                    {% if job.factory_website %}
+                    <p style="font-size:12.5px; color:var(--ink-subtle); margin-bottom:12px;">
+                        Website tham chiếu: <a href="{{ job.factory_website }}" target="_blank" rel="noopener noreferrer" style="color:var(--teal-main); font-weight:700;">{{ job.factory_website }}</a>
+                    </p>
+                    {% endif %}
+                    <div class="gallery-grid">
+                        {% for img in images %}
+                        <div class="gallery-item">
+                            <img src="{{ img }}" alt="Hiện trường xưởng / sản phẩm" loading="lazy">
+                        </div>
+                        {% endfor %}
+                    </div>
+                </section>
+                {% endif %}
+
+                <!-- Minimalist State Reference Footer -->
+                <footer class="doc-footer">
+                    <div>DOC-REF: {{ job.code }}</div>
+                    <div>PAGE 01 / OFFICIAL SPECIFICATION</div>
+                </footer>
+
+            </div>
+        </article>
+    </main>
+
+    <script>
+        function copyShareLink() {
+            const url = window.location.href;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(() => {
+                    alert('Đã sao chép liên kết vào bộ nhớ tạm!');
+                }).catch(() => {
+                    prompt('Sao chép liên kết bên dưới:', url);
+                });
+            } else {
+                prompt('Sao chép liên kết bên dưới:', url);
+            }
+        }
+    </script>
+</body>
+</html>
