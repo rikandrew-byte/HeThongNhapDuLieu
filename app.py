@@ -5100,7 +5100,6 @@ def api_pipeline_analytics():
         total_in_progress = 0
         
         staff_map = {}
-        order_map = {}
         need_standardize_count = 0
         
         for r in records:
@@ -5153,36 +5152,6 @@ def api_pipeline_analytics():
                         total_in_progress += 1
                         s_item['in_progress'] += 1
 
-            # Ghép đơn hàng
-            cand_jobs = []
-            if r.don_hang:
-                cand_jobs = [j.strip().upper() for j in re.split(r'[,;]+', r.don_hang) if j.strip()]
-                
-            sel_job = (getattr(r, 'selected_job', '') or '').strip().upper()
-            if sel_job and (',' in sel_job or ';' in sel_job):
-                sel_job = re.split(r'[,;]+', sel_job)[0].strip()
-                
-            for cj in cand_jobs:
-                if cj not in order_map:
-                    order_map[cj] = {
-                        'order_name': cj,
-                        'applied': 0,
-                        'selected': 0,
-                        'cancelled': 0,
-                        'exported': 0,
-                        'in_progress': 0
-                    }
-                o_item = order_map[cj]
-                o_item['applied'] += 1
-                if is_sel and sel_job == cj:
-                    if status == 'CANCELLED':
-                        o_item['cancelled'] += 1
-                    else:
-                        o_item['selected'] += 1
-                        if status == 'XUAT_CANH' or is_arch:
-                            o_item['exported'] += 1
-                        else:
-                            o_item['in_progress'] += 1
 
         # Leaderboard theo Nhân viên FCT
         leaderboard = []
@@ -5220,35 +5189,185 @@ def api_pipeline_analytics():
             return (is_unassigned, -x['conversion_rate'], -x['selected'], -x['total'])
         leaderboard.sort(key=sort_staff)
 
-        # Thống kê tiến độ 10 đơn hàng
+        # Thống kê tiến độ Đơn hàng (Job Orders Fulfillment) chuẩn hóa từ JobOrder & hồ sơ thực tế
+        job_orders = JobOrder.query.order_by(JobOrder.created_at.desc()).all()
         orders = []
-        for job, d in order_map.items():
-            rate = round((d['selected'] / d['applied']) * 100, 1) if d['applied'] > 0 else 0
-            if d['selected'] > 0 and d['selected'] == d['applied']:
-                status_text = 'Đã tuyển đủ 100%'
-                status_type = 'success'
-            elif d['selected'] > 0:
-                status_text = 'Đã ghép thành công'
-                status_type = 'primary'
-            elif d['applied'] >= 15:
-                status_text = 'Chờ ghép người (Nguồn dồi dào)'
-                status_type = 'warning'
+        matched_job_names = set()
+        
+        for jo in job_orders:
+            # 1. Bóc tách chỉ tiêu từ recruitment_criteria
+            crit = {}
+            if jo.recruitment_criteria:
+                try:
+                    crit = json.loads(jo.recruitment_criteria)
+                except Exception:
+                    crit = {}
+            m_count = int(re.sub(r'\D', '', str(crit.get('male_count') or '0')) or 0)
+            f_count = int(re.sub(r'\D', '', str(crit.get('female_count') or '0')) or 0)
+            total_quota = m_count + f_count
+            
+            q_parts = []
+            if m_count > 0: q_parts.append(f"{m_count} Nam")
+            if f_count > 0: q_parts.append(f"{f_count} Nữ")
+            quota_text = ", ".join(q_parts) if q_parts else ("Chưa đặt" if total_quota == 0 else f"{total_quota} người")
+            
+            jo_code = (jo.code or '').strip()
+            jo_fac = (jo.factory_name or '').strip()
+            
+            # 2. Xây dựng bộ từ khóa nhận diện chuẩn (mã đơn, tên chữ Hán cốt lõi, tên xưởng tiếng Việt)
+            core_keywords = set()
+            if jo_code:
+                core_keywords.add(jo_code.lower())
+                
+            # Trích xuất chữ Hán cốt lõi (bỏ hậu tố pháp nhân)
+            cjk_chars = ''.join(re.findall(r'[\u4e00-\u9fff]', jo_fac))
+            cjk_core = re.sub(r'(股份有限公司|有限公司|國際|餐飲|工業|企業)', '', cjk_chars)
+            if len(cjk_core) >= 2:
+                core_keywords.add(cjk_core.lower())
+                
+            # Trích xuất tên tiếng Việt cốt lõi (loại bỏ từ nối, loại hình doanh nghiệp)
+            vn_text = re.sub(r'[\u4e00-\u9fff\(\)]+', ' ', jo_fac)
+            stopwords = {'cty', 'công', 'ty', 'tnhh', 'hữu', 'hạn', 'ẩm', 'thực', 'quốc', 'tế', 'chương', 'hóa', 'đài', 'loan', 'lao', 'động', 'công', 'nghiệp'}
+            vn_words = [w for w in vn_text.lower().split() if w not in stopwords]
+            if vn_words:
+                vn_core = ' '.join(vn_words)
+                if len(vn_core) >= 3:
+                    core_keywords.add(vn_core.lower())
+            
+            applied = 0
+            selected = 0
+            cancelled = 0
+            exported = 0
+            in_progress = 0
+            
+            for r in records:
+                c_dh = (r.don_hang or '').lower()
+                c_sel = (getattr(r, 'selected_job', '') or '').lower()
+                
+                match_dh = False
+                if jo_code and jo_code.lower() in c_dh:
+                    match_dh = True
+                elif any(kw in c_dh for kw in core_keywords if len(kw) >= 2):
+                    match_dh = True
+                    
+                match_sel = False
+                if jo_code and jo_code.lower() in c_sel:
+                    match_sel = True
+                elif any(kw in c_sel for kw in core_keywords if len(kw) >= 2):
+                    match_sel = True
+                    
+                if match_dh or match_sel:
+                    applied += 1
+                    if match_dh and r.don_hang:
+                        for j_item in re.split(r'[,;]+', r.don_hang):
+                            matched_job_names.add(j_item.strip().upper())
+                    if match_sel and getattr(r, 'selected_job', ''):
+                        matched_job_names.add(r.selected_job.strip().upper())
+                        
+                    if r.is_selected and (match_sel or not r.selected_job):
+                        status = getattr(r, 'placement_status', '') or ''
+                        is_arch = bool(getattr(r, 'is_archived', False))
+                        if status == 'CANCELLED':
+                            cancelled += 1
+                        else:
+                            selected += 1
+                            if status == 'XUAT_CANH' or is_arch:
+                                exported += 1
+                            else:
+                                in_progress += 1
+                                
+            # Tính % hoàn thành: ưu tiên theo chỉ tiêu nếu đã đặt, nếu chưa thì tính theo nộp
+            if total_quota > 0:
+                fulfillment_rate = round((selected / total_quota) * 100, 1)
             else:
-                status_text = 'Đang tiếp nhận ứng viên'
+                fulfillment_rate = round((selected / applied) * 100, 1) if applied > 0 else 0
+                
+            status_raw = (jo.status or 'Đang tuyển').strip()
+            if total_quota > 0 and selected >= total_quota:
+                status_text = 'Đã tuyển đủ chỉ tiêu'
+                status_type = 'success'
+            elif status_raw == 'Đang tuyển':
+                status_text = 'Đang mở tuyển'
+                status_type = 'primary'
+            elif status_raw == 'Tạm dừng':
+                status_text = 'Tạm dừng tuyển'
+                status_type = 'warning'
+            elif status_raw in ['Đã hoàn thành', 'Đã đóng']:
+                status_text = status_raw
+                status_type = 'success'
+            else:
+                status_text = status_raw
                 status_type = 'info'
                 
             orders.append({
-                'order_name': job,
+                'order_id': jo.id,
+                'code': jo.code,
+                'order_name': jo.factory_name or f"Đơn hàng {jo.code}",
+                'title_note': jo.title_note or '',
+                'quota_text': quota_text,
+                'total_quota': total_quota,
+                'applied': applied,
+                'selected': selected,
+                'cancelled': cancelled,
+                'conversion_rate': fulfillment_rate,
+                'exported': exported,
+                'in_progress': in_progress,
+                'status_text': status_text,
+                'status_type': status_type,
+                'is_official': True
+            })
+            
+        # 3. Thu thập các luồng đơn hàng đang có ứng viên nộp thực tế (chưa có phiếu trong Cấu hình Đơn hàng)
+        unmatched_jobs = {}
+        for r in records:
+            if not r.don_hang:
+                continue
+            for cj in re.split(r'[,;]+', r.don_hang):
+                cj_clean = cj.strip()
+                if not cj_clean:
+                    continue
+                if cj_clean.upper() not in matched_job_names:
+                    if cj_clean not in unmatched_jobs:
+                        unmatched_jobs[cj_clean] = {'applied': 0, 'selected': 0, 'cancelled': 0, 'exported': 0, 'in_progress': 0}
+                    item = unmatched_jobs[cj_clean]
+                    item['applied'] += 1
+                    if r.is_selected:
+                        sel_job = (getattr(r, 'selected_job', '') or '').strip()
+                        if not sel_job or sel_job.upper() == cj_clean.upper():
+                            status = getattr(r, 'placement_status', '') or ''
+                            is_arch = bool(getattr(r, 'is_archived', False))
+                            if status == 'CANCELLED':
+                                item['cancelled'] += 1
+                            else:
+                                item['selected'] += 1
+                                if status == 'XUAT_CANH' or is_arch:
+                                    item['exported'] += 1
+                                else:
+                                    item['in_progress'] += 1
+                                    
+        for job_name, d in unmatched_jobs.items():
+            rate = round((d['selected'] / d['applied']) * 100, 1) if d['applied'] > 0 else 0
+            s_text = 'Đã ghép thành công' if d['selected'] > 0 else 'Đang tiếp nhận ứng viên'
+            s_type = 'primary' if d['selected'] > 0 else 'info'
+            orders.append({
+                'order_id': '',
+                'code': '',
+                'order_name': job_name,
+                'title_note': 'Chưa tạo phiếu đơn',
+                'quota_text': '--',
+                'total_quota': 0,
                 'applied': d['applied'],
                 'selected': d['selected'],
                 'cancelled': d['cancelled'],
                 'conversion_rate': rate,
                 'exported': d['exported'],
                 'in_progress': d['in_progress'],
-                'status_text': status_text,
-                'status_type': status_type
+                'status_text': s_text,
+                'status_type': s_type,
+                'is_official': False
             })
-        orders.sort(key=lambda x: (-x['applied'], -x['selected']))
+            
+        orders.sort(key=lambda x: (not x['is_official'], -x['applied'], -x['selected']))
 
         sys_rate = round((total_selected_effective / total_candidates) * 100, 1) if total_candidates > 0 else 0
         
