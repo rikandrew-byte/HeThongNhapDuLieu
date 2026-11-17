@@ -3405,15 +3405,6 @@
 
         // --- Xử lý Kéo Thả và Dán Ảnh ---
         document.addEventListener('DOMContentLoaded', () => {
-            // Khởi tạo mã số thông minh nếu đang tạo form mới
-            setTimeout(() => {
-                const masoInput = document.getElementById('candidateMasoInput');
-                const editingId = document.getElementById('editingRecordId')?.value;
-                if (masoInput && !masoInput.value && !editingId) {
-                    selectCandidatePrefix('MD', true);
-                }
-            }, 300);
-
             const dropzone = document.getElementById('dropzone');
             const photoInput = document.getElementById('photoInput');
             const photoPreview = document.getElementById('photoPreview');
@@ -3714,6 +3705,21 @@
 
         // Data lịch sử lưu tạm để load vào form khi xử lý
         let currentHistoryData = [];
+        // Bộ đệm danh sách tổng thể (không bị ảnh hưởng khi tìm kiếm lọc) để tính mã kế tiếp tức thì (0ms) trên RAM
+        let allHistoryMasterList = [];
+
+        function syncRecordToMasterList(id, ma_so, ho_ten) {
+            if (!id || !allHistoryMasterList || allHistoryMasterList.length === 0) return;
+            const numId = parseInt(id, 10) || id;
+            const existingIdx = allHistoryMasterList.findIndex(item => item.id === numId);
+            if (existingIdx !== -1) {
+                allHistoryMasterList[existingIdx].ma_so = ma_so;
+                if (ho_ten) allHistoryMasterList[existingIdx].ho_ten = ho_ten;
+            } else {
+                allHistoryMasterList.unshift({ id: numId, ma_so: ma_so, ho_ten: ho_ten || '' });
+            }
+            allHistoryMasterList.sort((a, b) => compareCandidateMaso(a.ma_so, b.ma_so, a.id, b.id));
+        }
         
         // 🚀 TỐI ƯU: Mảng lưu ảnh tài liệu dưới dạng Base64 (thay thế FileInput)
         // → Loại bỏ base64ToFile() gây đơ Main Thread khi mở form ứng viên
@@ -3816,6 +3822,15 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             // Sắp xếp mã số theo thứ tự số từ lớn đến bé (ví dụ: MD13543 > MD13542 > MD13540...)
             result.data.sort((a, b) => compareCandidateMaso(a.ma_so, b.ma_so, a.id, b.id));
             currentHistoryData = result.data;
+            if (!searchQuery) {
+                allHistoryMasterList = result.data.slice();
+                // Tự động điền mã số kế tiếp từ RAM (0ms, không tốn thêm request) nếu đang tạo form mới
+                const masoInput = document.getElementById('candidateMasoInput');
+                const editingId = document.getElementById('editingRecordId')?.value;
+                if (masoInput && !masoInput.value && !editingId) {
+                    selectCandidatePrefix(currentSelectedPrefix || 'MD', true);
+                }
+            }
             
             // Cập nhật thống kê Sidebar
             const sidebarTotal = document.getElementById('sidebarTotalCount');
@@ -4264,6 +4279,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                     if (row) row.remove();
                     // Cập nhật data cache
                     currentHistoryData = currentHistoryData.filter(i => i.id !== id);
+                    allHistoryMasterList = allHistoryMasterList.filter(i => i.id !== id);
                     updateHistoryCount();
                 } else {
                     alert("Lỗi khi xóa: " + result.error);
@@ -7542,6 +7558,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                         const row = document.querySelector(`#historyTableBody tr[data-id="${id}"]`);
                         if (row) row.remove();
                         currentHistoryData = currentHistoryData.filter(i => i.id !== id);
+                        allHistoryMasterList = allHistoryMasterList.filter(i => i.id !== id);
                     });
                     clearHistorySelection();
                     updateHistoryCount();
@@ -8120,6 +8137,9 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                         alert("Đã lưu form vào hệ thống thành công!");
                     }
 
+                    // Đồng bộ mã mới vào bộ đệm master trong RAM trước khi làm mới
+                    syncRecordToMasterList(result.id, result.ma_so, plainData['Hoten'] || '');
+
                     // Reset editing state và ẩn nút
                     cancelEdit();
                     
@@ -8149,6 +8169,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                         const retryResult = await retryRes.json();
                         if (retryResult.success) {
                             alert("Đã lưu hồ sơ thành công!");
+                            syncRecordToMasterList(retryResult.id, retryResult.ma_so, plainData['Hoten'] || '');
                             cancelEdit();
                             await loadHistory(retryResult.ma_so || '');
                             document.getElementById('historyModal').style.display = 'block';
@@ -8273,7 +8294,84 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             }
         }
 
-        async function selectCandidatePrefix(prefix, forceFetch = true) {
+        function computeNextCodeFromMemory(prefix) {
+            prefix = (prefix || 'MD').trim().toUpperCase();
+            if (prefix === 'GV') prefix = 'G';
+            const sourceList = (allHistoryMasterList && allHistoryMasterList.length > 0) ? allHistoryMasterList : currentHistoryData;
+            if (!sourceList || sourceList.length === 0) return null;
+
+            const regex = new RegExp(`^${prefix}(\\d+)$`, 'i');
+            const seen = new Set();
+            const topNums = [];
+
+            // Vì danh sách đã được sắp xếp giảm dần theo số thứ tự mã,
+            // chỉ cần lấy đủ 12 mã lớn nhất đầu tiên của tiền tố này rồi dừng ngay (không duyệt hết mảng)
+            for (let i = 0; i < sourceList.length; i++) {
+                const ms = (sourceList[i].ma_so || '').trim();
+                if (!ms || ms === 'CHO_DUYET') continue;
+                const m = ms.match(regex);
+                if (m) {
+                    const n = parseInt(m[1], 10);
+                    if (!isNaN(n) && !seen.has(n)) {
+                        seen.add(n);
+                        topNums.push(n);
+                        if (topNums.length >= 12) break;
+                    }
+                }
+            }
+
+            if (topNums.length === 0) {
+                const defaults = { 'MD': 13578, 'FD': 4284, 'KD': 1438, 'G': 712, 'CD': 10 };
+                const nextN = defaults[prefix] || 1;
+                return {
+                    prefix: prefix,
+                    next_code: `${prefix}${nextN}`,
+                    max_code: `${prefix}${nextN}`,
+                    is_gap: false
+                };
+            }
+
+            const sortedUnique = topNums.slice().sort((a, b) => a - b);
+            const maxNum = sortedUnique[sortedUnique.length - 1];
+            const recentTail = sortedUnique.slice(-10);
+            const gaps = [];
+            for (let i = 0; i < recentTail.length - 1; i++) {
+                const a = recentTail[i];
+                const b = recentTail[i + 1];
+                const diff = b - a;
+                if (diff > 1 && diff <= 5) {
+                    for (let g = a + 1; g < b; g++) {
+                        gaps.push(g);
+                    }
+                }
+            }
+
+            const nextNum = gaps.length > 0 ? gaps[0] : (maxNum + 1);
+            return {
+                prefix: prefix,
+                next_code: `${prefix}${nextNum}`,
+                max_code: `${prefix}${maxNum}`,
+                is_gap: gaps.length > 0
+            };
+        }
+
+        function applySmartCodeUI(d, input, badge, hintText, maxText) {
+            if (!d || !input) return;
+            input.value = d.next_code;
+            if (badge) badge.classList.add('hidden');
+            if (hintText) {
+                if (d.is_gap) {
+                    hintText.innerHTML = `<span class="text-emerald-700 font-semibold text-[11px]">⚡ Lấp mã khuyết: <b>${escapeHtml(d.next_code)}</b></span>`;
+                } else {
+                    hintText.innerHTML = '';
+                }
+            }
+            if (maxText) {
+                maxText.innerHTML = d.max_code ? `Mã form mới nhất: <b class="text-slate-700 font-mono">${escapeHtml(d.max_code)}</b>` : '';
+            }
+        }
+
+        async function selectCandidatePrefix(prefix, forceFetch = true, forceServer = false) {
             currentSelectedPrefix = prefix || 'MD';
             updatePrefixPillStyle(currentSelectedPrefix);
 
@@ -8289,7 +8387,18 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 return;
             }
 
-            if (!input || isFetchingNextCode) return;
+            if (!input) return;
+
+            // Tối ưu tài nguyên: Tính mã kế tiếp trực tiếp từ bộ đệm RAM (0ms, 0 request mạng, 0 query DB)
+            if (!forceServer) {
+                const memData = computeNextCodeFromMemory(currentSelectedPrefix);
+                if (memData) {
+                    applySmartCodeUI(memData, input, badge, hintText, maxText);
+                    return;
+                }
+            }
+
+            if (isFetchingNextCode) return;
             isFetchingNextCode = true;
 
             if (badge) badge.classList.add('hidden');
@@ -8299,21 +8408,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 const res = await fetch(`/api/candidate/next-code?prefix=${currentSelectedPrefix}`, { credentials: 'same-origin' });
                 const json = await res.json();
                 if (json.success && json.data) {
-                    const d = json.data;
-                    input.value = d.next_code;
-
-                    if (badge) badge.classList.add('hidden');
-
-                    if (hintText) {
-                        if (d.is_gap) {
-                            hintText.innerHTML = `<span class="text-emerald-700 font-semibold text-[11px]">⚡ Lấp mã khuyết: <b>${escapeHtml(d.next_code)}</b></span>`;
-                        } else {
-                            hintText.innerHTML = '';
-                        }
-                    }
-                    if (maxText) {
-                        maxText.innerHTML = d.max_code ? `Mã form mới nhất: <b class="text-slate-700 font-mono">${escapeHtml(d.max_code)}</b>` : '';
-                    }
+                    applySmartCodeUI(json.data, input, badge, hintText, maxText);
                 }
             } catch (err) {
                 console.error("Lỗi lấy mã số tiếp theo:", err);
@@ -8326,7 +8421,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
         function refreshCurrentPrefixCode() {
             const sel = document.getElementById('candidatePrefixSelect');
             const pref = sel ? sel.value : (currentSelectedPrefix || 'MD');
-            selectCandidatePrefix(pref, true);
+            selectCandidatePrefix(pref, true, true);
         }
 
         function handleMasoManualInput(val) {

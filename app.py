@@ -2146,19 +2146,30 @@ def find_duplicate_candidates(hoten='', ngaysinh='', cccd='', phone='', exclude_
             exclude_id = None
 
     # 1. Kiểm tra Họ tên & Ngày tháng năm sinh (Hỗ trợ cả có dấu và không dấu)
+    # Tối ưu tài nguyên: Bước 1 chỉ lấy (id, ho_ten) mỏng nhẹ để lọc tên trùng trước,
+    # tuyệt đối không kéo toàn bộ data_json của hàng trăm hồ sơ về RAM.
     if norm_name and norm_dob:
-        query = FormHistory.query.filter(FormHistory.is_deleted == False)
+        q_names = FormHistory.query.with_entities(FormHistory.id, FormHistory.ho_ten).filter(
+            FormHistory.is_deleted == False
+        )
         if exclude_id:
-            query = query.filter(FormHistory.id != exclude_id)
-        
-        candidates = query.all()
-        for cand in candidates:
-            if cand.id in seen_ids:
+            q_names = q_names.filter(FormHistory.id != exclude_id)
+
+        matched_name_ids = []
+        for cid, c_hoten in q_names.all():
+            if cid in seen_ids or not c_hoten:
                 continue
-            cand_norm = normalize_candidate_name(cand.ho_ten)
+            cand_norm = normalize_candidate_name(c_hoten)
             cand_no_accent = remove_accents_str(cand_norm)
-            
             if cand_norm == norm_name or (no_accent_name and cand_no_accent == no_accent_name):
+                matched_name_ids.append(cid)
+
+        # Bước 2: Chỉ truy vấn data_json của đúng các bản ghi trùng tên (thường chỉ 0-2 bản ghi)
+        if matched_name_ids:
+            candidates = FormHistory.query.filter(FormHistory.id.in_(matched_name_ids)).all()
+            for cand in candidates:
+                if cand.id in seen_ids:
+                    continue
                 try:
                     d_json = json.loads(cand.data_json or '{}')
                     cand_dob = normalize_candidate_dob(d_json.get('Ngaysinh', ''))
@@ -2294,10 +2305,18 @@ def get_next_candidate_code(prefix='MD'):
     if prefix not in valid_prefixes:
         prefix = 'MD'
 
-    records = FormHistory.query.with_entities(FormHistory.ma_so).filter(
-        FormHistory.is_deleted == False,
-        FormHistory.ma_so.ilike(f"{prefix}%")
-    ).all()
+    # Chỉ lấy tối đa 15 mã lớn nhất ở đỉnh chuỗi từ Database (tránh quét toàn bộ hàng trăm bản ghi)
+    records = (
+        FormHistory.query.with_entities(FormHistory.ma_so)
+        .filter(
+            FormHistory.is_deleted == False,
+            FormHistory.ma_so.ilike(f"{prefix}%"),
+            ~FormHistory.ma_so.ilike(f"{prefix}-%")
+        )
+        .order_by(func.length(FormHistory.ma_so).desc(), FormHistory.ma_so.desc())
+        .limit(15)
+        .all()
+    )
 
     nums = []
     pattern = re.compile(rf'^{prefix}(\d+)$', re.IGNORECASE)
@@ -2774,30 +2793,6 @@ def api_history():
             .all()
         )
         records = sort_history_records(records)
-        
-        # Tự động liên kết factory_id nếu công xưởng đã có trong danh mục (batch lookup 1 lần, không gây N+1 query và TUYỆT ĐỐI KHÔNG XÓA selected_job)
-        needs_commit = False
-        all_factories = {f.name.lower().strip(): f.id for f in Factory.query.all() if f.name}
-        for r in records:
-            if getattr(r, 'is_selected', False):
-                sj = (getattr(r, 'selected_job', '') or '').strip()
-                if sj:
-                    if (',' in sj or ';' in sj):
-                        sj = re.split(r'[,;]+', sj)[0].strip()
-                        r.selected_job = sj
-                        needs_commit = True
-                    # Liên kết factory_id nếu tìm thấy công xưởng trong danh mục
-                    fid = all_factories.get(sj.lower())
-                    if fid and getattr(r, 'factory_id', '') != fid:
-                        r.factory_id = fid
-                        needs_commit = True
-        
-        if needs_commit:
-            try:
-                db.session.commit()
-            except Exception as e:
-                db.session.rollback()
-                print(f"Cleanup commit failed: {e}")
 
         vietnam_tz = timezone(timedelta(hours=7))
         data = [{
@@ -4839,6 +4834,13 @@ def api_manage_factories():
     else:
         factory.name = f_name
         factory.broker_id = b_id
+    # Liên kết tự động các ứng viên trúng tuyển có selected_job trùng tên nhà máy
+    if f_name and f_name.strip():
+        FormHistory.query.filter(
+            FormHistory.is_selected == True,
+            FormHistory.is_deleted == False,
+            func.lower(FormHistory.selected_job) == f_name.strip().lower()
+        ).update({FormHistory.factory_id: f_id}, synchronize_session=False)
     db.session.commit()
     return jsonify({'success': True, 'factory': {'id': factory.id, 'name': factory.name, 'broker_id': factory.broker_id}})
 
@@ -4944,7 +4946,35 @@ def api_delete_doc(d_id):
 @app.route('/api/placements', methods=['GET'])
 @auth_required
 def api_get_placements():
-    records = FormHistory.query.filter_by(is_selected=True, is_deleted=False).all()
+    from sqlalchemy.orm import load_only
+    records = (
+        FormHistory.query.filter_by(is_selected=True, is_deleted=False)
+        .options(load_only(
+            FormHistory.id,
+            FormHistory.ma_so,
+            FormHistory.ho_ten,
+            FormHistory.selected_job,
+            FormHistory.selected_at,
+            FormHistory.passport_expiry,
+            FormHistory.id_card_expiry,
+            FormHistory.health_check_expiry,
+            FormHistory.judicial_record_2_expiry,
+            FormHistory.placement_status,
+            FormHistory.factory_id,
+            FormHistory.appraisal_id,
+            FormHistory.visa_id,
+            FormHistory.placement_note,
+            FormHistory.date_trinh_cuc,
+            FormHistory.date_trinh_cuc_expected,
+            FormHistory.date_lam_visa,
+            FormHistory.date_nhan_visa,
+            FormHistory.date_xuat_canh,
+            FormHistory.date_xuat_canh_actual,
+            FormHistory.cancel_date,
+            FormHistory.cancel_reason
+        ))
+        .all()
+    )
     # Tải trước tên nhà máy để phản hồi nhanh
     factories = {f.id: f.name for f in Factory.query.all()}
     
@@ -5104,7 +5134,20 @@ def get_staff_from_clean(clean_str):
 @auth_required
 def api_pipeline_analytics():
     try:
-        records = FormHistory.query.filter_by(is_deleted=False).all()
+        from sqlalchemy.orm import load_only
+        records = (
+            FormHistory.query.filter_by(is_deleted=False)
+            .options(load_only(
+                FormHistory.id,
+                FormHistory.nguoi_phu_trach,
+                FormHistory.is_selected,
+                FormHistory.placement_status,
+                FormHistory.is_archived,
+                FormHistory.don_hang,
+                FormHistory.selected_job
+            ))
+            .all()
+        )
         
         total_candidates = len(records)
         total_selected_raw = 0
@@ -5204,7 +5247,19 @@ def api_pipeline_analytics():
         leaderboard.sort(key=sort_staff)
 
         # Thống kê tiến độ Đơn hàng (Job Orders Fulfillment) chuẩn hóa từ JobOrder & hồ sơ thực tế
-        job_orders = JobOrder.query.order_by(JobOrder.created_at.desc()).all()
+        job_orders = (
+            JobOrder.query.options(load_only(
+                JobOrder.id,
+                JobOrder.code,
+                JobOrder.factory_name,
+                JobOrder.title_note,
+                JobOrder.recruitment_criteria,
+                JobOrder.status,
+                JobOrder.created_at
+            ))
+            .order_by(JobOrder.created_at.desc())
+            .all()
+        )
         orders = []
         matched_job_names = set()
         
@@ -5415,18 +5470,23 @@ def api_standardize_npt():
         data = request.json or {}
         action = data.get('action', 'preview')  # 'preview' | 'apply'
         
-        records = FormHistory.query.filter_by(is_deleted=False).all()
+        records = FormHistory.query.with_entities(
+            FormHistory.id,
+            FormHistory.ma_so,
+            FormHistory.ho_ten,
+            FormHistory.nguoi_phu_trach
+        ).filter_by(is_deleted=False).all()
         changes = []
-        for r in records:
-            current = (r.nguoi_phu_trach or '').strip()
+        for r_id, r_maso, r_hoten, r_npt in records:
+            current = (r_npt or '').strip()
             if not current:
                 continue
             suggested = clean_npt_standard(current)
             if suggested and suggested != current:
                 changes.append({
-                    'id': r.id,
-                    'ma_so': r.ma_so or f"ID:{r.id}",
-                    'ho_ten': r.ho_ten or '',
+                    'id': r_id,
+                    'ma_so': r_maso or f"ID:{r_id}",
+                    'ho_ten': r_hoten or '',
                     'current': current,
                     'suggested': suggested
                 })
@@ -5482,17 +5542,26 @@ def api_standardize_npt():
 def api_manage_job_orders():
     if request.method == 'GET':
         jobs = JobOrder.query.order_by(JobOrder.created_at.desc()).all()
+        # Lấy cột don_hang 1 lần duy nhất thay vì chạy N+1 câu lệnh SELECT COUNT(*) trong vòng lặp
+        try:
+            active_don_hangs = [
+                (dh or '').lower()
+                for (dh,) in FormHistory.query.with_entities(FormHistory.don_hang).filter(
+                    FormHistory.is_deleted == False,
+                    FormHistory.don_hang != None,
+                    FormHistory.don_hang != ''
+                ).all()
+            ]
+        except Exception:
+            active_don_hangs = []
+
         res = []
         for j in jobs:
             c_count = 0
             if j.code:
-                try:
-                    c_count = FormHistory.query.filter(
-                        FormHistory.is_deleted == False,
-                        FormHistory.don_hang.ilike(f"%{j.code}%")
-                    ).count()
-                except Exception:
-                    c_count = 0
+                code_lower = j.code.strip().lower()
+                if code_lower:
+                    c_count = sum(1 for dh in active_don_hangs if code_lower in dh)
             
             crit = {}
             notes = []
