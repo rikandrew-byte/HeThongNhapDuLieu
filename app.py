@@ -2472,7 +2472,7 @@ def api_submit_only():
                 # Tự động thăng cấp mã kế tiếp còn trống (Zero-Error Conflict Resolver)!
                 is_new_or_approving = not record_id
                 if record_id:
-                    rec_check = FormHistory.query.get(int(record_id))
+                    rec_check = db.session.get(FormHistory, int(record_id))
                     if rec_check and (not rec_check.ma_so or str(rec_check.ma_so).strip().upper() == 'CHO_DUYET'):
                         is_new_or_approving = True
 
@@ -2488,7 +2488,7 @@ def api_submit_only():
                     return jsonify({'success': False, 'error': f'Mã số "{ma_so}" đã tồn tại.'}), 400
 
         if record_id:
-            record = FormHistory.query.get(int(record_id))
+            record = db.session.get(FormHistory, int(record_id))
             if not record: return jsonify({'success': False, 'error': 'Not found'}), 404
             old_data = json.loads(record.data_json) if record.data_json else {}
             for key in ('photo', 'qr_line', 'document_images'):
@@ -2607,7 +2607,7 @@ def download_history(maso):
 @auth_required
 def api_preview(record_id):
     try:
-        record = FormHistory.query.get(record_id)
+        record = db.session.get(FormHistory, record_id)
         if not record: return "Not found", 404
         html_content = generate_html_resume(json.loads(record.data_json), skip_images=True, record=record)
         return Response(html_content, mimetype="text/html", headers={"Content-Type": "text/html; charset=utf-8"})
@@ -2633,7 +2633,7 @@ def secure_web_view(slug):
             # Định dạng id/slug
             try:
                 rid = int(parts[0])
-                record = FormHistory.query.get(rid)
+                record = db.session.get(FormHistory, rid)
             except: pass
         
         if not record:
@@ -2642,7 +2642,7 @@ def secure_web_view(slug):
             maso_part = slug.split('_')[0] if '_' in slug else slug
             # Trường hợp đặc biệt: Nếu slug là số nguyên, thử tìm theo ID
             if slug.isdigit():
-                record = FormHistory.query.get(int(slug))
+                record = db.session.get(FormHistory, int(slug))
             
             if not record:
                 # Tìm bản ghi mới nhất có mã số này
@@ -2835,7 +2835,7 @@ def api_history():
 @auth_required
 def api_history_data(record_id):
     try:
-        record = FormHistory.query.get(record_id)
+        record = db.session.get(FormHistory, record_id)
         if not record: return jsonify({'success': False, 'error': 'Not found'}), 404
         return jsonify({
             'success': True, 
@@ -2874,7 +2874,7 @@ def api_bulk_delete_history():
 @auth_required
 def api_delete_history(record_id):
     try:
-        r = FormHistory.query.get(record_id)
+        r = db.session.get(FormHistory, record_id)
         if r:
             r.is_deleted = True
             r.deleted_at = datetime.utcnow()
@@ -2910,7 +2910,7 @@ def api_hard_delete_year():
 @auth_required
 def api_history_zip_pack(record_id):
     try:
-        r = FormHistory.query.get(record_id)
+        r = db.session.get(FormHistory, record_id)
         if not r: return jsonify({'success': False, 'error': 'Record not found'}), 404
         
         form_data = json.loads(r.data_json) if r.data_json else {}
@@ -4331,7 +4331,7 @@ def api_export_progress():
         allowed_factory_ids = None
         broker_zh_prefix = ""
         if broker_id and broker_id != 'ALL':
-            brk = Broker.query.get(broker_id)
+            brk = db.session.get(Broker, broker_id)
             if brk:
                 broker_zh_prefix = f"{(brk.name_zh or brk.name).strip()} - "
             # Lấy tất cả các nhà máy của môi giới này
@@ -4676,7 +4676,7 @@ def api_bulk_print():
 @auth_required
 def api_toggle_selected(record_id):
     try:
-        record = FormHistory.query.get(record_id)
+        record = db.session.get(FormHistory, record_id)
         if not record:
             return jsonify({'success': False, 'error': 'Not found'}), 404
         
@@ -4792,7 +4792,7 @@ def api_manage_brokers():
     if not b_name:
         return jsonify({'success': False, 'error': 'Tên nhà môi giới không được để trống'}), 400
         
-    broker = Broker.query.get(b_id)
+    broker = db.session.get(Broker, b_id)
     if not broker:
         broker = Broker(id=b_id, name=b_name, name_zh=b_name_zh)
         db.session.add(broker)
@@ -4805,7 +4805,7 @@ def api_manage_brokers():
 @app.route('/api/brokers/<b_id>', methods=['DELETE'])
 @auth_required
 def api_delete_broker(b_id):
-    broker = Broker.query.get(b_id)
+    broker = db.session.get(Broker, b_id)
     if not broker:
         return jsonify({'success': False, 'error': 'Không tìm thấy nhà môi giới'}), 404
     
@@ -4832,7 +4832,7 @@ def api_manage_factories():
     if not f_name:
         return jsonify({'success': False, 'error': 'Tên nhà máy không được để trống'}), 400
         
-    factory = Factory.query.get(f_id)
+    factory = db.session.get(Factory, f_id)
     if not factory:
         factory = Factory(id=f_id, name=f_name, broker_id=b_id)
         db.session.add(factory)
@@ -4845,7 +4845,7 @@ def api_manage_factories():
 @app.route('/api/factories/<f_id>', methods=['DELETE'])
 @auth_required
 def api_delete_factory(f_id):
-    factory = Factory.query.get(f_id)
+    factory = db.session.get(Factory, f_id)
     if not factory:
         return jsonify({'success': False, 'error': 'Không tìm thấy nhà máy'}), 404
     
@@ -4892,7 +4892,7 @@ def api_manage_docs():
     if not factory_id or not d_type or not code:
         return jsonify({'success': False, 'error': 'Thiếu thông tin bắt buộc (nhà máy, loại, mã giấy tờ)'}), 400
         
-    doc = OrderDoc.query.get(d_id)
+    doc = db.session.get(OrderDoc, d_id)
     if not doc:
         doc = OrderDoc(
             id=d_id,
@@ -4932,7 +4932,7 @@ def api_manage_docs():
 @app.route('/api/docs/<d_id>', methods=['DELETE'])
 @auth_required
 def api_delete_doc(d_id):
-    doc = OrderDoc.query.get(d_id)
+    doc = db.session.get(OrderDoc, d_id)
     if not doc:
         return jsonify({'success': False, 'error': 'Không tìm thấy tài liệu'}), 404
     db.session.delete(doc)
@@ -4981,7 +4981,7 @@ def api_get_placements():
 @app.route('/api/placements/<int:record_id>', methods=['POST'])
 @auth_required
 def api_update_placement(record_id):
-    record = FormHistory.query.get(record_id)
+    record = db.session.get(FormHistory, record_id)
     if not record:
         return jsonify({'success': False, 'error': 'Không tìm thấy ứng viên'}), 404
         
@@ -5015,7 +5015,7 @@ def api_update_placement(record_id):
     
     # Tự động gán selected_job theo tên nhà máy nếu được ghép
     if record.factory_id:
-        factory = Factory.query.get(record.factory_id)
+        factory = db.session.get(Factory, record.factory_id)
         if factory:
             record.selected_job = factory.name
             
@@ -5441,7 +5441,7 @@ def api_standardize_npt():
         elif action == 'apply':
             updated_count = 0
             for item in changes:
-                r = FormHistory.query.get(item['id'])
+                r = db.session.get(FormHistory, item['id'])
                 if r:
                     r.nguoi_phu_trach = item['suggested']
                     if r.data_json:
@@ -5564,7 +5564,7 @@ def api_manage_job_orders():
     notes_str = json.dumps(data.get('other_notes') or [], ensure_ascii=False)
     imgs_str = json.dumps(processed_images, ensure_ascii=False)
 
-    job = JobOrder.query.get(j_id)
+    job = db.session.get(JobOrder, j_id)
     if not job:
         job = JobOrder(
             id=j_id,
@@ -5622,7 +5622,7 @@ def api_manage_job_orders():
 @app.route('/api/job-orders/<j_id>', methods=['GET', 'DELETE'])
 @auth_required
 def api_single_job_order(j_id):
-    job = JobOrder.query.get(j_id)
+    job = db.session.get(JobOrder, j_id)
     if not job:
         job = JobOrder.query.filter_by(code=j_id).first()
     if not job:
@@ -5683,7 +5683,7 @@ def api_single_job_order(j_id):
 @app.route('/job-order/<j_id>')
 def view_job_order_public(j_id):
     """Trang xem và in Bảng Công Việc công khai (Public Link) dành cho Tuyển dụng & Ứng viên."""
-    job = JobOrder.query.get(j_id)
+    job = db.session.get(JobOrder, j_id)
     if not job:
         job = JobOrder.query.filter_by(code=j_id).first()
     if not job:
