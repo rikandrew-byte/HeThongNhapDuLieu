@@ -983,7 +983,7 @@
         }
     </style>
 </head>
-<body class="flex flex-col lg:flex-row h-screen overflow-hidden text-slate-800" onload="loadHistory()">
+<body class="flex flex-col lg:flex-row h-screen overflow-hidden text-slate-800">
 
     <div class="premium-sidebar w-full lg:w-1/3 flex flex-row lg:flex-col justify-between items-center lg:items-start z-10 flex-shrink-0" style="padding: 34px;">
         
@@ -3864,7 +3864,8 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 partnerList.innerHTML = Array.from(partners).filter(Boolean).sort().map(p => `<option value="${p}"></option>`).join('');
             }
             
-            // 3. Quét từng dòng dữ liệu và tạo bảng
+            // 3. Quét từng dòng dữ liệu và tạo bảng qua DocumentFragment (tối ưu hóa 1 lần render duy nhất)
+            const fragment = document.createDocumentFragment();
             result.data.forEach((item, index) => {
                 const row = document.createElement('tr');
                 row.className = 'history-card-row';
@@ -3951,8 +3952,9 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                         </div>
                     </td>
                 `;
-                tbody.appendChild(row);
+                fragment.appendChild(row);
             });
+            tbody.appendChild(fragment);
             updateHistoryCount();
             window.lastHistorySearchQuery = searchQuery;
             
@@ -4086,8 +4088,8 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             document.getElementById('btnCancelEdit').style.display = 'flex';
             syncTopActionButtons(true, isApproving);
             
-            // Cuộn lên đầu và đóng popup
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Cuộn lên đầu tức thì và đóng popup
+            window.scrollTo(0, 0);
             document.getElementById('historyModal').style.display = 'none';
 
             // Đồng bộ trạng thái Mã số khi chỉnh sửa / duyệt hồ sơ
@@ -4189,15 +4191,6 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                     }
                 }
                 updateOriginalDisplay(name, viVal);
-
-                // Nếu ô hiện tại có dữ liệu nhưng chưa được dịch sang tiếng Trung (vẫn là tiếng Việt), tự động dịch ngay
-                if (currentVal && !/[\u4e00-\u9fff\u3400-\u4dbf]/.test(currentVal)) {
-                    const isDateOrNum = /^[\d\s\/\-\.\~～]+$/.test(currentVal.trim());
-                    if (!isDateOrNum) {
-                        const el = document.getElementsByName(name)[0];
-                        if (el) translateField(el);
-                    }
-                }
             });
             
             // Ảnh chân dung: hiển thị preview & nút tải nếu có ảnh (hỗ trợ cả R2 URL CDN & Base64)
@@ -8177,6 +8170,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
         }
 
         function cancelEdit() {
+            window.scrollTo(0, 0);
             document.getElementById('editingRecordId').value = '';
             document.getElementById('existingDonhang').value = '';
             document.getElementById('btnUpdateOnly').style.display = 'none';

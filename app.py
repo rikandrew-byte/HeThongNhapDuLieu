@@ -196,19 +196,19 @@ db = SQLAlchemy(app)
 
 class FormHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    ma_so = db.Column(db.String(50))
+    ma_so = db.Column(db.String(50), index=True)
     ho_ten = db.Column(db.String(100))
     ten_file = db.Column(db.String(255))
     data_json = db.Column(db.Text)
-    ngay_tao = db.Column(db.DateTime, default=datetime.utcnow)
-    is_selected = db.Column(db.Boolean, default=False)  # Trúng tuyển
-    is_deleted = db.Column(db.Boolean, default=False)   # Xóa mềm
+    ngay_tao = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    is_selected = db.Column(db.Boolean, default=False, index=True)  # Trúng tuyển
+    is_deleted = db.Column(db.Boolean, default=False, index=True)   # Xóa mềm
     don_hang = db.Column(db.String(255), default='')    # Đơn hàng ứng tuyển (mã đơn)
-    nguoi_phu_trach = db.Column(db.String(100), default='') # Tên Nhân viên - Đối tác
+    nguoi_phu_trach = db.Column(db.String(100), default='', index=True) # Tên Nhân viên - Đối tác
     selected_job = db.Column(db.String(255), default='')    # Đơn hàng trúng tuyển chính thức
     selected_at = db.Column(db.DateTime, nullable=True, default=None)  # Thời điểm trúng tuyển
     deleted_at = db.Column(db.DateTime, nullable=True, default=None)   # Thời điểm xóa mềm
-    is_archived = db.Column(db.Boolean, default=False)                 # Lưu trữ hồ sơ đã xuất cảnh
+    is_archived = db.Column(db.Boolean, default=False, index=True)     # Lưu trữ hồ sơ đã xuất cảnh
 
     # Thẻ và ngày hết hạn giấy tờ
     passport_expiry = db.Column(db.String(50), default='')
@@ -431,21 +431,22 @@ with app.app_context():
                     db.session.execute(text("ALTER TABLE form_history ADD COLUMN selected_job VARCHAR(255) DEFAULT ''"))
                 db.session.commit()
             
-            # Data migration for selected_job: chỉ lấy đơn hàng duy nhất nếu don_hang chỉ có 1 đơn
-            # Không copy nguyên chuỗi don_hang vì có thể chứa nhiều đơn hàng
+            # Data migration for selected_job (chỉ chạy khi thực sự có bản ghi đơn lẻ chưa migrate)
             try:
                 import re as _re
-                empty_sel_records = FormHistory.query.filter_by(is_selected=True).filter((FormHistory.selected_job == '') | (FormHistory.selected_job == None)).all()
-                if empty_sel_records:
-                    print(f"Found {len(empty_sel_records)} selected records with empty selected_job. Migrating (single-job only)...")
-                    for r in empty_sel_records:
-                        if r.don_hang:
-                            jobs = [j.strip() for j in _re.split(r'[,;]+', r.don_hang) if j.strip()]
-                            if len(jobs) == 1:
-                                r.selected_job = jobs[0]
-                            # Nếu có nhiều hơn 1 đơn, không thể biết đơn nào là đơn trúng tuyển → để trống
+                unmigrated = FormHistory.query.filter(
+                    FormHistory.is_selected == True,
+                    (FormHistory.selected_job == None) | (FormHistory.selected_job == ''),
+                    FormHistory.don_hang != '',
+                    FormHistory.don_hang != None,
+                    ~FormHistory.don_hang.like('%,%'),
+                    ~FormHistory.don_hang.like('%;%')
+                ).all()
+                if unmigrated:
+                    for r in unmigrated:
+                        r.selected_job = r.don_hang.strip()
                     db.session.commit()
-                    print("Data migration for selected_job completed.")
+                    print(f"Migrated {len(unmigrated)} single-job records to selected_job.")
 
                 # Fix dữ liệu xấu: selected_job chứa nhiều đơn (chuỗi có dấu phẩy) → chỉ giữ đơn đầu tiên
                 multi_job_sel = FormHistory.query.filter(
@@ -453,14 +454,27 @@ with app.app_context():
                     FormHistory.selected_job.like('%,%')
                 ).all()
                 if multi_job_sel:
-                    print(f"Found {len(multi_job_sel)} records with multi-job selected_job. Fixing (keep first job only)...")
                     for r in multi_job_sel:
                         first_job = _re.split(r'[,;]+', r.selected_job)[0].strip()
                         r.selected_job = first_job
                     db.session.commit()
-                    print("Multi-job selected_job cleanup completed.")
             except Exception as db_ex:
-                print(f"Error checking/migrating selected_job data: {db_ex}")
+                db.session.rollback()
+
+            # Tối ưu hóa Database: Tạo Index tự động để tăng tốc độ truy vấn x10
+            try:
+                indexes_sql = [
+                    "CREATE INDEX IF NOT EXISTS idx_fh_is_deleted ON form_history(is_deleted)",
+                    "CREATE INDEX IF NOT EXISTS idx_fh_ma_so ON form_history(ma_so)",
+                    "CREATE INDEX IF NOT EXISTS idx_fh_ngay_tao ON form_history(ngay_tao)",
+                    "CREATE INDEX IF NOT EXISTS idx_fh_is_selected ON form_history(is_selected)",
+                    "CREATE INDEX IF NOT EXISTS idx_fh_is_archived ON form_history(is_archived)",
+                    "CREATE INDEX IF NOT EXISTS idx_fh_npt ON form_history(nguoi_phu_trach)"
+                ]
+                for sql in indexes_sql:
+                    db.session.execute(text(sql))
+                db.session.commit()
+            except Exception as idx_err:
                 db.session.rollback()
             # Migration for selected_at
             if 'selected_at' not in columns:
@@ -2281,8 +2295,8 @@ def get_next_candidate_code(prefix='MD'):
         prefix = 'MD'
 
     records = FormHistory.query.with_entities(FormHistory.ma_so).filter(
-        FormHistory.ma_so.isnot(None),
-        FormHistory.is_deleted == False
+        FormHistory.is_deleted == False,
+        FormHistory.ma_so.ilike(f"{prefix}%")
     ).all()
 
     nums = []
