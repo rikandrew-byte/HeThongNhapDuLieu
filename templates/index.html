@@ -1732,7 +1732,17 @@
                             <span style="font-size:18px;">🏆</span>
                             <span style="font-size:14px; font-weight:850; color:#1e293b;">BẢNG XẾP HẠNG NĂNG LỰC ĐẦU MỐI (NPT LEADERBOARD)</span>
                         </div>
-                        <span class="analytics-section-sub" style="font-size:12px; color:#64748b; font-weight:600;">Xếp theo tỷ lệ trúng tuyển giảm dần (Không tính hồ sơ Hủy)</span>
+                        <div class="analytics-section-sub" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                            <span style="font-size:11.5px; color:#64748b; font-weight:700;">Sắp xếp theo:</span>
+                            <div style="display:inline-flex; background:#e2e8f0; padding:2px; border-radius:8px; gap:2px;">
+                                <button type="button" id="btnSortByRate" onclick="setNptSortMode('rate')" style="border:none; background:#ffffff; color:#0f172a; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:800; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.06); transition:all 0.15s;" title="Xếp theo tỷ lệ trúng / tổng hồ sơ NPT">
+                                    🎯 Tỷ lệ trúng (NPT)
+                                </button>
+                                <button type="button" id="btnSortByShare" onclick="setNptSortMode('share')" style="border:none; background:transparent; color:#64748b; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer; transition:all 0.15s;" title="Xếp theo số lượng trúng & tỷ trọng trong tổng số ứng viên trúng toàn hệ thống">
+                                    🏆 Số lượng & Tỷ trọng toàn HT
+                                </button>
+                            </div>
+                        </div>
                     </div>
                     <div class="analytics-table-wrapper" style="overflow-x:auto;">
                         <table class="analytics-npt-table" style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
@@ -1742,14 +1752,15 @@
                                     <th style="padding:10px 14px;">Chuyên viên FCT</th>
                                     <th style="padding:10px 14px; text-align:center;">Tổng hồ sơ</th>
                                     <th style="padding:10px 14px; text-align:center;">Trúng tuyển</th>
-                                    <th style="padding:10px 14px; min-width:180px;">Tỷ lệ trúng (%)</th>
+                                    <th style="padding:10px 14px; min-width:150px;" title="Tỷ lệ trúng = Số trúng / Tổng hồ sơ NPT có">Tỷ lệ trúng / NPT</th>
+                                    <th style="padding:10px 14px; min-width:160px;" title="Tỷ trọng trúng = Số trúng của NPT / Tổng ứng viên trúng của toàn hệ thống">Tỉ lệ trong tổng trúng</th>
                                     <th style="padding:10px 14px; text-align:center;">Đã hủy</th>
                                     <th style="padding:10px 14px; text-align:center;">Đang xử lý</th>
                                     <th style="padding:10px 14px; text-align:center;">Đã xuất cảnh</th>
                                 </tr>
                             </thead>
                             <tbody id="nptLeaderboardBody">
-                                <tr><td colspan="8" style="padding:20px; text-align:center; color:#94a3b8;">Đang tải dữ liệu xếp hạng...</td></tr>
+                                <tr><td colspan="9" style="padding:20px; text-align:center; color:#94a3b8;">Đang tải dữ liệu xếp hạng...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -4452,6 +4463,9 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
         // PIPELINE ANALYTICS JAVASCRIPT LOGIC
         // =====================================================================
         let pipelineAnalyticsData = null;
+        let currentNptSortMode = 'rate'; // 'rate' | 'share'
+        let currentNptLeaderboardData = [];
+        let currentTotalSelectedSys = 0;
 
         async function loadPipelineAnalytics() {
             try {
@@ -4511,122 +4525,9 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             }
 
             // 2. Render Leaderboard NPT
-            const tbodyNpt = document.getElementById('nptLeaderboardBody');
-            if (tbodyNpt) {
-                const list = data.npt_leaderboard || [];
-                if (list.length === 0) {
-                    tbodyNpt.innerHTML = '<tr><td colspan="8" style="padding:20px; text-align:center; color:#94a3b8;">Chưa có dữ liệu chuyên viên.</td></tr>';
-                } else {
-                    let html = '';
-                    let rankCount = 1;
-                    list.forEach((item, idx) => {
-                        const isUnassigned = (item.staff === 'Chưa phân bổ');
-                        let rankBadge = '';
-                        if (isUnassigned) {
-                            rankBadge = `<span style="color:#94a3b8; font-weight:700;">—</span>`;
-                        } else if (rankCount === 1) {
-                            rankBadge = `<span style="font-size:16px;" title="Top 1 Tỷ lệ trúng">🥇 <b>1</b></span>`;
-                            rankCount++;
-                        } else if (rankCount === 2) {
-                            rankBadge = `<span style="font-size:16px;" title="Top 2 Tỷ lệ trúng">🥈 <b>2</b></span>`;
-                            rankCount++;
-                        } else if (rankCount === 3) {
-                            rankBadge = `<span style="font-size:16px;" title="Top 3 Tỷ lệ trúng">🥉 <b>3</b></span>`;
-                            rankCount++;
-                        } else {
-                            rankBadge = `<span style="font-weight:700; color:#64748b;">#${rankCount}</span>`;
-                            rankCount++;
-                        }
-
-                        // Progress bar color
-                        let barColor = '#94a3b8';
-                        let textColor = '#475569';
-                        if (item.conversion_rate >= 15) {
-                            barColor = 'linear-gradient(90deg, #10b981, #059669)';
-                            textColor = '#047857';
-                        } else if (item.conversion_rate >= 8) {
-                            barColor = 'linear-gradient(90deg, #3b82f6, #2563eb)';
-                            textColor = '#1d4ed8';
-                        } else if (item.conversion_rate > 0) {
-                            barColor = 'linear-gradient(90deg, #f59e0b, #d97706)';
-                            textColor = '#b45309';
-                        }
-
-                        // Sub sources toggle id
-                        const safeId = 'npt_sub_' + idx;
-                        const hasSubs = item.sub_sources && item.sub_sources.length > 0;
-                        const subBtnHtml = hasSubs ? 
-                            `<button type="button" onclick="toggleSubSources('${safeId}', this)" style="border:none; background:#f1f5f9; hover:background:#e2e8f0; color:#475569; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:700; cursor:pointer; margin-left:6px;" title="Xem các đối tác/nguồn phụ">${item.sub_sources.length} đối tác ▼</button>` : '';
-
-                        // Cancelled badge
-                        const cancelBadge = (item.cancelled > 0) ?
-                            `<span style="background:#fee2e2; color:#ef4444; font-weight:800; padding:2px 8px; border-radius:12px; font-size:11px; border:1px solid #fca5a5;">❌ ${item.cancelled}</span>` :
-                            `<span style="color:#cbd5e1; font-size:12px;">0</span>`;
-
-                        html += `
-                            <tr class="analytics-npt-row" style="border-bottom:1px solid #f1f5f9; transition:background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
-                                <td class="npt-col-rank" style="padding:12px 14px; text-align:center;">${rankBadge}</td>
-                                <td class="npt-col-staff" style="padding:12px 14px;">
-                                    <div class="npt-staff-header-wrap">
-                                        <div class="npt-staff-main" style="display:flex; align-items:center;">
-                                            <span class="npt-mobile-rank" style="display:none;">${rankBadge}</span>
-                                            <span class="npt-staff-name" style="font-weight:800; color:#0f172a; font-size:13.5px;">${escapeHtml(item.staff)}</span>
-                                            ${subBtnHtml}
-                                        </div>
-                                        <div class="npt-mobile-rate-pill" style="display:none; font-weight:850; font-size:12px; padding:3px 10px; border-radius:12px; background:${item.conversion_rate >= 15 ? '#dcfce7' : (item.conversion_rate >= 8 ? '#dbeafe' : '#fef3c7')}; color:${textColor};">
-                                            ${item.conversion_rate}% trúng
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="npt-col-stat" data-label="📁 Tổng hồ sơ" style="padding:12px 14px; text-align:center; font-weight:700; color:#1e293b;">${item.total}</td>
-                                <td class="npt-col-stat" data-label="🏆 Trúng tuyển" style="padding:12px 14px; text-align:center;">
-                                    <span style="font-weight:900; color:#16a34a; font-size:14px;">🏆 ${item.selected}</span>
-                                </td>
-                                <td class="npt-col-rate" data-label="Tỷ lệ trúng" style="padding:12px 14px;">
-                                    <div style="display:flex; align-items:center; gap:8px;">
-                                        <div style="flex:1; background:#e2e8f0; border-radius:6px; height:8px; overflow:hidden;">
-                                            <div style="width:${Math.min(item.conversion_rate, 100)}%; background:${barColor}; height:100%; border-radius:6px;"></div>
-                                        </div>
-                                        <span class="npt-desktop-rate-num" style="font-weight:850; font-size:13px; color:${textColor}; min-width:44px; text-align:right;">${item.conversion_rate}%</span>
-                                    </div>
-                                </td>
-                                <td class="npt-col-stat npt-col-cancelled" data-label="❌ Đã hủy" style="padding:12px 14px; text-align:center;">${cancelBadge}</td>
-                                <td class="npt-col-stat" data-label="⏳ Đang xử lý" style="padding:12px 14px; text-align:center; font-weight:600; color:#475569;">${item.in_progress}</td>
-                                <td class="npt-col-stat" data-label="✈️ Đã xuất cảnh" style="padding:12px 14px; text-align:center; font-weight:800; color:#0891b2;">✈️ ${item.exported}</td>
-                            </tr>
-                        `;
-
-                        // Accordion row for sub-sources
-                        if (hasSubs) {
-                            html += `
-                                <tr id="${safeId}" class="analytics-sub-row" style="display:none; background:#f8fafc; border-bottom:1px solid #e2e8f0;">
-                                    <td colspan="8" style="padding:10px 14px 14px 40px;">
-                                        <div style="font-size:11.5px; font-weight:800; color:#475569; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-                                            <span>📂</span> Chi tiết nguồn đối tác cấp dưới của <b>${escapeHtml(item.staff)}</b>:
-                                        </div>
-                                        <div style="display:flex; flex-wrap:wrap; gap:8px;">
-                            `;
-                            item.sub_sources.forEach(sub => {
-                                const subCancelText = sub.cancelled > 0 ? ` · <span style="color:#ef4444;">${sub.cancelled} hủy</span>` : '';
-                                html += `
-                                    <div style="background:#ffffff; border:1px solid #cbd5e1; border-radius:8px; padding:6px 10px; font-size:11.5px; box-shadow:0 1px 3px rgba(0,0,0,0.03);">
-                                        <span style="font-weight:750; color:#1e293b;">${escapeHtml(sub.partner)}</span>: 
-                                        <b>${sub.total}</b> HS · 
-                                        <span style="color:#16a34a; font-weight:800;">${sub.selected} trúng (${sub.conversion_rate}%)</span>
-                                        ${subCancelText}
-                                    </div>
-                                `;
-                            });
-                            html += `
-                                        </div>
-                                    </td>
-                                </tr>
-                            `;
-                        }
-                    });
-                    tbodyNpt.innerHTML = html;
-                }
-            }
+            currentNptLeaderboardData = data.npt_leaderboard || [];
+            currentTotalSelectedSys = (sum && sum.total_selected != null) ? sum.total_selected : 0;
+            renderNptLeaderboardRows();
 
             // 3. Render 10 Job Orders Fulfillment
             const tbodyJobs = document.getElementById('jobOrdersFulfillmentBody');
@@ -4684,6 +4585,191 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                     tbodyJobs.innerHTML = html;
                 }
             }
+        }
+
+        function setNptSortMode(mode) {
+            currentNptSortMode = mode;
+            const btnRate = document.getElementById('btnSortByRate');
+            const btnShare = document.getElementById('btnSortByShare');
+            if (btnRate && btnShare) {
+                if (mode === 'rate') {
+                    btnRate.style.background = '#ffffff';
+                    btnRate.style.color = '#0f172a';
+                    btnRate.style.fontWeight = '800';
+                    btnRate.style.boxShadow = '0 1px 2px rgba(0,0,0,0.06)';
+                    btnShare.style.background = 'transparent';
+                    btnShare.style.color = '#64748b';
+                    btnShare.style.fontWeight = '700';
+                    btnShare.style.boxShadow = 'none';
+                } else {
+                    btnShare.style.background = '#ffffff';
+                    btnShare.style.color = '#4338ca';
+                    btnShare.style.fontWeight = '800';
+                    btnShare.style.boxShadow = '0 1px 2px rgba(0,0,0,0.06)';
+                    btnRate.style.background = 'transparent';
+                    btnRate.style.color = '#64748b';
+                    btnRate.style.fontWeight = '700';
+                    btnRate.style.boxShadow = 'none';
+                }
+            }
+            renderNptLeaderboardRows();
+        }
+
+        function renderNptLeaderboardRows() {
+            const tbodyNpt = document.getElementById('nptLeaderboardBody');
+            if (!tbodyNpt) return;
+            const list = [...currentNptLeaderboardData];
+            if (list.length === 0) {
+                tbodyNpt.innerHTML = '<tr><td colspan="9" style="padding:20px; text-align:center; color:#94a3b8;">Chưa có dữ liệu chuyên viên.</td></tr>';
+                return;
+            }
+
+            // Sắp xếp theo chế độ đang chọn
+            list.sort((a, b) => {
+                const aUnassigned = a.staff === 'Chưa phân bổ' ? 1 : 0;
+                const bUnassigned = b.staff === 'Chưa phân bổ' ? 1 : 0;
+                if (aUnassigned !== bUnassigned) return aUnassigned - bUnassigned;
+
+                if (currentNptSortMode === 'share') {
+                    // Sắp theo số lượng trúng & tỷ trọng trong tổng trúng toàn HT
+                    if (b.selected !== a.selected) return b.selected - a.selected;
+                    const bShare = b.share_of_selected || 0;
+                    const aShare = a.share_of_selected || 0;
+                    if (bShare !== aShare) return bShare - aShare;
+                    return b.conversion_rate - a.conversion_rate;
+                } else {
+                    // Sắp theo tỷ lệ trúng của NPT
+                    if (b.conversion_rate !== a.conversion_rate) return b.conversion_rate - a.conversion_rate;
+                    if (b.selected !== a.selected) return b.selected - a.selected;
+                    return b.total - a.total;
+                }
+            });
+
+            let html = '';
+            let rankCount = 1;
+            const totalSys = currentTotalSelectedSys || 1;
+
+            list.forEach((item, idx) => {
+                const isUnassigned = (item.staff === 'Chưa phân bổ');
+                let rankBadge = '';
+                if (isUnassigned) {
+                    rankBadge = `<span style="color:#94a3b8; font-weight:700;">—</span>`;
+                } else if (rankCount === 1) {
+                    rankBadge = `<span style="font-size:16px;" title="Top 1">🥇 <b>1</b></span>`;
+                    rankCount++;
+                } else if (rankCount === 2) {
+                    rankBadge = `<span style="font-size:16px;" title="Top 2">🥈 <b>2</b></span>`;
+                    rankCount++;
+                } else if (rankCount === 3) {
+                    rankBadge = `<span style="font-size:16px;" title="Top 3">🥉 <b>3</b></span>`;
+                    rankCount++;
+                } else {
+                    rankBadge = `<span style="font-weight:700; color:#64748b;">#${rankCount}</span>`;
+                    rankCount++;
+                }
+
+                // Progress bar color cho Tỷ lệ trúng / NPT
+                let barColor = '#94a3b8';
+                let textColor = '#475569';
+                if (item.conversion_rate >= 15) {
+                    barColor = 'linear-gradient(90deg, #10b981, #059669)';
+                    textColor = '#047857';
+                } else if (item.conversion_rate >= 8) {
+                    barColor = 'linear-gradient(90deg, #3b82f6, #2563eb)';
+                    textColor = '#1d4ed8';
+                } else if (item.conversion_rate > 0) {
+                    barColor = 'linear-gradient(90deg, #f59e0b, #d97706)';
+                    textColor = '#b45309';
+                }
+
+                // Sub sources toggle id
+                const safeId = 'npt_sub_' + idx;
+                const hasSubs = item.sub_sources && item.sub_sources.length > 0;
+                const subBtnHtml = hasSubs ? 
+                    `<button type="button" onclick="toggleSubSources('${safeId}', this)" style="border:none; background:#f1f5f9; hover:background:#e2e8f0; color:#475569; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:700; cursor:pointer; margin-left:6px;" title="Xem các đối tác/nguồn phụ">${item.sub_sources.length} đối tác ▼</button>` : '';
+
+                // Cancelled badge
+                const cancelBadge = (item.cancelled > 0) ?
+                    `<span style="background:#fee2e2; color:#ef4444; font-weight:800; padding:2px 8px; border-radius:12px; font-size:11px; border:1px solid #fca5a5;">❌ ${item.cancelled}</span>` :
+                    `<span style="color:#cbd5e1; font-size:12px;">0</span>`;
+
+                const shareRate = item.share_of_selected != null ? item.share_of_selected : (currentTotalSelectedSys > 0 ? +(item.selected / currentTotalSelectedSys * 100).toFixed(1) : 0);
+
+                html += `
+                    <tr class="analytics-npt-row" style="border-bottom:1px solid #f1f5f9; transition:background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                        <td class="npt-col-rank" style="padding:12px 14px; text-align:center;">${rankBadge}</td>
+                        <td class="npt-col-staff" style="padding:12px 14px;">
+                            <div class="npt-staff-header-wrap">
+                                <div class="npt-staff-main" style="display:flex; align-items:center;">
+                                    <span class="npt-mobile-rank" style="display:none;">${rankBadge}</span>
+                                    <span class="npt-staff-name" style="font-weight:800; color:#0f172a; font-size:13.5px;">${escapeHtml(item.staff)}</span>
+                                    ${subBtnHtml}
+                                </div>
+                                <div class="npt-mobile-rate-pill" style="display:none; font-weight:850; font-size:11px; padding:3px 10px; border-radius:12px; background:#e0e7ff; color:#3730a3;">
+                                    ${item.conversion_rate}% NPT · ${shareRate}% toàn HT
+                                </div>
+                            </div>
+                        </td>
+                        <td class="npt-col-stat" data-label="📁 Tổng hồ sơ" style="padding:12px 14px; text-align:center; font-weight:700; color:#1e293b;">${item.total}</td>
+                        <td class="npt-col-stat" data-label="🏆 Trúng tuyển" style="padding:12px 14px; text-align:center;">
+                            <span style="font-weight:900; color:#16a34a; font-size:14px;">🏆 ${item.selected}</span>
+                            <div style="font-size:10.5px; font-weight:750; color:#4f46e5; margin-top:2px;" title="Chiếm ${shareRate}% trong tổng số ${currentTotalSelectedSys} ứng viên trúng toàn hệ thống">
+                                ${shareRate}% toàn HT
+                            </div>
+                        </td>
+                        <td class="npt-col-rate" data-label="🎯 Tỷ lệ trúng / NPT" style="padding:12px 14px;">
+                            <div style="display:flex; align-items:center; gap:8px;" title="Tỷ lệ trúng của NPT = ${item.selected} / ${item.total} hồ sơ NPT có">
+                                <div style="flex:1; background:#e2e8f0; border-radius:6px; height:8px; overflow:hidden;">
+                                    <div style="width:${Math.min(item.conversion_rate, 100)}%; background:${barColor}; height:100%; border-radius:6px;"></div>
+                                </div>
+                                <span class="npt-desktop-rate-num" style="font-weight:850; font-size:13px; color:${textColor}; min-width:44px; text-align:right;">${item.conversion_rate}%</span>
+                            </div>
+                        </td>
+                        <td class="npt-col-share" data-label="🌐 Tỉ lệ trong tổng trúng" style="padding:12px 14px;">
+                            <div style="display:flex; align-items:center; gap:8px;" title="Tỷ trọng đóng góp = ${item.selected} / ${currentTotalSelectedSys} ứng viên trúng toàn công ty">
+                                <div style="flex:1; background:#ede9fe; border-radius:6px; height:8px; overflow:hidden;">
+                                    <div style="width:${Math.min(shareRate, 100)}%; background:linear-gradient(90deg, #818cf8, #4f46e5); height:100%; border-radius:6px;"></div>
+                                </div>
+                                <span class="npt-desktop-share-num" style="font-weight:850; font-size:13px; color:#4338ca; min-width:44px; text-align:right;">${shareRate}%</span>
+                            </div>
+                        </td>
+                        <td class="npt-col-stat npt-col-cancelled" data-label="❌ Đã hủy" style="padding:12px 14px; text-align:center;">${cancelBadge}</td>
+                        <td class="npt-col-stat" data-label="⏳ Đang xử lý" style="padding:12px 14px; text-align:center; font-weight:600; color:#475569;">${item.in_progress}</td>
+                        <td class="npt-col-stat" data-label="✈️ Đã xuất cảnh" style="padding:12px 14px; text-align:center; font-weight:800; color:#0891b2;">✈️ ${item.exported}</td>
+                    </tr>
+                `;
+
+                // Accordion row for sub-sources
+                if (hasSubs) {
+                    html += `
+                        <tr id="${safeId}" class="analytics-sub-row" style="display:none; background:#f8fafc; border-bottom:1px solid #e2e8f0;">
+                            <td colspan="9" style="padding:10px 14px 14px 40px;">
+                                <div style="font-size:11.5px; font-weight:800; color:#475569; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                                    <span>📂</span> Chi tiết nguồn đối tác cấp dưới của <b>${escapeHtml(item.staff)}</b>:
+                                </div>
+                                <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                    `;
+                    item.sub_sources.forEach(sub => {
+                        const subCancelText = sub.cancelled > 0 ? ` · <span style="color:#ef4444;">${sub.cancelled} hủy</span>` : '';
+                        const subShare = sub.share_of_selected != null ? sub.share_of_selected : (currentTotalSelectedSys > 0 ? +(sub.selected / currentTotalSelectedSys * 100).toFixed(1) : 0);
+                        html += `
+                            <div style="background:#ffffff; border:1px solid #cbd5e1; border-radius:8px; padding:6px 10px; font-size:11.5px; box-shadow:0 1px 3px rgba(0,0,0,0.03);">
+                                <span style="font-weight:750; color:#1e293b;">${escapeHtml(sub.partner)}</span>: 
+                                <b>${sub.total}</b> HS · 
+                                <span style="color:#16a34a; font-weight:800;">${sub.selected} trúng (${sub.conversion_rate}%)</span> · 
+                                <span style="color:#4338ca; font-weight:750;">(${subShare}% toàn HT)</span>
+                                ${subCancelText}
+                            </div>
+                        `;
+                    });
+                    html += `
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }
+            });
+            tbodyNpt.innerHTML = html;
         }
 
         function toggleSubSources(elemId, btn) {
@@ -9988,13 +10074,24 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 font-size: 14.5px !important;
                 font-weight: 850 !important;
             }
-            .analytics-npt-table td.npt-col-rate {
-                padding: 2px 0 6px 0 !important;
+            .analytics-npt-table td.npt-col-rate,
+            .analytics-npt-table td.npt-col-share {
+                padding: 4px 0 8px 0 !important;
                 width: 100% !important;
                 border-bottom: 1px dashed #f1f5f9 !important;
             }
-            .npt-desktop-rate-num {
-                display: none !important;
+            .analytics-npt-table td.npt-col-rate::before,
+            .analytics-npt-table td.npt-col-share::before {
+                content: attr(data-label) !important;
+                font-size: 11px !important;
+                font-weight: 700 !important;
+                color: #64748b !important;
+                display: block !important;
+                margin-bottom: 4px !important;
+            }
+            .npt-desktop-rate-num,
+            .npt-desktop-share-num {
+                display: inline-block !important;
             }
             .analytics-npt-table td.npt-col-stat {
                 padding: 3px 0 !important;

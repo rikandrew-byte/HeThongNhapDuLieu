@@ -5188,15 +5188,19 @@ def api_pipeline_analytics():
         leaderboard = []
         for staff, d in staff_map.items():
             rate = round((d['selected'] / d['total']) * 100, 1) if d['total'] > 0 else 0
+            # Tỷ trọng trúng tuyển trong tổng số ứng viên trúng của toàn hệ thống
+            share_of_selected = round((d['selected'] / total_selected_effective) * 100, 1) if total_selected_effective > 0 else 0
             p_list = []
             for p_name, p_data in d['partners'].items():
                 p_rate = round((p_data['selected'] / p_data['total']) * 100, 1) if p_data['total'] > 0 else 0
+                p_share = round((p_data['selected'] / total_selected_effective) * 100, 1) if total_selected_effective > 0 else 0
                 p_list.append({
                     'partner': p_name,
                     'total': p_data['total'],
                     'selected': p_data['selected'],
                     'cancelled': p_data['cancelled'],
-                    'conversion_rate': p_rate
+                    'conversion_rate': p_rate,
+                    'share_of_selected': p_share
                 })
             p_list.sort(key=lambda x: (-x['selected'], -x['total']))
             leaderboard.append({
@@ -5205,6 +5209,7 @@ def api_pipeline_analytics():
                 'selected': d['selected'],
                 'cancelled': d['cancelled'],
                 'conversion_rate': rate,
+                'share_of_selected': share_of_selected,
                 'exported': d['exported'],
                 'in_progress': d['in_progress'],
                 'sub_sources': p_list
