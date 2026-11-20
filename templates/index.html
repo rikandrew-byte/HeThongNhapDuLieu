@@ -5,7 +5,7 @@
     <meta name="google" content="notranslate">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ Thống Nhập Liệu DAS V3.0</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
@@ -1377,24 +1377,25 @@
         <!-- Tab 2: Jobs Content Area -->
         <div id="tabContent-jobs" style="display: none; padding: 16px 20px;">
             <!-- Thanh chuyển đổi phân hệ (Sub-tabs) & Nút tạo đơn hàng mới -->
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
-                <div style="display:inline-flex; background:#e0f2fe; padding:4px; border-radius:12px; border:1px solid #bae6fd;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:14px;">
+                <div style="display:inline-flex; align-items:center; background:#f1f5f9; padding:4px; border-radius:10px; border:1px solid #e2e8f0; gap:4px; flex-wrap:wrap;">
                     <button type="button" id="subTabBtn-jobOrders" onclick="switchJobSubTab('jobOrders')" 
-                        style="padding:8px 18px; border-radius:8px; font-size:13px; font-weight:800; cursor:pointer; border:none; transition:all 0.15s; background:#0891b2; color:#ffffff; box-shadow:0 2px 6px rgba(8,145,178,0.25);">
-                        📋 Danh sách Bảng công việc (Job Orders)
+                        style="padding:7px 14px; border-radius:8px; font-size:12.5px; font-weight:800; cursor:pointer; border:none; transition:all 0.15s; background:#008080; color:#ffffff; box-shadow:0 2px 6px rgba(0,128,128,0.22); display:inline-flex; align-items:center; gap:6px;">
+                        <span>📋 Bảng công việc</span>
+                        <span id="jobOrdersCountBadge" style="background:rgba(255,255,255,0.22); color:#ffffff; font-size:11px; font-weight:800; padding:1px 7px; border-radius:999px;">0</span>
                     </button>
                     <button type="button" id="subTabBtn-jobAssign" onclick="switchJobSubTab('jobAssign')" 
-                        style="padding:8px 18px; border-radius:8px; font-size:13px; font-weight:800; cursor:pointer; border:none; transition:all 0.15s; background:transparent; color:#0e7490;">
-                        ⚡ Ghép đơn nhanh & Mã số ứng viên
+                        style="padding:7px 14px; border-radius:8px; font-size:12.5px; font-weight:750; cursor:pointer; border:none; transition:all 0.15s; background:transparent; color:#475569; display:inline-flex; align-items:center; gap:6px;">
+                        <span>⚡ Ghép đơn & Mã số</span>
                     </button>
                 </div>
 
-                <div style="display:flex; gap:10px;">
-                    <button type="button" onclick="openJobOrderModal()" 
-                        style="padding:9px 18px; background:linear-gradient(135deg, #059669 0%, #047857 100%); color:#ffffff; border:none; border-radius:10px; font-size:13px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 4px 10px rgba(5,150,105,0.25); transition:all 0.15s;"
-                        onmouseover="this.style.filter='brightness(1.08)'; this.style.transform='translateY(-1px)';"
-                        onmouseout="this.style.filter='none'; this.style.transform='none';">
-                        <span>➕</span> Thêm Bảng công việc mới
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <button type="button" onclick="openJobOrderModal()" class="jo-primary-cta"
+                        style="padding:9px 18px; background:#008080; color:#ffffff; border:none; border-radius:10px; font-size:13px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:7px; box-shadow:0 4px 12px rgba(0,128,128,0.24); transition:all 0.15s;"
+                        onmouseover="this.style.background='#006666'; this.style.transform='translateY(-1px)';"
+                        onmouseout="this.style.background='#008080'; this.style.transform='none';">
+                        <span style="font-size:16px; line-height:1; font-weight:900;">+</span> Tạo Bảng công việc mới
                     </button>
                 </div>
             </div>
@@ -1402,45 +1403,46 @@
             <!-- PHÂN HỆ 1: DANH SÁCH BẢNG CÔNG VIỆC (JOB ORDERS) -->
             <div id="subTabContent-jobOrders" style="display:block;">
                 <!-- Thanh tìm kiếm & Lọc trạng thái -->
-                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:14px; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:12px 16px;">
-                    <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:240px;">
-                        <span style="font-size:16px; color:#64748b;">🔍</span>
-                        <input type="text" id="jobOrdersSearchInput" oninput="filterJobOrdersTable()" placeholder="Tìm theo mã đơn, tên xưởng, ngành nghề..." 
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:10px 14px; box-shadow:0 1px 3px rgba(15,23,42,0.03);">
+                    <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:220px;">
+                        <span style="font-size:15px; color:#64748b;">🔍</span>
+                        <input type="text" id="jobOrdersSearchInput" oninput="filterJobOrdersTable()" placeholder="Tìm theo mã đơn, tên xưởng (Trung/Việt), sản phẩm, địa điểm..." 
                             style="width:100%; border:none; outline:none; font-size:13px; font-weight:600; color:#0f172a; background:transparent;">
                     </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-size:12px; font-weight:700; color:#64748b;">Trạng thái:</span>
-                        <select id="jobOrdersStatusFilter" onchange="filterJobOrdersTable()" 
-                            style="padding:6px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:12.5px; font-weight:700; color:#0f172a; outline:none; background:#f8fafc;">
-                            <option value="">Tất cả trạng thái</option>
-                            <option value="Đang tuyển">🟢 Đang tuyển</option>
-                            <option value="Đã đủ form">🟡 Đã đủ form</option>
-                            <option value="Đã phỏng vấn">🔵 Đã phỏng vấn</option>
-                            <option value="Đã hoàn thành">⚪ Đã hoàn thành</option>
-                            <option value="Tạm dừng">🔴 Tạm dừng</option>
-                        </select>
+                    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                        <span id="jobOrdersFilteredMeta" style="font-size:11.5px; font-weight:700; color:#64748b; white-space:nowrap;"></span>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span style="font-size:11.5px; font-weight:700; color:#64748b;">Trạng thái:</span>
+                            <select id="jobOrdersStatusFilter" onchange="filterJobOrdersTable()" 
+                                style="padding:6px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:12px; font-weight:700; color:#0f172a; outline:none; background:#f8fafc; cursor:pointer;">
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="Đang tuyển">🟢 Đang tuyển</option>
+                                <option value="Đã đủ form">🟡 Đã đủ form</option>
+                                <option value="Đã phỏng vấn">🔵 Đã phỏng vấn</option>
+                                <option value="Đã hoàn thành">⚪ Đã hoàn thành</option>
+                                <option value="Tạm dừng">🔴 Tạm dừng</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Bảng danh sách Bảng công việc -->
-                <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; box-shadow:0 4px 12px -2px rgba(15,23,42,0.05); overflow:hidden;">
-                    <div class="job-table-wrapper" style="max-height:calc(100vh - 300px); overflow-y:auto; position:relative;">
-                        <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;">
+                <!-- Bảng danh sách Bảng công việc (6 cột gọn thoáng) -->
+                <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; box-shadow:0 4px 12px -2px rgba(15,23,42,0.04); overflow:hidden;">
+                    <div class="job-table-wrapper" style="max-height:calc(100vh - 300px); overflow-y:auto; overflow-x:auto; position:relative;">
+                        <table class="jo-list-table" style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;">
                             <thead>
                                 <tr style="background:#f8fafc; border-bottom:1.5px solid #e2e8f0; position:sticky; top:0; z-index:10;">
-                                    <th style="padding:12px 14px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em; white-space:nowrap; width:1%;">Mã đơn</th>
-                                    <th style="padding:12px 14px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em;">Công xưởng & Địa điểm</th>
-                                    <th style="padding:12px 14px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em;">Sản phẩm / Công việc</th>
-                                    <th style="padding:12px 14px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em;">Tiêu chuẩn tuyển</th>
-                                    <th style="padding:12px 14px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em; white-space:nowrap;">Lương & Tăng ca</th>
-                                    <th style="padding:12px 14px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em; text-align:center; white-space:nowrap; width:1%;">Ứng viên</th>
-                                    <th style="padding:12px 14px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em; text-align:center; white-space:nowrap; width:1%;">Trạng thái</th>
-                                    <th style="padding:12px 14px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em; text-align:center; white-space:nowrap; width:1%;">Thao tác</th>
+                                    <th style="width:34%; padding:11px 12px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em;">Đơn hàng & Công xưởng</th>
+                                    <th style="width:34%; padding:11px 12px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em;">Công việc & Tuyển dụng</th>
+                                    <th style="width:12%; padding:11px 10px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em; white-space:nowrap;">Lương & Tăng ca</th>
+                                    <th style="width:1%; padding:11px 8px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em; text-align:center; white-space:nowrap;">Ứng viên</th>
+                                    <th style="width:1%; padding:11px 8px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em; text-align:center; white-space:nowrap;">Trạng thái</th>
+                                    <th style="width:1%; padding:11px 10px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em; text-align:center; white-space:nowrap;">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody id="jobOrdersTableBody">
                                 <tr>
-                                    <td colspan="8" style="padding:30px; text-align:center; color:#64748b; font-style:italic;">
+                                    <td colspan="6" style="padding:32px; text-align:center; color:#64748b; font-style:italic;">
                                         Đang tải dữ liệu Bảng công việc...
                                     </td>
                                 </tr>
@@ -2021,335 +2023,966 @@
         </form>
     </div>
 
-    <!-- Modal Tạo / Sửa Bảng Công Việc (Job Order Modal) -->
-    <div id="jobOrderModal" class="glass-modal" style="display:none; position:fixed; top:3%; left:5%; right:5%; width:90%; max-width:880px; margin: 0 auto; z-index:22000; border-radius:20px; background:#ffffff; padding:24px 28px; box-shadow:0 25px 70px rgba(0,0,0,0.3); border:1px solid #cbd5e1; font-family:'Inter',sans-serif; max-height:94vh; overflow-y:auto;">
+    <!-- Backdrop làm mờ nền khi mở Studio Nhập Bảng Công Việc -->
+    <div id="jobOrderBackdrop" class="jo-studio-backdrop" onclick="closeJobOrderModal()"></div>
+
+    <!-- Modal Studio 2 Cột Tạo / Sửa Bảng Công Việc (Live A4 Split Studio) -->
+    <div id="jobOrderModal" class="jo-studio-modal" role="dialog" aria-modal="true" aria-labelledby="jobOrderModalTitle">
         <input type="hidden" id="jobOrder_id" value="">
-        
-        <!-- Header -->
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:1.5px solid #e2e8f0; padding-bottom:14px; margin-bottom:20px;">
-            <div style="display:flex; align-items:center; gap:12px;">
-                <div style="width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg, #0891b2 0%, #0e7490 100%); color:#fff; display:flex; align-items:center; justify-content:center; font-size:22px; box-shadow:0 4px 10px rgba(8,145,178,0.25);">
-                    📋
-                </div>
-                <div>
-                    <h3 id="jobOrderModalTitle" style="font-size:18px; font-weight:850; color:#0f172a; margin:0;">Thêm Bảng Công Việc Mới</h3>
-                    <p style="font-size:12.5px; color:#64748b; margin:3px 0 0 0;">Nhập thông tin tiêu chuẩn đơn hàng để xuất bản in A4 và gửi đối tác tuyển dụng</p>
+
+        <!-- 1. Sticky Header cố định -->
+        <div class="jo-studio-header">
+            <div class="jo-header-left">
+                <div class="jo-header-icon">📋</div>
+                <div style="min-width:0;">
+                    <h3 id="jobOrderModalTitle" class="jo-header-title">Tạo Bảng Công Việc Mới</h3>
+                    <p class="jo-header-sub">Nhập thông tin bên trái — xem trước trực tiếp tờ A4 bên phải</p>
                 </div>
             </div>
-            <button type="button" onclick="closeJobOrderModal()" style="background:#f1f5f9; border:none; color:#64748b; width:34px; height:34px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center; transition:all 0.15s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">✕</button>
+
+            <!-- Bộ chuyển Nhập liệu / Xem trước A4 (hiển thị trên Tablet & Mobile < 1100px) -->
+            <div class="jo-mobile-pane-switch">
+                <button type="button" id="joMobileTabEdit" class="jo-mobile-tab-btn is-active" onclick="switchJobEditorMobilePane('edit')">✏️ Nhập liệu</button>
+                <button type="button" id="joMobileTabPreview" class="jo-mobile-tab-btn" onclick="switchJobEditorMobilePane('preview')">👁️ Xem trước A4</button>
+            </div>
+
+            <!-- Các nút thao tác luôn cố định bên phải -->
+            <div class="jo-header-actions">
+                <button type="button" id="jobOrderPreviewBtn" onclick="previewCurrentJobOrder()" class="jo-btn-outline-teal" style="display:none;" title="Mở trang in A4 trong tab mới">
+                    <span>👁️</span><span class="jo-btn-label"> Mở trang in</span>
+                </button>
+                <button type="button" onclick="closeJobOrderModal()" class="jo-btn-ghost">Hủy</button>
+                <button type="button" id="jobOrderSubmitBtn" onclick="saveJobOrder()" class="jo-btn-save">
+                    💾 Lưu Bảng Công Việc
+                </button>
+                <button type="button" onclick="closeJobOrderModal()" class="jo-btn-close-x" title="Đóng (Esc)">✕</button>
+            </div>
         </div>
 
-        <form id="jobOrderForm" onsubmit="event.preventDefault(); saveJobOrder();">
-            <!-- 1. THÔNG TIN CƠ BẢN & CÔNG XƯỞNG -->
-            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:16px; margin-bottom:16px;">
-                <div style="font-size:13.5px; font-weight:800; color:#0e7490; margin-bottom:12px; display:flex; align-items:center; gap:6px;">
-                    <span>🏢</span> 1. THÔNG TIN CƠ BẢN & CÔNG XƯỞNG
-                </div>
-                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:12px; margin-bottom:12px;">
-                    <div>
-                        <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px; text-transform:uppercase;">Mã đơn hàng <span style="color:#ef4444;">*</span></label>
-                        <input type="text" id="jobOrder_code" required placeholder="Ví dụ: 20261102 hoặc Thác Vỹ" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; font-weight:750; color:#0f172a; outline:none; font-family:'Inter', monospace;" onfocus="this.style.borderColor='#0891b2'" onblur="this.style.borderColor='#cbd5e1'">
-                    </div>
-                    <div>
-                        <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px; text-transform:uppercase;">Ghi chú đợt tuyển / Ký hiệu</label>
-                        <input type="text" id="jobOrder_titleNote" placeholder="Ví dụ: 初招 10% hoặc Tuyển mới" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; font-weight:600; color:#0f172a; outline:none;" onfocus="this.style.borderColor='#0891b2'" onblur="this.style.borderColor='#cbd5e1'">
-                    </div>
-                    <div>
-                        <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px; text-transform:uppercase;">Trạng thái tuyển dụng</label>
-                        <select id="jobOrder_status" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; font-weight:750; color:#0f172a; outline:none; background:#fff;">
-                            <option value="Đang tuyển">🟢 Đang tuyển</option>
-                            <option value="Đã đủ form">🟡 Đã đủ form</option>
-                            <option value="Đã phỏng vấn">🔵 Đã phỏng vấn</option>
-                            <option value="Đã hoàn thành">⚪ Đã hoàn thành</option>
-                            <option value="Tạm dừng">🔴 Tạm dừng</option>
-                        </select>
-                    </div>
+        <!-- 2. Studio 2 Cột: Trái Nhập Liệu | Phải Xem Trước A4 Trực Tiếp -->
+        <div class="jo-studio-body">
+            <!-- CỘT TRÁI: NHẬP LIỆU -->
+            <div id="jobOrderPaneLeft" class="jo-pane-editor">
+                <!-- Thanh nhảy nhanh tới từng mục -->
+                <div class="jo-sec-nav">
+                    <button type="button" class="jo-sec-pill is-active" data-target="joSec1" onclick="scrollToJobSection('joSec1')">I. Xưởng</button>
+                    <button type="button" class="jo-sec-pill" data-target="joSec2" onclick="scrollToJobSection('joSec2')">II. Tuyển dụng</button>
+                    <button type="button" class="jo-sec-pill" data-target="joSec3" onclick="scrollToJobSection('joSec3')">III. Công việc</button>
+                    <button type="button" class="jo-sec-pill" data-target="joSec4" onclick="scrollToJobSection('joSec4')">IV. Lương</button>
+                    <button type="button" class="jo-sec-pill" data-target="joSec5" onclick="scrollToJobSection('joSec5')">V. Lưu ý</button>
+                    <button type="button" class="jo-sec-pill" data-target="joSec6" onclick="scrollToJobSection('joSec6')">VI. Ảnh</button>
                 </div>
 
-                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:12px; margin-bottom:12px;">
-                    <div>
-                        <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px; text-transform:uppercase;">Tên công xưởng (Trung & Việt)</label>
-                        <input type="text" id="jobOrder_factoryName" list="factoryDatalistOptions" placeholder="Ví dụ: 倍爾國際餐飲有限公司 Cty Ẩm Thực Bội Nhĩ" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; font-weight:700; color:#0f172a; outline:none;" onfocus="this.style.borderColor='#0891b2'" onblur="this.style.borderColor='#cbd5e1'">
-                        <datalist id="factoryDatalistOptions"></datalist>
-                    </div>
-                    <div>
-                        <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px; text-transform:uppercase;">Địa điểm làm việc / Tỉnh thành</label>
-                        <input type="text" id="jobOrder_workLocation" placeholder="Ví dụ: Chương Hóa, Đài Loan" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; font-weight:600; color:#0f172a; outline:none;" onfocus="this.style.borderColor='#0891b2'" onblur="this.style.borderColor='#cbd5e1'">
-                    </div>
-                </div>
-
-                <div style="display:grid; grid-template-columns: 2fr 1fr; gap:12px;">
-                    <div>
-                        <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px; text-transform:uppercase;">Sản phẩm, công việc chính</label>
-                        <input type="text" id="jobOrder_productJob" placeholder="Ví dụ: Sản xuất các loại bánh ngọt, bánh mì." style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; font-weight:600; color:#0f172a; outline:none;" onfocus="this.style.borderColor='#0891b2'" onblur="this.style.borderColor='#cbd5e1'">
-                    </div>
-                    <div>
-                        <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px; text-transform:uppercase;">Loại hình công việc</label>
-                        <input type="text" id="jobOrder_jobType" value="Lao động phổ thông" placeholder="Lao động phổ thông / Kỹ thuật..." style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; font-weight:600; color:#0f172a; outline:none;" onfocus="this.style.borderColor='#0891b2'" onblur="this.style.borderColor='#cbd5e1'">
-                    </div>
-                </div>
-            </div>
-
-            <!-- 2. ĐIỀU KIỆN TUYỂN DỤNG & GIỚI TÍNH -->
-            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:16px; margin-bottom:16px;">
-                <div style="font-size:13.5px; font-weight:800; color:#0e7490; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        <span>🎯</span> 2. ĐIỀU KIỆN TUYỂN DỤNG & THỂ LỰC
-                    </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-size:11.5px; font-weight:700; color:#64748b;">Giới tính cần tuyển:</span>
-                        <div style="display:inline-flex; background:#e2e8f0; padding:2px; border-radius:8px;">
-                            <label style="padding:4px 10px; font-size:12px; font-weight:700; cursor:pointer; border-radius:6px; margin:0;" id="labelGenderBoth">
-                                <input type="radio" name="jobOrder_genderRadio" value="both" checked onchange="onJobGenderRadioChange()" style="display:none;"> Cả Nam & Nữ
-                            </label>
-                            <label style="padding:4px 10px; font-size:12px; font-weight:700; cursor:pointer; border-radius:6px; margin:0;" id="labelGenderFemale">
-                                <input type="radio" name="jobOrder_genderRadio" value="female" onchange="onJobGenderRadioChange()" style="display:none;"> Chỉ Nữ
-                            </label>
-                            <label style="padding:4px 10px; font-size:12px; font-weight:700; cursor:pointer; border-radius:6px; margin:0;" id="labelGenderMale">
-                                <input type="radio" name="jobOrder_genderRadio" value="male" onchange="onJobGenderRadioChange()" style="display:none;"> Chỉ Nam
-                            </label>
+                <form id="jobOrderForm" class="jo-form-stack" onsubmit="event.preventDefault(); saveJobOrder();" oninput="updateJobOrderLivePreview()" onchange="updateJobOrderLivePreview()">
+                    <!-- CARD I: THÔNG TIN CHUNG & CÔNG XƯỞNG -->
+                    <section id="joSec1" class="jo-card">
+                        <div class="jo-card-head">
+                            <div class="jo-card-title"><span class="jo-sec-num">I</span> Thông tin chung &amp; Công xưởng</div>
                         </div>
-                    </div>
-                </div>
 
-                <!-- Khung chỉ số thể lực Nam & Nữ -->
-                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:12px; margin-bottom:14px;">
-                    <!-- Khối Nam -->
-                    <div id="jobOrderMaleBox" style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:10px; padding:12px 14px;">
-                        <div style="font-size:12px; font-weight:800; color:#0284c7; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-                            <span>👨</span> TIÊU CHUẨN NAM GIỚI
-                        </div>
-                        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px;">
+                        <div class="jo-grid-3 jo-mb-12">
                             <div>
-                                <label style="display:block; font-size:10.5px; font-weight:700; color:#0369a1; margin-bottom:3px;">Số lượng (người)</label>
-                                <input type="text" id="jobOrder_maleCount" value="0" placeholder="VD: 02" style="width:100%; padding:7px 10px; border:1px solid #bae6fd; border-radius:6px; font-size:13px; font-weight:750; color:#0c4a6e; outline:none; background:#fff;">
+                                <label class="jo-label" for="jobOrder_code">Mã đơn hàng <span style="color:#dc2626;">*</span></label>
+                                <input type="text" id="jobOrder_code" class="jo-input jo-font-mono" required placeholder="VD: 20261113">
                             </div>
                             <div>
-                                <label style="display:block; font-size:10.5px; font-weight:700; color:#0369a1; margin-bottom:3px;">Chiều cao (cm)</label>
-                                <input type="text" id="jobOrder_maleHeight" value="165" placeholder="165" style="width:100%; padding:7px 10px; border:1px solid #bae6fd; border-radius:6px; font-size:13px; font-weight:750; color:#0c4a6e; outline:none; background:#fff;">
+                                <label class="jo-label" for="jobOrder_titleNote">Ký hiệu phụ</label>
+                                <input type="text" id="jobOrder_titleNote" list="titleNoteOptions" class="jo-input" placeholder="VD: 初招 10%">
+                                <datalist id="titleNoteOptions">
+                                    <option value="初招 10%">
+                                    <option value="初招 15%">
+                                    <option value="初招 20%">
+                                    <option value="重招">
+                                    <option value="遞補">
+                                </datalist>
                             </div>
                             <div>
-                                <label style="display:block; font-size:10.5px; font-weight:700; color:#0369a1; margin-bottom:3px;">Cân nặng (kg)</label>
-                                <input type="text" id="jobOrder_maleWeight" value="55" placeholder="55" style="width:100%; padding:7px 10px; border:1px solid #bae6fd; border-radius:6px; font-size:13px; font-weight:750; color:#0c4a6e; outline:none; background:#fff;">
+                                <label class="jo-label" for="jobOrder_status">Trạng thái</label>
+                                <select id="jobOrder_status" class="jo-select">
+                                    <option value="Đang tuyển">🟢 Đang tuyển</option>
+                                    <option value="Đã đủ form">🟡 Đã đủ form</option>
+                                    <option value="Đã phỏng vấn">🔵 Đã phỏng vấn</option>
+                                    <option value="Đã hoàn thành">⚪ Đã hoàn thành</option>
+                                    <option value="Tạm dừng">🔴 Tạm dừng</option>
+                                </select>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Khối Nữ -->
-                    <div id="jobOrderFemaleBox" style="background:#fdf2f8; border:1px solid #fbcfe8; border-radius:10px; padding:12px 14px;">
-                        <div style="font-size:12px; font-weight:800; color:#db2777; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-                            <span>👩</span> TIÊU CHUẨN NỮ GIỚI
-                        </div>
-                        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px;">
+                        <div class="jo-grid-2-wide jo-mb-12">
                             <div>
-                                <label style="display:block; font-size:10.5px; font-weight:700; color:#be185d; margin-bottom:3px;">Số lượng (người)</label>
-                                <input type="text" id="jobOrder_femaleCount" value="04" placeholder="VD: 04" style="width:100%; padding:7px 10px; border:1px solid #fbcfe8; border-radius:6px; font-size:13px; font-weight:750; color:#831843; outline:none; background:#fff;">
+                                <label class="jo-label" for="jobOrder_factoryName">Tên công xưởng (Trung &amp; Việt)</label>
+                                <input type="text" id="jobOrder_factoryName" list="factoryDatalistOptions" class="jo-input" placeholder="VD: 佶慶工業有限公司 Công Ty Cát Khánh">
+                                <datalist id="factoryDatalistOptions"></datalist>
                             </div>
                             <div>
-                                <label style="display:block; font-size:10.5px; font-weight:700; color:#be185d; margin-bottom:3px;">Chiều cao (cm)</label>
-                                <input type="text" id="jobOrder_femaleHeight" value="155" placeholder="155" style="width:100%; padding:7px 10px; border:1px solid #fbcfe8; border-radius:6px; font-size:13px; font-weight:750; color:#831843; outline:none; background:#fff;">
-                            </div>
-                            <div>
-                                <label style="display:block; font-size:10.5px; font-weight:700; color:#be185d; margin-bottom:3px;">Cân nặng (kg)</label>
-                                <input type="text" id="jobOrder_femaleWeight" value="50" placeholder="50" style="width:100%; padding:7px 10px; border:1px solid #fbcfe8; border-radius:6px; font-size:13px; font-weight:750; color:#831843; outline:none; background:#fff;">
+                                <label class="jo-label" for="jobOrder_workLocation">Địa điểm làm việc</label>
+                                <input type="text" id="jobOrder_workLocation" class="jo-input" placeholder="VD: Đài Trung, Đài Loan">
                             </div>
                         </div>
+
+                        <div class="jo-grid-2-wide jo-mb-12">
+                            <div>
+                                <label class="jo-label" for="jobOrder_productJob">Sản phẩm, ngành nghề chính</label>
+                                <input type="text" id="jobOrder_productJob" class="jo-input" placeholder="VD: Sản xuất linh kiện cơ khí, sợi thủy tinh...">
+                            </div>
+                            <div>
+                                <label class="jo-label" for="jobOrder_jobType">Loại hình công việc</label>
+                                <input type="text" id="jobOrder_jobType" class="jo-input" value="Lao động phổ thông" placeholder="Lao động phổ thông">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="jo-label" for="jobOrder_factoryWebsite">Website công xưởng (tùy chọn)</label>
+                            <input type="url" id="jobOrder_factoryWebsite" class="jo-input" placeholder="https://...">
+                        </div>
+                    </section>
+
+                    <!-- CARD II: TIÊU CHUẨN & ĐIỀU KIỆN TUYỂN DỤNG -->
+                    <section id="joSec2" class="jo-card">
+                        <div class="jo-card-head">
+                            <div class="jo-card-title"><span class="jo-sec-num">II</span> Tiêu chuẩn &amp; Điều kiện tuyển dụng</div>
+                            <div class="jo-gender-seg" role="group" aria-label="Giới tính cần tuyển">
+                                <label id="labelGenderBoth" class="jo-seg-item">
+                                    <input type="radio" name="jobOrder_genderRadio" value="both" checked onchange="onJobGenderRadioChange()"> Cả Nam &amp; Nữ
+                                </label>
+                                <label id="labelGenderMale" class="jo-seg-item">
+                                    <input type="radio" name="jobOrder_genderRadio" value="male" onchange="onJobGenderRadioChange()"> Lao động nam
+                                </label>
+                                <label id="labelGenderFemale" class="jo-seg-item">
+                                    <input type="radio" name="jobOrder_genderRadio" value="female" onchange="onJobGenderRadioChange()"> Lao động nữ
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="jobOrderGenderGrid" class="jo-gender-grid jo-mb-12">
+                            <!-- Khối Lao động nam -->
+                            <div id="jobOrderMaleBox" class="jo-gender-box is-male">
+                                <div class="jo-gender-box-title">👨 LAO ĐỘNG NAM</div>
+                                <div class="jo-grid-3-tight">
+                                    <div>
+                                        <label class="jo-sub-label" for="jobOrder_maleCount">Số lượng</label>
+                                        <input type="text" id="jobOrder_maleCount" class="jo-input jo-input-sm" value="0" placeholder="VD: 02">
+                                    </div>
+                                    <div>
+                                        <label class="jo-sub-label" for="jobOrder_maleHeight">Chiều cao (cm)</label>
+                                        <input type="text" id="jobOrder_maleHeight" class="jo-input jo-input-sm" value="165" placeholder="165">
+                                    </div>
+                                    <div>
+                                        <label class="jo-sub-label" for="jobOrder_maleWeight">Cân nặng (kg)</label>
+                                        <input type="text" id="jobOrder_maleWeight" class="jo-input jo-input-sm" value="55" placeholder="55">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Khối Lao động nữ -->
+                            <div id="jobOrderFemaleBox" class="jo-gender-box is-female">
+                                <div class="jo-gender-box-title">👩 LAO ĐỘNG NỮ</div>
+                                <div class="jo-grid-3-tight">
+                                    <div>
+                                        <label class="jo-sub-label" for="jobOrder_femaleCount">Số lượng</label>
+                                        <input type="text" id="jobOrder_femaleCount" class="jo-input jo-input-sm" value="0" placeholder="VD: 04">
+                                    </div>
+                                    <div>
+                                        <label class="jo-sub-label" for="jobOrder_femaleHeight">Chiều cao (cm)</label>
+                                        <input type="text" id="jobOrder_femaleHeight" class="jo-input jo-input-sm" value="155" placeholder="155">
+                                    </div>
+                                    <div>
+                                        <label class="jo-sub-label" for="jobOrder_femaleWeight">Cân nặng (kg)</label>
+                                        <input type="text" id="jobOrder_femaleWeight" class="jo-input jo-input-sm" value="50" placeholder="50">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="jo-grid-3 jo-mb-12">
+                            <div>
+                                <label class="jo-label" for="jobOrder_ageRange">Độ tuổi</label>
+                                <input type="text" id="jobOrder_ageRange" class="jo-input" value="20 tuổi trở lên" placeholder="20 tuổi trở lên">
+                            </div>
+                            <div>
+                                <label class="jo-label" for="jobOrder_education">Học lực</label>
+                                <input type="text" id="jobOrder_education" class="jo-input" value="PTTH trở lên" placeholder="PTTH trở lên">
+                            </div>
+                            <div>
+                                <label class="jo-label" for="jobOrder_marriage">Hôn nhân</label>
+                                <input type="text" id="jobOrder_marriage" class="jo-input" value="Không yêu cầu" placeholder="Không yêu cầu">
+                            </div>
+                        </div>
+
+                        <div class="jo-grid-2-wide">
+                            <div>
+                                <label class="jo-label" for="jobOrder_interviewMethod">Hình thức tuyển</label>
+                                <input type="text" id="jobOrder_interviewMethod" class="jo-input" value="Form + Line pv + clip GTBT" placeholder="Form + Line pv + clip GTBT">
+                            </div>
+                            <div>
+                                <label class="jo-label" for="jobOrder_contractTerm">Thời hạn hợp đồng</label>
+                                <input type="text" id="jobOrder_contractTerm" class="jo-input" value="03 năm + 12" placeholder="03 năm + 12">
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- CARD III: NỘI DUNG & YÊU CẦU CÔNG VIỆC -->
+                    <section id="joSec3" class="jo-card">
+                        <div class="jo-card-head">
+                            <div class="jo-card-title"><span class="jo-sec-num">III</span> Nội dung &amp; Yêu cầu công việc</div>
+                        </div>
+                        <textarea id="jobOrder_jobDescription" rows="3" class="jo-textarea" placeholder="Mô tả chi tiết công việc trong nhà máy: vận hành máy, kiểm hàng, đóng gói..."></textarea>
+                    </section>
+
+                    <!-- CARD IV: CHẾ ĐỘ LƯƠNG, TĂNG CA & ĐÃI NGỘ -->
+                    <section id="joSec4" class="jo-card">
+                        <div class="jo-card-head">
+                            <div class="jo-card-title"><span class="jo-sec-num">IV</span> Chế độ lương, tăng ca &amp; Đãi ngộ</div>
+                            <button type="button" onclick="resetJobSalaryDefaults()" class="jo-btn-mini" title="Khôi phục mức lương và chế độ chuẩn Đài Loan">
+                                ↺ Nạp mức chuẩn Đài Loan
+                            </button>
+                        </div>
+
+                        <div class="jo-grid-2 jo-mb-12">
+                            <div>
+                                <label class="jo-label" for="jobOrder_salaryBase">Lương cơ bản</label>
+                                <input type="text" id="jobOrder_salaryBase" class="jo-input jo-font-strong" value="29,500NT$" placeholder="29,500NT$">
+                            </div>
+                            <div>
+                                <label class="jo-label" for="jobOrder_salaryOvertime">Làm thêm / Giờ</label>
+                                <input type="text" id="jobOrder_salaryOvertime" class="jo-input jo-font-strong" value="164NT$/h" placeholder="164NT$/h">
+                            </div>
+                            <div>
+                                <label class="jo-label" for="jobOrder_overtimeHours">Tăng ca dự kiến</label>
+                                <input type="text" id="jobOrder_overtimeHours" class="jo-input" value="72hr/tháng (Đã gồm Thứ Bảy)" placeholder="72hr/tháng (Đã gồm Thứ Bảy)">
+                            </div>
+                            <div>
+                                <label class="jo-label" for="jobOrder_deductionAmount">Khấu trừ ăn ở</label>
+                                <input type="text" id="jobOrder_deductionAmount" class="jo-input" value="2500NT$/tháng" placeholder="2500NT$/tháng">
+                            </div>
+                        </div>
+
+                        <div class="jo-stack-10">
+                            <div>
+                                <label class="jo-label" for="jobOrder_shiftPolicy">Chế độ ca làm việc</label>
+                                <input type="text" id="jobOrder_shiftPolicy" class="jo-input" value="Nhà máy làm việc 02 ca, nghỉ luân phiên nhưng không cố định theo Thứ Bảy , CN.">
+                            </div>
+                            <div>
+                                <label class="jo-label" for="jobOrder_overtimePolicy">Quy định làm thêm</label>
+                                <input type="text" id="jobOrder_overtimePolicy" class="jo-input" value="Nghỉ Chủ Nhật hằng tuần nhưng phải phối hợp tăng ca nếu nhà máy yêu cầu.">
+                            </div>
+                            <div>
+                                <label class="jo-label" for="jobOrder_mealAllowance">Ăn uống &amp; Ký túc xá</label>
+                                <textarea id="jobOrder_mealAllowance" rows="3" class="jo-textarea">Mỗi tháng người lao động phải chi trả tiền ăn và ở cho công xưởng là 2500NT$/tháng, ngày làm việc công xưởng sẽ chu cấp 01 bữa/ngày và phụ cấp 100NT$/ngày cho người lao động. Ngày nghỉ tự túc 03 bữa.</textarea>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- CARD V: CÁC YÊU CẦU & LƯU Ý KHÁC -->
+                    <section id="joSec5" class="jo-card">
+                        <div class="jo-card-head">
+                            <div class="jo-card-title"><span class="jo-sec-num">V</span> Các yêu cầu &amp; Lưu ý khác</div>
+                        </div>
+                        <p class="jo-helper">Bấm thẻ để bật/tắt nhanh, hoặc gõ thêm yêu cầu riêng:</p>
+
+                        <!-- Khay Quick-Chips Toggle -->
+                        <div class="jo-chips-wrap" id="jobOrderChipsContainer">
+                            <button type="button" class="jo-chip" data-note="Yêu cầu bắt buộc : Không hút thuốc, không có viêm gan A, B, không mồ hôi tay." onclick="toggleJobNoteChip(this)"><span class="jo-chip-icon">+</span> Không hút thuốc, viêm gan A/B, mồ hôi tay</button>
+                            <button type="button" class="jo-chip" data-note="Phải ở tại ký túc xá do công ty quy định, có ý thức vệ sinh tốt." onclick="toggleJobNoteChip(this)"><span class="jo-chip-icon">+</span> Phải ở tại KTX quy định, vệ sinh tốt</button>
+                            <button type="button" class="jo-chip" data-note="Công việc đòi hỏi phải đứng lâu, đủ sức khỏe bê vác nặng 15-20kgs." onclick="toggleJobNoteChip(this)"><span class="jo-chip-icon">+</span> Đứng lâu, đủ sức khỏe bê nặng 15-20kg</button>
+                            <button type="button" class="jo-chip" data-note="Nhà máy hiện có nhân viên Việt Nam đang làm việc." onclick="toggleJobNoteChip(this)"><span class="jo-chip-icon">+</span> Đã có nhân viên Việt Nam</button>
+                            <button type="button" class="jo-chip" data-note="Không xăm hình, không cận thị, không mù màu." onclick="toggleJobNoteChip(this)"><span class="jo-chip-icon">+</span> Không xăm hình, không mù màu</button>
+                            <button type="button" class="jo-chip" data-note="Chấp nhận ứng viên có hình xăm nhỏ, kín." onclick="toggleJobNoteChip(this)"><span class="jo-chip-icon">+</span> Chấp nhận hình xăm nhỏ kín</button>
+                            <button type="button" class="jo-chip" data-note="Yêu cầu thuận tay phải, thị lực tốt." onclick="toggleJobNoteChip(this)"><span class="jo-chip-icon">+</span> Thuận tay phải, mắt tốt</button>
+                            <button type="button" class="jo-chip" data-note="Phải phối hợp tăng ca và làm việc ca đêm khi công xưởng yêu cầu." onclick="toggleJobNoteChip(this)"><span class="jo-chip-icon">+</span> Phối hợp làm ca đêm và tăng ca</button>
+                            <button type="button" class="jo-chip" data-note="Tính chất công việc có thể tùy nhu cầu của công xưởng mà sau này có sự thay đổi." onclick="toggleJobNoteChip(this)"><span class="jo-chip-icon">+</span> Công việc linh hoạt theo xưởng</button>
+                            <button type="button" class="jo-chip" data-note="Tiền ăn có thể tăng hoặc giảm tùy theo chất lượng bữa ăn hoặc khi chính phủ có quy định mới." onclick="toggleJobNoteChip(this)"><span class="jo-chip-icon">+</span> Tiền ăn điều chỉnh theo thời vụ</button>
+                            <button type="button" class="jo-chip" data-note="Giờ tăng ca là số giờ được tính bình quân trong thời gian 3 tháng vừa qua, và mang tính thời vụ." onclick="toggleJobNoteChip(this)"><span class="jo-chip-icon">+</span> Giờ tăng ca tính bình quân vụ mùa</button>
+                        </div>
+
+                        <!-- Danh sách các dòng yêu cầu đang bật -->
+                        <div id="jobOrderNotesList" class="jo-notes-list"></div>
+
+                        <!-- Thêm dòng tùy biến -->
+                        <div class="jo-custom-note-row">
+                            <input type="text" id="jobOrderCustomNoteInput" class="jo-input" placeholder="Gõ thêm yêu cầu hoặc lưu ý đặc thù khác..." onkeypress="if(event.key==='Enter'){event.preventDefault(); addCustomJobNote();}">
+                            <button type="button" onclick="addCustomJobNote()" class="jo-btn-add-note">+ Thêm</button>
+                        </div>
+                    </section>
+
+                    <!-- CARD VI: HÌNH ẢNH NHÀ XƯỞNG & SẢN PHẨM (TRANG 2) -->
+                    <section id="joSec6" class="jo-card">
+                        <div class="jo-card-head">
+                            <div class="jo-card-title"><span class="jo-sec-num">VI</span> Hình ảnh nhà xưởng &amp; Sản phẩm (Trang 2)</div>
+                        </div>
+                        <div class="jo-upload-bar">
+                            <input type="file" id="jobOrderImageFileInput" accept="image/*" multiple onchange="handleJobImageUpload(this)" style="display:none;">
+                            <button type="button" onclick="document.getElementById('jobOrderImageFileInput').click()" class="jo-btn-upload">
+                                <span>📁</span> Tải ảnh từ máy tính (tối đa 4 ảnh)
+                            </button>
+                            <span class="jo-helper-inline">Hỗ trợ JPG, PNG, WEBP</span>
+                        </div>
+                        <div id="jobOrderImagesContainer" class="jo-images-grid"></div>
+                    </section>
+                </form>
+            </div>
+
+            <!-- CỘT PHẢI: XEM TRƯỚC TRỰC TIẾP TỜ A4 & LINK ZALO -->
+            <div id="jobOrderPaneRight" class="jo-pane-preview jo-mobile-hidden">
+                <div class="jo-preview-topbar">
+                    <div class="jo-zalo-preview" title="Tiêu đề hiển thị khi dán đường link lên Zalo">
+                        <span class="jo-zalo-tag">💬 Zalo:</span>
+                        <span id="jobOrderZaloPreviewTitle" class="jo-zalo-title">BẢNG CÔNG VIỆC — ...</span>
                     </div>
+                    <span class="jo-preview-pill">Xem trước A4 trực tiếp</span>
                 </div>
 
-                <!-- Các tiêu chuẩn chung -->
-                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px;">
-                    <div>
-                        <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px; text-transform:uppercase;">Tuổi tác</label>
-                        <input type="text" id="jobOrder_ageRange" value="20 tuổi trở lên" placeholder="20 tuổi trở lên / 20-35 tuổi" style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; font-weight:600; color:#0f172a; outline:none;" onfocus="this.style.borderColor='#0891b2'" onblur="this.style.borderColor='#cbd5e1'">
-                    </div>
-                    <div>
-                        <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px; text-transform:uppercase;">Học lực</label>
-                        <input type="text" id="jobOrder_education" value="PTTH trở lên" placeholder="PTTH trở lên / Cấp 2 / Không yc" style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; font-weight:600; color:#0f172a; outline:none;" onfocus="this.style.borderColor='#0891b2'" onblur="this.style.borderColor='#cbd5e1'">
-                    </div>
-                    <div>
-                        <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px; text-transform:uppercase;">Hôn nhân</label>
-                        <input type="text" id="jobOrder_marriage" value="Không yêu cầu" placeholder="Không yêu cầu / Đã kết hôn" style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; font-weight:600; color:#0f172a; outline:none;" onfocus="this.style.borderColor='#0891b2'" onblur="this.style.borderColor='#cbd5e1'">
-                    </div>
-                    <div>
-                        <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px; text-transform:uppercase;">Phương thức tuyển</label>
-                        <input type="text" id="jobOrder_interviewMethod" value="Form + Line pv + clip GTBT" placeholder="Form / Tuyển trực tiếp / Line pv" style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; font-weight:600; color:#0f172a; outline:none;" onfocus="this.style.borderColor='#0891b2'" onblur="this.style.borderColor='#cbd5e1'">
-                    </div>
-                    <div>
-                        <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px; text-transform:uppercase;">Thời hạn hợp đồng</label>
-                        <input type="text" id="jobOrder_contractTerm" value="03 năm + 12" placeholder="03 năm / 03 năm + 12" style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; font-weight:600; color:#0f172a; outline:none;" onfocus="this.style.borderColor='#0891b2'" onblur="this.style.borderColor='#cbd5e1'">
+                <div class="jo-preview-stage">
+                    <div id="jobOrderLivePreviewBody" class="jo-a4-paper">
+                        <!-- Render động trực tiếp theo nội dung đang nhập -->
                     </div>
                 </div>
             </div>
-
-            <!-- 3. NỘI DUNG & YÊU CẦU CÔNG VIỆC -->
-            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:16px; margin-bottom:16px;">
-                <div style="font-size:13.5px; font-weight:800; color:#0e7490; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-                    <span>💼</span> 3. NỘI DUNG VÀ YÊU CẦU CÔNG VIỆC
-                </div>
-                <textarea id="jobOrder_jobDescription" rows="3" placeholder="Ví dụ: Sản xuất các loại bánh mì, đóng gói và các công việc khác trong nhà máy..." style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; font-weight:550; color:#0f172a; outline:none; resize:vertical; box-sizing:border-box;" onfocus="this.style.borderColor='#0891b2'" onblur="this.style.borderColor='#cbd5e1'">Sản xuất các loại bánh mì, đóng gói và các công việc khác trong nhà máy</textarea>
-            </div>
-
-            <!-- 4. CHẾ ĐỘ LƯƠNG, TĂNG CA & ĐÃI NGỘ -->
-            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:16px; margin-bottom:16px;">
-                <div style="font-size:13.5px; font-weight:800; color:#0e7490; margin-bottom:12px; display:flex; align-items:center; gap:6px;">
-                    <span>💰</span> 4. CHẾ ĐỘ LƯƠNG & ĐÃI NGỘ
-                </div>
-                
-                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin-bottom:12px;">
-                    <div>
-                        <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px; text-transform:uppercase;">Lương cơ bản</label>
-                        <input type="text" id="jobOrder_salaryBase" value="29,500NT$" placeholder="29,500NT$" style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; font-weight:750; color:#0891b2; outline:none; background:#fff;">
-                    </div>
-                    <div>
-                        <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px; text-transform:uppercase;">Tiền làm thêm /h</label>
-                        <input type="text" id="jobOrder_salaryOvertime" value="164NT$/h" placeholder="164NT$/h" style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; font-weight:750; color:#7c3aed; outline:none; background:#fff;">
-                    </div>
-                    <div>
-                        <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px; text-transform:uppercase;">Tăng ca dự kiến</label>
-                        <input type="text" id="jobOrder_overtimeHours" value="72hr/tháng (Đã gồm Thứ Bảy)" placeholder="72hr/tháng..." style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; font-weight:750; color:#059669; outline:none; background:#fff;">
-                    </div>
-                    <div>
-                        <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px; text-transform:uppercase;">Khấu trừ ăn ở KTX</label>
-                        <input type="text" id="jobOrder_deductionAmount" value="2500NT$/tháng" placeholder="2500NT$/tháng" style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; font-weight:750; color:#0f172a; outline:none; background:#fff;">
-                    </div>
-                </div>
-
-                <div style="display:flex; flex-direction:column; gap:10px;">
-                    <div>
-                        <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px; text-transform:uppercase;">Chế độ ca làm việc & Ngày nghỉ</label>
-                        <input type="text" id="jobOrder_shiftPolicy" value="Nhà máy làm việc 02 ca, nghỉ luân phiên nhưng không cố định theo Thứ Bảy , CN." style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:12.5px; font-weight:550; color:#0f172a; outline:none;">
-                    </div>
-                    <div>
-                        <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px; text-transform:uppercase;">Quy định tăng ca cuối tuần</label>
-                        <input type="text" id="jobOrder_overtimePolicy" value="Nghỉ Chủ Nhật hằng tuần nhưng phải phối hợp tăng ca nếu nhà máy yêu cầu." style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:12.5px; font-weight:550; color:#0f172a; outline:none;">
-                    </div>
-                    <div>
-                        <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px; text-transform:uppercase;">Chế độ ăn uống & Tiền phụ cấp</label>
-                        <textarea id="jobOrder_mealAllowance" rows="2" style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:12.5px; font-weight:550; color:#0f172a; outline:none; resize:vertical; box-sizing:border-box;">Mỗi tháng người lao động phải chi trả tiền ăn và ở cho công xưởng là 2500NT$/tháng, ngày làm việc công xưởng sẽ chu cấp 01 bữa/ngày và phụ cấp 100NT$/ngày cho người lao động. Ngày nghỉ tự túc 03 bữa.</textarea>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 5. CÁC YÊU CẦU & LƯU Ý KHÁC (QUICK CHIPS 1-CHẠM) -->
-            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:16px; margin-bottom:16px;">
-                <div style="font-size:13.5px; font-weight:800; color:#0e7490; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
-                    <span>⚠️</span> 5. CÁC YÊU CẦU & LƯU Ý KHÁC
-                </div>
-                <p style="font-size:12px; color:#64748b; margin:0 0 10px 0;">Bấm vào thẻ bên dưới để thêm nhanh điều khoản mà không cần gõ phím:</p>
-
-                <!-- Khay Quick-Chips -->
-                <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;" id="jobOrderChipsContainer">
-                    <button type="button" onclick="addJobNote('Yêu cầu bắt buộc : Không hút thuốc, không có viêm gan A, B, không mồ hôi tay.')" class="quick-chip-btn">+ Không hút thuốc, viêm gan A/B, mồ hôi tay</button>
-                    <button type="button" onclick="addJobNote('Phải ở tại ký túc xá do công ty quy định, có ý thức vệ sinh tốt')" class="quick-chip-btn">+ Phải ở tại KTX quy định, vệ sinh tốt</button>
-                    <button type="button" onclick="addJobNote('Công việc đòi hỏi phải đứng lâu, đủ sức khỏe bê vác nặng 15-20kgs.')" class="quick-chip-btn">+ Đứng lâu, đủ sức khỏe bê nặng 15-20kg</button>
-                    <button type="button" onclick="addJobNote('Nhà máy hiện có nhân viên Việt Nam đang làm việc.')" class="quick-chip-btn">+ Đã có nhân viên Việt Nam</button>
-                    <button type="button" onclick="addJobNote('Không xăm hình, không cận thị, không mù màu.')" class="quick-chip-btn">+ Không xăm hình, không mù màu</button>
-                    <button type="button" onclick="addJobNote('Chấp nhận ứng viên có hình xăm nhỏ, kín.')" class="quick-chip-btn">+ Chấp nhận hình xăm nhỏ kín</button>
-                    <button type="button" onclick="addJobNote('Yêu cầu thuận tay phải, thị lực tốt.')" class="quick-chip-btn">+ Thuận tay phải, mắt tốt</button>
-                    <button type="button" onclick="addJobNote('Phải phối hợp tăng ca và làm việc ca đêm khi công xưởng yêu cầu.')" class="quick-chip-btn">+ Phối hợp làm ca đêm và tăng ca</button>
-                    <button type="button" onclick="addJobNote('Tính chất công việc có thể tùy nhu cầu của công xưởng mà sau này có sự thay đổi.')" class="quick-chip-btn">+ Công việc có thể linh hoạt theo xưởng</button>
-                    <button type="button" onclick="addJobNote('Tiền ăn có thể tăng hoặc giảm tùy theo chất lượng bữa ăn hoặc khi chính phủ có quy định mới.')" class="quick-chip-btn">+ Tiền ăn điều chỉnh theo thời vụ</button>
-                    <button type="button" onclick="addJobNote('Giờ tăng ca là số giờ được tính bình quân trong thời gian 3 tháng vừa qua, và mang tính thời vụ.')" class="quick-chip-btn">+ Giờ tăng ca tính bình quân vụ mùa</button>
-                </div>
-
-                <!-- Danh sách các dòng chú ý hiện tại -->
-                <div id="jobOrderNotesList" style="display:flex; flex-direction:column; gap:8px; margin-bottom:12px;">
-                    <!-- Render động qua JS -->
-                </div>
-
-                <!-- Thêm dòng tùy biến -->
-                <div style="display:flex; gap:8px;">
-                    <input type="text" id="jobOrderCustomNoteInput" placeholder="Gõ thêm chú ý đặc thù khác nếu có..." style="flex:1; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:12.5px; font-weight:550; color:#0f172a; outline:none;" onkeypress="if(event.key==='Enter'){event.preventDefault(); addCustomJobNote();}">
-                    <button type="button" onclick="addCustomJobNote()" style="padding:8px 16px; background:#0e7490; color:#fff; border:none; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer;">+ Thêm dòng</button>
-                </div>
-            </div>
-
-            <!-- 6. WEBSITE & HÌNH ẢNH SẢN PHẨM / NHÀ XƯỞNG (TRANG 2) -->
-            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:16px; margin-bottom:20px;">
-                <div style="font-size:13.5px; font-weight:800; color:#0e7490; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
-                    <span>📸</span> 6. WEBSITE & HÌNH ẢNH THỰC TẾ (TRANG 2)
-                </div>
-                
-                <div style="margin-bottom:12px;">
-                    <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px; text-transform:uppercase;">Website công xưởng</label>
-                    <input type="url" id="jobOrder_factoryWebsite" placeholder="https://beier2007.com/" style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; font-weight:600; color:#0f172a; outline:none;">
-                </div>
-
-                <div>
-                    <label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:6px; text-transform:uppercase;">Hình ảnh sản phẩm / nhà xưởng (tối đa 4 ảnh)</label>
-                    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
-                        <input type="file" id="jobOrderImageFileInput" accept="image/*" multiple onchange="handleJobImageUpload(this)" style="display:none;">
-                        <button type="button" onclick="document.getElementById('jobOrderImageFileInput').click()" style="padding:8px 16px; background:#ffffff; border:1px dashed #0891b2; color:#0891b2; border-radius:8px; font-size:12.5px; font-weight:750; cursor:pointer; display:flex; align-items:center; gap:6px;">
-                            <span>📁 Tải ảnh từ máy tính</span>
-                        </button>
-                        <span style="font-size:11.5px; color:#64748b;">(Hỗ trợ định dạng JPG, PNG, WEBP)</span>
-                    </div>
-
-                    <!-- Gallery preview thumbnails -->
-                    <div id="jobOrderImagesContainer" style="display:flex; flex-wrap:wrap; gap:10px;">
-                        <!-- Render dynamic images -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Footer actions -->
-            <div style="display:flex; justify-content:space-between; align-items:center; border-top:1.5px solid #e2e8f0; padding-top:16px;">
-                <div>
-                    <button type="button" id="jobOrderPreviewBtn" onclick="previewCurrentJobOrder()" style="display:none; padding:10px 18px; background:#f0fdfa; color:#0d9488; border:1px solid #99f6e4; border-radius:10px; font-size:13px; font-weight:800; cursor:pointer;">
-                        <span>👁️ Xem trang in A4</span>
-                    </button>
-                </div>
-                <div style="display:flex; gap:10px;">
-                    <button type="button" onclick="closeJobOrderModal()" style="padding:10px 20px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:10px; font-size:13px; font-weight:750; cursor:pointer;">
-                        Hủy bỏ
-                    </button>
-                    <button type="submit" id="jobOrderSubmitBtn" style="padding:10px 26px; background:linear-gradient(135deg, #0891b2 0%, #0e7490 100%); color:#ffffff; border:none; border-radius:10px; font-size:13px; font-weight:800; cursor:pointer; box-shadow:0 4px 12px rgba(8,145,178,0.25);">
-                        💾 Lưu Bảng Công Việc
-                    </button>
-                </div>
-            </div>
-        </form>
+        </div>
     </div>
 
     <style>
-        .quick-chip-btn {
+        /* ── Bảng danh sách & Nút bấm ngoài Tab Bảng Công Việc ── */
+        .jo-list-table tbody tr {
+            border-bottom: 1px solid #f1f5f9;
+            transition: background 0.14s ease;
+        }
+        .jo-list-table tbody tr:hover {
+            background: #f8fafc;
+        }
+        .jo-act-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 4px;
+            width: 118px;
+            margin: 0 auto;
+        }
+        .jo-act-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 4px 6px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid #e2e8f0;
             background: #ffffff;
+            color: #334155;
+            transition: all 0.14s ease;
+            white-space: nowrap;
+        }
+        .jo-act-btn:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+        .jo-act-btn.is-view {
+            color: #008080;
+            border-color: #99f6e4;
+            background: #f0fdfa;
+        }
+        .jo-act-btn.is-view:hover {
+            background: #ccfbf1;
+        }
+        .jo-act-btn.is-link {
+            color: #0369a1;
+            border-color: #bae6fd;
+            background: #f0f9ff;
+        }
+        .jo-act-btn.is-link:hover {
+            background: #e0f2fe;
+        }
+        .jo-act-btn.is-del {
+            color: #dc2626;
+            border-color: #fecaca;
+            background: #fef2f2;
+            padding: 4px 6px;
+        }
+        .jo-act-btn.is-del:hover {
+            background: #fee2e2;
+        }
+
+        .jo-primary-cta,
+        .jo-primary-cta span {
+            color: #ffffff !important;
+        }
+        /* ── Studio Modal Backdrop & Shell (không dùng .glass-modal) ── */
+        .jo-studio-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.56);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 100010;
+        }
+        .jo-studio-backdrop.is-open {
+            display: block;
+        }
+        .jo-studio-modal {
+            display: none;
+            position: fixed;
+            inset: 2vh 2vw;
+            max-width: 1440px;
+            height: 96vh;
+            margin: auto;
+            flex-direction: column;
+            overflow: hidden;
+            border-radius: 16px;
+            background: #ffffff;
+            z-index: 100020;
+            box-shadow: 0 28px 80px rgba(15, 23, 42, 0.35);
             border: 1px solid #cbd5e1;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            animation: slideInUp 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .jo-studio-modal.is-open {
+            display: flex;
+        }
+        body:has(#jobOrderModal.is-open) #miloWidgetWrapper {
+            display: none !important;
+        }
+
+        /* ── Sticky Studio Header ── */
+        .jo-studio-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 20px;
+            background: #ffffff;
+            border-bottom: 1.5px solid #e2e8f0;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+        .jo-header-left {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            min-width: 0;
+        }
+        .jo-header-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: #008080;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+            box-shadow: 0 3px 10px rgba(0, 128, 128, 0.22);
+        }
+        .jo-header-title {
+            font-size: 16px;
+            font-weight: 850;
+            color: #0f172a;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .jo-header-sub {
+            font-size: 12px;
+            color: #64748b;
+            margin: 1px 0 0 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .jo-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .jo-btn-outline-teal {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 13px;
+            background: #f0fdfa;
+            color: #008080;
+            border: 1px solid #99f6e4;
+            border-radius: 9px;
+            font-size: 12.5px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .jo-btn-outline-teal:hover {
+            background: #ccfbf1;
+        }
+        .jo-btn-ghost {
+            padding: 8px 14px;
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            border-radius: 9px;
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .jo-btn-ghost:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+        .jo-btn-save {
+            padding: 8px 18px;
+            background: #008080;
+            color: #ffffff;
+            border: none;
+            border-radius: 9px;
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(0, 128, 128, 0.25);
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+        .jo-btn-save:hover {
+            background: #006666;
+        }
+        .jo-btn-close-x {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            background: #f1f5f9;
+            border: none;
+            color: #64748b;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+        .jo-btn-close-x:hover {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        /* ── Mobile Pane Switcher (chỉ hiện < 1100px) ── */
+        .jo-mobile-pane-switch {
+            display: none;
+            background: #f1f5f9;
+            padding: 3px;
+            border-radius: 9px;
+            border: 1px solid #e2e8f0;
+            gap: 3px;
+        }
+        .jo-mobile-tab-btn {
+            padding: 6px 12px;
+            border-radius: 7px;
+            border: none;
+            background: transparent;
+            color: #475569;
+            font-size: 12px;
+            font-weight: 750;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .jo-mobile-tab-btn.is-active {
+            background: #008080;
+            color: #ffffff;
+            box-shadow: 0 1px 4px rgba(0, 128, 128, 0.22);
+        }
+
+        /* ── 2-Column Studio Body ── */
+        .jo-studio-body {
+            display: grid;
+            grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+        .jo-pane-editor {
+            overflow-y: auto;
+            background: #f8fafc;
+            padding: 0 18px 24px 18px;
+            -webkit-overflow-scrolling: touch;
+        }
+        .jo-pane-preview {
+            overflow-y: auto;
+            background: #e8eef3;
+            border-left: 1px solid #cbd5e1;
+            padding: 16px 20px 28px 20px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* ── Sticky Section Jump-Nav ── */
+        .jo-sec-nav {
+            position: sticky;
+            top: 0;
+            z-index: 8;
+            background: rgba(248, 250, 252, 0.95);
+            backdrop-filter: blur(8px);
+            padding: 10px 0;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            overflow-x: auto;
+        }
+        .jo-sec-nav::-webkit-scrollbar {
+            display: none;
+        }
+        .jo-sec-pill {
+            padding: 5px 11px;
+            border-radius: 999px;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            color: #475569;
+            font-size: 11.5px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.14s ease;
+        }
+        .jo-sec-pill:hover {
+            border-color: #008080;
+            color: #008080;
+        }
+        .jo-sec-pill.is-active {
+            background: #008080;
+            border-color: #008080;
+            color: #ffffff;
+        }
+
+        /* ── Form Cards & Inputs ── */
+        .jo-form-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .jo-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+        }
+        .jo-card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .jo-card-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13.5px;
+            font-weight: 800;
+            color: #0f172a;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+        .jo-sec-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 22px;
+            height: 22px;
+            padding: 0 6px;
+            border-radius: 6px;
+            background: #008080;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 800;
+        }
+        .jo-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            margin-bottom: 5px;
+        }
+        .jo-sub-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 4px;
+            white-space: nowrap;
+        }
+        .jo-input,
+        .jo-select,
+        .jo-textarea {
+            width: 100%;
+            padding: 8px 11px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #0f172a;
+            background: #ffffff;
+            outline: none;
+            box-sizing: border-box;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        .jo-input-sm {
+            padding: 7px 9px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .jo-textarea {
+            resize: vertical;
+            line-height: 1.5;
+        }
+        .jo-input:focus,
+        .jo-select:focus,
+        .jo-textarea:focus {
+            border-color: #008080;
+            box-shadow: 0 0 0 3px rgba(0, 128, 128, 0.12);
+        }
+        .jo-font-mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-weight: 800;
+        }
+        .jo-font-strong {
+            font-weight: 750;
+        }
+
+        /* Grid Helpers */
+        .jo-mb-12 { margin-bottom: 12px; }
+        .jo-stack-10 { display: flex; flex-direction: column; gap: 10px; }
+        .jo-grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+        .jo-grid-3-tight { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+        .jo-grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+        .jo-grid-2-wide { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 10px; }
+
+        /* Segmented Gender Selector */
+        .jo-gender-seg {
+            display: inline-flex;
+            background: #f1f5f9;
+            padding: 3px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            gap: 2px;
+        }
+        .jo-seg-item {
             padding: 4px 10px;
+            font-size: 11.5px;
+            font-weight: 700;
+            color: #475569;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 0;
+            white-space: nowrap;
+            transition: all 0.14s ease;
+        }
+        .jo-seg-item input {
+            display: none;
+        }
+        .jo-gender-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+        .jo-gender-box {
+            border-radius: 10px;
+            padding: 11px 12px;
+            border: 1px solid #e2e8f0;
+        }
+        .jo-gender-box.is-male {
+            background: #f0f9ff;
+            border-color: #bae6fd;
+            border-left: 3.5px solid #0284c7;
+        }
+        .jo-gender-box.is-female {
+            background: #fdf2f8;
+            border-color: #fbcfe8;
+            border-left: 3.5px solid #db2777;
+        }
+        .jo-gender-box-title {
+            font-size: 11.5px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: 0.03em;
+        }
+        .jo-gender-box.is-male .jo-gender-box-title { color: #0369a1; }
+        .jo-gender-box.is-female .jo-gender-box-title { color: #be185d; }
+
+        .jo-btn-mini {
+            padding: 4px 10px;
+            border-radius: 7px;
+            border: 1px solid #cbd5e1;
+            background: #f8fafc;
+            color: #475569;
+            font-size: 11.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.14s ease;
+        }
+        .jo-btn-mini:hover {
+            border-color: #008080;
+            color: #008080;
+            background: #f0fdfa;
+        }
+
+        /* Toggle Quick-Chips & Notes List */
+        .jo-helper {
+            font-size: 12px;
+            color: #64748b;
+            margin: 0 0 10px 0;
+        }
+        .jo-helper-inline {
+            font-size: 11.5px;
+            color: #64748b;
+        }
+        .jo-chips-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .jo-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            padding: 5px 10px;
             border-radius: 999px;
             font-size: 11.5px;
             font-weight: 600;
             color: #334155;
             cursor: pointer;
-            transition: all 0.15s ease;
+            transition: all 0.14s ease;
         }
-        .quick-chip-btn:hover {
-            background: #ecfeff;
-            border-color: #0891b2;
-            color: #0e7490;
-            transform: translateY(-1px);
+        .jo-chip:hover {
+            border-color: #008080;
+            color: #008080;
+            background: #f0fdfa;
         }
-        .job-note-item {
+        .jo-chip.is-active {
+            background: #e6f4f4;
+            border-color: #008080;
+            color: #006666;
+            font-weight: 750;
+            box-shadow: 0 1px 3px rgba(0, 128, 128, 0.15);
+        }
+        .jo-chip-icon {
+            font-weight: 800;
+        }
+        .jo-notes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        .jo-note-item {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            background: #ffffff;
+            gap: 8px;
+            background: #f8fafc;
             border: 1px solid #e2e8f0;
-            padding: 8px 12px;
+            padding: 6px 10px;
+            border-radius: 8px;
+        }
+        .jo-note-num {
+            background: #e2e8f0;
+            color: #334155;
+            font-size: 10.5px;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+        .jo-note-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 12.5px;
+            font-weight: 500;
+            color: #0f172a;
+            background: transparent;
+            min-width: 0;
+        }
+        .jo-note-remove {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            padding: 2px 5px;
+            line-height: 1;
+        }
+        .jo-note-remove:hover {
+            color: #dc2626;
+        }
+        .jo-custom-note-row {
+            display: flex;
+            gap: 8px;
+        }
+        .jo-btn-add-note {
+            padding: 8px 16px;
+            background: #008080;
+            color: #ffffff;
+            border: none;
             border-radius: 8px;
             font-size: 12.5px;
-            color: #1e293b;
-            font-weight: 550;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .jo-btn-add-note:hover {
+            background: #006666;
+        }
+
+        /* Image Upload & Gallery */
+        .jo-upload-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+        .jo-btn-upload {
+            padding: 8px 14px;
+            background: #ffffff;
+            border: 1px dashed #008080;
+            color: #008080;
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-weight: 750;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .jo-btn-upload:hover {
+            background: #f0fdfa;
+        }
+        .jo-images-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         .job-image-thumb {
             position: relative;
-            width: 100px;
-            height: 80px;
+            width: 96px;
+            height: 74px;
             border-radius: 8px;
             overflow: hidden;
             border: 1px solid #cbd5e1;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
         }
         .job-image-thumb img {
             width: 100%;
@@ -2358,10 +2991,10 @@
         }
         .job-image-thumb .remove-img-btn {
             position: absolute;
-            top: 2px;
-            right: 2px;
-            background: rgba(220, 38, 38, 0.85);
-            color: #fff;
+            top: 3px;
+            right: 3px;
+            background: rgba(220, 38, 38, 0.88);
+            color: #ffffff;
             border: none;
             width: 20px;
             height: 20px;
@@ -2371,6 +3004,465 @@
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+
+        /* ── Right Pane: Preview Topbar & Faithful Live A4 Paper ── */
+        .jo-preview-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .jo-zalo-preview {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-size: 11.5px;
+            max-width: 100%;
+            overflow: hidden;
+        }
+        .jo-zalo-tag {
+            font-weight: 800;
+            color: #0369a1;
+            flex-shrink: 0;
+        }
+        .jo-zalo-title {
+            font-weight: 700;
+            color: #0f172a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .jo-preview-pill {
+            font-size: 11px;
+            font-weight: 750;
+            color: #008080;
+            background: #f0fdfa;
+            border: 1px solid #99f6e4;
+            padding: 3px 10px;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+        .jo-preview-stage {
+            display: flex;
+            justify-content: center;
+        }
+        .jo-a4-paper {
+            width: 100%;
+            max-width: 680px;
+            background: #ffffff;
+            border: 1.5px solid #334155;
+            outline: 1px solid #cbd5e1;
+            outline-offset: -6px;
+            padding: 26px 28px;
+            position: relative;
+            box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+            color: #1e293b;
+            line-height: 1.5;
+        }
+        .jo-a4-paper::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 340px;
+            height: 140px;
+            background-image: url("{{ url_for('static', filename='eagle_fct_new.png') }}");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            opacity: 0.035;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .jo-a4-content {
+            position: relative;
+            z-index: 2;
+        }
+        .jo-a4-header-grid {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .jo-a4-logo-box {
+            width: 105px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            flex-shrink: 0;
+        }
+        .jo-a4-eagle {
+            height: 38px;
+            width: auto;
+            object-fit: contain;
+        }
+        .jo-a4-center-box {
+            flex: 1;
+            text-align: center;
+        }
+        .jo-a4-right-box {
+            width: 105px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-end;
+            flex-shrink: 0;
+        }
+        .jo-a4-fct-tag {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            color: #475569;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        .jo-a4-main-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 24px;
+            font-weight: 900;
+            color: #008080;
+            letter-spacing: 0.05em;
+            margin: 0 0 6px 0;
+            line-height: 1.2;
+        }
+        .jo-a4-meta-row {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #334155;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 3px 12px;
+            border-radius: 4px;
+        }
+        .jo-a4-rule {
+            border: none;
+            border-top: 2px solid #0f172a;
+            border-bottom: 1px solid #cbd5e1;
+            height: 4px;
+            margin: 12px 0 14px 0;
+        }
+        .jo-a4-section {
+            margin-bottom: 14px;
+        }
+        .jo-a4-section:last-child {
+            margin-bottom: 0;
+        }
+        .jo-a4-sec-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f8fafc;
+            border-left: 3px solid #008080;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 4px 10px;
+            margin-bottom: 7px;
+            border-radius: 0 4px 4px 0;
+        }
+        .jo-a4-sec-title {
+            font-size: 11.5px;
+            font-weight: 800;
+            color: #008080;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin: 0;
+        }
+        .jo-a4-sec-badge {
+            background: #008080;
+            color: #ffffff;
+            font-size: 9.5px;
+            font-weight: 800;
+            padding: 1px 5px;
+            border-radius: 3px;
+        }
+        .jo-a4-submark {
+            font-size: 8.5px;
+            font-weight: 700;
+            color: #64748b;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .jo-a4-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11.5px;
+        }
+        .jo-a4-table tr {
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .jo-a4-table tr:last-child {
+            border-bottom: none;
+        }
+        .jo-a4-table td {
+            padding: 5px 4px;
+            vertical-align: top !important;
+        }
+        .jo-a4-lbl {
+            width: 165px;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            font-size: 9.5px;
+            padding-top: 2px;
+        }
+        .jo-a4-val {
+            color: #0f172a;
+            font-weight: 600;
+            font-size: 11.5px;
+        }
+        .jo-a4-crit-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .jo-a4-crit-box {
+            border: 1px solid #cbd5e1;
+            padding: 7px 10px;
+            border-radius: 4px;
+        }
+        .jo-a4-crit-box.is-male {
+            border-left: 3px solid #0284c7;
+            background: #f0f9ff;
+        }
+        .jo-a4-crit-box.is-female {
+            border-left: 3px solid #db2777;
+            background: #fdf2f8;
+        }
+        .jo-a4-crit-head {
+            font-size: 10px;
+            font-weight: 800;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            padding-bottom: 3px;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .jo-a4-crit-box.is-male .jo-a4-crit-head { color: #0369a1; }
+        .jo-a4-crit-box.is-female .jo-a4-crit-head { color: #be185d; }
+        .jo-a4-crit-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10.5px;
+            padding: 2px 0;
+            border-bottom: 1px dashed rgba(0, 0, 0, 0.06);
+        }
+        .jo-a4-crit-row:last-child { border-bottom: none; }
+        .jo-a4-scope {
+            border-left: 3px solid #008080;
+            background: #f8fafc;
+            padding: 8px 12px;
+            font-size: 11.5px;
+            color: #1e293b;
+            font-weight: 600;
+            border-radius: 0 4px 4px 0;
+            white-space: pre-line;
+        }
+        .jo-a4-fin-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            background: #ffffff;
+            overflow: hidden;
+        }
+        .jo-a4-fin-cell {
+            padding: 7px 5px;
+            text-align: center;
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .jo-a4-fin-cell:last-child { border-right: none; }
+        .jo-a4-fin-lbl {
+            font-size: 8.5px;
+            font-weight: 800;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+        .jo-a4-fin-amt {
+            font-size: 12.5px;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+        .jo-a4-fin-sub {
+            font-size: 9.5px;
+            font-weight: 700;
+            color: #047857;
+            margin-top: 2px;
+        }
+        .jo-a4-clause {
+            display: flex;
+            align-items: flex-start;
+            gap: 7px;
+            font-size: 11px;
+            line-height: 1.45;
+            margin-bottom: 4px;
+        }
+        .jo-a4-clause-badge {
+            background: #f1f5f9;
+            color: #334155;
+            border: 1px solid #e2e8f0;
+            font-weight: 800;
+            font-size: 9.5px;
+            padding: 1px 5px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+        .jo-a4-gallery {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        .jo-a4-gallery-item {
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            aspect-ratio: 4/3;
+            overflow: hidden;
+        }
+        .jo-a4-gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* ── Responsive Tablet / Mobile (< 1100px) ── */
+        @media (max-width: 1099px) {
+            .jo-studio-modal {
+                inset: 0;
+                width: 100vw;
+                max-width: 100%;
+                height: 100dvh;
+                border-radius: 0;
+                border: none;
+            }
+            .jo-studio-body {
+                grid-template-columns: 1fr;
+            }
+            .jo-mobile-pane-switch {
+                display: inline-flex;
+            }
+            .jo-mobile-hidden {
+                display: none !important;
+            }
+            .jo-header-sub {
+                display: none;
+            }
+            .jo-pane-preview {
+                border-left: none;
+            }
+        }
+        @media (max-width: 640px) {
+            .jo-studio-header {
+                flex-wrap: wrap;
+                padding: 10px 12px;
+                gap: 8px;
+            }
+            .jo-header-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 15px;
+            }
+            .jo-header-title {
+                font-size: 14px;
+            }
+            .jo-mobile-pane-switch {
+                order: 3;
+                width: 100%;
+                justify-content: center;
+            }
+            .jo-mobile-tab-btn {
+                flex: 1;
+            }
+            .jo-btn-label {
+                display: none;
+            }
+            .jo-btn-save {
+                padding: 7px 12px;
+                font-size: 12px;
+            }
+            .jo-btn-ghost {
+                padding: 7px 10px;
+                font-size: 12px;
+            }
+            .jo-pane-editor {
+                padding: 0 10px 20px 10px;
+            }
+            .jo-pane-preview {
+                padding: 10px 10px 20px 10px;
+            }
+            .jo-card {
+                padding: 12px;
+            }
+            .jo-grid-3,
+            .jo-grid-2-wide,
+            .jo-grid-2,
+            .jo-gender-grid {
+                grid-template-columns: 1fr;
+            }
+            .jo-a4-paper {
+                padding: 16px 12px;
+                outline: none;
+            }
+            .jo-a4-header-grid {
+                display: grid;
+                grid-template-columns: 1fr auto;
+                grid-template-rows: auto auto;
+                gap: 6px 8px;
+                align-items: center;
+            }
+            .jo-a4-logo-box {
+                grid-column: 1;
+                grid-row: 1;
+                width: auto;
+                justify-content: flex-start;
+            }
+            .jo-a4-eagle {
+                height: 34px;
+            }
+            .jo-a4-right-box {
+                grid-column: 2;
+                grid-row: 1;
+                width: auto;
+                justify-content: flex-end;
+            }
+            .jo-a4-center-box {
+                grid-column: 1 / -1;
+                grid-row: 2;
+                text-align: center;
+                margin-top: 2px;
+            }
+            .jo-a4-main-title {
+                font-size: 20px;
+            }
+            .jo-a4-lbl {
+                width: 118px;
+                font-size: 9px;
+            }
+            .jo-a4-fin-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .jo-a4-submark {
+                display: none;
+            }
         }
     </style>
 
@@ -6409,27 +7501,36 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
         }
 
         // ==========================================
-        // QUẢN LÝ BẢNG CÔNG VIỆC (JOB ORDERS MODULE)
+        // QUẢN LÝ BẢNG CÔNG VIỆC (JOB ORDERS STUDIO)
         // ==========================================
         window.currentJobOrders = [];
         window.jobOrderNotes = [];
         window.jobOrderImages = [];
+
+        function escJob(v) {
+            return escapeHtml(String(v ?? ''));
+        }
 
         function switchJobSubTab(subTab) {
             const btnOrders = document.getElementById('subTabBtn-jobOrders');
             const btnAssign = document.getElementById('subTabBtn-jobAssign');
             const contentOrders = document.getElementById('subTabContent-jobOrders');
             const contentAssign = document.getElementById('subTabContent-jobAssign');
+            const badge = document.getElementById('jobOrdersCountBadge');
 
             if (subTab === 'jobOrders') {
                 if (btnOrders) {
-                    btnOrders.style.background = '#0891b2';
+                    btnOrders.style.background = '#008080';
                     btnOrders.style.color = '#ffffff';
-                    btnOrders.style.boxShadow = '0 2px 6px rgba(8,145,178,0.25)';
+                    btnOrders.style.boxShadow = '0 2px 6px rgba(0,128,128,0.22)';
+                }
+                if (badge) {
+                    badge.style.background = 'rgba(255,255,255,0.22)';
+                    badge.style.color = '#ffffff';
                 }
                 if (btnAssign) {
                     btnAssign.style.background = 'transparent';
-                    btnAssign.style.color = '#0e7490';
+                    btnAssign.style.color = '#475569';
                     btnAssign.style.boxShadow = 'none';
                 }
                 if (contentOrders) contentOrders.style.display = 'block';
@@ -6437,14 +7538,18 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 loadJobOrdersList();
             } else {
                 if (btnAssign) {
-                    btnAssign.style.background = '#0891b2';
+                    btnAssign.style.background = '#008080';
                     btnAssign.style.color = '#ffffff';
-                    btnAssign.style.boxShadow = '0 2px 6px rgba(8,145,178,0.25)';
+                    btnAssign.style.boxShadow = '0 2px 6px rgba(0,128,128,0.22)';
                 }
                 if (btnOrders) {
                     btnOrders.style.background = 'transparent';
-                    btnOrders.style.color = '#0e7490';
+                    btnOrders.style.color = '#475569';
                     btnOrders.style.boxShadow = 'none';
+                }
+                if (badge) {
+                    badge.style.background = '#e2e8f0';
+                    badge.style.color = '#475569';
                 }
                 if (contentOrders) contentOrders.style.display = 'none';
                 if (contentAssign) contentAssign.style.display = 'block';
@@ -6457,21 +7562,25 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 const res = await fetch('/api/job-orders', { credentials: 'same-origin' });
                 if (!res.ok) throw new Error('Không thể tải danh sách bảng công việc');
                 const data = await res.json();
-                window.currentJobOrders = data || [];
-                renderJobOrdersTable(window.currentJobOrders);
+                window.currentJobOrders = Array.isArray(data) ? data : [];
+
+                const badge = document.getElementById('jobOrdersCountBadge');
+                if (badge) badge.textContent = String(window.currentJobOrders.length);
+
+                filterJobOrdersTable();
 
                 // Cập nhật datalist gợi ý xưởng từ bảng Factory nếu có
-                if (typeof globalFactories !== 'undefined' && globalFactories.length > 0) {
+                if (typeof globalFactories !== 'undefined' && Array.isArray(globalFactories) && globalFactories.length > 0) {
                     const facDatalist = document.getElementById('factoryDatalistOptions');
                     if (facDatalist) {
-                        facDatalist.innerHTML = globalFactories.map(f => `<option value="${(f.name || '').replace(/"/g, '&quot;')}">`).join('');
+                        facDatalist.innerHTML = globalFactories.map(f => `<option value="${escJob(f.name)}">`).join('');
                     }
                 }
             } catch (err) {
                 console.error("loadJobOrdersList error:", err);
                 const tbody = document.getElementById('jobOrdersTableBody');
                 if (tbody) {
-                    tbody.innerHTML = `<tr><td colspan="8" style="padding:20px; text-align:center; color:#ef4444;">Lỗi khi tải bảng công việc: ${err.message}</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="6" style="padding:24px; text-align:center; color:#dc2626; font-weight:600;">Lỗi khi tải bảng công việc: ${escJob(err.message)}</td></tr>`;
                 }
             }
         }
@@ -6480,19 +7589,26 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             const searchVal = (document.getElementById('jobOrdersSearchInput')?.value || '').toLowerCase().trim();
             const statusVal = (document.getElementById('jobOrdersStatusFilter')?.value || '').trim();
 
-            let filtered = window.currentJobOrders || [];
+            const allList = window.currentJobOrders || [];
+            let filtered = allList;
 
             if (searchVal) {
-                filtered = filtered.filter(j => 
-                    (j.code || '').toLowerCase().includes(searchVal) ||
-                    (j.factory_name || '').toLowerCase().includes(searchVal) ||
-                    (j.product_job || '').toLowerCase().includes(searchVal) ||
-                    (j.work_location || '').toLowerCase().includes(searchVal)
+                filtered = filtered.filter(j =>
+                    String(j.code || '').toLowerCase().includes(searchVal) ||
+                    String(j.factory_name || '').toLowerCase().includes(searchVal) ||
+                    String(j.product_job || '').toLowerCase().includes(searchVal) ||
+                    String(j.work_location || '').toLowerCase().includes(searchVal) ||
+                    String(j.title_note || '').toLowerCase().includes(searchVal)
                 );
             }
 
             if (statusVal) {
-                filtered = filtered.filter(j => (j.status || '').trim() === statusVal);
+                filtered = filtered.filter(j => String(j.status || '').trim() === statusVal);
+            }
+
+            const metaEl = document.getElementById('jobOrdersFilteredMeta');
+            if (metaEl) {
+                metaEl.textContent = allList.length > 0 ? `Hiển thị ${filtered.length} / ${allList.length} đơn` : '';
             }
 
             renderJobOrdersTable(filtered);
@@ -6505,10 +7621,10 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             if (!list || list.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="8" style="padding:40px 20px; text-align:center; color:#64748b;">
+                        <td colspan="6" style="padding:44px 20px; text-align:center; color:#64748b;">
                             <div style="font-size:32px; margin-bottom:8px;">📋</div>
-                            <div style="font-weight:700; font-size:14px; color:#334155;">Chưa có Bảng công việc nào được tạo</div>
-                            <div style="font-size:12px; margin-top:4px;">Bấm nút <strong>"➕ Thêm Bảng công việc mới"</strong> ở trên để tạo phiếu tuyển dụng theo mẫu chuẩn FCT.</div>
+                            <div style="font-weight:750; font-size:14px; color:#334155;">Không có Bảng công việc phù hợp</div>
+                            <div style="font-size:12px; margin-top:4px;">Bấm nút <strong>"➕ Tạo Bảng công việc mới"</strong> ở trên để thêm đơn hàng chuẩn FCT.</div>
                         </td>
                     </tr>
                 `;
@@ -6517,91 +7633,85 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
 
             tbody.innerHTML = list.map(j => {
                 const crit = j.recruitment_criteria || {};
-                
-                // Gender & criteria summary
+
                 let criteriaBadge = '';
                 if (j.gender_type === 'male') {
-                    criteriaBadge = `<span style="display:inline-flex; align-items:center; gap:4px; background:#f0f9ff; color:#0369a1; border:1px solid #bae6fd; padding:2px 8px; border-radius:6px; font-weight:750; font-size:11.5px;">👨 ${crit.male_count || '0'} Nam</span>`;
+                    criteriaBadge = `<span style="display:inline-flex; align-items:center; gap:3px; background:#f0f9ff; color:#0369a1; border:1px solid #bae6fd; padding:1px 7px; border-radius:6px; font-weight:750; font-size:11px;">👨 ${escJob(crit.male_count || '0')} Nam</span>`;
                 } else if (j.gender_type === 'female') {
-                    criteriaBadge = `<span style="display:inline-flex; align-items:center; gap:4px; background:#fdf2f8; color:#be185d; border:1px solid #fbcfe8; padding:2px 8px; border-radius:6px; font-weight:750; font-size:11.5px;">👩 ${crit.female_count || '0'} Nữ</span>`;
+                    criteriaBadge = `<span style="display:inline-flex; align-items:center; gap:3px; background:#fdf2f8; color:#be185d; border:1px solid #fbcfe8; padding:1px 7px; border-radius:6px; font-weight:750; font-size:11px;">👩 ${escJob(crit.female_count || '0')} Nữ</span>`;
                 } else {
                     criteriaBadge = `
-                        <div style="display:flex; gap:4px; flex-wrap:wrap;">
-                            <span style="background:#f0f9ff; color:#0369a1; border:1px solid #bae6fd; padding:1px 6px; border-radius:6px; font-weight:750; font-size:11px;">👨 ${crit.male_count || '0'} Nam</span>
-                            <span style="background:#fdf2f8; color:#be185d; border:1px solid #fbcfe8; padding:1px 6px; border-radius:6px; font-weight:750; font-size:11px;">👩 ${crit.female_count || '0'} Nữ</span>
+                        <div style="display:inline-flex; gap:4px; flex-wrap:wrap; align-items:center;">
+                            <span style="background:#f0f9ff; color:#0369a1; border:1px solid #bae6fd; padding:1px 6px; border-radius:6px; font-weight:750; font-size:11px;">👨 ${escJob(crit.male_count || '0')} Nam</span>
+                            <span style="background:#fdf2f8; color:#be185d; border:1px solid #fbcfe8; padding:1px 6px; border-radius:6px; font-weight:750; font-size:11px;">👩 ${escJob(crit.female_count || '0')} Nữ</span>
                         </div>
                     `;
                 }
 
-                // Status badge
-                let statusBg = '#dcfce7', statusColor = '#166534', statusBorder = '#bbf7d0';
+                let statusBg = '#ecfdf5', statusColor = '#047857', statusBorder = '#a7f3d0';
                 if (j.status === 'Đã đủ form') {
-                    statusBg = '#fef9c3'; statusColor = '#854d0e'; statusBorder = '#fef08a';
+                    statusBg = '#fef9c3'; statusColor = '#854d0e'; statusBorder = '#fde047';
                 } else if (j.status === 'Đã phỏng vấn') {
                     statusBg = '#e0f2fe'; statusColor = '#0369a1'; statusBorder = '#bae6fd';
                 } else if (j.status === 'Đã hoàn thành') {
                     statusBg = '#f1f5f9'; statusColor = '#475569'; statusBorder = '#cbd5e1';
                 } else if (j.status === 'Tạm dừng') {
-                    statusBg = '#fee2e2'; statusColor = '#991b1b'; statusBorder = '#fecaca';
+                    statusBg = '#fee2e2'; statusColor = '#b91c1c'; statusBorder = '#fecaca';
                 }
 
+                const jsId = escJob(j.id).replace(/'/g, "\\'");
+                const jsCode = escJob(j.code).replace(/'/g, "\\'");
+                const otObj = splitParenthesizedNote(j.overtime_hours, '72hr/tháng');
+
                 return `
-                    <tr style="border-bottom:1px solid #f1f5f9; transition:background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
-                        <td style="padding:12px 14px; white-space:nowrap;">
-                            <div style="font-family:'Inter', monospace; font-weight:800; font-size:14px; color:#7c3aed; background:#f5f3ff; border:1px solid #ddd6fe; padding:2px 8px; border-radius:6px; display:inline-block;">
-                                ${escapeHtml(j.code)}
+                    <tr>
+                        <td style="padding:10px 12px; vertical-align:top;">
+                            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:4px;">
+                                <span style="font-family:ui-monospace, monospace; font-weight:800; font-size:12.5px; color:#008080; background:#f0fdfa; border:1px solid #99f6e4; padding:2px 8px; border-radius:6px;">
+                                    ${escJob(j.code)}
+                                </span>
+                                ${j.title_note ? `<span style="font-size:11px; font-weight:700; color:#475569; background:#f1f5f9; border:1px solid #e2e8f0; padding:1px 7px; border-radius:6px;">${escJob(j.title_note)}</span>` : ''}
                             </div>
-                            ${j.title_note ? `<div style="font-size:11px; font-weight:700; color:#64748b; margin-top:2px;">${escapeHtml(j.title_note)}</div>` : ''}
+                            <div style="font-weight:750; color:#0f172a; font-size:13px; line-height:1.35;">${escJob(j.factory_name || 'Chưa cập nhật tên xưởng')}</div>
+                            ${j.work_location ? `<div style="font-size:11.5px; color:#64748b; margin-top:2px;">📍 ${escJob(j.work_location)}</div>` : ''}
                         </td>
-                        <td style="padding:12px 14px;">
-                            <div style="font-weight:750; color:#0e7490; font-size:13.5px;">${escapeHtml(j.factory_name || 'Chưa có tên xưởng')}</div>
-                            ${j.work_location ? `<div style="font-size:11.5px; color:#64748b; margin-top:2px;">📍 ${escapeHtml(j.work_location)}</div>` : ''}
+                        <td style="padding:10px 12px; vertical-align:top;">
+                            <div style="font-weight:650; color:#1e293b; font-size:12.5px; margin-bottom:4px;">${escJob(j.product_job || j.job_type || 'Lao động phổ thông')}</div>
+                            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                                ${criteriaBadge}
+                                <span style="font-size:11px; color:#64748b;">• ${escJob(crit.age_range || '20+')}</span>
+                            </div>
                         </td>
-                        <td style="padding:12px 14px;">
-                            <div style="font-weight:600; color:#1e293b;">${escapeHtml(j.product_job || 'Theo quy định')}</div>
-                            <div style="font-size:11.5px; color:#64748b;">${escapeHtml(j.job_type || 'Lao động phổ thông')}</div>
+                        <td style="padding:10px; vertical-align:top;">
+                            <div style="font-weight:750; color:#0f172a; font-size:13px; white-space:nowrap;">${escJob(j.salary_base || '29,500NT$')}</div>
+                            <div style="font-size:11.5px; color:#008080; font-weight:650; margin-top:2px; white-space:nowrap;">${escJob(otObj.main)}</div>
+                            ${otObj.sub ? `<div style="font-size:10px; color:#64748b; margin-top:1px; line-height:1.25;">${escJob(otObj.sub)}</div>` : ''}
                         </td>
-                        <td style="padding:12px 14px;">
-                            ${criteriaBadge}
-                            <div style="font-size:11.5px; color:#64748b; margin-top:3px;">Tuổi: ${escapeHtml(crit.age_range || '20+')}</div>
-                        </td>
-                        <td style="padding:12px 14px; white-space:nowrap;">
-                            <div style="font-weight:750; color:#0891b2;">${escapeHtml(j.salary_base || '29,500NT$')}</div>
-                            <div style="font-size:11.5px; color:#059669; font-weight:600;">+${escapeHtml(j.overtime_hours || '72h/tháng')}</div>
-                        </td>
-                        <td style="padding:12px 14px; text-align:center; white-space:nowrap;">
-                            <button type="button" onclick="filterJobAssignByCode('${escapeHtml(j.code)}')" title="Bấm để xem ứng viên đã ghép với đơn này"
-                                style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd; padding:3px 10px; border-radius:999px; font-size:12px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.15s;"
-                                onmouseover="this.style.background='#bae6fd'" onmouseout="this.style.background='#e0f2fe'">
-                                <span>👥</span> ${j.candidate_count || 0}
+                        <td style="padding:10px 8px; text-align:center; vertical-align:middle; white-space:nowrap;">
+                            <button type="button" onclick="filterJobAssignByCode('${jsCode}')" title="Xem ứng viên đã ghép với đơn này"
+                                style="background:#f8fafc; color:#0f172a; border:1px solid #cbd5e1; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.14s;"
+                                onmouseover="this.style.borderColor='#008080'; this.style.color='#008080';" onmouseout="this.style.borderColor='#cbd5e1'; this.style.color='#0f172a';">
+                                <span>👥</span> ${Number(j.candidate_count || 0)}
                             </button>
                         </td>
-                        <td style="padding:12px 14px; text-align:center; white-space:nowrap;">
+                        <td style="padding:10px 8px; text-align:center; vertical-align:middle; white-space:nowrap;">
                             <span style="display:inline-block; padding:3px 10px; border-radius:999px; font-size:11.5px; font-weight:750; background:${statusBg}; color:${statusColor}; border:1px solid ${statusBorder};">
-                                ${escapeHtml(j.status || 'Đang tuyển')}
+                                ${escJob(j.status || 'Đang tuyển')}
                             </span>
                         </td>
-                        <td style="padding:12px 14px; text-align:center; white-space:nowrap;">
-                            <div style="display:inline-flex; gap:4px; align-items:center;">
-                                <button type="button" onclick="openJobOrderView('${j.id}')" title="Xem & In / Xuất PDF (A4)"
-                                    style="padding:6px 10px; background:#f0fdfa; color:#0d9488; border:1px solid #99f6e4; border-radius:6px; font-size:12px; font-weight:750; cursor:pointer;"
-                                    onmouseover="this.style.background='#ccfbf1'" onmouseout="this.style.background='#f0fdfa'">
-                                    👁️ In PDF
+                        <td style="padding:10px 8px; text-align:center; vertical-align:middle; white-space:nowrap;">
+                            <div class="jo-act-grid">
+                                <button type="button" onclick="openJobOrderView('${jsId}')" class="jo-act-btn is-view" title="Xem & In / Xuất PDF (A4)">
+                                    👁️ In
                                 </button>
-                                <button type="button" onclick="copyJobOrderShareLink('${j.id}', '${escapeHtml(j.code)}')" title="Sao chép link gửi cho Tuyển dụng / Zalo"
-                                    style="padding:6px 10px; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; border-radius:6px; font-size:12px; font-weight:750; cursor:pointer;"
-                                    onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">
+                                <button type="button" onclick="copyJobOrderShareLink('${jsId}', '${jsCode}')" class="jo-act-btn is-link" title="Sao chép link gửi Zalo">
                                     🔗 Link
                                 </button>
-                                <button type="button" onclick="openJobOrderModal('${j.id}')" title="Chỉnh sửa Bảng công việc"
-                                    style="padding:6px 10px; background:#f8fafc; color:#475569; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; font-weight:750; cursor:pointer;"
-                                    onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
+                                <button type="button" onclick="openJobOrderModal('${jsId}')" class="jo-act-btn" title="Chỉnh sửa Bảng công việc">
                                     ✏️ Sửa
                                 </button>
-                                <button type="button" onclick="deleteJobOrder('${j.id}', '${escapeHtml(j.code)}')" title="Xóa Bảng công việc"
-                                    style="padding:6px 8px; background:#fff1f2; color:#e11d48; border:1px solid #fecdd3; border-radius:6px; font-size:12px; font-weight:750; cursor:pointer;"
-                                    onmouseover="this.style.background='#ffe4e6'" onmouseout="this.style.background='#fff1f2'">
-                                    🗑️
+                                <button type="button" onclick="deleteJobOrder('${jsId}', '${jsCode}')" class="jo-act-btn is-del" title="Xóa Bảng công việc">
+                                    🗑️ Xóa
                                 </button>
                             </div>
                         </td>
@@ -6628,7 +7738,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             if (currentId) {
                 window.open(`/job-order/${currentId}`, '_blank');
             } else {
-                alert('Vui lòng lưu Bảng công việc trước khi xem bản in!');
+                alert('Vui lòng lưu Bảng công việc trước khi mở trang in!');
             }
         }
 
@@ -6636,7 +7746,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             const url = `${window.location.origin}/job-order/${id}`;
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(url).then(() => {
-                    alert(`✅ Đã sao chép liên kết Bảng công việc [${code}]!\nBạn có thể dán và gửi ngay cho bên Tuyển dụng.`);
+                    alert(`✅ Đã sao chép liên kết Bảng công việc [${code}]!\nBạn có thể dán và gửi ngay lên Zalo cho đối tác tuyển dụng.`);
                 }).catch(() => {
                     prompt('Sao chép liên kết bên dưới:', url);
                 });
@@ -6645,66 +7755,154 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             }
         }
 
+        function extractVnFactoryNameJS(name) {
+            const raw = String(name || '').trim();
+            if (!raw) return '';
+            let c = raw.replace(/[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff\u3000-\u303f\uff00-\uffef]+/g, ' ').trim();
+            c = c.replace(/\s+/g, ' ').replace(/^[ \-:\u2014\/]+|[ \-:\u2014\/]+$/g, '');
+            const shortName = c.replace(/^(Công\s*ty|Cty\.?|Nhà\s*máy|NM)\s+/i, '').trim();
+            return shortName || c || '';
+        }
+
+        function switchJobEditorMobilePane(pane) {
+            const leftPane = document.getElementById('jobOrderPaneLeft');
+            const rightPane = document.getElementById('jobOrderPaneRight');
+            const tabEdit = document.getElementById('joMobileTabEdit');
+            const tabPreview = document.getElementById('joMobileTabPreview');
+
+            if (pane === 'preview') {
+                if (leftPane) leftPane.classList.add('jo-mobile-hidden');
+                if (rightPane) rightPane.classList.remove('jo-mobile-hidden');
+                if (tabEdit) tabEdit.classList.remove('is-active');
+                if (tabPreview) tabPreview.classList.add('is-active');
+                updateJobOrderLivePreview();
+            } else {
+                if (rightPane) rightPane.classList.add('jo-mobile-hidden');
+                if (leftPane) leftPane.classList.remove('jo-mobile-hidden');
+                if (tabPreview) tabPreview.classList.remove('is-active');
+                if (tabEdit) tabEdit.classList.add('is-active');
+            }
+        }
+
+        function scrollToJobSection(secId) {
+            const leftPane = document.getElementById('jobOrderPaneLeft');
+            const target = document.getElementById(secId);
+            if (!leftPane || !target) return;
+
+            document.querySelectorAll('.jo-sec-pill').forEach(p => {
+                p.classList.toggle('is-active', p.dataset.target === secId);
+            });
+
+            const navHeight = 52;
+            leftPane.scrollTo({
+                top: Math.max(0, target.offsetTop - navHeight),
+                behavior: 'smooth'
+            });
+        }
+
+        function resetJobSalaryDefaults(silent) {
+            const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+            setVal('jobOrder_salaryBase', '29,500NT$');
+            setVal('jobOrder_salaryOvertime', '164NT$/h');
+            setVal('jobOrder_overtimeHours', '72hr/tháng (Đã gồm Thứ Bảy)');
+            setVal('jobOrder_deductionAmount', '2500NT$/tháng');
+            setVal('jobOrder_shiftPolicy', 'Nhà máy làm việc 02 ca, nghỉ luân phiên nhưng không cố định theo Thứ Bảy , CN.');
+            setVal('jobOrder_overtimePolicy', 'Nghỉ Chủ Nhật hằng tuần nhưng phải phối hợp tăng ca nếu nhà máy yêu cầu.');
+            setVal('jobOrder_mealAllowance', 'Mỗi tháng người lao động phải chi trả tiền ăn và ở cho công xưởng là 2500NT$/tháng, ngày làm việc công xưởng sẽ chu cấp 01 bữa/ngày và phụ cấp 100NT$/ngày cho người lao động. Ngày nghỉ tự túc 03 bữa.');
+            if (!silent) updateJobOrderLivePreview();
+        }
+
         function onJobGenderRadioChange() {
             const radioVal = document.querySelector('input[name="jobOrder_genderRadio"]:checked')?.value || 'both';
             const maleBox = document.getElementById('jobOrderMaleBox');
             const femaleBox = document.getElementById('jobOrderFemaleBox');
+            const gridBox = document.getElementById('jobOrderGenderGrid');
             const labelBoth = document.getElementById('labelGenderBoth');
             const labelFemale = document.getElementById('labelGenderFemale');
             const labelMale = document.getElementById('labelGenderMale');
 
-            // Reset labels highlight
             [labelBoth, labelFemale, labelMale].forEach(l => {
                 if (l) { l.style.background = 'transparent'; l.style.color = '#475569'; }
             });
 
             if (radioVal === 'male') {
-                if (labelMale) { labelMale.style.background = '#0284c7'; labelMale.style.color = '#fff'; }
+                if (labelMale) { labelMale.style.background = '#0284c7'; labelMale.style.color = '#ffffff'; }
                 if (maleBox) maleBox.style.display = 'block';
                 if (femaleBox) femaleBox.style.display = 'none';
+                if (gridBox) gridBox.style.gridTemplateColumns = '1fr';
             } else if (radioVal === 'female') {
-                if (labelFemale) { labelFemale.style.background = '#db2777'; labelFemale.style.color = '#fff'; }
+                if (labelFemale) { labelFemale.style.background = '#db2777'; labelFemale.style.color = '#ffffff'; }
                 if (maleBox) maleBox.style.display = 'none';
                 if (femaleBox) femaleBox.style.display = 'block';
+                if (gridBox) gridBox.style.gridTemplateColumns = '1fr';
             } else {
-                if (labelBoth) { labelBoth.style.background = '#0891b2'; labelBoth.style.color = '#fff'; }
+                if (labelBoth) { labelBoth.style.background = '#008080'; labelBoth.style.color = '#ffffff'; }
                 if (maleBox) maleBox.style.display = 'block';
                 if (femaleBox) femaleBox.style.display = 'block';
+                if (gridBox) gridBox.style.gridTemplateColumns = '';
             }
+            updateJobOrderLivePreview();
+        }
+
+        function syncJobNoteChipsUI() {
+            const activeNotes = window.jobOrderNotes || [];
+            document.querySelectorAll('#jobOrderChipsContainer .jo-chip').forEach(btn => {
+                const noteText = (btn.dataset.note || '').trim();
+                const isActive = noteText && activeNotes.includes(noteText);
+                btn.classList.toggle('is-active', Boolean(isActive));
+                const iconEl = btn.querySelector('.jo-chip-icon');
+                if (iconEl) iconEl.textContent = isActive ? '✓' : '+';
+            });
+        }
+
+        function toggleJobNoteChip(btn) {
+            const noteText = (btn?.dataset?.note || '').trim();
+            if (!noteText) return;
+            const idx = window.jobOrderNotes.indexOf(noteText);
+            if (idx >= 0) {
+                window.jobOrderNotes.splice(idx, 1);
+            } else {
+                window.jobOrderNotes.push(noteText);
+            }
+            renderJobOrderNotes();
+            updateJobOrderLivePreview();
         }
 
         function renderJobOrderNotes() {
             const container = document.getElementById('jobOrderNotesList');
             if (!container) return;
 
-            if (window.jobOrderNotes.length === 0) {
-                container.innerHTML = `<div style="font-size:12px; color:#94a3b8; font-style:italic;">Chưa có điều khoản chú ý nào. Chọn thẻ phía trên để thêm nhanh.</div>`;
+            if (!window.jobOrderNotes || window.jobOrderNotes.length === 0) {
+                container.innerHTML = `<div style="font-size:12px; color:#94a3b8; font-style:italic; padding:4px 2px;">Chưa có yêu cầu hay lưu ý nào. Bấm thẻ bên trên để chọn nhanh.</div>`;
+                syncJobNoteChipsUI();
                 return;
             }
 
             container.innerHTML = window.jobOrderNotes.map((note, idx) => `
-                <div class="job-note-item">
-                    <span style="font-weight:700; color:#0e7490; margin-right:6px;">✓</span>
-                    <input type="text" value="${escapeHtml(note)}" onchange="window.jobOrderNotes[${idx}] = this.value;"
-                        style="flex:1; border:none; outline:none; font-size:12.5px; font-weight:550; color:#1e293b; background:transparent;">
-                    <button type="button" onclick="removeJobNote(${idx})" title="Xóa dòng này"
-                        style="background:none; border:none; color:#ef4444; font-size:14px; cursor:pointer; font-weight:bold; padding:2px 6px;">✕</button>
+                <div class="jo-note-item">
+                    <span class="jo-note-num">§ ${idx + 1}</span>
+                    <input type="text" class="jo-note-input" value="${escJob(note)}"
+                        oninput="window.jobOrderNotes[${idx}] = this.value; syncJobNoteChipsUI(); updateJobOrderLivePreview();">
+                    <button type="button" class="jo-note-remove" onclick="removeJobNote(${idx})" title="Xóa dòng này">✕</button>
                 </div>
             `).join('');
+            syncJobNoteChipsUI();
         }
 
         function addJobNote(text) {
-            if (!text || !text.trim()) return;
-            const cleanText = text.trim();
+            if (!text || !String(text).trim()) return;
+            const cleanText = String(text).trim();
             if (!window.jobOrderNotes.includes(cleanText)) {
                 window.jobOrderNotes.push(cleanText);
                 renderJobOrderNotes();
+                updateJobOrderLivePreview();
             }
         }
 
         function removeJobNote(index) {
             window.jobOrderNotes.splice(index, 1);
             renderJobOrderNotes();
+            updateJobOrderLivePreview();
         }
 
         function addCustomJobNote() {
@@ -6718,7 +7916,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
         function handleJobImageUpload(input) {
             if (!input.files || input.files.length === 0) return;
             const files = Array.from(input.files);
-            
+
             files.forEach(file => {
                 if (window.jobOrderImages.length >= 4) {
                     alert('Chỉ hỗ trợ tối đa 4 hình ảnh xưởng / sản phẩm.');
@@ -6743,28 +7941,265 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             const container = document.getElementById('jobOrderImagesContainer');
             if (!container) return;
 
-            if (window.jobOrderImages.length === 0) {
+            if (!window.jobOrderImages || window.jobOrderImages.length === 0) {
                 container.innerHTML = `<span style="font-size:12px; color:#94a3b8; font-style:italic;">Chưa có ảnh nào được thêm.</span>`;
+                updateJobOrderLivePreview();
                 return;
             }
 
             container.innerHTML = window.jobOrderImages.map((img, idx) => `
                 <div class="job-image-thumb">
-                    <img src="${img}" alt="Thumb">
-                    <button type="button" class="remove-img-btn" onclick="removeJobImage(${idx})">✕</button>
+                    <img src="${escJob(img)}" alt="Ảnh nhà xưởng">
+                    <button type="button" class="remove-img-btn" onclick="removeJobImage(${idx})" title="Xóa ảnh">✕</button>
                 </div>
             `).join('');
+            updateJobOrderLivePreview();
+        }
+
+        function splitParenthesizedNote(rawText, fallbackMain) {
+            const txt = String(rawText || fallbackMain || '').trim();
+            const openIdx = txt.indexOf('(');
+            const closeIdx = txt.indexOf(')');
+            if (openIdx !== -1 && closeIdx !== -1 && closeIdx > openIdx) {
+                return {
+                    main: txt.slice(0, openIdx).trim(),
+                    sub: txt.slice(openIdx).trim()
+                };
+            }
+            return { main: txt, sub: '' };
+        }
+
+        function updateJobOrderLivePreview() {
+            const bodyEl = document.getElementById('jobOrderLivePreviewBody');
+            if (!bodyEl) return;
+
+            const gVal = (id, fb = '') => {
+                const el = document.getElementById(id);
+                return el ? el.value : fb;
+            };
+
+            const code = gVal('jobOrder_code').trim();
+            const titleNote = gVal('jobOrder_titleNote').trim();
+            const factoryName = gVal('jobOrder_factoryName').trim();
+            const workLocation = gVal('jobOrder_workLocation').trim();
+            const productJob = gVal('jobOrder_productJob').trim();
+            const jobType = gVal('jobOrder_jobType').trim();
+            const factoryWebsite = gVal('jobOrder_factoryWebsite').trim();
+
+            const genderRadio = document.querySelector('input[name="jobOrder_genderRadio"]:checked')?.value || 'both';
+            const maleCount = gVal('jobOrder_maleCount', '0').trim();
+            const maleHeight = gVal('jobOrder_maleHeight', '165').trim();
+            const maleWeight = gVal('jobOrder_maleWeight', '55').trim();
+            const femaleCount = gVal('jobOrder_femaleCount', '0').trim();
+            const femaleHeight = gVal('jobOrder_femaleHeight', '155').trim();
+            const femaleWeight = gVal('jobOrder_femaleWeight', '50').trim();
+
+            const ageRange = gVal('jobOrder_ageRange', '20 tuổi trở lên').trim();
+            const education = gVal('jobOrder_education', 'PTTH trở lên').trim();
+            const marriage = gVal('jobOrder_marriage', 'Không yêu cầu').trim();
+            const interviewMethod = gVal('jobOrder_interviewMethod', 'Form + Line pv + clip GTBT').trim();
+            const contractTerm = gVal('jobOrder_contractTerm', '03 năm + 12').trim();
+
+            const jobDesc = gVal('jobOrder_jobDescription').trim();
+            const salaryBase = gVal('jobOrder_salaryBase', '29,500NT$').trim() || '29,500NT$';
+            const salaryOt = gVal('jobOrder_salaryOvertime', '164NT$/h').trim() || '164NT$/h';
+            const otHoursObj = splitParenthesizedNote(gVal('jobOrder_overtimeHours'), '72hr/tháng');
+            const dedObj = splitParenthesizedNote(gVal('jobOrder_deductionAmount'), '2500NT$/tháng');
+
+            const shiftPolicy = gVal('jobOrder_shiftPolicy').trim();
+            const overtimePolicy = gVal('jobOrder_overtimePolicy').trim();
+            const mealAllowance = gVal('jobOrder_mealAllowance').trim();
+
+            const vnFactory = extractVnFactoryNameJS(factoryName);
+            const zaloTitleEl = document.getElementById('jobOrderZaloPreviewTitle');
+            if (zaloTitleEl) {
+                zaloTitleEl.textContent = `BẢNG CÔNG VIỆC — ${code || '...'}${vnFactory ? ' — ' + vnFactory : ''}`;
+            }
+
+            const nowYear = new Date().getFullYear();
+            const notes = window.jobOrderNotes || [];
+            const imgs = window.jobOrderImages || [];
+
+            let criteriaBoxesHtml = '';
+            if (genderRadio === 'both' || genderRadio === 'male') {
+                criteriaBoxesHtml += `
+                    <div class="jo-a4-crit-box is-male">
+                        <div class="jo-a4-crit-head"><span>LAO ĐỘNG NAM</span><span>MALE</span></div>
+                        <div class="jo-a4-crit-row"><span style="color:#475569;">Số lượng:</span><strong style="color:#0284c7;">${escJob(maleCount || '0')} Người</strong></div>
+                        <div class="jo-a4-crit-row"><span style="color:#475569;">Chiều cao:</span><strong style="color:#0284c7;">${escJob(maleHeight || '165')} cm trở lên</strong></div>
+                        <div class="jo-a4-crit-row"><span style="color:#475569;">Cân nặng:</span><strong style="color:#0284c7;">${escJob(maleWeight || '55')} kg trở lên</strong></div>
+                    </div>
+                `;
+            }
+            if (genderRadio === 'both' || genderRadio === 'female') {
+                criteriaBoxesHtml += `
+                    <div class="jo-a4-crit-box is-female">
+                        <div class="jo-a4-crit-head"><span>LAO ĐỘNG NỮ</span><span>FEMALE</span></div>
+                        <div class="jo-a4-crit-row"><span style="color:#475569;">Số lượng:</span><strong style="color:#db2777;">${escJob(femaleCount || '0')} Người</strong></div>
+                        <div class="jo-a4-crit-row"><span style="color:#475569;">Chiều cao:</span><strong style="color:#db2777;">${escJob(femaleHeight || '155')} cm trở lên</strong></div>
+                        <div class="jo-a4-crit-row"><span style="color:#475569;">Cân nặng:</span><strong style="color:#db2777;">${escJob(femaleWeight || '50')} kg trở lên</strong></div>
+                    </div>
+                `;
+            }
+
+            const notesHtml = notes.length > 0 ? `
+                <section class="jo-a4-section">
+                    <div class="jo-a4-sec-bar">
+                        <h4 class="jo-a4-sec-title"><span class="jo-a4-sec-badge">VI</span> CÁC YÊU CẦU &amp; LƯU Ý KHÁC</h4>
+                        <span class="jo-a4-submark">ADDITIONAL REQUIREMENTS &amp; NOTES</span>
+                    </div>
+                    ${notes.map((n, idx) => `
+                        <div class="jo-a4-clause">
+                            <span class="jo-a4-clause-badge">§ ${idx + 1}</span>
+                            <span style="flex:1; color:#1e293b;">${escJob(n)}</span>
+                        </div>
+                    `).join('')}
+                </section>
+            ` : '';
+
+            const imgsHtml = imgs.length > 0 ? `
+                <section class="jo-a4-section">
+                    <div class="jo-a4-sec-bar">
+                        <h4 class="jo-a4-sec-title"><span class="jo-a4-sec-badge">VII</span> HÌNH ẢNH THỰC TẾ NHÀ XƯỞNG &amp; SẢN PHẨM</h4>
+                        <span class="jo-a4-submark">FIELD PHOTOGRAPHS</span>
+                    </div>
+                    <div class="jo-a4-gallery">
+                        ${imgs.map(img => `<div class="jo-a4-gallery-item"><img src="${escJob(img)}" alt="Preview"></div>`).join('')}
+                    </div>
+                </section>
+            ` : '';
+
+            bodyEl.innerHTML = `
+                <div class="jo-a4-content">
+                    <header>
+                        <div class="jo-a4-header-grid">
+                            <div class="jo-a4-logo-box">
+                                <img src="/static/eagle_fct_new.png" alt="Eagle Seal" class="jo-a4-eagle">
+                            </div>
+                            <div class="jo-a4-center-box">
+                                <div class="jo-a4-main-title">BẢNG CÔNG VIỆC</div>
+                                <div class="jo-a4-meta-row">
+                                    <span>MÃ SỐ: <strong style="color:#008080;">${escJob(code || '...')}</strong></span>
+                                    ${titleNote ? `<strong style="color:#0d9488;">(${escJob(titleNote)})</strong>` : ''}
+                                </div>
+                            </div>
+                            <div class="jo-a4-right-box">
+                                <span class="jo-a4-fct-tag">FCT ${nowYear}</span>
+                            </div>
+                        </div>
+                        <hr class="jo-a4-rule">
+                    </header>
+
+                    <section class="jo-a4-section">
+                        <div class="jo-a4-sec-bar">
+                            <h4 class="jo-a4-sec-title"><span class="jo-a4-sec-badge">I</span> THÔNG TIN CÔNG XƯỞNG &amp; ĐỊA ĐIỂM</h4>
+                            <span class="jo-a4-submark">ESTABLISHMENT &amp; LOCATION</span>
+                        </div>
+                        <table class="jo-a4-table">
+                            <tbody>
+                                <tr>
+                                    <td class="jo-a4-lbl">Tên nhà máy (Công xưởng):</td>
+                                    <td class="jo-a4-val" style="font-size:13px; font-weight:800;">${escJob(factoryName || 'Chưa nhập tên công xưởng')}</td>
+                                </tr>
+                                ${workLocation ? `<tr><td class="jo-a4-lbl">Địa điểm làm việc:</td><td class="jo-a4-val">${escJob(workLocation)}</td></tr>` : ''}
+                                ${factoryWebsite ? `<tr><td class="jo-a4-lbl">Cổng thông tin / Website:</td><td class="jo-a4-val" style="color:#008080; text-decoration:underline; word-break:break-all;">${escJob(factoryWebsite)}</td></tr>` : ''}
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section class="jo-a4-section">
+                        <div class="jo-a4-sec-bar">
+                            <h4 class="jo-a4-sec-title"><span class="jo-a4-sec-badge">II</span> SẢN PHẨM &amp; NGÀNH NGHỀ CHÍNH</h4>
+                            <span class="jo-a4-submark">INDUSTRY &amp; PRODUCTS</span>
+                        </div>
+                        <table class="jo-a4-table">
+                            <tbody>
+                                <tr>
+                                    <td class="jo-a4-lbl">Sản phẩm sản xuất:</td>
+                                    <td class="jo-a4-val" style="font-weight:750;">${escJob(productJob || 'Chưa nhập sản phẩm chính')}</td>
+                                </tr>
+                                <tr>
+                                    <td class="jo-a4-lbl">Loại hình công việc:</td>
+                                    <td class="jo-a4-val">${escJob(jobType || 'Lao động phổ thông')}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section class="jo-a4-section">
+                        <div class="jo-a4-sec-bar">
+                            <h4 class="jo-a4-sec-title"><span class="jo-a4-sec-badge">III</span> TIÊU CHUẨN &amp; ĐIỀU KIỆN TUYỂN DỤNG</h4>
+                            <span class="jo-a4-submark">RECRUITMENT CRITERIA</span>
+                        </div>
+                        <div class="jo-a4-crit-grid">${criteriaBoxesHtml}</div>
+                        <table class="jo-a4-table">
+                            <tbody>
+                                <tr><td class="jo-a4-lbl">Độ tuổi yêu cầu:</td><td class="jo-a4-val">${escJob(ageRange || '20 tuổi trở lên')}</td></tr>
+                                <tr><td class="jo-a4-lbl">Học lực / Trình độ:</td><td class="jo-a4-val">${escJob(education || 'PTTH trở lên')}</td></tr>
+                                <tr><td class="jo-a4-lbl">Tình trạng hôn nhân:</td><td class="jo-a4-val">${escJob(marriage || 'Không yêu cầu')}</td></tr>
+                                <tr><td class="jo-a4-lbl">Hình thức tuyển:</td><td class="jo-a4-val" style="color:#0d9488; font-weight:750;">${escJob(interviewMethod || 'Form + Line pv + clip GTBT')}</td></tr>
+                                <tr><td class="jo-a4-lbl">Thời hạn hợp đồng:</td><td class="jo-a4-val" style="font-weight:750;">${escJob(contractTerm || '03 năm + 12')}</td></tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section class="jo-a4-section">
+                        <div class="jo-a4-sec-bar">
+                            <h4 class="jo-a4-sec-title"><span class="jo-a4-sec-badge">IV</span> NỘI DUNG VÀ YÊU CẦU CÔNG VIỆC</h4>
+                            <span class="jo-a4-submark">JOB DESCRIPTION &amp; SCOPE</span>
+                        </div>
+                        <div class="jo-a4-scope">${jobDesc ? escJob(jobDesc) : '<span style="color:#94a3b8; font-style:italic; font-weight:500;">(Chưa nhập mô tả công việc...)</span>'}</div>
+                    </section>
+
+                    <section class="jo-a4-section">
+                        <div class="jo-a4-sec-bar">
+                            <h4 class="jo-a4-sec-title"><span class="jo-a4-sec-badge">V</span> CHẾ ĐỘ LƯƠNG, TĂNG CA &amp; ĐÃI NGỘ</h4>
+                            <span class="jo-a4-submark">COMPENSATION &amp; BENEFITS</span>
+                        </div>
+                        <div class="jo-a4-fin-grid">
+                            <div class="jo-a4-fin-cell">
+                                <div class="jo-a4-fin-lbl">Lương cơ bản</div>
+                                <div class="jo-a4-fin-amt" style="color:#0284c7;">${escJob(salaryBase)}</div>
+                            </div>
+                            <div class="jo-a4-fin-cell">
+                                <div class="jo-a4-fin-lbl">Làm thêm / Giờ</div>
+                                <div class="jo-a4-fin-amt" style="color:#008080;">${escJob(salaryOt)}</div>
+                            </div>
+                            <div class="jo-a4-fin-cell">
+                                <div class="jo-a4-fin-lbl">Tăng ca dự kiến</div>
+                                <div class="jo-a4-fin-amt" style="color:#0d9488;">${escJob(otHoursObj.main)}</div>
+                                ${otHoursObj.sub ? `<div class="jo-a4-fin-sub">${escJob(otHoursObj.sub)}</div>` : ''}
+                            </div>
+                            <div class="jo-a4-fin-cell">
+                                <div class="jo-a4-fin-lbl">Khấu trừ ăn ở</div>
+                                <div class="jo-a4-fin-amt" style="color:#d97706;">${escJob(dedObj.main)}</div>
+                                ${dedObj.sub ? `<div class="jo-a4-fin-sub" style="color:#b45309;">${escJob(dedObj.sub)}</div>` : ''}
+                            </div>
+                        </div>
+                        <table class="jo-a4-table">
+                            <tbody>
+                                <tr><td class="jo-a4-lbl">Chế độ ca làm việc:</td><td class="jo-a4-val">${escJob(shiftPolicy)}</td></tr>
+                                ${overtimePolicy ? `<tr><td class="jo-a4-lbl">Quy định làm thêm:</td><td class="jo-a4-val">${escJob(overtimePolicy)}</td></tr>` : ''}
+                                ${mealAllowance ? `<tr><td class="jo-a4-lbl">Ăn uống &amp; Ký túc xá:</td><td class="jo-a4-val" style="white-space:pre-line;">${escJob(mealAllowance)}</td></tr>` : ''}
+                            </tbody>
+                        </table>
+                    </section>
+
+                    ${notesHtml}
+                    ${imgsHtml}
+                </div>
+            `;
         }
 
         function openJobOrderModal(jobId) {
             const modal = document.getElementById('jobOrderModal');
+            const backdrop = document.getElementById('jobOrderBackdrop');
             if (!modal) return;
 
             const modalTitle = document.getElementById('jobOrderModalTitle');
             const previewBtn = document.getElementById('jobOrderPreviewBtn');
 
             if (jobId) {
-                // Sửa đơn hàng đã có
                 const job = (window.currentJobOrders || []).find(j => j.id === jobId);
                 if (!job) {
                     alert('Không tìm thấy thông tin đơn hàng!');
@@ -6782,13 +8217,10 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 document.getElementById('jobOrder_jobType').value = job.job_type || 'Lao động phổ thông';
                 document.getElementById('jobOrder_factoryWebsite').value = job.factory_website || '';
 
-                // Gender radio
                 const gType = job.gender_type || 'both';
                 const radio = document.querySelector(`input[name="jobOrder_genderRadio"][value="${gType}"]`);
                 if (radio) radio.checked = true;
-                onJobGenderRadioChange();
 
-                // Criteria
                 const crit = job.recruitment_criteria || {};
                 document.getElementById('jobOrder_maleCount').value = crit.male_count || '0';
                 document.getElementById('jobOrder_maleHeight').value = crit.male_height || '165';
@@ -6802,10 +8234,8 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 document.getElementById('jobOrder_interviewMethod').value = crit.interview_method || 'Form + Line pv + clip GTBT';
                 document.getElementById('jobOrder_contractTerm').value = crit.contract_term || '03 năm + 12';
 
-                // Description
                 document.getElementById('jobOrder_jobDescription').value = job.job_description || '';
 
-                // Salary & overtime
                 document.getElementById('jobOrder_salaryBase').value = job.salary_base || '29,500NT$';
                 document.getElementById('jobOrder_salaryOvertime').value = job.salary_overtime || '164NT$/h';
                 document.getElementById('jobOrder_overtimeHours').value = job.overtime_hours || '72hr/tháng (Đã gồm Thứ Bảy)';
@@ -6814,19 +8244,16 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 document.getElementById('jobOrder_overtimePolicy').value = job.overtime_policy || 'Nghỉ Chủ Nhật hằng tuần nhưng phải phối hợp tăng ca nếu nhà máy yêu cầu.';
                 document.getElementById('jobOrder_mealAllowance').value = job.meal_allowance || '';
 
-                // Notes & Images
                 window.jobOrderNotes = Array.isArray(job.other_notes) ? [...job.other_notes] : [];
                 window.jobOrderImages = Array.isArray(job.images_json) ? [...job.images_json] : [];
-                renderJobOrderNotes();
-                renderJobOrderImages();
 
                 if (previewBtn) previewBtn.style.display = 'inline-flex';
             } else {
-                // Tạo mới đơn hàng - Pre-fill toàn bộ mẫu chuẩn FCT
-                if (modalTitle) modalTitle.textContent = 'Thêm Bảng Công Việc Mới';
+                // Tạo mới: để trống các ô đặc thù của đơn hàng (không nạp mẫu bánh mì Bội Nhĩ), giữ các mức lương/chế độ chuẩn Đài Loan
+                if (modalTitle) modalTitle.textContent = 'Tạo Bảng Công Việc Mới';
                 document.getElementById('jobOrder_id').value = '';
                 document.getElementById('jobOrder_code').value = '';
-                document.getElementById('jobOrder_titleNote').value = '初招 10%';
+                document.getElementById('jobOrder_titleNote').value = '';
                 document.getElementById('jobOrder_status').value = 'Đang tuyển';
                 document.getElementById('jobOrder_factoryName').value = '';
                 document.getElementById('jobOrder_workLocation').value = '';
@@ -6834,15 +8261,13 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 document.getElementById('jobOrder_jobType').value = 'Lao động phổ thông';
                 document.getElementById('jobOrder_factoryWebsite').value = '';
 
-                // Default gender both
                 const radioBoth = document.querySelector('input[name="jobOrder_genderRadio"][value="both"]');
                 if (radioBoth) radioBoth.checked = true;
-                onJobGenderRadioChange();
 
                 document.getElementById('jobOrder_maleCount').value = '0';
                 document.getElementById('jobOrder_maleHeight').value = '165';
                 document.getElementById('jobOrder_maleWeight').value = '55';
-                document.getElementById('jobOrder_femaleCount').value = '04';
+                document.getElementById('jobOrder_femaleCount').value = '0';
                 document.getElementById('jobOrder_femaleHeight').value = '155';
                 document.getElementById('jobOrder_femaleWeight').value = '50';
                 document.getElementById('jobOrder_ageRange').value = '20 tuổi trở lên';
@@ -6851,46 +8276,65 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 document.getElementById('jobOrder_interviewMethod').value = 'Form + Line pv + clip GTBT';
                 document.getElementById('jobOrder_contractTerm').value = '03 năm + 12';
 
-                document.getElementById('jobOrder_jobDescription').value = 'Sản xuất các loại bánh mì, đóng gói và các công việc khác trong nhà máy';
+                document.getElementById('jobOrder_jobDescription').value = '';
 
-                document.getElementById('jobOrder_salaryBase').value = '29,500NT$';
-                document.getElementById('jobOrder_salaryOvertime').value = '164NT$/h';
-                document.getElementById('jobOrder_overtimeHours').value = '72hr/tháng (Đã gồm Thứ Bảy)';
-                document.getElementById('jobOrder_deductionAmount').value = '2500NT$/tháng';
-                document.getElementById('jobOrder_shiftPolicy').value = 'Nhà máy làm việc 02 ca, nghỉ luân phiên nhưng không cố định theo Thứ Bảy , CN.';
-                document.getElementById('jobOrder_overtimePolicy').value = 'Nghỉ Chủ Nhật hằng tuần nhưng phải phối hợp tăng ca nếu nhà máy yêu cầu.';
-                document.getElementById('jobOrder_mealAllowance').value = 'Mỗi tháng người lao động phải chi trả tiền ăn và ở cho công xưởng là 2500NT$/tháng, ngày làm việc công xưởng sẽ chu cấp 01 bữa/ngày và phụ cấp 100NT$/ngày cho người lao động. Ngày nghỉ tự túc 03 bữa.';
+                resetJobSalaryDefaults(true);
 
-                // Nạp sẵn 6 điều chú ý chuẩn kinh điển FCT
+                // Chỉ bật sẵn 3 điều khoản pháp lý chung của Đài Loan; các yêu cầu đặc thù chọn nhanh bằng thẻ toggle
                 window.jobOrderNotes = [
-                    'Yêu cầu bắt buộc : Không hút thuốc, không có viêm gan A, B, không mồ hôi tay.',
-                    'Phải ở tại ký túc xá do công ty quy định, có ý thức vệ sinh tốt',
-                    'Công việc đòi hỏi phải đứng lâu, đủ sức khỏe bê bao nặng 15-20kgs.',
-                    'Nhà máy hiện có nhân viên Việt Nam đang làm việc.',
                     'Tính chất công việc có thể tùy nhu cầu của công xưởng mà sau này có sự thay đổi.',
+                    'Tiền ăn có thể tăng hoặc giảm tùy theo chất lượng bữa ăn hoặc khi chính phủ có quy định mới.',
                     'Giờ tăng ca là số giờ được tính bình quân trong thời gian 3 tháng vừa qua, và mang tính thời vụ.'
                 ];
                 window.jobOrderImages = [];
-                renderJobOrderNotes();
-                renderJobOrderImages();
 
                 if (previewBtn) previewBtn.style.display = 'none';
             }
 
-            modal.style.display = 'block';
-            modal.scrollTop = 0;
-            document.getElementById('jobOrder_code')?.focus();
+            renderJobOrderNotes();
+            renderJobOrderImages();
+            onJobGenderRadioChange();
+            switchJobEditorMobilePane('edit');
+
+            if (backdrop) backdrop.classList.add('is-open');
+            modal.classList.add('is-open');
+
+            const leftPane = document.getElementById('jobOrderPaneLeft');
+            const rightPane = document.getElementById('jobOrderPaneRight');
+            if (leftPane) leftPane.scrollTop = 0;
+            if (rightPane) rightPane.scrollTop = 0;
+            document.querySelectorAll('.jo-sec-pill').forEach((p, idx) => {
+                p.classList.toggle('is-active', idx === 0);
+            });
+
+            updateJobOrderLivePreview();
+            setTimeout(() => document.getElementById('jobOrder_code')?.focus(), 50);
         }
 
         function closeJobOrderModal() {
             const modal = document.getElementById('jobOrderModal');
-            if (modal) modal.style.display = 'none';
+            const backdrop = document.getElementById('jobOrderBackdrop');
+            if (modal) modal.classList.remove('is-open');
+            if (backdrop) backdrop.classList.remove('is-open');
+        }
+
+        if (!window._joEscListenerAttached) {
+            window._joEscListenerAttached = true;
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    const modal = document.getElementById('jobOrderModal');
+                    if (modal && modal.classList.contains('is-open')) {
+                        closeJobOrderModal();
+                    }
+                }
+            });
         }
 
         async function saveJobOrder() {
             const code = (document.getElementById('jobOrder_code')?.value || '').trim();
             if (!code) {
                 alert('Vui lòng nhập Mã đơn hàng!');
+                scrollToJobSection('joSec1');
                 document.getElementById('jobOrder_code')?.focus();
                 return;
             }
@@ -6961,7 +8405,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
 
                 if (result.success) {
                     await loadJobOrdersList();
-                    
+
                     const savedId = result.id || id;
                     document.getElementById('jobOrder_id').value = savedId;
                     const previewBtn = document.getElementById('jobOrderPreviewBtn');
