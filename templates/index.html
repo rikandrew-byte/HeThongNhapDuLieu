@@ -1423,13 +1423,13 @@
                 <div id="jobOrdersToastBanner" class="jo-toast-banner" style="display:none;"></div>
 
                 <!-- Thanh tìm kiếm & Lọc trạng thái / Môi giới -->
-                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:10px 14px; box-shadow:0 1px 3px rgba(15,23,42,0.03);">
-                    <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:220px;">
+                <div class="jo-filter-bar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:10px 14px; box-shadow:0 1px 3px rgba(15,23,42,0.03);">
+                    <div class="jo-filter-bar-search" style="display:flex; align-items:center; gap:8px; flex:1; min-width:220px;">
                         <span style="font-size:15px; color:#64748b;">🔍</span>
                         <input type="text" id="jobOrdersSearchInput" oninput="filterJobOrdersTable()" placeholder="Tìm theo mã đơn (HV, DK...), tên xưởng (Trung/Việt), sản phẩm, địa điểm..." 
                             style="width:100%; border:none; outline:none; font-size:13px; font-weight:600; color:#0f172a; background:transparent;">
                     </div>
-                    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                    <div class="jo-filter-bar-controls" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                         <span id="jobOrdersFilteredMeta" style="font-size:11.5px; font-weight:700; color:#64748b; white-space:nowrap;"></span>
                         <div style="display:flex; align-items:center; gap:6px;">
                             <span style="font-size:11.5px; font-weight:700; color:#64748b;">Môi giới:</span>
@@ -1451,12 +1451,23 @@
                                 <option value="Tạm dừng">🔴 Tạm dừng</option>
                             </select>
                         </div>
+                        <!-- Nút chuyển đổi giao diện: Thẻ di động hoặc Bảng cuộn (chỉ hiện trên Mobile) -->
+                        <div class="jo-view-mode-toggle md:hidden" style="display:inline-flex; align-items:center; background:#f1f5f9; padding:2px; border-radius:8px; border:1px solid #cbd5e1; gap:2px;">
+                            <button type="button" id="joViewModeBtn-card" onclick="setJobOrdersViewMode('card')" title="Xem dạng thẻ (tối ưu di động, hiển thị đầy đủ không bị tràn)"
+                                style="padding:5px 9px; border-radius:6px; font-size:11.5px; font-weight:750; border:none; cursor:pointer; background:transparent; color:#64748b; display:inline-flex; align-items:center; gap:4px; transition:all 0.14s;">
+                                <span>📱</span> <span>Thẻ</span>
+                            </button>
+                            <button type="button" id="joViewModeBtn-table" onclick="setJobOrdersViewMode('table')" title="Xem dạng bảng (hỗ trợ thanh cuộn ngang mượt mà)"
+                                style="padding:5px 9px; border-radius:6px; font-size:11.5px; font-weight:750; border:none; cursor:pointer; background:transparent; color:#64748b; display:inline-flex; align-items:center; gap:4px; transition:all 0.14s;">
+                                <span>📊</span> <span>Bảng</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Bảng danh sách Bảng công việc (6 cột gọn thoáng) -->
-                <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; box-shadow:0 4px 12px -2px rgba(15,23,42,0.04); overflow:hidden;">
-                    <div class="job-table-wrapper" style="max-height:calc(100vh - 300px); overflow-y:auto; overflow-x:auto; position:relative;">
+                <!-- Bảng / Thẻ danh sách Bảng công việc -->
+                <div id="joListContainer" class="jo-list-container" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; box-shadow:0 4px 12px -2px rgba(15,23,42,0.04); overflow:hidden;">
+                    <div id="joTableScrollWrapper" class="job-table-wrapper jo-table-scroll-wrapper" style="max-height:calc(100vh - 300px); overflow-y:auto; overflow-x:auto; position:relative;">
                         <table class="jo-list-table" style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;">
                             <thead>
                                 <tr style="background:#f8fafc; border-bottom:1.5px solid #e2e8f0; position:sticky; top:0; z-index:10;">
@@ -8514,8 +8525,8 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 ).join('');
 
                 return `
-                    <tr>
-                        <td style="padding:10px 12px; vertical-align:top;">
+                    <tr class="jo-card-row">
+                        <td class="jo-td jo-td-factory" style="padding:10px 12px; vertical-align:top;">
                             <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:4px;">
                                 <span style="font-family:ui-monospace, monospace; font-weight:800; font-size:12.5px; color:#008080; background:#f0fdfa; border:1px solid #99f6e4; padding:2px 8px; border-radius:6px;">
                                     ${escJob(j.code)}
@@ -8528,32 +8539,32 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                             <div style="font-weight:750; color:#0f172a; font-size:13px; line-height:1.35;">${escJob(j.factory_name || 'Chưa cập nhật tên xưởng')}</div>
                             ${j.work_location ? `<div style="font-size:11.5px; color:#64748b; margin-top:2px;">📍 ${escJob(j.work_location)}</div>` : ''}
                         </td>
-                        <td style="padding:10px 12px; vertical-align:top;">
+                        <td class="jo-td jo-td-job" style="padding:10px 12px; vertical-align:top;">
                             <div style="font-weight:650; color:#1e293b; font-size:12.5px; margin-bottom:4px;">${escJob(j.product_job || j.job_type || 'Lao động phổ thông')}</div>
                             <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                                 ${criteriaBadge}
                                 <span style="font-size:11px; color:#64748b;">• ${escJob(crit.age_range || '20+')}</span>
                             </div>
                         </td>
-                        <td style="padding:10px; vertical-align:top;">
+                        <td class="jo-td jo-td-salary" style="padding:10px; vertical-align:top;">
                             <div style="font-weight:750; color:#0f172a; font-size:13px; white-space:nowrap;">${escJob(j.salary_base || '29,500NT$')}</div>
                             <div style="font-size:11.5px; color:#008080; font-weight:650; margin-top:2px; white-space:nowrap;">${escJob(otObj.main)}</div>
                             ${otObj.sub ? `<div style="font-size:10px; color:#64748b; margin-top:1px; line-height:1.25;">${escJob(otObj.sub)}</div>` : ''}
                         </td>
-                        <td style="padding:10px 8px; text-align:center; vertical-align:middle; white-space:nowrap;">
+                        <td class="jo-td jo-td-candidates" style="padding:10px 8px; text-align:center; vertical-align:middle; white-space:nowrap;">
                             <button type="button" onclick="filterJobAssignByCode('${jsCode}')" title="Xem ứng viên đã ghép với đơn này"
                                 style="background:#f8fafc; color:#0f172a; border:1px solid #cbd5e1; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.14s;"
                                 onmouseover="this.style.borderColor='#008080'; this.style.color='#008080';" onmouseout="this.style.borderColor='#cbd5e1'; this.style.color='#0f172a';">
                                 <span>👥</span> ${Number(j.candidate_count || 0)}
                             </button>
                         </td>
-                        <td style="padding:10px 8px; text-align:center; vertical-align:middle; white-space:nowrap;">
+                        <td class="jo-td jo-td-status" style="padding:10px 8px; text-align:center; vertical-align:middle; white-space:nowrap;">
                             <select class="jo-inline-status-select" onchange="quickUpdateJobStatus('${jsId}', this.value)" title="Đổi nhanh trạng thái đơn hàng"
                                 style="background:${statusBg}; color:${statusColor}; border-color:${statusBorder};">
                                 ${statusSelectOpts}
                             </select>
                         </td>
-                        <td style="padding:10px 8px; text-align:center; vertical-align:middle; white-space:nowrap;">
+                        <td class="jo-td jo-td-actions" style="padding:10px 8px; text-align:center; vertical-align:middle; white-space:nowrap;">
                             <div class="jo-act-grid">
                                 <button type="button" onclick="openJobOrderView('${jsId}')" class="jo-act-btn is-view" title="Xem & In / Xuất PDF (A4)">
                                     👁️ In
@@ -8575,6 +8586,65 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                     </tr>
                 `;
             }).join('');
+
+            // Áp dụng chế độ xem thẻ / bảng sau khi render
+            applyJobOrdersViewMode(getJobOrdersViewMode());
+        }
+
+        function getJobOrdersViewMode() {
+            // Trên Desktop (màn hình > 768px): Luôn hiển thị giao diện bảng nguyên bản 100%
+            if (window.innerWidth > 768) return 'table';
+            const saved = localStorage.getItem('jo_view_mode');
+            if (saved === 'card' || saved === 'table') return saved;
+            return 'card';
+        }
+
+        function setJobOrdersViewMode(mode) {
+            localStorage.setItem('jo_view_mode', mode);
+            applyJobOrdersViewMode(mode);
+        }
+
+        function applyJobOrdersViewMode(mode) {
+            const container = document.getElementById('joListContainer');
+            const btnCard = document.getElementById('joViewModeBtn-card');
+            const btnTable = document.getElementById('joViewModeBtn-table');
+
+            // Trên Desktop luôn luôn giữ nguyên giao diện bảng chuẩn 100%
+            if (window.innerWidth > 768) {
+                if (container) {
+                    container.classList.remove('is-card-view');
+                    container.classList.add('is-table-view');
+                }
+                return;
+            }
+
+            if (container) {
+                if (mode === 'card') {
+                    container.classList.add('is-card-view');
+                    container.classList.remove('is-table-view');
+                } else {
+                    container.classList.remove('is-card-view');
+                    container.classList.add('is-table-view');
+                }
+            }
+
+            if (btnCard && btnTable) {
+                if (mode === 'card') {
+                    btnCard.style.background = '#008080';
+                    btnCard.style.color = '#ffffff';
+                    btnCard.style.boxShadow = '0 1px 3px rgba(0,128,128,0.2)';
+                    btnTable.style.background = 'transparent';
+                    btnTable.style.color = '#64748b';
+                    btnTable.style.boxShadow = 'none';
+                } else {
+                    btnTable.style.background = '#008080';
+                    btnTable.style.color = '#ffffff';
+                    btnTable.style.boxShadow = '0 1px 3px rgba(0,128,128,0.2)';
+                    btnCard.style.background = 'transparent';
+                    btnCard.style.color = '#64748b';
+                    btnCard.style.boxShadow = 'none';
+                }
+            }
         }
 
         function filterJobAssignByCode(jobCode) {
@@ -12245,12 +12315,227 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 font-size: 14px !important;
             }
 
-            /* Bảng đơn hàng -> Chuyển thành Card Layout di động hiện đại */
-            .job-table-wrapper {
+            /* ===== TỐI ƯU TAB BẢNG CÔNG VIỆC TRÊN THIẾT BỊ DI ĐỘNG ===== */
+            #tabContent-jobs {
+                padding: 12px 10px !important;
+            }
+
+            /* Subtab 2 (Ghép đơn): Giữ card layout di động, không cuộn ngang */
+            #subTabContent-jobAssign .job-table-wrapper {
                 max-height: none !important;
                 overflow-y: visible !important;
                 overflow-x: hidden !important;
             }
+
+            /* Subtab 1 (Bảng công việc): Mặc định cuộn ngang mượt mà khi xem bảng */
+            #subTabContent-jobOrders .job-table-wrapper {
+                max-height: none !important;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                overscroll-behavior-x: contain;
+                scrollbar-width: thin;
+                scrollbar-color: #008080 #e2e8f0;
+            }
+
+            /* Thanh cuộn ngang tùy biến nổi bật, dễ nhìn trên mobile */
+            .jo-table-scroll-wrapper::-webkit-scrollbar {
+                height: 8px !important;
+                width: 8px !important;
+                display: block !important;
+            }
+            .jo-table-scroll-wrapper::-webkit-scrollbar-track {
+                background: #f1f5f9 !important;
+                border-radius: 999px !important;
+            }
+            .jo-table-scroll-wrapper::-webkit-scrollbar-thumb {
+                background: #008080 !important;
+                border-radius: 999px !important;
+            }
+            .jo-table-scroll-wrapper::-webkit-scrollbar-thumb:hover {
+                background: #006666 !important;
+            }
+
+            /* DẠNG BẢNG TRÊN MOBILE (Landscape & Portrait Table Mode): Giữ độ rộng tối thiểu để không bị dồn nát cột */
+            .jo-list-container.is-table-view .jo-list-table,
+            .jo-list-container:not(.is-card-view) .jo-list-table {
+                min-width: 860px !important;
+                width: 100% !important;
+            }
+
+            /* Cố định cột Thao tác bên phải khi trượt ngang ở dạng bảng */
+            .jo-list-container.is-table-view .jo-list-table th:last-child,
+            .jo-list-container.is-table-view .jo-list-table td.jo-td-actions,
+            .jo-list-container:not(.is-card-view) .jo-list-table th:last-child,
+            .jo-list-container:not(.is-card-view) .jo-list-table td.jo-td-actions {
+                position: sticky !important;
+                right: 0 !important;
+                background: #ffffff !important;
+                box-shadow: -4px 0 8px rgba(15,23,42,0.06) !important;
+                z-index: 5 !important;
+            }
+            .jo-list-container.is-table-view .jo-list-table th:last-child,
+            .jo-list-container:not(.is-card-view) .jo-list-table th:last-child {
+                background: #f8fafc !important;
+                z-index: 12 !important;
+            }
+
+            /* DẠNG THẺ (CARD VIEW) TRÊN MOBILE: Tối ưu 100% cho màn hình dọc */
+            .jo-list-container.is-card-view .job-table-wrapper {
+                overflow-x: hidden !important;
+                max-height: none !important;
+            }
+            .jo-list-container.is-card-view .jo-list-table {
+                min-width: 0 !important;
+                width: 100% !important;
+                display: block !important;
+                border-collapse: separate !important;
+            }
+            .jo-list-container.is-card-view .jo-list-table thead {
+                display: none !important;
+            }
+            .jo-list-container.is-card-view .jo-list-table tbody {
+                display: grid !important;
+                grid-template-columns: 1fr !important;
+                gap: 12px !important;
+                width: 100% !important;
+                padding: 12px 10px !important;
+                box-sizing: border-box !important;
+            }
+            @media (min-width: 640px) {
+                .jo-list-container.is-card-view .jo-list-table tbody {
+                    grid-template-columns: repeat(2, 1fr) !important;
+                }
+            }
+            .jo-list-container.is-card-view .jo-card-row {
+                display: flex !important;
+                flex-direction: column !important;
+                background: #ffffff !important;
+                border: 1.5px solid #e2e8f0 !important;
+                border-radius: 14px !important;
+                padding: 14px 12px !important;
+                box-shadow: 0 2px 8px rgba(15,23,42,0.04) !important;
+                box-sizing: border-box !important;
+                width: 100% !important;
+                gap: 10px !important;
+                transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+            }
+            .jo-list-container.is-card-view .jo-card-row:hover {
+                border-color: #99f6e4 !important;
+                box-shadow: 0 4px 14px rgba(0,128,128,0.08) !important;
+            }
+            .jo-list-container.is-card-view .jo-td {
+                display: block !important;
+                padding: 0 !important;
+                border: none !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+                text-align: left !important;
+            }
+            .jo-list-container.is-card-view .jo-td-factory {
+                border-bottom: 1px solid #f1f5f9 !important;
+                padding-bottom: 8px !important;
+            }
+            .jo-list-container.is-card-view .jo-td-job {
+                line-height: 1.4 !important;
+            }
+            .jo-list-container.is-card-view .jo-td-salary {
+                background: #f8fafc !important;
+                padding: 8px 10px !important;
+                border-radius: 8px !important;
+                border: 1px solid #f1f5f9 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                flex-wrap: wrap !important;
+                gap: 6px !important;
+            }
+            .jo-list-container.is-card-view .jo-td-salary::before {
+                content: "💰 Lương & Tăng ca:";
+                font-size: 11px;
+                font-weight: 750;
+                color: #475569;
+            }
+            .jo-list-container.is-card-view .jo-td-candidates {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                padding: 2px 4px !important;
+            }
+            .jo-list-container.is-card-view .jo-td-candidates::before {
+                content: "👥 Ứng viên ghép đơn:";
+                font-size: 12px;
+                font-weight: 750;
+                color: #475569;
+            }
+            .jo-list-container.is-card-view .jo-td-status {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                padding: 2px 4px !important;
+                gap: 8px !important;
+            }
+            .jo-list-container.is-card-view .jo-td-status::before {
+                content: "Trạng thái tuyển dụng:";
+                font-size: 12px;
+                font-weight: 750;
+                color: #475569;
+            }
+            .jo-list-container.is-card-view .jo-inline-status-select {
+                padding: 5px 10px !important;
+                font-size: 12px !important;
+            }
+            .jo-list-container.is-card-view .jo-td-actions {
+                border-top: 1px dashed #e2e8f0 !important;
+                padding-top: 10px !important;
+                margin-top: 2px !important;
+                width: 100% !important;
+            }
+            .jo-list-container.is-card-view .jo-act-grid {
+                display: grid !important;
+                grid-template-columns: repeat(4, 1fr) !important;
+                gap: 6px !important;
+                width: 100% !important;
+            }
+            .jo-list-container.is-card-view .jo-act-btn {
+                height: 36px !important;
+                font-size: 12px !important;
+                font-weight: 750 !important;
+                border-radius: 8px !important;
+                padding: 0 4px !important;
+            }
+            .jo-list-container.is-card-view .jo-act-btn.is-clone {
+                grid-column: 1 / -1 !important;
+                height: 38px !important;
+                font-size: 13px !important;
+            }
+
+            /* Responsive cho Subtabs & Thanh lọc trên Mobile */
+            @media (max-width: 640px) {
+                .jo-primary-cta {
+                    width: 100% !important;
+                    justify-content: center !important;
+                    padding: 10px 14px !important;
+                }
+                .jo-filter-bar {
+                    padding: 10px !important;
+                    gap: 8px !important;
+                }
+                .jo-filter-bar-search {
+                    width: 100% !important;
+                    min-width: 100% !important;
+                }
+                .jo-filter-bar-controls {
+                    width: 100% !important;
+                    gap: 8px !important;
+                    justify-content: space-between !important;
+                }
+                .jo-filter-bar-controls select {
+                    max-width: 150px !important;
+                    font-size: 11px !important;
+                }
+            }
+
+            /* ===== TỔNG HỢP ĐƠN HÀNG (SUBTAB 2) - Mobile Card Layout ===== */
 
             .job-summary-table thead { display: none !important; }
             .job-summary-table,
