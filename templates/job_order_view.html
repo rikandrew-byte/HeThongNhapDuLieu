@@ -994,6 +994,19 @@
                         <span class="section-submark">RECRUITMENT CRITERIA</span>
                     </div>
 
+                    {% macro fmt_measure(val, unit, default_val) -%}
+                      {%- set s = (val if val is not none and (val|string|trim) != '' else default_val)|string|trim -%}
+                      {%- set digits_only = s|replace('.', '') -%}
+                      {%- set range_clean = s|replace('-', '')|replace('~', '')|replace('.', '')|replace(' ', '') -%}
+                      {%- if s.isdigit() or (digits_only.isdigit() and s.count('.') == 1) -%}
+                        {{ s }} {{ unit }} trở lên
+                      {%- elif ('-' in s or '~' in s) and range_clean.isdigit() -%}
+                        {{ s }} {{ unit }}
+                      {%- else -%}
+                        {{ s }}
+                      {%- endif -%}
+                    {%- endmacro %}
+
                     <!-- Criteria Ledger Grid (Male / Female) -->
                     <div class="criteria-ledger-grid">
                         {% if job.gender_type in ['both', 'male'] %}
@@ -1008,11 +1021,11 @@
                             </div>
                             <div class="criteria-row">
                                 <span class="criteria-row-label">Chiều cao:</span>
-                                <span class="criteria-row-val">{{ criteria.get('male_height', '165') }} cm trở lên</span>
+                                <span class="criteria-row-val">{{ fmt_measure(criteria.get('male_height'), 'cm', '165') }}</span>
                             </div>
                             <div class="criteria-row">
                                 <span class="criteria-row-label">Cân nặng:</span>
-                                <span class="criteria-row-val">{{ criteria.get('male_weight', '55') }} kg trở lên</span>
+                                <span class="criteria-row-val">{{ fmt_measure(criteria.get('male_weight'), 'kg', '55') }}</span>
                             </div>
                         </div>
                         {% endif %}
@@ -1029,11 +1042,11 @@
                             </div>
                             <div class="criteria-row">
                                 <span class="criteria-row-label">Chiều cao:</span>
-                                <span class="criteria-row-val">{{ criteria.get('female_height', '155') }} cm trở lên</span>
+                                <span class="criteria-row-val">{{ fmt_measure(criteria.get('female_height'), 'cm', '155') }}</span>
                             </div>
                             <div class="criteria-row">
                                 <span class="criteria-row-label">Cân nặng:</span>
-                                <span class="criteria-row-val">{{ criteria.get('female_weight', '50') }} kg trở lên</span>
+                                <span class="criteria-row-val">{{ fmt_measure(criteria.get('female_weight'), 'kg', '50') }}</span>
                             </div>
                         </div>
                         {% endif %}
@@ -1054,18 +1067,22 @@
                                 <td class="col-label">Tình trạng hôn nhân:</td>
                                 <td class="col-value">{{ criteria.get('marriage', 'Không yêu cầu') }}</td>
                             </tr>
+                            {% if criteria.get('interview_method') %}
                             <tr>
                                 <td class="col-label">Hình thức tuyển:</td>
                                 <td class="col-value" style="font-weight:750; color:#0d9488;">
-                                    {{ criteria.get('interview_method', 'Form + Line pv + clip GTBT') }}
+                                    {{ criteria.get('interview_method') }}
                                 </td>
                             </tr>
+                            {% endif %}
+                            {% if criteria.get('contract_term') %}
                             <tr>
                                 <td class="col-label">Thời hạn hợp đồng:</td>
                                 <td class="col-value" style="font-weight:750;">
-                                    {{ criteria.get('contract_term', '03 năm + 12') }}
+                                    {{ criteria.get('contract_term') }}
                                 </td>
                             </tr>
+                            {% endif %}
                         </tbody>
                     </table>
                 </section>
@@ -1139,10 +1156,12 @@
 
                     <table class="ledger-table">
                         <tbody>
+                            {% if job.shift_policy %}
                             <tr>
                                 <td class="col-label">Chế độ ca làm việc:</td>
-                                <td class="col-value">{{ job.shift_policy or 'Nhà máy làm việc 02 ca, nghỉ luân phiên nhưng không cố định theo Thứ Bảy , CN.' }}</td>
+                                <td class="col-value">{{ job.shift_policy }}</td>
                             </tr>
+                            {% endif %}
                             {% if job.overtime_policy %}
                             <tr>
                                 <td class="col-label">Quy định làm thêm:</td>

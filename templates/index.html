@@ -1402,15 +1402,43 @@
 
             <!-- PHÂN HỆ 1: DANH SÁCH BẢNG CÔNG VIỆC (JOB ORDERS) -->
             <div id="subTabContent-jobOrders" style="display:block;">
-                <!-- Thanh tìm kiếm & Lọc trạng thái -->
+                <!-- Khoảng phân tách trạng thái đơn: Đang tuyển vs Lưu kho mẫu -->
+                <div class="jo-lifecycle-bar" role="tablist" aria-label="Phân loại trạng thái tuyển dụng">
+                    <button type="button" id="jobLifecycleBtn-active" class="jo-lifecycle-tab is-active" onclick="setJobLifecycleView('active')">
+                        <span>🟢 Đang tuyển</span>
+                        <span id="jobLifecycleCount-active" class="jo-lifecycle-badge">0</span>
+                    </button>
+                    <button type="button" id="jobLifecycleBtn-archived" class="jo-lifecycle-tab" onclick="setJobLifecycleView('archived')">
+                        <span>📦 Đã xong / Lưu kho mẫu</span>
+                        <span id="jobLifecycleCount-archived" class="jo-lifecycle-badge">0</span>
+                    </button>
+                    <button type="button" id="jobLifecycleBtn-all" class="jo-lifecycle-tab" onclick="setJobLifecycleView('all')">
+                        <span>📋 Tất cả đơn</span>
+                        <span id="jobLifecycleCount-all" class="jo-lifecycle-badge">0</span>
+                    </button>
+                    <span class="jo-lifecycle-hint">Đơn xong giữ nguyên trong kho để lần sau bấm <strong>♻️ Tuyển lại</strong> trong 1 giây</span>
+                </div>
+
+                <!-- Banner thông báo nhanh (không chặn thao tác) -->
+                <div id="jobOrdersToastBanner" class="jo-toast-banner" style="display:none;"></div>
+
+                <!-- Thanh tìm kiếm & Lọc trạng thái / Môi giới -->
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:10px 14px; box-shadow:0 1px 3px rgba(15,23,42,0.03);">
                     <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:220px;">
                         <span style="font-size:15px; color:#64748b;">🔍</span>
-                        <input type="text" id="jobOrdersSearchInput" oninput="filterJobOrdersTable()" placeholder="Tìm theo mã đơn, tên xưởng (Trung/Việt), sản phẩm, địa điểm..." 
+                        <input type="text" id="jobOrdersSearchInput" oninput="filterJobOrdersTable()" placeholder="Tìm theo mã đơn (HV, DK...), tên xưởng (Trung/Việt), sản phẩm, địa điểm..." 
                             style="width:100%; border:none; outline:none; font-size:13px; font-weight:600; color:#0f172a; background:transparent;">
                     </div>
                     <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                         <span id="jobOrdersFilteredMeta" style="font-size:11.5px; font-weight:700; color:#64748b; white-space:nowrap;"></span>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span style="font-size:11.5px; font-weight:700; color:#64748b;">Môi giới:</span>
+                            <select id="jobOrdersBrokerFilter" onchange="filterJobOrdersTable()"
+                                style="padding:6px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:12px; font-weight:700; color:#0f172a; outline:none; background:#f8fafc; cursor:pointer; max-width:210px;">
+                                <option value="">🏢 Tất cả môi giới</option>
+                                <option value="__NONE__">⚪ Chưa gắn môi giới</option>
+                            </select>
+                        </div>
                         <div style="display:flex; align-items:center; gap:6px;">
                             <span style="font-size:11.5px; font-weight:700; color:#64748b;">Trạng thái:</span>
                             <select id="jobOrdersStatusFilter" onchange="filterJobOrdersTable()" 
@@ -2051,6 +2079,9 @@
                 <button type="button" id="jobOrderPreviewBtn" onclick="previewCurrentJobOrder()" class="jo-btn-outline-teal" style="display:none;" title="Mở trang in A4 trong tab mới">
                     <span>👁️</span><span class="jo-btn-label"> Mở trang in</span>
                 </button>
+                <button type="button" id="jobOrderCloneFromEditBtn" onclick="cloneCurrentJobOrderInModal()" class="jo-btn-outline-teal" style="display:none;" title="Giữ nguyên thông tin xưởng để tạo đợt tuyển mới (không ghi đè đơn cũ)">
+                    <span>♻️</span><span class="jo-btn-label"> Nhân bản đợt mới</span>
+                </button>
                 <button type="button" onclick="closeJobOrderModal()" class="jo-btn-ghost">Hủy</button>
                 <button type="button" id="jobOrderSubmitBtn" onclick="saveJobOrder()" class="jo-btn-save">
                     💾 Lưu Bảng Công Việc
@@ -2074,16 +2105,38 @@
                 </div>
 
                 <form id="jobOrderForm" class="jo-form-stack" onsubmit="event.preventDefault(); saveJobOrder();" oninput="updateJobOrderLivePreview()" onchange="updateJobOrderLivePreview()">
+                    <div id="jobOrderQuickCloneBar" class="jo-quick-clone-bar">
+                        <label for="jobOrderCloneSourceSelect" class="jo-quick-clone-label">♻️ Tuyển lại nhà máy cũ (nạp nhanh mẫu):</label>
+                        <select id="jobOrderCloneSourceSelect" class="jo-select" onchange="applyJobOrderTemplateFromSelect(this.value)"></select>
+                    </div>
+
+                    <div id="jobOrderCloneBanner" class="jo-clone-banner" style="display:none;">
+                        <div class="jo-clone-banner-body">
+                            <div class="jo-clone-banner-title">♻️ Đang tạo ĐỢT TUYỂN MỚI từ <strong id="jobOrderCloneBannerText"></strong></div>
+                            <div class="jo-clone-banner-desc">Thông tin xưởng, công việc, lương, lưu ý &amp; ảnh R2 được giữ nguyên (đơn cũ không bị ghi đè). Hãy cập nhật <strong>Mã đơn mới</strong> và <strong>Nam / Nữ / Độ tuổi</strong>.</div>
+                        </div>
+                        <button type="button" onclick="scrollToJobSection('joSec2')" class="jo-clone-jump-btn">🎯 Tới mục Tuyển dụng</button>
+                    </div>
+
                     <!-- CARD I: THÔNG TIN CHUNG & CÔNG XƯỞNG -->
                     <section id="joSec1" class="jo-card">
                         <div class="jo-card-head">
                             <div class="jo-card-title"><span class="jo-sec-num">I</span> Thông tin chung &amp; Công xưởng</div>
                         </div>
 
-                        <div class="jo-grid-3 jo-mb-12">
+                        <div class="jo-grid-4 jo-mb-12">
                             <div>
-                                <label class="jo-label" for="jobOrder_code">Mã đơn hàng <span style="color:#dc2626;">*</span></label>
-                                <input type="text" id="jobOrder_code" class="jo-input jo-font-mono" required placeholder="VD: 20261113">
+                                <label class="jo-label" for="jobOrder_brokerSelect">Công ty môi giới (Mã)</label>
+                                <select id="jobOrder_brokerSelect" class="jo-select" onchange="onJobBrokerSelectChange(this.value)">
+                                    <option value="">-- Chọn môi giới (HV, DK, TD...) --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <div class="jo-label-row">
+                                    <label class="jo-label" for="jobOrder_code" style="margin-bottom:0;">Mã đơn hàng <span style="color:#dc2626;">*</span></label>
+                                    <button type="button" onclick="setJobOrderCodeToday()" class="jo-inline-today-btn" title="Đặt nhanh mã ngày hôm nay (YYYYMMDD)">📅 Hôm nay</button>
+                                </div>
+                                <input type="text" id="jobOrder_code" class="jo-input jo-font-mono" required placeholder="VD: HV-20261120" oninput="onJobCodeInputChange()">
                             </div>
                             <div>
                                 <label class="jo-label" for="jobOrder_titleNote">Ký hiệu phụ</label>
@@ -2403,6 +2456,214 @@
         }
         .jo-act-btn.is-del:hover {
             background: #fee2e2;
+        }
+        .jo-act-btn.is-clone {
+            grid-column: 1 / -1;
+            color: #0f766e;
+            border-color: #5eead4;
+            background: #f0fdfa;
+            padding: 4px 6px;
+            font-weight: 800;
+        }
+        .jo-act-btn.is-clone:hover {
+            background: #ccfbf1;
+            border-color: #14b8a6;
+        }
+        .jo-quick-clone-bar {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 10px 12px;
+            background: #f0fdfa;
+            border: 1px solid #99f6e4;
+            border-radius: 12px;
+        }
+        .jo-quick-clone-label {
+            font-size: 11.5px;
+            font-weight: 800;
+            color: #0f766e;
+            display: block;
+        }
+        .jo-clone-banner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 10px 12px;
+            background: #ecfdf5;
+            border: 1.5px solid #34d399;
+            border-radius: 12px;
+        }
+        .jo-clone-banner-body {
+            flex: 1;
+            min-width: 200px;
+        }
+        .jo-clone-banner-title {
+            font-size: 12.5px;
+            font-weight: 800;
+            color: #065f46;
+            margin-bottom: 2px;
+        }
+        .jo-clone-banner-desc {
+            font-size: 11.5px;
+            color: #047857;
+            line-height: 1.4;
+        }
+        .jo-clone-jump-btn {
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid #10b981;
+            background: #ffffff;
+            color: #047857;
+            font-size: 11.5px;
+            font-weight: 800;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.14s ease;
+        }
+        .jo-clone-jump-btn:hover {
+            background: #d1fae5;
+        }
+        .jo-label-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            margin-bottom: 5px;
+        }
+        .jo-inline-today-btn {
+            padding: 1px 6px;
+            border-radius: 5px;
+            border: 1px solid #99f6e4;
+            background: #f0fdfa;
+            color: #0f766e;
+            font-size: 10.5px;
+            font-weight: 700;
+            line-height: 1.35;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.14s ease;
+        }
+        .jo-inline-today-btn:hover {
+            background: #ccfbf1;
+            border-color: #14b8a6;
+        }
+        .jo-clone-highlight {
+            border-color: #0d9488 !important;
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.16) !important;
+        }
+        .jo-grid-4 {
+            display: grid;
+            grid-template-columns: 1.25fr 1.15fr 0.9fr 1fr;
+            gap: 10px;
+        }
+        @media (max-width: 720px) {
+            .jo-grid-4 {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        .jo-lifecycle-bar {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .jo-lifecycle-tab {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 13px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            color: #475569;
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.14s ease;
+        }
+        .jo-lifecycle-tab:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+        .jo-lifecycle-tab.is-active {
+            background: #f0fdfa;
+            color: #008080;
+            border-color: #5eead4;
+            box-shadow: 0 2px 6px rgba(0, 128, 128, 0.12);
+        }
+        .jo-lifecycle-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 22px;
+            height: 20px;
+            padding: 0 6px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 800;
+            background: #f1f5f9;
+            color: #334155;
+        }
+        .jo-lifecycle-tab.is-active .jo-lifecycle-badge {
+            background: #008080;
+            color: #ffffff;
+        }
+        .jo-lifecycle-hint {
+            margin-left: auto;
+            font-size: 11.5px;
+            color: #64748b;
+            font-weight: 500;
+        }
+        .jo-toast-banner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 9px 14px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            background: #ecfdf5;
+            border: 1px solid #6ee7b7;
+            color: #065f46;
+            font-size: 12.5px;
+            font-weight: 600;
+        }
+        .jo-inline-broker-select {
+            font-size: 11px;
+            font-weight: 750;
+            padding: 2px 6px;
+            border-radius: 6px;
+            border: 1px dashed #cbd5e1;
+            background: #f8fafc;
+            color: #64748b;
+            cursor: pointer;
+            outline: none;
+            max-width: 155px;
+            transition: all 0.14s ease;
+        }
+        .jo-inline-broker-select:hover {
+            border-color: #0d9488;
+            color: #0f766e;
+        }
+        .jo-inline-broker-select.has-broker {
+            border-style: solid;
+            border-color: #fde68a;
+            background: #fffbeb;
+            color: #b45309;
+        }
+        .jo-inline-status-select {
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 11.5px;
+            font-weight: 750;
+            border: 1px solid #cbd5e1;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.14s ease;
         }
 
         .jo-primary-cta,
@@ -7506,9 +7767,288 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
         window.currentJobOrders = [];
         window.jobOrderNotes = [];
         window.jobOrderImages = [];
+        window.jobOrderBrokers = [];
+        window.currentJobLifecycleView = 'active';
+
+        const JOB_STATUS_OPTIONS = [
+            { value: 'Đang tuyển', label: '🟢 Đang tuyển' },
+            { value: 'Đã đủ form', label: '🟡 Đã đủ form' },
+            { value: 'Đã phỏng vấn', label: '🔵 Đã phỏng vấn' },
+            { value: 'Đã hoàn thành', label: '⚪ Đã hoàn thành' },
+            { value: 'Tạm dừng', label: '🔴 Tạm dừng' }
+        ];
 
         function escJob(v) {
             return escapeHtml(String(v ?? ''));
+        }
+
+        function cleanBrokerVnName(rawName) {
+            return String(rawName || '')
+                .replace(/[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff\u3000-\u303f\uff00-\uffef]+/g, ' ')
+                .replace(/\([^)]*\)/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function computeBrokerShortCode(rawName) {
+            const vn = cleanBrokerVnName(rawName);
+            if (!vn) return '';
+            const ascii = vn
+                .replace(/Đ/g, 'D')
+                .replace(/đ/g, 'd')
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '');
+            const words = ascii.split(/[^A-Za-z0-9]+/).filter(Boolean);
+            if (words.length === 0) return '';
+            if (words.length === 1) return words[0].slice(0, 4).toUpperCase();
+            return words.map(w => w[0]).join('').toUpperCase().slice(0, 5);
+        }
+
+        function getJobOrderBrokerList() {
+            const raw = (Array.isArray(window.jobOrderBrokers) && window.jobOrderBrokers.length > 0)
+                ? window.jobOrderBrokers
+                : (typeof globalBrokers !== 'undefined' && Array.isArray(globalBrokers) ? globalBrokers : []);
+            const seen = new Set();
+            const list = [];
+            raw.forEach(b => {
+                const code = computeBrokerShortCode(b.name);
+                const name = cleanBrokerVnName(b.name) || String(b.name || '').trim();
+                if (code && !seen.has(code)) {
+                    seen.add(code);
+                    list.push({ id: b.id || '', code, name, rawName: b.name || '' });
+                }
+            });
+            return list;
+        }
+
+        function getJobOrderBrokerInfo(job) {
+            const crit = (job && job.recruitment_criteria) || {};
+            let bCode = String(crit.broker_code || '').trim().toUpperCase();
+            let bName = String(crit.broker_name || '').trim();
+            const brokers = getJobOrderBrokerList();
+
+            if (!bCode && job && job.code) {
+                const m = String(job.code).trim().match(/^([A-Z]{2,5})-(.+)$/);
+                if (m) {
+                    const matched = brokers.find(b => b.code === m[1]);
+                    if (matched) {
+                        bCode = matched.code;
+                        bName = bName || matched.name;
+                    } else {
+                        bCode = m[1];
+                    }
+                }
+            }
+            if (bCode && !bName) {
+                const matched = brokers.find(b => b.code === bCode);
+                if (matched) bName = matched.name;
+            }
+            return { code: bCode, name: bName };
+        }
+
+        function populateJobBrokerDropdowns() {
+            const brokers = getJobOrderBrokerList();
+
+            const filterSel = document.getElementById('jobOrdersBrokerFilter');
+            if (filterSel) {
+                const prev = filterSel.value || '';
+                filterSel.innerHTML = '';
+                const optAll = document.createElement('option');
+                optAll.value = '';
+                optAll.textContent = '🏢 Tất cả môi giới';
+                filterSel.appendChild(optAll);
+
+                brokers.forEach(b => {
+                    const opt = document.createElement('option');
+                    opt.value = b.code;
+                    opt.textContent = `🏢 ${b.code} — ${b.name}`;
+                    filterSel.appendChild(opt);
+                });
+
+                const optNone = document.createElement('option');
+                optNone.value = '__NONE__';
+                optNone.textContent = '⚪ Chưa gắn môi giới';
+                filterSel.appendChild(optNone);
+
+                if (Array.from(filterSel.options).some(o => o.value === prev)) {
+                    filterSel.value = prev;
+                }
+            }
+
+            const modalSel = document.getElementById('jobOrder_brokerSelect');
+            if (modalSel) {
+                const prevModal = modalSel.value || '';
+                modalSel.innerHTML = '';
+                const optBlank = document.createElement('option');
+                optBlank.value = '';
+                optBlank.textContent = '-- Chọn môi giới (HV, DK, TD...) --';
+                modalSel.appendChild(optBlank);
+
+                brokers.forEach(b => {
+                    const opt = document.createElement('option');
+                    opt.value = b.code;
+                    opt.textContent = `${b.code} — ${b.name}`;
+                    modalSel.appendChild(opt);
+                });
+
+                if (prevModal && Array.from(modalSel.options).some(o => o.value === prevModal)) {
+                    modalSel.value = prevModal;
+                }
+            }
+        }
+
+        function onJobBrokerSelectChange(brokerCode) {
+            const codeEl = document.getElementById('jobOrder_code');
+            if (!codeEl) return;
+            const cleanBroker = String(brokerCode || '').trim().toUpperCase();
+            const raw = codeEl.value.trim();
+            const base = raw.replace(/^[A-Z]{2,5}-/, '').trim() || getTodayJobCode();
+            codeEl.value = cleanBroker ? `${cleanBroker}-${base}` : base;
+            updateJobOrderLivePreview();
+        }
+
+        function onJobCodeInputChange() {
+            const codeEl = document.getElementById('jobOrder_code');
+            const brokerEl = document.getElementById('jobOrder_brokerSelect');
+            if (!codeEl || !brokerEl) return;
+            const m = codeEl.value.trim().match(/^([A-Z]{2,5})-/);
+            if (m) {
+                const hasOpt = Array.from(brokerEl.options).some(o => o.value === m[1]);
+                if (hasOpt) brokerEl.value = m[1];
+            }
+        }
+
+        function setJobLifecycleView(view) {
+            window.currentJobLifecycleView = view || 'active';
+            const statusFilter = document.getElementById('jobOrdersStatusFilter');
+            if (statusFilter) statusFilter.value = '';
+
+            ['active', 'archived', 'all'].forEach(v => {
+                const btn = document.getElementById(`jobLifecycleBtn-${v}`);
+                if (btn) btn.classList.toggle('is-active', v === window.currentJobLifecycleView);
+            });
+            filterJobOrdersTable();
+        }
+
+        function updateJobLifecycleCounts() {
+            const allList = window.currentJobOrders || [];
+            const activeCount = allList.filter(j => String(j.status || 'Đang tuyển').trim() === 'Đang tuyển').length;
+            const archivedCount = allList.length - activeCount;
+
+            const elActive = document.getElementById('jobLifecycleCount-active');
+            const elArchived = document.getElementById('jobLifecycleCount-archived');
+            const elAll = document.getElementById('jobLifecycleCount-all');
+            const badge = document.getElementById('jobOrdersCountBadge');
+
+            if (elActive) elActive.textContent = String(activeCount);
+            if (elArchived) elArchived.textContent = String(archivedCount);
+            if (elAll) elAll.textContent = String(allList.length);
+            if (badge) badge.textContent = String(allList.length);
+        }
+
+        function showJobOrdersToast(htmlContent) {
+            const el = document.getElementById('jobOrdersToastBanner');
+            if (!el) return;
+            el.innerHTML = `
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; flex:1;">${htmlContent}</div>
+                <button type="button" onclick="document.getElementById('jobOrdersToastBanner').style.display='none'"
+                    style="background:none; border:none; color:#047857; font-size:14px; font-weight:800; cursor:pointer; padding:2px 6px;" title="Đóng thông báo">✕</button>
+            `;
+            el.style.display = 'flex';
+        }
+
+        function buildInlineBrokerOptionsHtml(selectedCode) {
+            const brokers = getJobOrderBrokerList();
+            let opts = `<option value="">+ Môi giới</option>`;
+            if (selectedCode && !brokers.some(b => b.code === selectedCode)) {
+                opts += `<option value="${escJob(selectedCode)}" selected>🏢 ${escJob(selectedCode)}</option>`;
+            }
+            brokers.forEach(b => {
+                const isSel = b.code === selectedCode ? 'selected' : '';
+                opts += `<option value="${escJob(b.code)}" ${isSel}>🏢 ${escJob(b.code)} · ${escJob(b.name)}</option>`;
+            });
+            return opts;
+        }
+
+        async function quickUpdateJobBroker(jobId, brokerCode) {
+            const found = getJobOrderBrokerList().find(b => b.code === brokerCode);
+            const brokerName = found ? found.name : '';
+            try {
+                const res = await fetch(`/api/job-orders/${encodeURIComponent(jobId)}/quick-update`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        broker_code: brokerCode || '',
+                        broker_name: brokerName,
+                        sync_code_prefix: true
+                    })
+                });
+                const result = await res.json();
+                if (!res.ok || !result.success) {
+                    alert('Lỗi cập nhật môi giới: ' + (result.error || 'Không thể lưu'));
+                    filterJobOrdersTable();
+                    return;
+                }
+                const target = (window.currentJobOrders || []).find(j => j.id === jobId);
+                if (target) {
+                    target.code = result.code;
+                    target.recruitment_criteria = result.recruitment_criteria || {};
+                }
+                filterJobOrdersTable();
+                if (brokerCode) {
+                    showJobOrdersToast(`<span>🏢 Đã gắn môi giới <strong>${escJob(brokerCode)}${brokerName ? ' — ' + escJob(brokerName) : ''}</strong> · Mã đơn cập nhật thành <strong>${escJob(result.code)}</strong>.</span>`);
+                } else {
+                    showJobOrdersToast(`<span>⚪ Đã gỡ mã môi giới khỏi đơn <strong>${escJob(result.code)}</strong>.</span>`);
+                }
+            } catch (err) {
+                console.error('quickUpdateJobBroker error:', err);
+                alert('Lỗi kết nối máy chủ khi cập nhật môi giới.');
+                filterJobOrdersTable();
+            }
+        }
+
+        async function quickUpdateJobStatus(jobId, newStatus) {
+            try {
+                const res = await fetch(`/api/job-orders/${encodeURIComponent(jobId)}/quick-update`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ status: newStatus })
+                });
+                const result = await res.json();
+                if (!res.ok || !result.success) {
+                    alert('Lỗi đổi trạng thái: ' + (result.error || 'Không thể lưu'));
+                    filterJobOrdersTable();
+                    return;
+                }
+                const target = (window.currentJobOrders || []).find(j => j.id === jobId);
+                if (target) {
+                    target.status = result.status;
+                }
+                updateJobLifecycleCounts();
+                filterJobOrdersTable();
+
+                const codeLabel = target ? target.code : jobId;
+                const facLabel = target ? target.factory_name : '';
+                if (newStatus !== 'Đang tuyển' && window.currentJobLifecycleView === 'active') {
+                    showJobOrdersToast(`
+                        <span>📦 Đơn <strong>[${escJob(codeLabel)}]</strong> (${escJob(facLabel)}) đã chuyển sang <strong>${escJob(newStatus)}</strong> và cất gọn vào kho mẫu — khi nào tuyển lại chỉ cần vào kho bấm <strong>♻️ Tuyển lại</strong>.</span>
+                        <button type="button" onclick="setJobLifecycleView('archived')" style="padding:3px 9px; border-radius:6px; border:1px solid #10b981; background:#ffffff; color:#047857; font-size:11.5px; font-weight:800; cursor:pointer;">Xem kho mẫu</button>
+                    `);
+                } else if (newStatus === 'Đang tuyển' && window.currentJobLifecycleView === 'archived') {
+                    showJobOrdersToast(`
+                        <span>🟢 Đơn <strong>[${escJob(codeLabel)}]</strong> (${escJob(facLabel)}) đã được đưa trở lại danh sách <strong>Đang tuyển</strong>.</span>
+                        <button type="button" onclick="setJobLifecycleView('active')" style="padding:3px 9px; border-radius:6px; border:1px solid #10b981; background:#ffffff; color:#047857; font-size:11.5px; font-weight:800; cursor:pointer;">Về tab Đang tuyển</button>
+                    `);
+                } else {
+                    showJobOrdersToast(`<span>✅ Đã đổi trạng thái đơn <strong>[${escJob(codeLabel)}]</strong> thành <strong>${escJob(newStatus)}</strong>.</span>`);
+                }
+            } catch (err) {
+                console.error('quickUpdateJobStatus error:', err);
+                alert('Lỗi kết nối máy chủ khi đổi trạng thái.');
+                filterJobOrdersTable();
+            }
         }
 
         function switchJobSubTab(subTab) {
@@ -7559,14 +8099,24 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
 
         async function loadJobOrdersList() {
             try {
-                const res = await fetch('/api/job-orders', { credentials: 'same-origin' });
-                if (!res.ok) throw new Error('Không thể tải danh sách bảng công việc');
-                const data = await res.json();
+                const needBrokers = (!Array.isArray(window.jobOrderBrokers) || window.jobOrderBrokers.length === 0);
+                const requests = [fetch('/api/job-orders', { credentials: 'same-origin' })];
+                if (needBrokers) {
+                    requests.push(fetch('/api/brokers', { credentials: 'same-origin' }));
+                }
+                const responses = await Promise.all(requests);
+                const jobsRes = responses[0];
+                if (!jobsRes.ok) throw new Error('Không thể tải danh sách bảng công việc');
+                const data = await jobsRes.json();
                 window.currentJobOrders = Array.isArray(data) ? data : [];
 
-                const badge = document.getElementById('jobOrdersCountBadge');
-                if (badge) badge.textContent = String(window.currentJobOrders.length);
+                if (needBrokers && responses[1] && responses[1].ok) {
+                    const bData = await responses[1].json();
+                    if (Array.isArray(bData)) window.jobOrderBrokers = bData;
+                }
 
+                populateJobBrokerDropdowns();
+                updateJobLifecycleCounts();
                 filterJobOrdersTable();
 
                 // Cập nhật datalist gợi ý xưởng từ bảng Factory nếu có
@@ -7588,27 +8138,49 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
         function filterJobOrdersTable() {
             const searchVal = (document.getElementById('jobOrdersSearchInput')?.value || '').toLowerCase().trim();
             const statusVal = (document.getElementById('jobOrdersStatusFilter')?.value || '').trim();
+            const brokerVal = (document.getElementById('jobOrdersBrokerFilter')?.value || '').trim();
+            const lifecycleView = window.currentJobLifecycleView || 'active';
 
             const allList = window.currentJobOrders || [];
-            let filtered = allList;
+            let lifecyclePool = allList;
+            if (lifecycleView === 'active') {
+                lifecyclePool = allList.filter(j => String(j.status || 'Đang tuyển').trim() === 'Đang tuyển');
+            } else if (lifecycleView === 'archived') {
+                lifecyclePool = allList.filter(j => String(j.status || 'Đang tuyển').trim() !== 'Đang tuyển');
+            }
 
-            if (searchVal) {
-                filtered = filtered.filter(j =>
-                    String(j.code || '').toLowerCase().includes(searchVal) ||
-                    String(j.factory_name || '').toLowerCase().includes(searchVal) ||
-                    String(j.product_job || '').toLowerCase().includes(searchVal) ||
-                    String(j.work_location || '').toLowerCase().includes(searchVal) ||
-                    String(j.title_note || '').toLowerCase().includes(searchVal)
-                );
+            let filtered = lifecyclePool;
+
+            if (brokerVal === '__NONE__') {
+                filtered = filtered.filter(j => !getJobOrderBrokerInfo(j).code);
+            } else if (brokerVal) {
+                filtered = filtered.filter(j => getJobOrderBrokerInfo(j).code === brokerVal);
             }
 
             if (statusVal) {
                 filtered = filtered.filter(j => String(j.status || '').trim() === statusVal);
             }
 
+            if (searchVal) {
+                filtered = filtered.filter(j => {
+                    const bInfo = getJobOrderBrokerInfo(j);
+                    return (
+                        String(j.code || '').toLowerCase().includes(searchVal) ||
+                        String(j.factory_name || '').toLowerCase().includes(searchVal) ||
+                        String(j.product_job || '').toLowerCase().includes(searchVal) ||
+                        String(j.work_location || '').toLowerCase().includes(searchVal) ||
+                        String(j.title_note || '').toLowerCase().includes(searchVal) ||
+                        String(bInfo.code || '').toLowerCase().includes(searchVal) ||
+                        String(bInfo.name || '').toLowerCase().includes(searchVal)
+                    );
+                });
+            }
+
             const metaEl = document.getElementById('jobOrdersFilteredMeta');
             if (metaEl) {
-                metaEl.textContent = allList.length > 0 ? `Hiển thị ${filtered.length} / ${allList.length} đơn` : '';
+                metaEl.textContent = lifecyclePool.length > 0 || allList.length > 0
+                    ? `Hiển thị ${filtered.length} / ${lifecyclePool.length} đơn`
+                    : '';
             }
 
             renderJobOrdersTable(filtered);
@@ -7619,12 +8191,19 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             if (!tbody) return;
 
             if (!list || list.length === 0) {
+                const lifecycleView = window.currentJobLifecycleView || 'active';
+                const emptyTitle = lifecycleView === 'archived'
+                    ? 'Kho mẫu lưu trữ đang trống'
+                    : (lifecycleView === 'active' ? 'Không có đơn Đang tuyển phù hợp' : 'Không có Bảng công việc phù hợp');
+                const emptyDesc = lifecycleView === 'archived'
+                    ? 'Khi đơn nào tuyển xong, hãy đổi trạng thái sang "Đã hoàn thành" hoặc "Đã đủ form" ngay ở cột Trạng thái — đơn sẽ được cất gọn vào đây để lần sau bấm ♻️ Tuyển lại.'
+                    : 'Bấm nút <strong>"➕ Tạo Bảng công việc mới"</strong> ở trên để thêm đơn hàng chuẩn FCT, hoặc kiểm tra tab <strong>📦 Đã xong / Lưu kho mẫu</strong>.';
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="6" style="padding:44px 20px; text-align:center; color:#64748b;">
-                            <div style="font-size:32px; margin-bottom:8px;">📋</div>
-                            <div style="font-weight:750; font-size:14px; color:#334155;">Không có Bảng công việc phù hợp</div>
-                            <div style="font-size:12px; margin-top:4px;">Bấm nút <strong>"➕ Tạo Bảng công việc mới"</strong> ở trên để thêm đơn hàng chuẩn FCT.</div>
+                            <div style="font-size:32px; margin-bottom:8px;">${lifecycleView === 'archived' ? '📦' : '📋'}</div>
+                            <div style="font-weight:750; font-size:14px; color:#334155;">${emptyTitle}</div>
+                            <div style="font-size:12px; margin-top:4px;">${emptyDesc}</div>
                         </td>
                     </tr>
                 `;
@@ -7633,6 +8212,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
 
             tbody.innerHTML = list.map(j => {
                 const crit = j.recruitment_criteria || {};
+                const bInfo = getJobOrderBrokerInfo(j);
 
                 let criteriaBadge = '';
                 if (j.gender_type === 'male') {
@@ -7662,6 +8242,10 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 const jsId = escJob(j.id).replace(/'/g, "\\'");
                 const jsCode = escJob(j.code).replace(/'/g, "\\'");
                 const otObj = splitParenthesizedNote(j.overtime_hours, '72hr/tháng');
+                const currentStatus = j.status || 'Đang tuyển';
+                const statusSelectOpts = JOB_STATUS_OPTIONS.map(opt =>
+                    `<option value="${escJob(opt.value)}" ${currentStatus === opt.value ? 'selected' : ''}>${escJob(opt.label)}</option>`
+                ).join('');
 
                 return `
                     <tr>
@@ -7671,6 +8255,9 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                                     ${escJob(j.code)}
                                 </span>
                                 ${j.title_note ? `<span style="font-size:11px; font-weight:700; color:#475569; background:#f1f5f9; border:1px solid #e2e8f0; padding:1px 7px; border-radius:6px;">${escJob(j.title_note)}</span>` : ''}
+                                <select class="jo-inline-broker-select ${bInfo.code ? 'has-broker' : ''}" onchange="quickUpdateJobBroker('${jsId}', this.value)" title="Gán / đổi nhanh Công ty môi giới (tự động ghép mã đơn)">
+                                    ${buildInlineBrokerOptionsHtml(bInfo.code)}
+                                </select>
                             </div>
                             <div style="font-weight:750; color:#0f172a; font-size:13px; line-height:1.35;">${escJob(j.factory_name || 'Chưa cập nhật tên xưởng')}</div>
                             ${j.work_location ? `<div style="font-size:11.5px; color:#64748b; margin-top:2px;">📍 ${escJob(j.work_location)}</div>` : ''}
@@ -7695,9 +8282,10 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                             </button>
                         </td>
                         <td style="padding:10px 8px; text-align:center; vertical-align:middle; white-space:nowrap;">
-                            <span style="display:inline-block; padding:3px 10px; border-radius:999px; font-size:11.5px; font-weight:750; background:${statusBg}; color:${statusColor}; border:1px solid ${statusBorder};">
-                                ${escJob(j.status || 'Đang tuyển')}
-                            </span>
+                            <select class="jo-inline-status-select" onchange="quickUpdateJobStatus('${jsId}', this.value)" title="Đổi nhanh trạng thái đơn hàng"
+                                style="background:${statusBg}; color:${statusColor}; border-color:${statusBorder};">
+                                ${statusSelectOpts}
+                            </select>
                         </td>
                         <td style="padding:10px 8px; text-align:center; vertical-align:middle; white-space:nowrap;">
                             <div class="jo-act-grid">
@@ -7712,6 +8300,9 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                                 </button>
                                 <button type="button" onclick="deleteJobOrder('${jsId}', '${jsCode}')" class="jo-act-btn is-del" title="Xóa Bảng công việc">
                                     🗑️ Xóa
+                                </button>
+                                <button type="button" onclick="cloneJobOrder('${jsId}')" class="jo-act-btn is-clone" title="Tạo đợt tuyển mới từ xưởng này (giữ nguyên thông tin xưởng, lương, ảnh; cập nhật mã ngày mới)">
+                                    ♻️ Tuyển lại
                                 </button>
                             </div>
                         </td>
@@ -8020,14 +8611,21 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             const notes = window.jobOrderNotes || [];
             const imgs = window.jobOrderImages || [];
 
+            const formatJobMeasure = (rawVal, unit, fallback) => {
+                const s = String(rawVal ?? '').trim() || fallback;
+                if (/^\d+(\.\d+)?$/.test(s)) return `${s} ${unit} trở lên`;
+                if (/^\d+(\.\d+)?\s*[-~]\s*\d+(\.\d+)?$/.test(s)) return `${s} ${unit}`;
+                return s;
+            };
+
             let criteriaBoxesHtml = '';
             if (genderRadio === 'both' || genderRadio === 'male') {
                 criteriaBoxesHtml += `
                     <div class="jo-a4-crit-box is-male">
                         <div class="jo-a4-crit-head"><span>LAO ĐỘNG NAM</span><span>MALE</span></div>
                         <div class="jo-a4-crit-row"><span style="color:#475569;">Số lượng:</span><strong style="color:#0284c7;">${escJob(maleCount || '0')} Người</strong></div>
-                        <div class="jo-a4-crit-row"><span style="color:#475569;">Chiều cao:</span><strong style="color:#0284c7;">${escJob(maleHeight || '165')} cm trở lên</strong></div>
-                        <div class="jo-a4-crit-row"><span style="color:#475569;">Cân nặng:</span><strong style="color:#0284c7;">${escJob(maleWeight || '55')} kg trở lên</strong></div>
+                        <div class="jo-a4-crit-row"><span style="color:#475569;">Chiều cao:</span><strong style="color:#0284c7;">${escJob(formatJobMeasure(maleHeight, 'cm', '165'))}</strong></div>
+                        <div class="jo-a4-crit-row"><span style="color:#475569;">Cân nặng:</span><strong style="color:#0284c7;">${escJob(formatJobMeasure(maleWeight, 'kg', '55'))}</strong></div>
                     </div>
                 `;
             }
@@ -8036,8 +8634,8 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                     <div class="jo-a4-crit-box is-female">
                         <div class="jo-a4-crit-head"><span>LAO ĐỘNG NỮ</span><span>FEMALE</span></div>
                         <div class="jo-a4-crit-row"><span style="color:#475569;">Số lượng:</span><strong style="color:#db2777;">${escJob(femaleCount || '0')} Người</strong></div>
-                        <div class="jo-a4-crit-row"><span style="color:#475569;">Chiều cao:</span><strong style="color:#db2777;">${escJob(femaleHeight || '155')} cm trở lên</strong></div>
-                        <div class="jo-a4-crit-row"><span style="color:#475569;">Cân nặng:</span><strong style="color:#db2777;">${escJob(femaleWeight || '50')} kg trở lên</strong></div>
+                        <div class="jo-a4-crit-row"><span style="color:#475569;">Chiều cao:</span><strong style="color:#db2777;">${escJob(formatJobMeasure(femaleHeight, 'cm', '155'))}</strong></div>
+                        <div class="jo-a4-crit-row"><span style="color:#475569;">Cân nặng:</span><strong style="color:#db2777;">${escJob(formatJobMeasure(femaleWeight, 'kg', '50'))}</strong></div>
                     </div>
                 `;
             }
@@ -8137,8 +8735,8 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                                 <tr><td class="jo-a4-lbl">Độ tuổi yêu cầu:</td><td class="jo-a4-val">${escJob(ageRange || '20 tuổi trở lên')}</td></tr>
                                 <tr><td class="jo-a4-lbl">Học lực / Trình độ:</td><td class="jo-a4-val">${escJob(education || 'PTTH trở lên')}</td></tr>
                                 <tr><td class="jo-a4-lbl">Tình trạng hôn nhân:</td><td class="jo-a4-val">${escJob(marriage || 'Không yêu cầu')}</td></tr>
-                                <tr><td class="jo-a4-lbl">Hình thức tuyển:</td><td class="jo-a4-val" style="color:#0d9488; font-weight:750;">${escJob(interviewMethod || 'Form + Line pv + clip GTBT')}</td></tr>
-                                <tr><td class="jo-a4-lbl">Thời hạn hợp đồng:</td><td class="jo-a4-val" style="font-weight:750;">${escJob(contractTerm || '03 năm + 12')}</td></tr>
+                                ${interviewMethod ? `<tr><td class="jo-a4-lbl">Hình thức tuyển:</td><td class="jo-a4-val" style="color:#0d9488; font-weight:750;">${escJob(interviewMethod)}</td></tr>` : ''}
+                                ${contractTerm ? `<tr><td class="jo-a4-lbl">Thời hạn hợp đồng:</td><td class="jo-a4-val" style="font-weight:750;">${escJob(contractTerm)}</td></tr>` : ''}
                             </tbody>
                         </table>
                     </section>
@@ -8178,7 +8776,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                         </div>
                         <table class="jo-a4-table">
                             <tbody>
-                                <tr><td class="jo-a4-lbl">Chế độ ca làm việc:</td><td class="jo-a4-val">${escJob(shiftPolicy)}</td></tr>
+                                ${shiftPolicy ? `<tr><td class="jo-a4-lbl">Chế độ ca làm việc:</td><td class="jo-a4-val">${escJob(shiftPolicy)}</td></tr>` : ''}
                                 ${overtimePolicy ? `<tr><td class="jo-a4-lbl">Quy định làm thêm:</td><td class="jo-a4-val">${escJob(overtimePolicy)}</td></tr>` : ''}
                                 ${mealAllowance ? `<tr><td class="jo-a4-lbl">Ăn uống &amp; Ký túc xá:</td><td class="jo-a4-val" style="white-space:pre-line;">${escJob(mealAllowance)}</td></tr>` : ''}
                             </tbody>
@@ -8191,13 +8789,157 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             `;
         }
 
-        function openJobOrderModal(jobId) {
+        function getTodayJobCode() {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            return `${y}${m}${d}`;
+        }
+
+        function setJobOrderCodeToday() {
+            const codeEl = document.getElementById('jobOrder_code');
+            if (!codeEl) return;
+            const bCode = (document.getElementById('jobOrder_brokerSelect')?.value || '').trim().toUpperCase();
+            codeEl.value = bCode ? `${bCode}-${getTodayJobCode()}` : getTodayJobCode();
+            codeEl.focus();
+            if (typeof codeEl.select === 'function') codeEl.select();
+            updateJobOrderLivePreview();
+        }
+
+        function populateJobOrderCloneSelect(selectedJobId = '') {
+            const sel = document.getElementById('jobOrderCloneSourceSelect');
+            if (!sel) return;
+
+            const allList = window.currentJobOrders || [];
+            const deduped = [];
+            const seenFactories = new Set();
+
+            allList.forEach(j => {
+                const normKey = String(j.factory_name || j.code || '').trim().toLowerCase();
+                if (!normKey || !seenFactories.has(normKey)) {
+                    if (normKey) seenFactories.add(normKey);
+                    deduped.push(j);
+                }
+            });
+
+            if (selectedJobId && !deduped.some(j => j.id === selectedJobId)) {
+                const chosen = allList.find(j => j.id === selectedJobId);
+                if (chosen) deduped.unshift(chosen);
+            }
+
+            sel.innerHTML = '';
+            const defaultOpt = document.createElement('option');
+            defaultOpt.value = '';
+            defaultOpt.textContent = '-- Chọn nhà máy đã lưu để nạp nhanh mẫu (hoặc nhập mới hoàn toàn) --';
+            sel.appendChild(defaultOpt);
+
+            deduped.forEach(j => {
+                const opt = document.createElement('option');
+                opt.value = j.id || '';
+                const name = j.factory_name || 'Chưa cập nhật tên xưởng';
+                const loc = j.work_location ? ` — ${j.work_location}` : '';
+                const st = (j.status && j.status !== 'Đang tuyển') ? ` (${j.status})` : '';
+                opt.textContent = `[${j.code || ''}] ${name}${loc}${st}`;
+                sel.appendChild(opt);
+            });
+
+            sel.value = selectedJobId || '';
+        }
+
+        function fillJobOrderFormFromRecord(job, isClone) {
+            const bInfo = getJobOrderBrokerInfo(job);
+            const brokerEl = document.getElementById('jobOrder_brokerSelect');
+            if (brokerEl) {
+                if (bInfo.code && !Array.from(brokerEl.options).some(o => o.value === bInfo.code)) {
+                    const opt = document.createElement('option');
+                    opt.value = bInfo.code;
+                    opt.textContent = bInfo.name ? `${bInfo.code} — ${bInfo.name}` : bInfo.code;
+                    brokerEl.appendChild(opt);
+                }
+                brokerEl.value = bInfo.code || '';
+            }
+
+            document.getElementById('jobOrder_id').value = isClone ? '' : (job.id || '');
+            document.getElementById('jobOrder_code').value = isClone
+                ? (bInfo.code ? `${bInfo.code}-${getTodayJobCode()}` : getTodayJobCode())
+                : (job.code || '');
+            document.getElementById('jobOrder_titleNote').value = job.title_note || '';
+            document.getElementById('jobOrder_status').value = isClone ? 'Đang tuyển' : (job.status || 'Đang tuyển');
+            document.getElementById('jobOrder_factoryName').value = job.factory_name || '';
+            document.getElementById('jobOrder_workLocation').value = job.work_location || '';
+            document.getElementById('jobOrder_productJob').value = job.product_job || '';
+            document.getElementById('jobOrder_jobType').value = job.job_type || 'Lao động phổ thông';
+            document.getElementById('jobOrder_factoryWebsite').value = job.factory_website || '';
+
+            const gType = job.gender_type || 'both';
+            const radio = document.querySelector(`input[name="jobOrder_genderRadio"][value="${gType}"]`);
+            if (radio) radio.checked = true;
+
+            const crit = job.recruitment_criteria || {};
+            document.getElementById('jobOrder_maleCount').value = crit.male_count ?? '0';
+            document.getElementById('jobOrder_maleHeight').value = crit.male_height ?? '165';
+            document.getElementById('jobOrder_maleWeight').value = crit.male_weight ?? '55';
+            document.getElementById('jobOrder_femaleCount').value = crit.female_count ?? '0';
+            document.getElementById('jobOrder_femaleHeight').value = crit.female_height ?? '155';
+            document.getElementById('jobOrder_femaleWeight').value = crit.female_weight ?? '50';
+            document.getElementById('jobOrder_ageRange').value = crit.age_range ?? '20 tuổi trở lên';
+            document.getElementById('jobOrder_education').value = crit.education ?? 'PTTH trở lên';
+            document.getElementById('jobOrder_marriage').value = crit.marriage ?? 'Không yêu cầu';
+            document.getElementById('jobOrder_interviewMethod').value = crit.interview_method ?? '';
+            document.getElementById('jobOrder_contractTerm').value = crit.contract_term ?? '';
+
+            document.getElementById('jobOrder_jobDescription').value = job.job_description || '';
+
+            document.getElementById('jobOrder_salaryBase').value = job.salary_base || '29,500NT$';
+            document.getElementById('jobOrder_salaryOvertime').value = job.salary_overtime ?? '';
+            document.getElementById('jobOrder_overtimeHours').value = job.overtime_hours ?? '';
+            document.getElementById('jobOrder_deductionAmount').value = job.deduction_amount ?? '';
+            document.getElementById('jobOrder_shiftPolicy').value = job.shift_policy ?? '';
+            document.getElementById('jobOrder_overtimePolicy').value = job.overtime_policy ?? '';
+            document.getElementById('jobOrder_mealAllowance').value = job.meal_allowance ?? '';
+
+            window.jobOrderNotes = Array.isArray(job.other_notes) ? [...job.other_notes] : [];
+            window.jobOrderImages = Array.isArray(job.images_json) ? [...job.images_json] : [];
+        }
+
+        function cloneJobOrder(jobId) {
+            if (!jobId) return;
+            openJobOrderModal(jobId, { clone: true });
+        }
+
+        function applyJobOrderTemplateFromSelect(jobId) {
+            if (jobId) {
+                openJobOrderModal(jobId, { clone: true });
+            } else {
+                openJobOrderModal();
+            }
+        }
+
+        function cloneCurrentJobOrderInModal() {
+            const currentId = (document.getElementById('jobOrder_id')?.value || '').trim();
+            if (!currentId) return;
+            openJobOrderModal(currentId, { clone: true });
+        }
+
+        function openJobOrderModal(jobId, options = {}) {
             const modal = document.getElementById('jobOrderModal');
             const backdrop = document.getElementById('jobOrderBackdrop');
             if (!modal) return;
 
+            const isClone = Boolean(jobId && options && options.clone);
             const modalTitle = document.getElementById('jobOrderModalTitle');
+            const submitBtn = document.getElementById('jobOrderSubmitBtn');
             const previewBtn = document.getElementById('jobOrderPreviewBtn');
+            const cloneEditBtn = document.getElementById('jobOrderCloneFromEditBtn');
+            const quickCloneBar = document.getElementById('jobOrderQuickCloneBar');
+            const cloneBanner = document.getElementById('jobOrderCloneBanner');
+            const cloneBannerText = document.getElementById('jobOrderCloneBannerText');
+            const codeEl = document.getElementById('jobOrder_code');
+            const sec2El = document.getElementById('joSec2');
+
+            populateJobBrokerDropdowns();
+            populateJobOrderCloneSelect(isClone ? jobId : '');
 
             if (jobId) {
                 const job = (window.currentJobOrders || []).find(j => j.id === jobId);
@@ -8206,51 +8948,36 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                     return;
                 }
 
-                if (modalTitle) modalTitle.textContent = `Chỉnh Sửa Bảng Công Việc: [${job.code}]`;
-                document.getElementById('jobOrder_id').value = job.id || '';
-                document.getElementById('jobOrder_code').value = job.code || '';
-                document.getElementById('jobOrder_titleNote').value = job.title_note || '';
-                document.getElementById('jobOrder_status').value = job.status || 'Đang tuyển';
-                document.getElementById('jobOrder_factoryName').value = job.factory_name || '';
-                document.getElementById('jobOrder_workLocation').value = job.work_location || '';
-                document.getElementById('jobOrder_productJob').value = job.product_job || '';
-                document.getElementById('jobOrder_jobType').value = job.job_type || 'Lao động phổ thông';
-                document.getElementById('jobOrder_factoryWebsite').value = job.factory_website || '';
+                fillJobOrderFormFromRecord(job, isClone);
 
-                const gType = job.gender_type || 'both';
-                const radio = document.querySelector(`input[name="jobOrder_genderRadio"][value="${gType}"]`);
-                if (radio) radio.checked = true;
-
-                const crit = job.recruitment_criteria || {};
-                document.getElementById('jobOrder_maleCount').value = crit.male_count || '0';
-                document.getElementById('jobOrder_maleHeight').value = crit.male_height || '165';
-                document.getElementById('jobOrder_maleWeight').value = crit.male_weight || '55';
-                document.getElementById('jobOrder_femaleCount').value = crit.female_count || '0';
-                document.getElementById('jobOrder_femaleHeight').value = crit.female_height || '155';
-                document.getElementById('jobOrder_femaleWeight').value = crit.female_weight || '50';
-                document.getElementById('jobOrder_ageRange').value = crit.age_range || '20 tuổi trở lên';
-                document.getElementById('jobOrder_education').value = crit.education || 'PTTH trở lên';
-                document.getElementById('jobOrder_marriage').value = crit.marriage || 'Không yêu cầu';
-                document.getElementById('jobOrder_interviewMethod').value = crit.interview_method || 'Form + Line pv + clip GTBT';
-                document.getElementById('jobOrder_contractTerm').value = crit.contract_term || '03 năm + 12';
-
-                document.getElementById('jobOrder_jobDescription').value = job.job_description || '';
-
-                document.getElementById('jobOrder_salaryBase').value = job.salary_base || '29,500NT$';
-                document.getElementById('jobOrder_salaryOvertime').value = job.salary_overtime || '164NT$/h';
-                document.getElementById('jobOrder_overtimeHours').value = job.overtime_hours || '72hr/tháng (Đã gồm Thứ Bảy)';
-                document.getElementById('jobOrder_deductionAmount').value = job.deduction_amount || '2500NT$/tháng';
-                document.getElementById('jobOrder_shiftPolicy').value = job.shift_policy || 'Nhà máy làm việc 02 ca, nghỉ luân phiên nhưng không cố định theo Thứ Bảy , CN.';
-                document.getElementById('jobOrder_overtimePolicy').value = job.overtime_policy || 'Nghỉ Chủ Nhật hằng tuần nhưng phải phối hợp tăng ca nếu nhà máy yêu cầu.';
-                document.getElementById('jobOrder_mealAllowance').value = job.meal_allowance || '';
-
-                window.jobOrderNotes = Array.isArray(job.other_notes) ? [...job.other_notes] : [];
-                window.jobOrderImages = Array.isArray(job.images_json) ? [...job.images_json] : [];
-
-                if (previewBtn) previewBtn.style.display = 'inline-flex';
+                if (isClone) {
+                    if (modalTitle) modalTitle.textContent = `Tạo Đợt Tuyển Mới (từ [${job.code || ''}])`;
+                    if (submitBtn) submitBtn.textContent = '💾 Tạo Đợt Tuyển Mới';
+                    if (previewBtn) previewBtn.style.display = 'none';
+                    if (cloneEditBtn) cloneEditBtn.style.display = 'none';
+                    if (quickCloneBar) quickCloneBar.style.display = 'flex';
+                    if (cloneBanner) cloneBanner.style.display = 'flex';
+                    if (cloneBannerText) {
+                        cloneBannerText.textContent = `[${job.code || ''}] — ${job.factory_name || 'Nhà máy'}`;
+                    }
+                    codeEl?.classList.add('jo-clone-highlight');
+                    sec2El?.classList.add('jo-clone-highlight');
+                } else {
+                    if (modalTitle) modalTitle.textContent = `Chỉnh Sửa Bảng Công Việc: [${job.code}]`;
+                    if (submitBtn) submitBtn.textContent = '💾 Lưu Bảng Công Việc';
+                    if (previewBtn) previewBtn.style.display = 'inline-flex';
+                    if (cloneEditBtn) cloneEditBtn.style.display = 'inline-flex';
+                    if (quickCloneBar) quickCloneBar.style.display = 'none';
+                    if (cloneBanner) cloneBanner.style.display = 'none';
+                    codeEl?.classList.remove('jo-clone-highlight');
+                    sec2El?.classList.remove('jo-clone-highlight');
+                }
             } else {
                 // Tạo mới: để trống các ô đặc thù của đơn hàng (không nạp mẫu bánh mì Bội Nhĩ), giữ các mức lương/chế độ chuẩn Đài Loan
                 if (modalTitle) modalTitle.textContent = 'Tạo Bảng Công Việc Mới';
+                if (submitBtn) submitBtn.textContent = '💾 Lưu Bảng Công Việc';
+                const brokerEl = document.getElementById('jobOrder_brokerSelect');
+                if (brokerEl) brokerEl.value = '';
                 document.getElementById('jobOrder_id').value = '';
                 document.getElementById('jobOrder_code').value = '';
                 document.getElementById('jobOrder_titleNote').value = '';
@@ -8289,6 +9016,11 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 window.jobOrderImages = [];
 
                 if (previewBtn) previewBtn.style.display = 'none';
+                if (cloneEditBtn) cloneEditBtn.style.display = 'none';
+                if (quickCloneBar) quickCloneBar.style.display = 'flex';
+                if (cloneBanner) cloneBanner.style.display = 'none';
+                codeEl?.classList.remove('jo-clone-highlight');
+                sec2El?.classList.remove('jo-clone-highlight');
             }
 
             renderJobOrderNotes();
@@ -8308,7 +9040,13 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             });
 
             updateJobOrderLivePreview();
-            setTimeout(() => document.getElementById('jobOrder_code')?.focus(), 50);
+            setTimeout(() => {
+                const targetCodeEl = document.getElementById('jobOrder_code');
+                if (targetCodeEl) {
+                    targetCodeEl.focus();
+                    if (isClone && typeof targetCodeEl.select === 'function') targetCodeEl.select();
+                }
+            }, 50);
         }
 
         function closeJobOrderModal() {
@@ -8316,6 +9054,8 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             const backdrop = document.getElementById('jobOrderBackdrop');
             if (modal) modal.classList.remove('is-open');
             if (backdrop) backdrop.classList.remove('is-open');
+            document.getElementById('jobOrder_code')?.classList.remove('jo-clone-highlight');
+            document.getElementById('joSec2')?.classList.remove('jo-clone-highlight');
         }
 
         if (!window._joEscListenerAttached) {
@@ -8350,7 +9090,17 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
 
             const genderRadio = document.querySelector('input[name="jobOrder_genderRadio"]:checked')?.value || 'both';
 
+            let brokerCode = (document.getElementById('jobOrder_brokerSelect')?.value || '').trim().toUpperCase();
+            if (!brokerCode) {
+                const prefixMatch = code.match(/^([A-Z]{2,5})-/);
+                if (prefixMatch) brokerCode = prefixMatch[1];
+            }
+            const foundBroker = getJobOrderBrokerList().find(b => b.code === brokerCode);
+            const brokerName = foundBroker ? foundBroker.name : '';
+
             const criteria = {
+                broker_code: brokerCode,
+                broker_name: brokerName,
                 male_count: document.getElementById('jobOrder_maleCount')?.value || '0',
                 male_height: document.getElementById('jobOrder_maleHeight')?.value || '165',
                 male_weight: document.getElementById('jobOrder_maleWeight')?.value || '55',
@@ -8425,7 +9175,9 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             } finally {
                 if (submitBtn) {
                     submitBtn.disabled = false;
-                    submitBtn.textContent = '💾 Lưu Bảng Công Việc';
+                    const isCloneMode = !document.getElementById('jobOrder_id')?.value &&
+                        document.getElementById('jobOrderCloneBanner')?.style.display !== 'none';
+                    submitBtn.textContent = isCloneMode ? '💾 Tạo Đợt Tuyển Mới' : '💾 Lưu Bảng Công Việc';
                 }
             }
         }

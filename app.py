@@ -5749,6 +5749,44 @@ def api_single_job_order(j_id):
     })
 
 
+@app.route('/api/job-orders/<j_id>/quick-update', methods=['POST'])
+@auth_required
+def api_quick_update_job_order(j_id):
+    import re
+    job = db.session.get(JobOrder, j_id)
+    if not job:
+        return jsonify({'success': False, 'error': 'Không tìm thấy đơn hàng'}), 404
+
+    data = request.get_json() or {}
+    try:
+        crit = json.loads(job.recruitment_criteria) if job.recruitment_criteria else {}
+    except Exception:
+        crit = {}
+
+    if 'status' in data and (data.get('status') or '').strip():
+        job.status = data['status'].strip()
+
+    if 'broker_code' in data:
+        b_code = (data.get('broker_code') or '').strip().upper()
+        b_name = (data.get('broker_name') or '').strip()
+        crit['broker_code'] = b_code
+        crit['broker_name'] = b_name
+        job.recruitment_criteria = json.dumps(crit, ensure_ascii=False)
+        if data.get('sync_code_prefix', True):
+            base_code = re.sub(r'^[A-Z]{2,5}-', '', (job.code or '').strip())
+            job.code = f"{b_code}-{base_code}" if b_code else base_code
+
+    job.updated_at = datetime.utcnow()
+    db.session.commit()
+    return jsonify({
+        'success': True,
+        'id': job.id,
+        'code': job.code,
+        'status': job.status,
+        'recruitment_criteria': crit
+    })
+
+
 @app.route('/job-order/<j_id>')
 def view_job_order_public(j_id):
     """Trang xem và in Bảng Công Việc công khai (Public Link) dành cho Tuyển dụng & Ứng viên."""
