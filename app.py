@@ -5831,21 +5831,12 @@ def view_job_order_public(j_id):
     if job.product_job:
         og_desc += f" | {job.product_job}"
 
-    og_image = ''
-    if imgs and len(imgs) > 0 and imgs[0]:
-        og_image = imgs[0]
-        if og_image.startswith('/'):
-            og_image = request.host_url.rstrip('/') + og_image
-    else:
-        og_image = url_for('static', filename='eagle_fct_new.png', _external=True)
-
     return render_template(
         'job_order_view.html',
         job=job,
         page_title=page_title,
         vn_factory_name=vn_factory,
         og_desc=og_desc,
-        og_image=og_image,
         criteria=crit,
         notes=notes,
         images=imgs,

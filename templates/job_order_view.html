@@ -5,12 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ page_title or ('BẢNG CÔNG VIỆC — ' ~ job.code) }}</title>
 
-    <!-- Open Graph Metadata dành riêng cho hiển thị đẹp trên Zalo, Facebook, iMessage -->
+    <!-- Open Graph Metadata dành riêng cho hiển thị trên Zalo, Facebook (Chỉ hiện liên kết & thông tin tóm tắt tinh gọn, không hiện ảnh banner lớn) -->
     <meta property="og:title" content="{{ page_title or ('BẢNG CÔNG VIỆC — ' ~ job.code) }}">
     <meta property="og:description" content="{{ og_desc or ('Thông tin chi tiết đơn hàng ' ~ job.code) }}">
-    <meta property="og:image" content="{{ og_image }}">
     <meta property="og:url" content="{{ request.url }}">
-    <meta property="og:type" content="article">
+    <meta property="og:type" content="website">
     <meta property="og:site_name" content="FCT Human Resource">
     <meta name="description" content="{{ og_desc or ('Thông tin chi tiết đơn hàng ' ~ job.code) }}">
 
