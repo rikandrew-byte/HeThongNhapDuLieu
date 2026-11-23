@@ -2076,8 +2076,11 @@
 
             <!-- Các nút thao tác luôn cố định bên phải -->
             <div class="jo-header-actions">
+                <button type="button" id="joTogglePreviewBtn" onclick="toggleJobOrderPreview()" class="jo-btn-outline-teal" title="Ẩn hoặc xem trước khung tờ A4">
+                    <span id="joTogglePreviewIcon">👁️</span><span id="joTogglePreviewText" class="jo-btn-label"> Xem trước A4</span>
+                </button>
                 <button type="button" id="jobOrderPreviewBtn" onclick="previewCurrentJobOrder()" class="jo-btn-outline-teal" style="display:none;" title="Mở trang in A4 trong tab mới">
-                    <span>👁️</span><span class="jo-btn-label"> Mở trang in</span>
+                    <span>🖨️</span><span class="jo-btn-label"> Mở trang in</span>
                 </button>
                 <button type="button" id="jobOrderCloneFromEditBtn" onclick="cloneCurrentJobOrderInModal()" class="jo-btn-outline-teal" style="display:none;" title="Giữ nguyên thông tin xưởng để tạo đợt tuyển mới (không ghi đè đơn cũ)">
                     <span>♻️</span><span class="jo-btn-label"> Nhân bản đợt mới</span>
@@ -2090,8 +2093,8 @@
             </div>
         </div>
 
-        <!-- 2. Studio 2 Cột: Trái Nhập Liệu | Phải Xem Trước A4 Trực Tiếp -->
-        <div class="jo-studio-body">
+        <!-- 2. Studio: Trái Nhập Liệu | Phải Xem Trước A4 Trực Tiếp (Mặc định ẩn xem trước để tối ưu diện tích) -->
+        <div class="jo-studio-body is-preview-collapsed">
             <!-- CỘT TRÁI: NHẬP LIỆU -->
             <div id="jobOrderPaneLeft" class="jo-pane-editor">
                 <!-- Thanh nhảy nhanh tới từng mục -->
@@ -2126,13 +2129,13 @@
 
                         <div class="jo-grid-4 jo-mb-12">
                             <div>
-                                <div class="jo-label-row">
-                                    <label class="jo-label" for="jobOrder_brokerSelect" style="margin-bottom:0;">Công ty môi giới (Mã)</label>
-                                    <button type="button" onclick="openJobOrderAddBrokerModal()" class="jo-inline-today-btn" title="Thêm công ty môi giới mới vào hệ thống">➕ Thêm môi giới</button>
+                                <label class="jo-label" for="jobOrder_brokerSelect">Công ty môi giới</label>
+                                <div style="display:flex; gap:6px; align-items:center;">
+                                    <select id="jobOrder_brokerSelect" class="jo-select" style="flex:1; min-width:0;" onchange="onJobBrokerSelectChange(this.value)">
+                                        <option value="">-- Chọn môi giới (HV, DK, TD...) --</option>
+                                    </select>
+                                    <button type="button" onclick="openJobOrderAddBrokerModal()" class="jo-btn-outline-teal" style="padding:0 10px; height:38px; border-radius:8px; font-weight:800; font-size:14px; flex-shrink:0; background:#f0fdfa;" title="Thêm công ty môi giới mới">➕</button>
                                 </div>
-                                <select id="jobOrder_brokerSelect" class="jo-select" onchange="onJobBrokerSelectChange(this.value)">
-                                    <option value="">-- Chọn môi giới (HV, DK, TD...) --</option>
-                                </select>
                             </div>
                             <div>
                                 <div class="jo-label-row">
@@ -2857,6 +2860,12 @@
         .jo-btn-outline-teal:hover {
             background: #ccfbf1;
         }
+        .jo-btn-outline-teal.is-active {
+            background: #008080 !important;
+            color: #ffffff !important;
+            border-color: #008080 !important;
+            box-shadow: 0 1px 4px rgba(0, 128, 128, 0.25);
+        }
         .jo-btn-ghost {
             padding: 8px 14px;
             background: #f1f5f9;
@@ -2941,6 +2950,18 @@
             flex: 1;
             min-height: 0;
             overflow: hidden;
+            transition: all 0.2s ease;
+        }
+        .jo-studio-body.is-preview-collapsed {
+            grid-template-columns: 1fr !important;
+        }
+        .jo-studio-body.is-preview-collapsed #jobOrderPaneRight {
+            display: none !important;
+        }
+        .jo-studio-body.is-preview-collapsed #jobOrderPaneLeft {
+            max-width: 1080px;
+            margin: 0 auto;
+            width: 100%;
         }
         .jo-pane-editor {
             overflow-y: auto;
@@ -8600,24 +8621,68 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             return shortName || c || '';
         }
 
-        function switchJobEditorMobilePane(pane) {
+        function toggleJobOrderPreview(forceState) {
+            const body = document.querySelector('.jo-studio-body');
             const leftPane = document.getElementById('jobOrderPaneLeft');
             const rightPane = document.getElementById('jobOrderPaneRight');
+            const btn = document.getElementById('joTogglePreviewBtn');
+            const iconEl = document.getElementById('joTogglePreviewIcon');
+            const textEl = document.getElementById('joTogglePreviewText');
             const tabEdit = document.getElementById('joMobileTabEdit');
             const tabPreview = document.getElementById('joMobileTabPreview');
+            if (!body) return;
 
-            if (pane === 'preview') {
-                if (leftPane) leftPane.classList.add('jo-mobile-hidden');
-                if (rightPane) rightPane.classList.remove('jo-mobile-hidden');
-                if (tabEdit) tabEdit.classList.remove('is-active');
-                if (tabPreview) tabPreview.classList.add('is-active');
+            const isMobile = window.innerWidth < 1100;
+            let isPreviewVisible = false;
+            if (isMobile) {
+                isPreviewVisible = rightPane && !rightPane.classList.contains('jo-mobile-hidden');
+            } else {
+                isPreviewVisible = !body.classList.contains('is-preview-collapsed');
+            }
+
+            const nextVisible = (typeof forceState === 'boolean') ? forceState : !isPreviewVisible;
+
+            if (nextVisible) {
+                // Hiển thị xem trước
+                body.classList.remove('is-preview-collapsed');
+                if (isMobile) {
+                    if (leftPane) leftPane.classList.add('jo-mobile-hidden');
+                    if (rightPane) rightPane.classList.remove('jo-mobile-hidden');
+                    if (tabEdit) tabEdit.classList.remove('is-active');
+                    if (tabPreview) tabPreview.classList.add('is-active');
+                } else {
+                    if (rightPane) rightPane.classList.remove('jo-mobile-hidden');
+                    if (leftPane) leftPane.classList.remove('jo-mobile-hidden');
+                }
+                if (iconEl) iconEl.textContent = '👁️';
+                if (textEl) textEl.textContent = ' Ẩn xem trước';
+                if (btn) {
+                    btn.classList.add('is-active');
+                    btn.title = 'Ẩn khung xem trước A4 trực tiếp';
+                }
                 updateJobOrderLivePreview();
             } else {
-                if (rightPane) rightPane.classList.add('jo-mobile-hidden');
-                if (leftPane) leftPane.classList.remove('jo-mobile-hidden');
-                if (tabPreview) tabPreview.classList.remove('is-active');
-                if (tabEdit) tabEdit.classList.add('is-active');
+                // Ẩn xem trước để có không gian nhập liệu tối đa
+                body.classList.add('is-preview-collapsed');
+                if (isMobile) {
+                    if (rightPane) rightPane.classList.add('jo-mobile-hidden');
+                    if (leftPane) leftPane.classList.remove('jo-mobile-hidden');
+                    if (tabPreview) tabPreview.classList.remove('is-active');
+                    if (tabEdit) tabEdit.classList.add('is-active');
+                } else {
+                    if (leftPane) leftPane.classList.remove('jo-mobile-hidden');
+                }
+                if (iconEl) iconEl.textContent = '👁️';
+                if (textEl) textEl.textContent = ' Xem trước A4';
+                if (btn) {
+                    btn.classList.remove('is-active');
+                    btn.title = 'Xem trước tờ A4 trực tiếp';
+                }
             }
+        }
+
+        function switchJobEditorMobilePane(pane) {
+            toggleJobOrderPreview(pane === 'preview');
         }
 
         function scrollToJobSection(secId) {
