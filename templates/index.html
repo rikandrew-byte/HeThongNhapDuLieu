@@ -844,7 +844,7 @@
            APP SHELL & LAYOUT OVERHAUL (DASHBOARD AS MAIN SCREEN)
            ═══════════════════════════════════════════════════════════ */
         
-        @media (min-width: 1024px) {
+        @media (min-width: 1024px) and (min-height: 651px) {
             .premium-sidebar {
                 width: 23.6% !important;
                 height: 100vh !important;
@@ -880,6 +880,153 @@
                 height: 100vh !important;
                 background: #ffffff !important;
                 padding-bottom: 80px !important;
+            }
+
+            /* Trên màn hình Desktop thực thụ ẩn nút chuyển thẻ di động */
+            .jo-view-mode-toggle {
+                display: none !important;
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+           TỐI ƯU TOÀN DIỆN CHO MÀN HÌNH DI ĐỘNG XOAY NGANG (LANDSCAPE)
+           ═══════════════════════════════════════════════════════════ */
+        @media (max-height: 650px) {
+            /* 1. Ẩn hoàn toàn thanh Sidebar để nhường 100% bề ngang cho Dashboard */
+            .premium-sidebar {
+                display: none !important;
+            }
+
+            /* 2. Modal mở rộng toàn màn hình (100% width & 100% height) */
+            #historyModal {
+                margin-left: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                height: 100dvh !important;
+                max-height: 100% !important;
+                max-height: 100dvh !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                border-radius: 0 !important;
+                position: fixed !important;
+            }
+
+            /* 3. Thu gọn chiều cao Header & Subtabs để giải phóng không gian dọc */
+            .modal-header-dark {
+                padding: 5px 12px !important;
+                min-height: 36px !important;
+            }
+            .modal-header-title {
+                font-size: 13.5px !important;
+            }
+            .modal-header-sub {
+                display: none !important;
+            }
+
+            .modal-tab-bar {
+                padding: 3px 8px !important;
+                gap: 4px !important;
+            }
+            .modal-tab-btn {
+                padding: 4px 8px !important;
+                font-size: 11px !important;
+            }
+
+            #tabContent-jobs {
+                padding: 5px 8px !important;
+            }
+
+            /* Hàng Subtabs + Nút tạo đơn hàng: thu gọn đệm */
+            #tabContent-jobs > div:first-child {
+                margin-bottom: 5px !important;
+                gap: 6px !important;
+            }
+            #subTabBtn-jobOrders,
+            #subTabBtn-jobAssign {
+                padding: 4px 8px !important;
+                font-size: 11px !important;
+            }
+            .jo-primary-cta {
+                padding: 4px 10px !important;
+                font-size: 11.5px !important;
+            }
+
+            /* Hàng Lifecycle: ẩn dòng nhắc nhở thừa, thu gọn tab */
+            .jo-lifecycle-bar {
+                margin-bottom: 5px !important;
+                gap: 5px !important;
+            }
+            .jo-lifecycle-tab {
+                padding: 4px 8px !important;
+                font-size: 11px !important;
+            }
+            .jo-lifecycle-hint {
+                display: none !important;
+            }
+
+            /* Thanh tìm kiếm & bộ lọc: thu gọn padding */
+            .jo-filter-bar {
+                padding: 5px 8px !important;
+                margin-bottom: 5px !important;
+                gap: 6px !important;
+            }
+            .jo-filter-bar-search input {
+                font-size: 11.5px !important;
+            }
+            .jo-filter-bar-controls select {
+                padding: 2px 6px !important;
+                font-size: 11px !important;
+                height: 26px !important;
+            }
+            .jo-view-mode-toggle {
+                display: inline-flex !important;
+            }
+            .jo-view-mode-toggle button {
+                padding: 2px 6px !important;
+                font-size: 11px !important;
+            }
+
+            /* 4. TRIỆT TIÊU LỖI CO CỤM HỘP CUỘN (Giải phóng vùng hiển thị chỉ có 1 dòng) */
+            /* Cho phép bảng mở rộng tối đa theo chiều cao còn lại của màn hình */
+            #subTabContent-jobOrders .job-table-wrapper {
+                max-height: none !important;
+                height: auto !important;
+                overflow-y: visible !important;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+            }
+
+            /* Ô bảng hiển thị gọn gàng, vừa tầm mắt */
+            .jo-list-table th {
+                padding: 6px 8px !important;
+                font-size: 10.5px !important;
+            }
+            .jo-list-table td {
+                padding: 6px 8px !important;
+                font-size: 12px !important;
+            }
+
+            /* Nút thao tác trên màn hình ngang thu nhỏ gọn, không choán chỗ */
+            .jo-act-grid {
+                width: 108px !important;
+                gap: 2px !important;
+            }
+            .jo-act-btn {
+                padding: 3px 4px !important;
+                font-size: 10px !important;
+            }
+
+            /* Khi ở chế độ thẻ trên màn hình ngang: chia 2 cột đều nhau */
+            .jo-list-container.is-card-view .jo-list-table tbody {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 8px !important;
+                padding: 6px !important;
+            }
+            .jo-list-container.is-card-view .jo-card-row {
+                padding: 8px 10px !important;
+                gap: 5px !important;
             }
         }
 
@@ -1451,8 +1598,8 @@
                                 <option value="Tạm dừng">🔴 Tạm dừng</option>
                             </select>
                         </div>
-                        <!-- Nút chuyển đổi giao diện: Thẻ di động hoặc Bảng cuộn (chỉ hiện trên Mobile) -->
-                        <div class="jo-view-mode-toggle md:hidden" style="display:inline-flex; align-items:center; background:#f1f5f9; padding:2px; border-radius:8px; border:1px solid #cbd5e1; gap:2px;">
+                        <!-- Nút chuyển đổi giao diện: Thẻ di động hoặc Bảng cuộn -->
+                        <div class="jo-view-mode-toggle" style="display:inline-flex; align-items:center; background:#f1f5f9; padding:2px; border-radius:8px; border:1px solid #cbd5e1; gap:2px;">
                             <button type="button" id="joViewModeBtn-card" onclick="setJobOrdersViewMode('card')" title="Xem dạng thẻ (tối ưu di động, hiển thị đầy đủ không bị tràn)"
                                 style="padding:5px 9px; border-radius:6px; font-size:11.5px; font-weight:750; border:none; cursor:pointer; background:transparent; color:#64748b; display:inline-flex; align-items:center; gap:4px; transition:all 0.14s;">
                                 <span>📱</span> <span>Thẻ</span>
@@ -8591,12 +8738,18 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             applyJobOrdersViewMode(getJobOrdersViewMode());
         }
 
+        function isMobileLandscapeOrSmallScreen() {
+            // Thiết bị di động: Chiều rộng <= 768px HOẶC Chiều cao màn hình <= 650px (Điện thoại xoay ngang)
+            return (window.innerWidth <= 768) || (window.innerHeight <= 650);
+        }
+
         function getJobOrdersViewMode() {
-            // Trên Desktop (màn hình > 768px): Luôn hiển thị giao diện bảng nguyên bản 100%
-            if (window.innerWidth > 768) return 'table';
+            // Trên Desktop thực sự (màn hình rộng VÀ chiều cao chuẩn > 650px): Luôn hiển thị giao diện bảng nguyên bản 100%
+            if (!isMobileLandscapeOrSmallScreen()) return 'table';
             const saved = localStorage.getItem('jo_view_mode');
             if (saved === 'card' || saved === 'table') return saved;
-            return 'card';
+            // Màn hình dọc ưu tiên 'card', màn hình xoay ngang mặc định 'table' để tận dụng bề rộng
+            return (window.innerWidth <= 768 && window.innerHeight > window.innerWidth) ? 'card' : 'table';
         }
 
         function setJobOrdersViewMode(mode) {
@@ -8610,7 +8763,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             const btnTable = document.getElementById('joViewModeBtn-table');
 
             // Trên Desktop luôn luôn giữ nguyên giao diện bảng chuẩn 100%
-            if (window.innerWidth > 768) {
+            if (!isMobileLandscapeOrSmallScreen()) {
                 if (container) {
                     container.classList.remove('is-card-view');
                     container.classList.add('is-table-view');
@@ -8618,8 +8771,10 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 return;
             }
 
+            const activeMode = mode || getJobOrdersViewMode();
+
             if (container) {
-                if (mode === 'card') {
+                if (activeMode === 'card') {
                     container.classList.add('is-card-view');
                     container.classList.remove('is-table-view');
                 } else {
@@ -8629,7 +8784,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             }
 
             if (btnCard && btnTable) {
-                if (mode === 'card') {
+                if (activeMode === 'card') {
                     btnCard.style.background = '#008080';
                     btnCard.style.color = '#ffffff';
                     btnCard.style.boxShadow = '0 1px 3px rgba(0,128,128,0.2)';
@@ -8646,6 +8801,16 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 }
             }
         }
+
+        // Tự động thích ứng khi xoay màn hình giữa dọc và ngang
+        window.addEventListener('resize', () => {
+            applyJobOrdersViewMode(getJobOrdersViewMode());
+        });
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                applyJobOrdersViewMode(getJobOrdersViewMode());
+            }, 100);
+        });
 
         function filterJobAssignByCode(jobCode) {
             switchJobSubTab('jobAssign');
