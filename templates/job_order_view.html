@@ -1205,19 +1205,6 @@
                                 {% if job.title_note %}
                                 <span class="exec-code-note">({{ job.title_note }})</span>
                                 {% endif %}
-                                {% if criteria.get('broker_code') or criteria.get('broker_name') %}
-                                <span class="broker-chip">🏢 {{ criteria.get('broker_name') or criteria.get('broker_code') }}</span>
-                                {% elif job.code.startswith('HV-') %}
-                                <span class="broker-chip">🏢 Hoàn Vũ (HV)</span>
-                                {% elif job.code.startswith('DK-') %}
-                                <span class="broker-chip">🏢 Đại Khánh (DK)</span>
-                                {% elif job.code.startswith('TD-') %}
-                                <span class="broker-chip">🏢 Thắng Đô (TD)</span>
-                                {% elif job.code.startswith('CT-') %}
-                                <span class="broker-chip">🏢 Chân Thừa (CT)</span>
-                                {% elif job.code.startswith('BMY-') %}
-                                <span class="broker-chip">🏢 Bảo Mãn Ý (BMY)</span>
-                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -1273,7 +1260,7 @@
                         <div class="data-row">
                             <div class="data-label">Địa điểm làm việc:</div>
                             <div class="data-value" style="font-weight:750;">
-                                📍 {{ job.work_location }}, Đài Loan
+                                📍 {{ job.work_location }}{% if 'Đài Loan' not in job.work_location %}, Đài Loan{% endif %}
                             </div>
                         </div>
                         {% endif %}

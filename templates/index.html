@@ -8916,9 +8916,6 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                     ? `${escJob(femaleCount || '0')} Nữ`
                     : `${escJob(maleCount || '0')} Nam / ${escJob(femaleCount || '0')} Nữ`);
 
-            const brokerCodeVal = (document.getElementById('jobOrder_brokerSelect')?.value || '').trim().toUpperCase();
-            const brokerChipHtml = brokerCodeVal ? `<span style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; padding:1px 6px; border-radius:4px; font-size:10px; font-weight:800;">🏢 ${escJob(brokerCodeVal)}</span>` : '';
-
             bodyEl.innerHTML = `
                 <div class="jo-a4-content">
                     <header>
@@ -8932,7 +8929,6 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                             <div class="jo-a4-meta-row" style="margin-top:4px;">
                                 <span>MÃ ĐƠN: <strong style="color:#008080;">${escJob(code || '...')}</strong></span>
                                 ${titleNote ? `<strong style="color:#0d9488;">(${escJob(titleNote)})</strong>` : ''}
-                                ${brokerChipHtml}
                             </div>
                         </div>
                         <hr class="jo-a4-rule">
@@ -8951,7 +8947,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                                         ${escJob(factoryName || 'Chưa nhập tên công xưởng')}
                                     </td>
                                 </tr>
-                                ${workLocation ? `<tr><td class="jo-a4-lbl">Địa điểm làm việc:</td><td class="jo-a4-val" style="font-weight:750;">📍 ${escJob(workLocation)}, Đài Loan</td></tr>` : ''}
+                                ${workLocation ? `<tr><td class="jo-a4-lbl">Địa điểm làm việc:</td><td class="jo-a4-val" style="font-weight:750;">📍 ${escJob(workLocation)}${workLocation.includes('Đài Loan') ? '' : ', Đài Loan'}</td></tr>` : ''}
                                 <tr>
                                     <td class="jo-a4-lbl">Sản phẩm sản xuất:</td>
                                     <td class="jo-a4-val" style="font-weight:750; color:#0f172a;">${escJob(productJob || 'Theo quy định cụ thể của công xưởng')}</td>
