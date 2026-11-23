@@ -16,7 +16,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Plus Jakarta Sans hiện đại, hỗ trợ 100% tiếng Việt chuẩn; Noto Serif / Playfair Display cho tiêu đề trang trọng -->
+    <!-- Plus Jakarta Sans hiện đại, hỗ trợ 100% tiếng Việt chuẩn; Playfair Display cho tiêu đề trang trọng -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500;1,700&family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&display=swap" rel="stylesheet">
 
     <style>
@@ -67,7 +67,7 @@
         }
 
         body {
-            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--page-bg);
             color: var(--slate-800);
             line-height: 1.55;
@@ -118,13 +118,6 @@
             letter-spacing: 0.05em;
             color: #ffffff;
             text-transform: uppercase;
-        }
-
-        .bar-brand-sub {
-            font-size: 10.5px;
-            color: var(--slate-400);
-            font-weight: 600;
-            letter-spacing: 0.03em;
         }
 
         .status-pill {
@@ -234,7 +227,7 @@
             background: var(--paper-bg);
             border: 1px solid #d8e2ea;
             border-radius: var(--radius-xl);
-            padding: 38px 44px 44px 44px;
+            padding: 34px 44px 44px 44px;
             position: relative;
             box-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.03);
             overflow: hidden;
@@ -275,10 +268,10 @@
         }
 
         /* ============================================================
-           3. MASTER HEADER (Song Ngữ Việt - Trung Sang Trọng)
+           3. MASTER HEADER (Bố Cục Tinh Giản: Logo Trái, FCT-2026 Phải, Mã Đơn Dưới Tiêu Đề)
            ============================================================ */
         .exec-header {
-            padding-bottom: 20px;
+            padding-bottom: 18px;
             margin-bottom: 20px;
             border-bottom: 1.5px solid #e2e8f0;
             position: relative;
@@ -289,65 +282,73 @@
             align-items: center;
             justify-content: space-between;
             gap: 16px;
-            margin-bottom: 14px;
+            margin-bottom: 8px;
         }
 
         .exec-brand-box {
             display: flex;
             align-items: center;
-            gap: 12px;
         }
 
         .exec-eagle-logo {
-            height: 56px;
+            height: 54px;
             width: auto;
             object-fit: contain;
-            filter: drop-shadow(0 2px 6px rgba(0, 128, 128, 0.2));
+            filter: drop-shadow(0 2px 5px rgba(0, 128, 128, 0.18));
         }
 
-        .exec-brand-text {
-            display: flex;
-            flex-direction: column;
+        /* Tag Niên Khóa FCT-2026 ở góc trên bên phải */
+        .fct-year-tag {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 13.5px;
+            font-weight: 850;
+            letter-spacing: 0.08em;
+            color: #334155;
+            background: #f8fafc;
+            border: 1.5px solid #cbd5e1;
+            padding: 5px 16px;
+            border-radius: 999px;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
         }
 
-        .exec-company-name {
+        .exec-title-block {
+            text-align: center;
+            margin-top: 2px;
+            padding: 4px 0 2px 0;
+        }
+
+        .exec-main-title {
             font-family: 'Playfair Display', Georgia, serif;
-            font-size: 15px;
-            font-weight: 800;
-            letter-spacing: 0.06em;
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: 0.04em;
             color: var(--teal-primary);
             text-transform: uppercase;
-            line-height: 1.2;
+            line-height: 1.22;
+            margin-bottom: 10px;
         }
 
-        .exec-company-sub {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--slate-500);
-            letter-spacing: 0.02em;
-            margin-top: 2px;
-        }
-
-        .exec-meta-box {
+        /* Mã đơn canh giữa nằm ngay dưới Bảng thông tin công việc */
+        .exec-code-center-box {
             display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 5px;
+            justify-content: center;
+            align-items: center;
+            margin-top: 2px;
         }
 
         .exec-code-badge {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             background: linear-gradient(135deg, #f0fdfa 0%, #ecfeff 100%);
             border: 1.5px solid var(--teal-primary);
-            padding: 5px 14px;
+            padding: 6px 18px;
             border-radius: 999px;
             box-shadow: 0 2px 8px rgba(0, 128, 128, 0.1);
         }
 
         .exec-code-label {
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 800;
             color: var(--teal-dark);
             letter-spacing: 0.08em;
@@ -356,54 +357,27 @@
 
         .exec-code-value {
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-            font-size: 14.5px;
+            font-size: 15px;
             font-weight: 850;
             color: var(--teal-primary);
             letter-spacing: 0.04em;
         }
 
-        .exec-meta-subline {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--slate-500);
+        .exec-code-note {
+            font-size: 12px;
+            font-weight: 800;
+            color: #0d9488;
         }
 
         .broker-chip {
-            background: #f1f5f9;
+            background: #ffffff;
             color: var(--slate-700);
             border: 1px solid #cbd5e1;
-            padding: 1px 7px;
-            border-radius: 4px;
-            font-size: 10.5px;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 11px;
             font-weight: 800;
-        }
-
-        .exec-title-block {
-            text-align: center;
-            margin-top: 4px;
-            padding: 6px 0;
-        }
-
-        .exec-main-title {
-            font-family: 'Playfair Display', Georgia, serif;
-            font-size: 30px;
-            font-weight: 900;
-            letter-spacing: 0.05em;
-            color: var(--teal-primary);
-            text-transform: uppercase;
-            line-height: 1.25;
-            margin-bottom: 4px;
-        }
-
-        .exec-zh-title {
-            font-size: 13px;
-            font-weight: 750;
-            color: var(--slate-600);
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
         }
 
         /* ============================================================
@@ -444,25 +418,18 @@
 
         .metric-icon-wrap {
             font-size: 16px;
-            margin-bottom: 3px;
+            margin-bottom: 4px;
             opacity: 0.9;
         }
 
         .metric-label-vi {
-            font-size: 10px;
+            font-size: 10.5px;
             font-weight: 800;
-            color: var(--slate-500);
+            color: var(--slate-600);
             text-transform: uppercase;
             letter-spacing: 0.06em;
-            line-height: 1.2;
-        }
-
-        .metric-label-zh {
-            font-size: 9px;
-            font-weight: 700;
-            color: var(--slate-400);
-            letter-spacing: 0.05em;
-            margin-bottom: 4px;
+            line-height: 1.25;
+            margin-bottom: 5px;
         }
 
         .metric-number {
@@ -540,14 +507,6 @@
             text-transform: uppercase;
         }
 
-        .exec-card-title-zh {
-            font-size: 10.5px;
-            font-weight: 750;
-            color: var(--teal-primary);
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-        }
-
         /* Ma trận dữ liệu hàng ngang (Executive Data Row) */
         .data-grid {
             display: grid;
@@ -584,7 +543,7 @@
             line-height: 1.5;
         }
 
-        .factory-name-zh {
+        .factory-name-main {
             font-size: 16px;
             font-weight: 850;
             color: var(--slate-900);
@@ -678,12 +637,6 @@
             font-weight: 850;
             letter-spacing: 0.05em;
             text-transform: uppercase;
-        }
-
-        .gender-title-zh {
-            font-size: 10px;
-            font-weight: 750;
-            letter-spacing: 0.05em;
         }
 
         .gender-row {
@@ -921,14 +874,6 @@
             line-height: 1.3;
         }
 
-        .auth-col-title-zh {
-            font-size: 10px;
-            font-weight: 700;
-            color: var(--slate-500);
-            letter-spacing: 0.05em;
-            margin-top: 2px;
-        }
-
         .auth-commitment {
             font-size: 11px;
             font-weight: 550;
@@ -978,7 +923,7 @@
         .seal-text-group {
             display: flex;
             flex-direction: column;
-            line-height: 1.1;
+            line-height: 1.15;
         }
 
         .seal-title {
@@ -1147,9 +1092,6 @@
             .bar-brand-title {
                 font-size: 12.5px;
             }
-            .bar-brand-sub {
-                display: none;
-            }
             .status-pill {
                 padding: 2px 7px;
                 font-size: 10px;
@@ -1177,16 +1119,12 @@
             }
 
             .exec-header-top {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 12px;
+                margin-bottom: 6px;
             }
 
-            .exec-meta-box {
-                align-items: flex-start;
-                width: 100%;
-                border-top: 1px dashed #e2e8f0;
-                padding-top: 10px;
+            .fct-year-tag {
+                font-size: 11.5px;
+                padding: 4px 12px;
             }
 
             .exec-main-title {
@@ -1253,7 +1191,6 @@
             <img src="{{ url_for('static', filename='eagle_fct_new.png') }}" alt="FCT Crest" class="bar-brand-logo">
             <div class="bar-brand-text">
                 <span class="bar-brand-title">FCT HUMAN RESOURCE</span>
-                <span class="bar-brand-sub">Taiwan Job Specification Center</span>
             </div>
             <span class="status-pill {% if job.status and job.status != 'Đang tuyển' %}is-done{% endif %}">
                 ● {{ job.status or 'ĐANG TUYỂN' }}
@@ -1288,25 +1225,28 @@
 
                 <!-- 1. MASTER HEADER -->
                 <header class="exec-header">
+                    <!-- Hàng trên: Logo Đại bàng bên trái - Tag FCT-2026 bên phải -->
                     <div class="exec-header-top">
                         <div class="exec-brand-box">
                             <img src="{{ url_for('static', filename='eagle_fct_new.png') }}" alt="FCT Crest Seal" class="exec-eagle-logo">
-                            <div class="exec-brand-text">
-                                <span class="exec-company-name">FCT HUMAN RESOURCE VIETNAM</span>
-                                <span class="exec-company-sub">Trung Tâm Cung Ứng &amp; Quản Lý Nhân Lực Quốc Tế</span>
-                            </div>
                         </div>
 
-                        <div class="exec-meta-box">
+                        <div class="exec-right-tag">
+                            <span class="fct-year-tag">FCT-2026</span>
+                        </div>
+                    </div>
+
+                    <!-- Khối giữa: Tiêu đề lớn & Mã đơn canh giữa nằm ngay dưới -->
+                    <div class="exec-title-block">
+                        <h1 class="exec-main-title">BẢNG THÔNG TIN CÔNG VIỆC</h1>
+                        
+                        <div class="exec-code-center-box">
                             <div class="exec-code-badge">
                                 <span class="exec-code-label">MÃ ĐƠN:</span>
                                 <strong class="exec-code-value">{{ job.code }}</strong>
                                 {% if job.title_note %}
-                                <span style="font-size:11px; font-weight:800; color:#0d9488;">({{ job.title_note }})</span>
+                                <span class="exec-code-note">({{ job.title_note }})</span>
                                 {% endif %}
-                            </div>
-
-                            <div class="exec-meta-subline">
                                 {% if criteria.get('broker_code') or criteria.get('broker_name') %}
                                 <span class="broker-chip">🏢 {{ criteria.get('broker_name') or criteria.get('broker_code') }}</span>
                                 {% elif job.code.startswith('HV-') %}
@@ -1320,14 +1260,8 @@
                                 {% elif job.code.startswith('BMY-') %}
                                 <span class="broker-chip">🏢 Bảo Mãn Ý (BMY)</span>
                                 {% endif %}
-                                <span>NIÊN KHÓA {{ now_year }}</span>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="exec-title-block">
-                        <h1 class="exec-main-title">BẢNG THÔNG TIN CÔNG VIỆC</h1>
-                        <div class="exec-zh-title">臺灣工作內容與勞動條件說明書 · TAIWAN JOB SPECIFICATION</div>
                     </div>
                 </header>
 
@@ -1353,7 +1287,6 @@
                     <div class="metric-card m-salary">
                         <div class="metric-icon-wrap">💰</div>
                         <div class="metric-label-vi">Lương Cơ Bản</div>
-                        <div class="metric-label-zh">基本薪資</div>
                         <div class="metric-number">{{ job.salary_base or '29,500NT$' }}</div>
                         <div class="metric-subnote">Theo Luật Đài Loan</div>
                     </div>
@@ -1362,7 +1295,6 @@
                     <div class="metric-card m-ot">
                         <div class="metric-icon-wrap">⏱️</div>
                         <div class="metric-label-vi">Tăng Ca Dự Kiến</div>
-                        <div class="metric-label-zh">預估加班時數</div>
                         <div class="metric-number">{{ ot_main }}</div>
                         <div class="metric-subnote">{{ ot_sub if ot_sub else 'Thu nhập hấp dẫn' }}</div>
                     </div>
@@ -1371,7 +1303,6 @@
                     <div class="metric-card m-quota">
                         <div class="metric-icon-wrap">👥</div>
                         <div class="metric-label-vi">Chỉ Tiêu Tuyển</div>
-                        <div class="metric-label-zh">招募需求人數</div>
                         <div class="metric-number">
                             {% if job.gender_type == 'male' %}
                                 {{ criteria.get('male_count', '0') }} Nam
@@ -1388,11 +1319,10 @@
                     <div class="metric-card m-loc">
                         <div class="metric-icon-wrap">📍</div>
                         <div class="metric-label-vi">Địa Điểm Làm Việc</div>
-                        <div class="metric-label-zh">廠區所在地</div>
                         <div class="metric-number" style="font-size:15px; font-weight:800;">
-                            {{ job.work_location or 'Đài Loan (臺灣)' }}
+                            {{ job.work_location or 'Đài Loan' }}
                         </div>
-                        <div class="metric-subnote">Đài Loan (臺灣)</div>
+                        <div class="metric-subnote">Đài Loan</div>
                     </div>
                 </div>
 
@@ -1403,7 +1333,6 @@
                             <span class="exec-badge-num">I</span>
                             <div>
                                 <h2 class="exec-card-title-vi">Thông Tin Công Xưởng &amp; Địa Điểm</h2>
-                                <div class="exec-card-title-zh">雇主企業與廠區資訊 · ESTABLISHMENT &amp; LOCATION</div>
                             </div>
                         </div>
                     </div>
@@ -1412,7 +1341,7 @@
                         <div class="data-row">
                             <div class="data-label">Tên nhà máy (Công xưởng):</div>
                             <div class="data-value">
-                                <div class="factory-name-zh">{{ job.factory_name or 'Chưa cập nhật' }}</div>
+                                <div class="factory-name-main">{{ job.factory_name or 'Chưa cập nhật' }}</div>
                                 {% if vn_factory_name and vn_factory_name != job.factory_name %}
                                 <div class="factory-name-vi">🏢 Tên tiếng Việt: {{ vn_factory_name }}</div>
                                 {% endif %}
@@ -1423,7 +1352,7 @@
                         <div class="data-row">
                             <div class="data-label">Địa điểm cụ thể:</div>
                             <div class="data-value" style="font-weight:750;">
-                                📍 {{ job.work_location }}, Đài Loan (臺灣)
+                                📍 {{ job.work_location }}, Đài Loan
                             </div>
                         </div>
                         {% endif %}
@@ -1449,7 +1378,6 @@
                             <span class="exec-badge-num">II</span>
                             <div>
                                 <h2 class="exec-card-title-vi">Sản Phẩm Sản Xuất &amp; Ngành Nghề Chính</h2>
-                                <div class="exec-card-title-zh">主要產品與職缺類別 · INDUSTRY &amp; PRODUCTS</div>
                             </div>
                         </div>
                     </div>
@@ -1480,7 +1408,6 @@
                             <span class="exec-badge-num">III</span>
                             <div>
                                 <h2 class="exec-card-title-vi">Tiêu Chuẩn &amp; Điều Kiện Tuyển Dụng</h2>
-                                <div class="exec-card-title-zh">招募標準與資格條件 · RECRUITMENT CRITERIA</div>
                             </div>
                         </div>
                     </div>
@@ -1504,7 +1431,6 @@
                         <div class="gender-card male">
                             <div class="gender-card-head">
                                 <span class="gender-title-vi">👨 LAO ĐỘNG NAM</span>
-                                <span class="gender-title-zh">MALE</span>
                             </div>
                             <div class="gender-row">
                                 <span class="gender-row-label">Số lượng tuyển:</span>
@@ -1525,7 +1451,6 @@
                         <div class="gender-card female">
                             <div class="gender-card-head">
                                 <span class="gender-title-vi">👩 LAO ĐỘNG NỮ</span>
-                                <span class="gender-title-zh">FEMALE</span>
                             </div>
                             <div class="gender-row">
                                 <span class="gender-row-label">Số lượng tuyển:</span>
@@ -1579,7 +1504,6 @@
                             <span class="exec-badge-num">IV</span>
                             <div>
                                 <h2 class="exec-card-title-vi">Nội Dung &amp; Yêu Cầu Công Việc</h2>
-                                <div class="exec-card-title-zh">工作內容與現場要求 · JOB DESCRIPTION &amp; SCOPE</div>
                             </div>
                         </div>
                     </div>
@@ -1596,7 +1520,6 @@
                             <span class="exec-badge-num">V</span>
                             <div>
                                 <h2 class="exec-card-title-vi">Chế Độ Lương Bổng, Tăng Ca &amp; Đãi Ngộ</h2>
-                                <div class="exec-card-title-zh">薪資福利與扣款明細 · COMPENSATION &amp; BENEFITS</div>
                             </div>
                         </div>
                     </div>
@@ -1675,7 +1598,6 @@
                             <span class="exec-badge-num">VI</span>
                             <div>
                                 <h2 class="exec-card-title-vi">Các Yêu Cầu &amp; Lưu Ý Khác</h2>
-                                <div class="exec-card-title-zh">備註與補充條款 · ADDITIONAL REQUIREMENTS &amp; NOTES</div>
                             </div>
                         </div>
                     </div>
@@ -1699,7 +1621,6 @@
                             <span class="exec-badge-num">VII</span>
                             <div>
                                 <h2 class="exec-card-title-vi">Hình Ảnh Thực Tế Nhà Xưởng &amp; Ký Túc Xá</h2>
-                                <div class="exec-card-title-zh">現場實景照片 · FIELD PHOTOGRAPHS &amp; SITE INSPECTION</div>
                             </div>
                         </div>
                     </div>
@@ -1721,7 +1642,6 @@
                     <div class="auth-col">
                         <div>
                             <div class="auth-col-title-vi">XÁC NHẬN CỦA NGƯỜI LAO ĐỘNG</div>
-                            <div class="auth-col-title-zh">勞工簽名確認 · CANDIDATE ACKNOWLEDGMENT</div>
                             <p class="auth-commitment">
                                 “Tôi đã được giải thích rõ ràng, đầy đủ và hoàn toàn đồng ý với toàn bộ nội dung công việc, tiêu chuẩn tuyển chọn, mức lương, tăng ca và các khoản khấu trừ nêu trên.”
                             </p>
@@ -1736,7 +1656,6 @@
                     <div class="auth-col">
                         <div>
                             <div class="auth-col-title-vi">ĐẠI DIỆN FCT HUMAN RESOURCE</div>
-                            <div class="auth-col-title-zh">承辦機構確認 · AUTHORIZED ISSUING AUTHORITY</div>
                             <p class="auth-commitment">
                                 “Bản công việc được đối chiếu trực tiếp từ Phiếu tuyển dụng chính thức của Đối tác Môi giới và Chủ sử dụng Đài Loan, có giá trị căn cứ đối chiếu pháp lý.”
                             </p>
@@ -1745,8 +1664,8 @@
                             <div class="fct-digital-seal">
                                 <span class="seal-check-icon">🛡️</span>
                                 <div class="seal-text-group">
-                                    <span class="seal-title">FCT VERIFIED</span>
-                                    <span class="seal-sub">AUTHENTIC SPECIFICATION</span>
+                                    <span class="seal-title">CHỨNG THỰC FCT</span>
+                                    <span class="seal-sub">HỒ SƠ CHÍNH THỨC</span>
                                 </div>
                             </div>
                             <span class="sign-date-line">Niên khóa: {{ now_year }}</span>
@@ -1756,8 +1675,8 @@
 
                 <!-- 11. MINIMALIST STATE REFERENCE FOOTER -->
                 <footer class="exec-footer">
-                    <div>DOC-REF: {{ job.code }} | FCT HUMAN RESOURCE</div>
-                    <div>HỆ THỐNG XÁC THỰC CÔNG VĂN ĐIỆN TỬ · CV.FCT.VN</div>
+                    <div>MÃ HỒ SƠ: {{ job.code }} | FCT HUMAN RESOURCE</div>
+                    <div>HỆ THỐNG CÔNG VĂN ĐIỆN TỬ · CV.FCT.VN</div>
                 </footer>
 
             </div>
