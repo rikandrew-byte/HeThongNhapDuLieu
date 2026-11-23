@@ -841,32 +841,33 @@
         }
 
         /* ============================================================
-           7. OFFICIAL SIGNATURE & DIGITAL VERIFICATION BLOCK
+           7. OFFICIAL SIGNATURE (Chỉ duy nhất Khối Xác Nhận Người Lao Động)
            ============================================================ */
         .exec-auth-block {
             margin-top: 24px;
             padding-top: 20px;
             border-top: 1.5px solid #e2e8f0;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
+            display: flex;
+            justify-content: center;
             page-break-inside: avoid;
         }
 
-        .auth-col {
+        .auth-col-single {
+            width: 100%;
+            max-width: 600px;
             background: var(--slate-50);
             border: 1px solid var(--slate-200);
             border-radius: var(--radius-md);
-            padding: 16px 18px;
+            padding: 18px 22px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             min-height: 150px;
-            position: relative;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02);
         }
 
         .auth-col-title-vi {
-            font-size: 12px;
+            font-size: 12.5px;
             font-weight: 850;
             color: var(--slate-900);
             text-transform: uppercase;
@@ -875,12 +876,12 @@
         }
 
         .auth-commitment {
-            font-size: 11px;
+            font-size: 11.5px;
             font-weight: 550;
             color: var(--slate-600);
             font-style: italic;
-            line-height: 1.45;
-            margin: 8px 0;
+            line-height: 1.5;
+            margin: 10px 0 16px 0;
         }
 
         .auth-sign-space {
@@ -888,69 +889,31 @@
             display: flex;
             align-items: flex-end;
             justify-content: space-between;
-            padding-top: 18px;
+            padding-top: 20px;
         }
 
         .sign-guide {
-            font-size: 10.5px;
+            font-size: 11px;
             font-weight: 600;
             color: var(--slate-400);
         }
 
         .sign-date-line {
-            font-size: 10.5px;
+            font-size: 11px;
             font-weight: 700;
             color: var(--slate-500);
-        }
-
-        /* Con dấu số FCT Verified Seal */
-        .fct-digital-seal {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            background: #ffffff;
-            border: 1.5px solid var(--teal-primary);
-            padding: 5px 12px;
-            border-radius: 999px;
-            box-shadow: 0 2px 8px rgba(0, 128, 128, 0.12);
-        }
-
-        .seal-check-icon {
-            font-size: 14px;
-            color: var(--teal-primary);
-        }
-
-        .seal-text-group {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.15;
-        }
-
-        .seal-title {
-            font-size: 10px;
-            font-weight: 850;
-            color: var(--teal-primary);
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-        }
-
-        .seal-sub {
-            font-size: 8.5px;
-            font-weight: 700;
-            color: var(--slate-500);
-            letter-spacing: 0.04em;
         }
 
         /* ============================================================
-           8. MINIMALIST FOOTER
+           8. MINIMALIST FOOTER (Chỉ Giữ Mã Hồ Sơ Gọn Gàng)
            ============================================================ */
         .exec-footer {
-            margin-top: 24px;
+            margin-top: 22px;
             padding-top: 12px;
             border-top: 1px dashed var(--slate-200);
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
             font-size: 10.5px;
             font-weight: 700;
             color: var(--slate-400);
@@ -1169,11 +1132,6 @@
                 gap: 6px;
             }
 
-            .exec-auth-block {
-                grid-template-columns: 1fr;
-                gap: 12px;
-            }
-
             .gallery-grid {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 8px;
@@ -1190,7 +1148,7 @@
         <div class="bar-brand-group">
             <img src="{{ url_for('static', filename='eagle_fct_new.png') }}" alt="FCT Crest" class="bar-brand-logo">
             <div class="bar-brand-text">
-                <span class="bar-brand-title">FCT HUMAN RESOURCE</span>
+                <span class="bar-brand-title">BẢNG CÔNG VIỆC</span>
             </div>
             <span class="status-pill {% if job.status and job.status != 'Đang tuyển' %}is-done{% endif %}">
                 ● {{ job.status or 'ĐANG TUYỂN' }}
@@ -1326,13 +1284,23 @@
                     </div>
                 </div>
 
-                <!-- 3. SECTION I: THÔNG TIN CÔNG XƯỞNG & ĐỊA ĐIỂM -->
+                <!-- ============================================================
+                     THỨ TỰ CÁC MỤC LOGIC CHUẨN XUẤT KHẨU LAO ĐỘNG ĐÀI LOAN:
+                     Mục I: THÔNG TIN CÔNG XƯỞNG & SẢN PHẨM CHÍNH (Xưởng nào, làm gì)
+                     Mục II: TIÊU CHUẨN & ĐIỀU KIỆN TUYỂN DỤNG (Tuyển ai, tiêu chuẩn gì)
+                     Mục III: NỘI DUNG VÀ YÊU CẦU CÔNG VIỆC (Sang đó làm cụ thể việc gì)
+                     Mục IV: CHẾ ĐỘ LƯƠNG, TĂNG CA & ĐÃI NGỘ (Lương bổng, đãi ngộ ra sao)
+                     Mục V: CÁC YÊU CẦU & LƯU Ý KHÁC (Ghi chú đặc biệt)
+                     Mục VI: HÌNH ẢNH THỰC TẾ NHÀ XƯỞNG & SẢN PHẨM (Ảnh thực tế)
+                     ============================================================ -->
+
+                <!-- MỤC I: THÔNG TIN CÔNG XƯỞNG & SẢN PHẨM CHÍNH -->
                 <section class="exec-card">
                     <div class="exec-card-head">
                         <div class="exec-card-title-group">
                             <span class="exec-badge-num">I</span>
                             <div>
-                                <h2 class="exec-card-title-vi">Thông Tin Công Xưởng &amp; Địa Điểm</h2>
+                                <h2 class="exec-card-title-vi">Thông Tin Công Xưởng &amp; Sản Phẩm Chính</h2>
                             </div>
                         </div>
                     </div>
@@ -1350,12 +1318,21 @@
 
                         {% if job.work_location %}
                         <div class="data-row">
-                            <div class="data-label">Địa điểm cụ thể:</div>
+                            <div class="data-label">Địa điểm làm việc:</div>
                             <div class="data-value" style="font-weight:750;">
                                 📍 {{ job.work_location }}, Đài Loan
                             </div>
                         </div>
                         {% endif %}
+
+                        <div class="data-row">
+                            <div class="data-label">Sản phẩm sản xuất:</div>
+                            <div class="data-value">
+                                <div class="product-highlight-box">
+                                    {{ job.product_job or 'Theo quy định cụ thể của công xưởng' }}
+                                </div>
+                            </div>
+                        </div>
 
                         {% if job.factory_website %}
                         <div class="data-row">
@@ -1371,41 +1348,11 @@
                     </div>
                 </section>
 
-                <!-- 4. SECTION II: SẢN PHẨM & NGÀNH NGHỀ CHÍNH -->
+                <!-- MỤC II: TIÊU CHUẨN & ĐIỀU KIỆN TUYỂN DỤNG -->
                 <section class="exec-card">
                     <div class="exec-card-head">
                         <div class="exec-card-title-group">
                             <span class="exec-badge-num">II</span>
-                            <div>
-                                <h2 class="exec-card-title-vi">Sản Phẩm Sản Xuất &amp; Ngành Nghề Chính</h2>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="data-grid">
-                        <div class="data-row">
-                            <div class="data-label">Sản phẩm sản xuất chính:</div>
-                            <div class="data-value">
-                                <div class="product-highlight-box">
-                                    {{ job.product_job or 'Theo quy định cụ thể của công xưởng' }}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="data-row">
-                            <div class="data-label">Loại hình công việc:</div>
-                            <div class="data-value" style="font-weight:750; color:var(--teal-dark);">
-                                💼 {{ job.job_type or 'Lao động phổ thông' }}
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- 5. SECTION III: TIÊU CHUẨN & ĐIỀU KIỆN TUYỂN DỤNG -->
-                <section class="exec-card">
-                    <div class="exec-card-head">
-                        <div class="exec-card-title-group">
-                            <span class="exec-badge-num">III</span>
                             <div>
                                 <h2 class="exec-card-title-vi">Tiêu Chuẩn &amp; Điều Kiện Tuyển Dụng</h2>
                             </div>
@@ -1424,6 +1371,12 @@
                         {{ s }}
                       {%- endif -%}
                     {%- endmacro %}
+
+                    <!-- Loại hình công việc -->
+                    <div style="margin-bottom:10px; padding:6px 10px; background:#f0fdfa; border:1px solid #99f6e4; border-radius:6px; display:inline-flex; align-items:center; gap:6px;">
+                        <span style="font-size:11px; font-weight:800; color:#005959; text-transform:uppercase;">Loại hình công việc:</span>
+                        <strong style="font-size:12.5px; color:#008080;">{{ job.job_type or 'Lao động phổ thông' }}</strong>
+                    </div>
 
                     <!-- Dual Criteria Grid (Male / Female) -->
                     <div class="criteria-dual-grid">
@@ -1497,11 +1450,11 @@
                     </div>
                 </section>
 
-                <!-- 6. SECTION IV: NỘI DUNG VÀ YÊU CẦU CÔNG VIỆC -->
+                <!-- MỤC III: NỘI DUNG VÀ YÊU CẦU CÔNG VIỆC -->
                 <section class="exec-card">
                     <div class="exec-card-head">
                         <div class="exec-card-title-group">
-                            <span class="exec-badge-num">IV</span>
+                            <span class="exec-badge-num">III</span>
                             <div>
                                 <h2 class="exec-card-title-vi">Nội Dung &amp; Yêu Cầu Công Việc</h2>
                             </div>
@@ -1513,11 +1466,11 @@
                     </div>
                 </section>
 
-                <!-- 7. SECTION V: CHẾ ĐỘ LƯƠNG, TĂNG CA & ĐÃI NGỘ -->
+                <!-- MỤC IV: CHẾ ĐỘ LƯƠNG, TĂNG CA & ĐÃI NGỘ -->
                 <section class="exec-card">
                     <div class="exec-card-head">
                         <div class="exec-card-title-group">
-                            <span class="exec-badge-num">V</span>
+                            <span class="exec-badge-num">IV</span>
                             <div>
                                 <h2 class="exec-card-title-vi">Chế Độ Lương Bổng, Tăng Ca &amp; Đãi Ngộ</h2>
                             </div>
@@ -1590,12 +1543,12 @@
                     </div>
                 </section>
 
-                <!-- 8. SECTION VI: CÁC YÊU CẦU & LƯU Ý KHÁC (NẾU CÓ) -->
+                <!-- MỤC V: CÁC YÊU CẦU & LƯU Ý KHÁC (NẾU CÓ) -->
                 {% if notes and notes|length > 0 %}
                 <section class="exec-card">
                     <div class="exec-card-head">
                         <div class="exec-card-title-group">
-                            <span class="exec-badge-num">VI</span>
+                            <span class="exec-badge-num">V</span>
                             <div>
                                 <h2 class="exec-card-title-vi">Các Yêu Cầu &amp; Lưu Ý Khác</h2>
                             </div>
@@ -1613,12 +1566,12 @@
                 </section>
                 {% endif %}
 
-                <!-- 9. SECTION VII: HÌNH ẢNH NHÀ XƯỞNG & SẢN PHẨM (TRANG 2 KHI IN) -->
+                <!-- MỤC VI: HÌNH ẢNH THỰC TẾ NHÀ XƯỞNG & SẢN PHẨM (TRANG 2 KHI IN) -->
                 {% if images and images|length > 0 %}
                 <section class="exec-card page-break-print">
                     <div class="exec-card-head">
                         <div class="exec-card-title-group">
-                            <span class="exec-badge-num">VII</span>
+                            <span class="exec-badge-num">VI</span>
                             <div>
                                 <h2 class="exec-card-title-vi">Hình Ảnh Thực Tế Nhà Xưởng &amp; Ký Túc Xá</h2>
                             </div>
@@ -1636,10 +1589,9 @@
                 </section>
                 {% endif %}
 
-                <!-- 10. OFFICIAL AUTHENTICATION & SIGNATURES -->
+                <!-- XÁC NHẬN CỦA NGƯỜI LAO ĐỘNG (DUY NHẤT Ở CHÂN TRANG) -->
                 <div class="exec-auth-block">
-                    <!-- Bên ứng viên lao động -->
-                    <div class="auth-col">
+                    <div class="auth-col-single">
                         <div>
                             <div class="auth-col-title-vi">XÁC NHẬN CỦA NGƯỜI LAO ĐỘNG</div>
                             <p class="auth-commitment">
@@ -1651,32 +1603,11 @@
                             <span class="sign-date-line">Ngày: ..... / ..... / 202...</span>
                         </div>
                     </div>
-
-                    <!-- Bên trung tâm phái cử FCT -->
-                    <div class="auth-col">
-                        <div>
-                            <div class="auth-col-title-vi">ĐẠI DIỆN FCT HUMAN RESOURCE</div>
-                            <p class="auth-commitment">
-                                “Bản công việc được đối chiếu trực tiếp từ Phiếu tuyển dụng chính thức của Đối tác Môi giới và Chủ sử dụng Đài Loan, có giá trị căn cứ đối chiếu pháp lý.”
-                            </p>
-                        </div>
-                        <div class="auth-sign-space">
-                            <div class="fct-digital-seal">
-                                <span class="seal-check-icon">🛡️</span>
-                                <div class="seal-text-group">
-                                    <span class="seal-title">CHỨNG THỰC FCT</span>
-                                    <span class="seal-sub">HỒ SƠ CHÍNH THỨC</span>
-                                </div>
-                            </div>
-                            <span class="sign-date-line">Niên khóa: {{ now_year }}</span>
-                        </div>
-                    </div>
                 </div>
 
-                <!-- 11. MINIMALIST STATE REFERENCE FOOTER -->
+                <!-- CHÂN TRANG GỌN GÀNG (CHỈ GIỮ MÃ HỒ SƠ) -->
                 <footer class="exec-footer">
-                    <div>MÃ HỒ SƠ: {{ job.code }} | FCT HUMAN RESOURCE</div>
-                    <div>HỆ THỐNG CÔNG VĂN ĐIỆN TỬ · CV.FCT.VN</div>
+                    <div>MÃ HỒ SƠ: {{ job.code }}</div>
                 </footer>
 
             </div>

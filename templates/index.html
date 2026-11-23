@@ -8677,7 +8677,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             const notesHtml = notes.length > 0 ? `
                 <section class="jo-a4-section">
                     <div class="jo-a4-sec-bar">
-                        <h4 class="jo-a4-sec-title"><span class="jo-a4-sec-badge">VI</span> CÁC YÊU CẦU &amp; LƯU Ý KHÁC</h4>
+                        <h4 class="jo-a4-sec-title"><span class="jo-a4-sec-badge">V</span> CÁC YÊU CẦU &amp; LƯU Ý KHÁC</h4>
                     </div>
                     ${notes.map((n, idx) => `
                         <div class="jo-a4-clause">
@@ -8691,7 +8691,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             const imgsHtml = imgs.length > 0 ? `
                 <section class="jo-a4-section">
                     <div class="jo-a4-sec-bar">
-                        <h4 class="jo-a4-sec-title"><span class="jo-a4-sec-badge">VII</span> HÌNH ẢNH THỰC TẾ NHÀ XƯỞNG &amp; SẢN PHẨM</h4>
+                        <h4 class="jo-a4-sec-title"><span class="jo-a4-sec-badge">VI</span> HÌNH ẢNH THỰC TẾ NHÀ XƯỞNG &amp; KÝ TÚC XÁ</h4>
                     </div>
                     <div class="jo-a4-gallery">
                         ${imgs.map(img => `<div class="jo-a4-gallery-item"><img src="${escJob(img)}" alt="Preview"></div>`).join('')}
@@ -8751,43 +8751,38 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                         </div>
                     </div>
 
+                    <!-- MỤC I: THÔNG TIN CÔNG XƯỞNG & SẢN PHẨM CHÍNH -->
                     <section class="jo-a4-section">
                         <div class="jo-a4-sec-bar">
-                            <h4 class="jo-a4-sec-title"><span class="jo-a4-sec-badge">I</span> THÔNG TIN CÔNG XƯỞNG &amp; ĐỊA ĐIỂM</h4>
+                            <h4 class="jo-a4-sec-title"><span class="jo-a4-sec-badge">I</span> THÔNG TIN CÔNG XƯỞNG &amp; SẢN PHẨM CHÍNH</h4>
                         </div>
                         <table class="jo-a4-table">
                             <tbody>
                                 <tr>
                                     <td class="jo-a4-lbl">Tên nhà máy (Công xưởng):</td>
-                                    <td class="jo-a4-val" style="font-size:13px; font-weight:800;">${escJob(factoryName || 'Chưa nhập tên công xưởng')}</td>
+                                    <td class="jo-a4-val" style="font-size:13px; font-weight:800;">
+                                        ${escJob(factoryName || 'Chưa nhập tên công xưởng')}
+                                        ${vnFactory && vnFactory !== factoryName ? `<div style="font-size:11.5px; font-weight:700; color:#008080; margin-top:2px;">🏢 Tên tiếng Việt: ${escJob(vnFactory)}</div>` : ''}
+                                    </td>
                                 </tr>
-                                ${workLocation ? `<tr><td class="jo-a4-lbl">Địa điểm làm việc:</td><td class="jo-a4-val">${escJob(workLocation)}</td></tr>` : ''}
-                                ${factoryWebsite ? `<tr><td class="jo-a4-lbl">Cổng thông tin / Website:</td><td class="jo-a4-val" style="color:#008080; text-decoration:underline; word-break:break-all;">${escJob(factoryWebsite)}</td></tr>` : ''}
-                            </tbody>
-                        </table>
-                    </section>
-
-                    <section class="jo-a4-section">
-                        <div class="jo-a4-sec-bar">
-                            <h4 class="jo-a4-sec-title"><span class="jo-a4-sec-badge">II</span> SẢN PHẨM &amp; NGÀNH NGHỀ CHÍNH</h4>
-                        </div>
-                        <table class="jo-a4-table">
-                            <tbody>
+                                ${workLocation ? `<tr><td class="jo-a4-lbl">Địa điểm làm việc:</td><td class="jo-a4-val" style="font-weight:750;">📍 ${escJob(workLocation)}, Đài Loan</td></tr>` : ''}
                                 <tr>
                                     <td class="jo-a4-lbl">Sản phẩm sản xuất:</td>
-                                    <td class="jo-a4-val" style="font-weight:750;">${escJob(productJob || 'Chưa nhập sản phẩm chính')}</td>
+                                    <td class="jo-a4-val" style="font-weight:750; color:#0f172a;">${escJob(productJob || 'Theo quy định cụ thể của công xưởng')}</td>
                                 </tr>
-                                <tr>
-                                    <td class="jo-a4-lbl">Loại hình công việc:</td>
-                                    <td class="jo-a4-val">${escJob(jobType || 'Lao động phổ thông')}</td>
-                                </tr>
+                                ${factoryWebsite ? `<tr><td class="jo-a4-lbl">Cổng thông tin / Website:</td><td class="jo-a4-val" style="color:#008080; text-decoration:underline; word-break:break-all;">🌐 ${escJob(factoryWebsite)}</td></tr>` : ''}
                             </tbody>
                         </table>
                     </section>
 
+                    <!-- MỤC II: TIÊU CHUẨN & ĐIỀU KIỆN TUYỂN DỤNG -->
                     <section class="jo-a4-section">
                         <div class="jo-a4-sec-bar">
-                            <h4 class="jo-a4-sec-title"><span class="jo-a4-sec-badge">III</span> TIÊU CHUẨN &amp; ĐIỀU KIỆN TUYỂN DỤNG</h4>
+                            <h4 class="jo-a4-sec-title"><span class="jo-a4-sec-badge">II</span> TIÊU CHUẨN &amp; ĐIỀU KIỆN TUYỂN DỤNG</h4>
+                        </div>
+                        <div style="margin-bottom:8px; padding:4px 8px; background:#f0fdfa; border:1px solid #99f6e4; border-radius:6px; display:inline-flex; align-items:center; gap:6px;">
+                            <span style="font-size:10px; font-weight:800; color:#005959; text-transform:uppercase;">Loại hình công việc:</span>
+                            <strong style="font-size:11px; color:#008080;">${escJob(jobType || 'Lao động phổ thông')}</strong>
                         </div>
                         <div class="jo-a4-crit-grid">${criteriaBoxesHtml}</div>
                         <table class="jo-a4-table">
@@ -8801,16 +8796,18 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                         </table>
                     </section>
 
+                    <!-- MỤC III: NỘI DUNG VÀ YÊU CẦU CÔNG VIỆC -->
                     <section class="jo-a4-section">
                         <div class="jo-a4-sec-bar">
-                            <h4 class="jo-a4-sec-title"><span class="jo-a4-sec-badge">IV</span> NỘI DUNG VÀ YÊU CẦU CÔNG VIỆC</h4>
+                            <h4 class="jo-a4-sec-title"><span class="jo-a4-sec-badge">III</span> NỘI DUNG VÀ YÊU CẦU CÔNG VIỆC</h4>
                         </div>
                         <div class="jo-a4-scope">${jobDesc ? escJob(jobDesc) : '<span style="color:#94a3b8; font-style:italic; font-weight:500;">(Chưa nhập mô tả công việc...)</span>'}</div>
                     </section>
 
+                    <!-- MỤC IV: CHẾ ĐỘ LƯƠNG, TĂNG CA & ĐÃI NGỘ -->
                     <section class="jo-a4-section">
                         <div class="jo-a4-sec-bar">
-                            <h4 class="jo-a4-sec-title"><span class="jo-a4-sec-badge">V</span> CHẾ ĐỘ LƯƠNG, TĂNG CA &amp; ĐÃI NGỘ</h4>
+                            <h4 class="jo-a4-sec-title"><span class="jo-a4-sec-badge">IV</span> CHẾ ĐỘ LƯƠNG, TĂNG CA &amp; ĐÃI NGỘ</h4>
                         </div>
                         <div class="jo-a4-fin-grid">
                             <div class="jo-a4-fin-cell">
@@ -8837,6 +8834,10 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                                 ${shiftPolicy ? `<tr><td class="jo-a4-lbl">Chế độ ca làm việc:</td><td class="jo-a4-val">${escJob(shiftPolicy)}</td></tr>` : ''}
                                 ${overtimePolicy ? `<tr><td class="jo-a4-lbl">Quy định làm thêm:</td><td class="jo-a4-val">${escJob(overtimePolicy)}</td></tr>` : ''}
                                 ${mealAllowance ? `<tr><td class="jo-a4-lbl">Ăn uống &amp; Ký túc xá:</td><td class="jo-a4-val" style="white-space:pre-line;">${escJob(mealAllowance)}</td></tr>` : ''}
+                                <tr>
+                                    <td class="jo-a4-lbl">Bảo hiểm &amp; Quyền lợi:</td>
+                                    <td class="jo-a4-val" style="font-weight:650; color:#005959;">✔ Tham gia đầy đủ BH Lao động, BH Y tế theo Luật Lao động Đài Loan.</td>
+                                </tr>
                             </tbody>
                         </table>
                     </section>
@@ -8844,11 +8845,21 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                     ${notesHtml}
                     ${imgsHtml}
 
-                    <div style="margin-top:12px; padding-top:10px; border-top:1px dashed #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
-                        <div style="font-size:9.5px; font-weight:700; color:#64748b;">MÃ HỒ SƠ: ${escJob(code || '...')} · FCT HUMAN RESOURCE</div>
-                        <div style="display:inline-flex; align-items:center; gap:4px; font-size:9.5px; font-weight:800; color:#008080; background:#f0fdfa; border:1px solid #99f6e4; padding:2px 8px; border-radius:999px;">
-                            <span>🛡️</span> CHỨNG THỰC FCT
+                    <!-- XÁC NHẬN CỦA NGƯỜI LAO ĐỘNG (DUY NHẤT Ở CHÂN TRANG) -->
+                    <div style="margin-top:16px; padding:12px 16px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px;">
+                        <div style="font-size:11px; font-weight:800; color:#0f172a; text-transform:uppercase;">XÁC NHẬN CỦA NGƯỜI LAO ĐỘNG</div>
+                        <div style="font-size:10.5px; color:#475569; font-style:italic; margin:6px 0 12px 0;">
+                            “Tôi đã được giải thích rõ ràng, đầy đủ và hoàn toàn đồng ý với toàn bộ nội dung công việc, tiêu chuẩn tuyển chọn, mức lương, tăng ca và các khoản khấu trừ nêu trên.”
                         </div>
+                        <div style="display:flex; justify-content:space-between; font-size:10px; font-weight:700; color:#64748b; border-top:1px dashed #cbd5e1; padding-top:8px;">
+                            <span>(Ký và ghi rõ họ tên)</span>
+                            <span>Ngày: ..... / ..... / 202...</span>
+                        </div>
+                    </div>
+
+                    <!-- FOOTER GỌN GÀNG: CHỈ GIỮ MÃ HỒ SƠ -->
+                    <div style="margin-top:12px; padding-top:8px; border-top:1px dashed #cbd5e1; text-align:center; font-size:10px; font-weight:800; color:#64748b; letter-spacing:0.04em;">
+                        MÃ HỒ SƠ: ${escJob(code || '...')}
                     </div>
                 </div>
             `;
