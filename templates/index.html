@@ -8710,6 +8710,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
 
                 const jsId = escJob(j.id).replace(/'/g, "\\'");
                 const jsCode = escJob(j.code).replace(/'/g, "\\'");
+                const jsFactory = escJob(j.factory_name || '').replace(/'/g, "\\'");
                 const otObj = splitParenthesizedNote(j.overtime_hours, '72hr/tháng');
                 const currentStatus = j.status || 'Đang tuyển';
                 const statusSelectOpts = JOB_STATUS_OPTIONS.map(opt =>
@@ -8743,7 +8744,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                             ${otObj.sub ? `<div style="font-size:10.5px; color:#64748b; margin-top:2px; line-height:1.25;">${escJob(otObj.sub)}</div>` : ''}
                         </td>
                         <td class="jo-td jo-td-candidates" style="padding:10px 6px; text-align:center; vertical-align:middle; white-space:nowrap;">
-                            <button type="button" onclick="filterJobAssignByCode('${jsCode}')" title="Xem ứng viên đã ghép với đơn này"
+                            <button type="button" onclick="openJobAssignForOrder('${jsFactory}', '${jsCode}')" title="Xem ứng viên đã ghép với đơn này"
                                 style="background:#f8fafc; color:#0f172a; border:1px solid #cbd5e1; padding:4px 8px; border-radius:999px; font-size:12px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.14s;"
                                 onmouseover="this.style.borderColor='#008080'; this.style.color='#008080';" onmouseout="this.style.borderColor='#cbd5e1'; this.style.color='#0f172a';">
                                 <span>👥</span> ${Number(j.candidate_count || 0)}
@@ -8859,13 +8860,79 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             }, 100);
         });
 
-        function filterJobAssignByCode(jobCode) {
+        function openJobAssignForOrder(factoryName, jobCode) {
             switchJobSubTab('jobAssign');
-            const nameInput = document.getElementById('quickJobNameInput');
-            if (nameInput) {
-                nameInput.value = jobCode;
-                nameInput.focus();
+
+            // Xác định tên đơn hàng trực quan (ưu tiên Tên công xưởng thay vì chỉ mã số)
+            let targetName = (factoryName || '').trim();
+            if (!targetName) targetName = (jobCode || '').trim();
+
+            // Nếu trong danh sách gợi ý đơn hàng (datalist) có tên trùng khớp thì chọn tên chuẩn đó
+            const datalist = document.getElementById('quickJobNameOptions');
+            if (datalist && targetName) {
+                const options = Array.from(datalist.options).map(o => o.value);
+                const match = options.find(opt => {
+                    const o = opt.toLowerCase();
+                    const t = targetName.toLowerCase();
+                    const c = (jobCode || '').toLowerCase();
+                    return o === t || (c && o === c) || o.includes(t) || t.includes(o);
+                });
+                if (match) {
+                    targetName = match;
+                }
             }
+
+            const nameInput = document.getElementById('quickJobNameInput');
+            const masoInput = document.getElementById('quickJobMasoInput');
+            if (nameInput) {
+                nameInput.value = targetName;
+                if (masoInput) {
+                    masoInput.focus();
+                } else {
+                    nameInput.focus();
+                }
+            }
+
+            // Tự động tìm và cuộn tới dòng đơn hàng này trong bảng tổng hợp bên dưới (nếu đã có ứng viên)
+            highlightSummaryRow(targetName, jobCode);
+        }
+
+        function highlightSummaryRow(jobName, jobCode) {
+            if (!jobName && !jobCode) return;
+            const jn = (jobName || '').toLowerCase().trim();
+            const jc = (jobCode || '').toLowerCase().trim();
+
+            setTimeout(() => {
+                const rows = document.querySelectorAll('#jobSummaryTableBody tr.job-summary-row');
+                let foundRow = null;
+                for (const row of rows) {
+                    const colName = row.querySelector('.job-col-name');
+                    if (colName) {
+                        const text = colName.textContent.trim().toLowerCase();
+                        if ((jn && (text === jn || text.includes(jn) || jn.includes(text))) ||
+                            (jc && text.includes(jc))) {
+                            foundRow = row;
+                            break;
+                        }
+                    }
+                }
+
+                if (foundRow) {
+                    foundRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    const origBg = foundRow.style.background;
+                    foundRow.style.transition = 'all 0.3s ease';
+                    foundRow.style.background = '#fef08a';
+                    foundRow.style.boxShadow = '0 0 0 2px #eab308 inset';
+                    setTimeout(() => {
+                        foundRow.style.background = origBg || '';
+                        foundRow.style.boxShadow = 'none';
+                    }, 2500);
+                }
+            }, 180);
+        }
+
+        function filterJobAssignByCode(jobCode) {
+            openJobAssignForOrder('', jobCode);
         }
 
         function openJobOrderView(id) {

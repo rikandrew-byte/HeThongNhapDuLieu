@@ -5558,10 +5558,12 @@ def api_manage_job_orders():
         res = []
         for j in jobs:
             c_count = 0
-            if j.code:
-                code_lower = j.code.strip().lower()
-                if code_lower:
-                    c_count = sum(1 for dh in active_don_hangs if code_lower in dh)
+            code_lower = (j.code or '').strip().lower()
+            fn_lower = (j.factory_name or '').strip().lower()
+            if code_lower or fn_lower:
+                for dh in active_don_hangs:
+                    if (code_lower and code_lower in dh) or (fn_lower and (fn_lower in dh or dh in fn_lower)):
+                        c_count += 1
             
             crit = {}
             notes = []
