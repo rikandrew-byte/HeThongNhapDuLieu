@@ -8767,13 +8767,9 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             bodyEl.innerHTML = `
                 <div class="jo-a4-content">
                     <header>
-                        <div class="jo-a4-header-grid">
-                            <div class="jo-a4-logo-box">
-                                <img src="/static/eagle_fct_new.png" alt="Eagle Seal" class="jo-a4-eagle">
-                            </div>
-                            <div class="jo-a4-right-box">
-                                <span class="jo-a4-fct-tag">FCT-2026</span>
-                            </div>
+                        <!-- Logo Đại bàng canh giữa trang trọng -->
+                        <div style="display:flex; justify-content:center; align-items:center; margin-bottom:6px;">
+                            <img src="/static/eagle_fct_new.png" alt="Eagle Seal" class="jo-a4-eagle" style="height:42px; width:auto;">
                         </div>
 
                         <div style="text-align:center; margin-top:2px; margin-bottom:10px;">
@@ -8914,9 +8910,11 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                         </div>
                     </div>
 
-                    <!-- FOOTER GỌN GÀNG: CHỈ GIỮ MÃ HỒ SƠ -->
-                    <div style="margin-top:12px; padding-top:8px; border-top:1px dashed #cbd5e1; text-align:center; font-size:10px; font-weight:800; color:#64748b; letter-spacing:0.04em;">
-                        MÃ HỒ SƠ: ${escJob(code || '...')}
+                    <!-- FOOTER GỌN GÀNG: MÃ HỒ SƠ & FCT-2026 -->
+                    <div style="margin-top:12px; padding-top:8px; border-top:1px dashed #cbd5e1; display:flex; justify-content:center; align-items:center; gap:8px; font-size:10px; font-weight:800; color:#1e293b; letter-spacing:0.04em;">
+                        <span>MÃ HỒ SƠ: ${escJob(code || '...')}</span>
+                        <span style="color:#94a3b8;">•</span>
+                        <span style="background:#f0fdfa; border:1px solid #99f6e4; padding:1px 8px; border-radius:999px; font-size:9.5px; color:#005959;">FCT-2026</span>
                     </div>
                 </div>
             `;

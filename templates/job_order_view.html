@@ -271,53 +271,34 @@
         }
 
         /* ============================================================
-           3. MASTER HEADER (Bố Cục Tinh Giản: Logo Trái, FCT-2026 Phải, Mã Đơn Dưới Tiêu Đề)
+           3. MASTER HEADER (Bố Cục Tinh Giản: Logo Đại Bàng Canh Giữa, Tiêu Đề Ánh Kim)
            ============================================================ */
         .exec-header {
             padding-bottom: 18px;
             margin-bottom: 20px;
             border-bottom: 1.5px solid #e2e8f0;
             position: relative;
+            text-align: center;
         }
 
-        .exec-header-top {
+        .exec-eagle-center-box {
             display: flex;
+            justify-content: center;
             align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            margin-bottom: 8px;
-        }
-
-        .exec-brand-box {
-            display: flex;
-            align-items: center;
+            margin-bottom: 10px;
         }
 
         .exec-eagle-logo {
-            height: 54px;
+            height: 58px;
             width: auto;
             object-fit: contain;
-            filter: drop-shadow(0 2px 5px rgba(0, 128, 128, 0.18));
-        }
-
-        /* Tag Niên Khóa FCT-2026 ở góc trên bên phải */
-        .fct-year-tag {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: 13.5px;
-            font-weight: 850;
-            letter-spacing: 0.08em;
-            color: #334155;
-            background: #f8fafc;
-            border: 1.5px solid #cbd5e1;
-            padding: 5px 16px;
-            border-radius: 999px;
-            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+            filter: drop-shadow(0 2px 6px rgba(0, 128, 128, 0.22));
         }
 
         .exec-title-block {
             text-align: center;
             margin-top: 2px;
-            padding: 4px 0 2px 0;
+            padding: 2px 0 2px 0;
         }
 
         /* Tiêu đề màu xanh cổ vịt ánh kim loại (Metallic Teal / Dark Mallard) */
@@ -933,7 +914,7 @@
         }
 
         /* ============================================================
-           8. MINIMALIST FOOTER (Chỉ Giữ Mã Hồ Sơ Gọn Gàng, Sắc Nét)
+           8. MINIMALIST FOOTER (Mã Hồ Sơ & FCT-2026 Căn Giữa Gọn Gàng)
            ============================================================ */
         .exec-footer {
             margin-top: 22px;
@@ -942,11 +923,31 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            gap: 12px;
             font-size: 11.5px;
             font-weight: 850;
             color: #1e293b;
             letter-spacing: 0.06em;
             text-transform: uppercase;
+        }
+
+        .footer-divider-dot {
+            color: #94a3b8;
+            font-size: 13px;
+        }
+
+        .fct-year-footer-tag {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 11px;
+            font-weight: 850;
+            letter-spacing: 0.08em;
+            color: #005959;
+            background: #f0fdfa;
+            border: 1px solid #99f6e4;
+            padding: 2px 10px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
         }
 
         /* ============================================================
@@ -1212,17 +1213,11 @@
         <article class="document-paper">
             <div class="content-layer">
 
-                <!-- 1. MASTER HEADER -->
+                <!-- 1. MASTER HEADER (Logo Đại Bàng Canh Giữa) -->
                 <header class="exec-header">
-                    <!-- Hàng trên: Logo Đại bàng bên trái - Tag FCT-2026 bên phải -->
-                    <div class="exec-header-top">
-                        <div class="exec-brand-box">
-                            <img src="{{ url_for('static', filename='eagle_fct_new.png') }}" alt="FCT Crest Seal" class="exec-eagle-logo">
-                        </div>
-
-                        <div class="exec-right-tag">
-                            <span class="fct-year-tag">FCT-2026</span>
-                        </div>
+                    <!-- Logo Đại bàng canh giữa trang trọng -->
+                    <div class="exec-eagle-center-box">
+                        <img src="{{ url_for('static', filename='eagle_fct_new.png') }}" alt="FCT Crest Seal" class="exec-eagle-logo">
                     </div>
 
                     <!-- Khối giữa: Tiêu đề lớn & Mã đơn canh giữa nằm ngay dưới -->
@@ -1613,9 +1608,11 @@
                     </div>
                 </div>
 
-                <!-- CHÂN TRANG GỌN GÀNG (CHỈ GIỮ MÃ HỒ SƠ) -->
+                <!-- CHÂN TRANG GỌN GÀNG (MÃ HỒ SƠ & FCT-2026) -->
                 <footer class="exec-footer">
-                    <div>MÃ HỒ SƠ: {{ job.code }}</div>
+                    <span>MÃ HỒ SƠ: {{ job.code }}</span>
+                    <span class="footer-divider-dot">•</span>
+                    <span class="fct-year-footer-tag">FCT-2026</span>
                 </footer>
 
             </div>
