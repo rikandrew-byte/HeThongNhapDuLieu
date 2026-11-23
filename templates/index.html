@@ -8732,12 +8732,18 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                             ${j.work_location ? `<div style="font-size:11.5px; color:#64748b; margin-top:2px;">📍 ${escJob(j.work_location)}</div>` : ''}
                         </td>
                         <td class="jo-td jo-td-job" style="padding:10px 12px; vertical-align:top;">
-                            <div style="font-weight:650; color:#1e293b; font-size:12.5px; margin-bottom:4px;">${escJob(j.product_job || j.job_type || 'Lao động phổ thông')}</div>
-                            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                            <div style="font-weight:650; color:#1e293b; font-size:12.5px; margin-bottom:4px; line-height:1.35;">${escJob(j.product_job || j.job_type || 'Lao động phổ thông')}</div>
+                            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:3px;">
                                 ${criteriaBadge}
                                 <span style="font-size:11px; color:#64748b;">• ${escJob(crit.age_range || '20+')}</span>
-                                ${otObj.main ? `<span style="display:inline-flex; align-items:center; gap:3px; background:#f0fdfa; color:#0f766e; border:1px solid #99f6e4; padding:1px 7px; border-radius:6px; font-weight:750; font-size:11px;" title="${escJob(otObj.sub ? otObj.main + ' - ' + otObj.sub : otObj.main)}">⏰ ${escJob(otObj.main)}${otObj.sub ? ` <span style="font-size:10px; font-weight:600; color:#14b8a6;">(${escJob(otObj.sub)})</span>` : ''}</span>` : ''}
                             </div>
+                            ${otObj.main ? `
+                            <div style="margin-top:2px;">
+                                <span style="display:inline-flex; align-items:center; gap:3px; background:#f0fdfa; color:#0f766e; border:1px solid #99f6e4; padding:1px 7px; border-radius:6px; font-weight:750; font-size:11px;">
+                                    ⏰ ${escJob(otObj.main)}${otObj.sub ? ` <span style="font-size:10.5px; font-weight:600; color:#14b8a6;">${escJob(otObj.sub)}</span>` : ''}
+                                </span>
+                            </div>
+                            ` : ''}
                         </td>
                         <td class="jo-td jo-td-candidates" style="padding:10px 6px; text-align:center; vertical-align:middle; white-space:nowrap;">
                             <button type="button" onclick="openJobAssignForOrder('${jsFactory}', '${jsCode}')" title="Xem ứng viên đã ghép với đơn này"
