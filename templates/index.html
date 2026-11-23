@@ -3388,12 +3388,21 @@
         }
         .jo-a4-main-title {
             font-family: 'Playfair Display', Georgia, serif;
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 900;
             color: #008080;
             letter-spacing: 0.05em;
-            margin: 0 0 6px 0;
+            margin: 0 0 2px 0;
             line-height: 1.2;
+            text-transform: uppercase;
+        }
+        .jo-a4-zh-sub {
+            font-size: 9.5px;
+            font-weight: 750;
+            color: #64748b;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-bottom: 6px;
         }
         .jo-a4-meta-row {
             display: inline-flex;
@@ -3402,20 +3411,48 @@
             font-size: 11px;
             font-weight: 700;
             color: #334155;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
+            background: #f0fdfa;
+            border: 1px solid #99f6e4;
             padding: 3px 12px;
-            border-radius: 4px;
+            border-radius: 999px;
         }
         .jo-a4-rule {
             border: none;
-            border-top: 2px solid #0f172a;
-            border-bottom: 1px solid #cbd5e1;
-            height: 4px;
-            margin: 12px 0 14px 0;
+            height: 2px;
+            background: linear-gradient(90deg, #008080 0%, #cbd5e1 100%);
+            margin: 10px 0 12px 0;
+        }
+        .jo-a4-hero-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .jo-a4-hero-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 6px 4px;
+            text-align: center;
+        }
+        .jo-a4-hero-lbl {
+            font-size: 8px;
+            font-weight: 800;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+        .jo-a4-hero-val {
+            font-size: 11.5px;
+            font-weight: 850;
+            line-height: 1.25;
+            margin-top: 1px;
         }
         .jo-a4-section {
-            margin-bottom: 14px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 8px 10px;
+            margin-bottom: 10px;
         }
         .jo-a4-section:last-child {
             margin-bottom: 0;
@@ -3424,18 +3461,15 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: #f8fafc;
-            border-left: 3px solid #008080;
-            border-bottom: 1px solid #e2e8f0;
-            padding: 4px 10px;
-            margin-bottom: 7px;
-            border-radius: 0 4px 4px 0;
+            padding-bottom: 4px;
+            margin-bottom: 6px;
+            border-bottom: 1px solid #f1f5f9;
         }
         .jo-a4-sec-title {
-            font-size: 11.5px;
+            font-size: 11px;
             font-weight: 800;
-            color: #008080;
-            letter-spacing: 0.04em;
+            color: #0f172a;
+            letter-spacing: 0.03em;
             text-transform: uppercase;
             display: flex;
             align-items: center;
@@ -8667,6 +8701,15 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 </section>
             ` : '';
 
+            const quotaDisplay = (genderRadio === 'male')
+                ? `${escJob(maleCount || '0')} Nam`
+                : ((genderRadio === 'female')
+                    ? `${escJob(femaleCount || '0')} Nữ`
+                    : `${escJob(maleCount || '0')} Nam / ${escJob(femaleCount || '0')} Nữ`);
+
+            const brokerCodeVal = (document.getElementById('jobOrder_brokerSelect')?.value || '').trim().toUpperCase();
+            const brokerChipHtml = brokerCodeVal ? `<span style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; padding:1px 6px; border-radius:4px; font-size:10px; font-weight:800;">🏢 ${escJob(brokerCodeVal)}</span>` : '';
+
             bodyEl.innerHTML = `
                 <div class="jo-a4-content">
                     <header>
@@ -8675,10 +8718,12 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                                 <img src="/static/eagle_fct_new.png" alt="Eagle Seal" class="jo-a4-eagle">
                             </div>
                             <div class="jo-a4-center-box">
-                                <div class="jo-a4-main-title">BẢNG CÔNG VIỆC</div>
+                                <div class="jo-a4-main-title">BẢNG THÔNG TIN CÔNG VIỆC</div>
+                                <div class="jo-a4-zh-sub">臺灣工作內容與勞動條件說明書 · TAIWAN JOB SPECIFICATION</div>
                                 <div class="jo-a4-meta-row">
                                     <span>MÃ SỐ: <strong style="color:#008080;">${escJob(code || '...')}</strong></span>
                                     ${titleNote ? `<strong style="color:#0d9488;">(${escJob(titleNote)})</strong>` : ''}
+                                    ${brokerChipHtml}
                                 </div>
                             </div>
                             <div class="jo-a4-right-box">
@@ -8687,6 +8732,26 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                         </div>
                         <hr class="jo-a4-rule">
                     </header>
+
+                    <!-- 4 Hero Metrics Cards -->
+                    <div class="jo-a4-hero-grid">
+                        <div class="jo-a4-hero-card" style="border-top:3px solid #0284c7;">
+                            <div class="jo-a4-hero-lbl">Lương Cơ Bản</div>
+                            <div class="jo-a4-hero-val" style="color:#0284c7;">${escJob(salaryBase)}</div>
+                        </div>
+                        <div class="jo-a4-hero-card" style="border-top:3px solid #008080;">
+                            <div class="jo-a4-hero-lbl">Tăng Ca Dự Kiến</div>
+                            <div class="jo-a4-hero-val" style="color:#008080;">${escJob(otHoursObj.main)}</div>
+                        </div>
+                        <div class="jo-a4-hero-card" style="border-top:3px solid #7c3aed;">
+                            <div class="jo-a4-hero-lbl">Chỉ Tiêu Tuyển</div>
+                            <div class="jo-a4-hero-val" style="color:#7c3aed;">${quotaDisplay}</div>
+                        </div>
+                        <div class="jo-a4-hero-card" style="border-top:3px solid #d97706;">
+                            <div class="jo-a4-hero-lbl">Địa Điểm</div>
+                            <div class="jo-a4-hero-val" style="color:#d97706; font-size:10.5px;">${escJob(workLocation || 'Đài Loan')}</div>
+                        </div>
+                    </div>
 
                     <section class="jo-a4-section">
                         <div class="jo-a4-sec-bar">
@@ -8785,6 +8850,13 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
 
                     ${notesHtml}
                     ${imgsHtml}
+
+                    <div style="margin-top:12px; padding-top:10px; border-top:1px dashed #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
+                        <div style="font-size:9.5px; font-weight:700; color:#64748b;">DOC-REF: ${escJob(code || '...')} · FCT HUMAN RESOURCE</div>
+                        <div style="display:inline-flex; align-items:center; gap:4px; font-size:9.5px; font-weight:800; color:#008080; background:#f0fdfa; border:1px solid #99f6e4; padding:2px 8px; border-radius:999px;">
+                            <span>🛡️</span> FCT VERIFIED SPECIFICATION
+                        </div>
+                    </div>
                 </div>
             `;
         }
