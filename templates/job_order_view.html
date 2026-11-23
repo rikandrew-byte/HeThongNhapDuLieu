@@ -333,13 +333,11 @@
             color: #005555;
             background: linear-gradient(135deg, 
                 #003838 0%, 
-                #005a5a 18%, 
-                #008080 32%, 
-                #2dd4bf 46%, 
-                #99f6e4 50%, 
-                #2dd4bf 54%, 
-                #008080 68%, 
-                #005555 82%, 
+                #005959 20%, 
+                #008080 38%, 
+                #14b8a6 50%, 
+                #008080 62%, 
+                #005555 80%, 
                 #002b2b 100%
             );
             -webkit-background-clip: text;
@@ -401,76 +399,60 @@
         }
 
         /* ============================================================
-           4. HERO METRICS PANEL (4 Thẻ Vàng Thông Số Tuyển Dụng)
+           4. EXECUTIVE HIGHLIGHTS RIBBON (Phong Cách 3 - Công Văn Ngoại Giao: 3 Cột Tinh Gọn)
            ============================================================ */
-        .hero-metrics-grid {
+        .memo-highlights-ribbon {
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            border: 1.5px solid #cbd5e1;
+            border-radius: var(--radius-md);
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
+            grid-template-columns: 1fr auto 1fr auto 1fr;
+            align-items: center;
+            padding: 10px 20px;
             margin-bottom: 22px;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
         }
 
-        .metric-card {
-            background: linear-gradient(180deg, #ffffff 0%, var(--slate-50) 100%);
-            border: 1px solid var(--slate-200);
-            border-radius: var(--radius-lg);
-            padding: 14px 12px;
-            text-align: center;
+        .memo-ribbon-item {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-            position: relative;
-            overflow: hidden;
+            text-align: center;
+            padding: 4px 10px;
         }
 
-        .metric-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+        .memo-ribbon-divider {
+            width: 1px;
+            height: 42px;
+            background: #cbd5e1;
         }
 
-        .metric-card.m-salary { border-top: 4px solid var(--azure-600); }
-        .metric-card.m-ot     { border-top: 4px solid var(--teal-primary); }
-        .metric-card.m-quota  { border-top: 4px solid #7c3aed; }
-        .metric-card.m-loc    { border-top: 4px solid var(--amber-600); }
-
-        .metric-icon-wrap {
-            font-size: 16px;
-            margin-bottom: 4px;
-            opacity: 0.95;
-        }
-
-        .metric-label-vi {
-            font-size: 11.5px;
+        .ribbon-lbl {
+            font-size: 11px;
             font-weight: 850;
             color: #1e293b;
+            letter-spacing: 0.06em;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            line-height: 1.25;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
         }
 
-        .metric-number {
+        .ribbon-val {
             font-size: 20px;
             font-weight: 900;
             letter-spacing: -0.01em;
             line-height: 1.2;
-            color: #000000;
         }
 
-        .metric-card.m-salary .metric-number { color: var(--azure-600); }
-        .metric-card.m-ot .metric-number     { color: var(--teal-primary); }
-        .metric-card.m-quota .metric-number  { color: #7c3aed; }
-        .metric-card.m-loc .metric-number    { color: var(--amber-600); }
+        .ribbon-val.c-azure { color: var(--azure-600); }
+        .ribbon-val.c-teal  { color: var(--teal-primary); }
+        .ribbon-val.c-amber { color: var(--amber-600); }
 
-        .metric-subnote {
+        .ribbon-sub {
             font-size: 11px;
             font-weight: 750;
-            color: #005959;
-            margin-top: 3px;
-            line-height: 1.2;
+            color: #475569;
+            margin-top: 2px;
         }
 
         /* ============================================================
@@ -530,13 +512,11 @@
             color: #005959;
             background: linear-gradient(135deg, 
                 #003838 0%, 
-                #005a5a 20%, 
+                #005959 20%, 
                 #008080 38%, 
-                #2dd4bf 48%, 
-                #99f6e4 52%, 
-                #2dd4bf 56%, 
-                #008080 72%, 
-                #005555 85%, 
+                #14b8a6 50%, 
+                #008080 62%, 
+                #005555 80%, 
                 #002b2b 100%
             );
             -webkit-background-clip: text;
@@ -1076,14 +1056,11 @@
                 padding: 12px 14px !important;
             }
 
-            .hero-metrics-grid {
-                margin-bottom: 14px !important;
-                gap: 8px !important;
-            }
-
-            .metric-card {
+            .memo-highlights-ribbon {
+                margin-bottom: 12px !important;
+                padding: 6px 12px !important;
                 box-shadow: none !important;
-                padding: 8px 6px !important;
+                border: 1px solid #cbd5e1 !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
@@ -1150,18 +1127,16 @@
                 font-size: 24px;
             }
 
-            .hero-metrics-grid {
-                grid-template-columns: repeat(2, 1fr);
+            .memo-highlights-ribbon {
+                grid-template-columns: 1fr;
                 gap: 8px;
+                padding: 10px 12px;
                 margin-bottom: 14px;
             }
 
-            .metric-card {
-                padding: 10px 8px;
-            }
-
-            .metric-number {
-                font-size: 16px;
+            .memo-ribbon-divider {
+                width: 100%;
+                height: 1px;
             }
 
             .exec-card {
@@ -1296,47 +1271,24 @@
                     {% set ded_sub = '(' ~ ded_parts[1].strip() %}
                 {% endif %}
 
-                <div class="hero-metrics-grid">
-                    <!-- Thẻ 1: Lương cơ bản -->
-                    <div class="metric-card m-salary">
-                        <div class="metric-icon-wrap">💰</div>
-                        <div class="metric-label-vi">Lương Cơ Bản</div>
-                        <div class="metric-number">{{ job.salary_base or '29,500NT$' }}</div>
-                        <div class="metric-subnote">Theo Luật Đài Loan</div>
+                <!-- 2. EXECUTIVE HIGHLIGHTS RIBBON (Phong Cách 3 - Công Văn Ngoại Giao: 3 Cột Tinh Gọn) -->
+                <div class="memo-highlights-ribbon">
+                    <div class="memo-ribbon-item">
+                        <span class="ribbon-lbl">💰 Lương Cơ Bản</span>
+                        <strong class="ribbon-val c-azure">{{ job.salary_base or '29,500NT$' }}</strong>
+                        <span class="ribbon-sub">Theo Luật Lao Động Đài Loan</span>
                     </div>
-
-                    <!-- Thẻ 2: Tăng ca bình quân -->
-                    <div class="metric-card m-ot">
-                        <div class="metric-icon-wrap">⏱️</div>
-                        <div class="metric-label-vi">Tăng Ca Dự Kiến</div>
-                        <div class="metric-number">{{ ot_main }}</div>
-                        <div class="metric-subnote">{{ ot_sub if ot_sub else 'Thu nhập hấp dẫn' }}</div>
+                    <div class="memo-ribbon-divider"></div>
+                    <div class="memo-ribbon-item">
+                        <span class="ribbon-lbl">⏱️ Tăng Ca Dự Kiến</span>
+                        <strong class="ribbon-val c-teal">{{ ot_main }}</strong>
+                        <span class="ribbon-sub">{{ ot_sub if ot_sub else 'Bình quân / tháng' }}</span>
                     </div>
-
-                    <!-- Thẻ 3: Chỉ tiêu tuyển -->
-                    <div class="metric-card m-quota">
-                        <div class="metric-icon-wrap">👥</div>
-                        <div class="metric-label-vi">Chỉ Tiêu Tuyển</div>
-                        <div class="metric-number">
-                            {% if job.gender_type == 'male' %}
-                                {{ criteria.get('male_count', '0') }} Nam
-                            {% elif job.gender_type == 'female' %}
-                                {{ criteria.get('female_count', '0') }} Nữ
-                            {% else %}
-                                {{ criteria.get('male_count', '0') }} Nam / {{ criteria.get('female_count', '0') }} Nữ
-                            {% endif %}
-                        </div>
-                        <div class="metric-subnote">Tuổi: {{ criteria.get('age_range', '20+') }}</div>
-                    </div>
-
-                    <!-- Thẻ 4: Địa điểm làm việc -->
-                    <div class="metric-card m-loc">
-                        <div class="metric-icon-wrap">📍</div>
-                        <div class="metric-label-vi">Địa Điểm Làm Việc</div>
-                        <div class="metric-number" style="font-size:15px; font-weight:800;">
-                            {{ job.work_location or 'Đài Loan' }}
-                        </div>
-                        <div class="metric-subnote">Đài Loan</div>
+                    <div class="memo-ribbon-divider"></div>
+                    <div class="memo-ribbon-item">
+                        <span class="ribbon-lbl">📍 Địa Điểm Làm Việc</span>
+                        <strong class="ribbon-val c-amber">{{ job.work_location or 'Đài Loan' }}</strong>
+                        <span class="ribbon-sub">Đài Loan (臺灣)</span>
                     </div>
                 </div>
 

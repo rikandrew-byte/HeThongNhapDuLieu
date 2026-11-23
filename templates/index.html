@@ -3399,13 +3399,11 @@
             color: #005555;
             background: linear-gradient(135deg, 
                 #003838 0%, 
-                #005a5a 18%, 
-                #008080 32%, 
-                #2dd4bf 46%, 
-                #99f6e4 50%, 
-                #2dd4bf 54%, 
-                #008080 68%, 
-                #005555 82%, 
+                #005959 20%, 
+                #008080 38%, 
+                #14b8a6 50%, 
+                #008080 62%, 
+                #005555 80%, 
                 #002b2b 100%
             );
             -webkit-background-clip: text;
@@ -3439,30 +3437,47 @@
             background: linear-gradient(90deg, #008080 0%, #cbd5e1 100%);
             margin: 10px 0 12px 0;
         }
-        .jo-a4-hero-grid {
+        /* Highlights Ribbon (Phong cách 3: Công văn ngoại giao tinh giản) */
+        .jo-a4-ribbon {
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            border: 1.5px solid #cbd5e1;
+            border-radius: 6px;
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 6px;
+            grid-template-columns: 1fr auto 1fr auto 1fr;
+            align-items: center;
+            padding: 6px 12px;
             margin-bottom: 12px;
         }
-        .jo-a4-hero-card {
-            background: #ffffff;
-            border: 1.5px solid #cbd5e1;
-            border-radius: 8px;
-            padding: 6px 4px;
+        .jo-a4-ribbon-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             text-align: center;
+            padding: 2px 4px;
         }
-        .jo-a4-hero-lbl {
+        .jo-a4-ribbon-divider {
+            width: 1px;
+            height: 28px;
+            background: #cbd5e1;
+        }
+        .jo-a4-ribbon-lbl {
             font-size: 8.5px;
             font-weight: 850;
             color: #1e293b;
             text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
-        .jo-a4-hero-val {
-            font-size: 12.5px;
+        .jo-a4-ribbon-val {
+            font-size: 13px;
             font-weight: 900;
-            line-height: 1.25;
+            line-height: 1.2;
             margin-top: 1px;
+        }
+        .jo-a4-ribbon-sub {
+            font-size: 8px;
+            font-weight: 750;
+            color: #475569;
         }
         .jo-a4-section {
             background: #ffffff;
@@ -3494,13 +3509,11 @@
             color: #005959;
             background: linear-gradient(135deg, 
                 #003838 0%, 
-                #005a5a 20%, 
+                #005959 20%, 
                 #008080 38%, 
-                #2dd4bf 48%, 
-                #99f6e4 52%, 
-                #2dd4bf 56%, 
-                #008080 72%, 
-                #005555 85%, 
+                #14b8a6 50%, 
+                #008080 62%, 
+                #005555 80%, 
                 #002b2b 100%
             );
             -webkit-background-clip: text;
@@ -8774,23 +8787,24 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                         <hr class="jo-a4-rule">
                     </header>
 
-                    <!-- 4 Hero Metrics Cards -->
-                    <div class="jo-a4-hero-grid">
-                        <div class="jo-a4-hero-card" style="border-top:3px solid #0284c7;">
-                            <div class="jo-a4-hero-lbl">Lương Cơ Bản</div>
-                            <div class="jo-a4-hero-val" style="color:#0284c7;">${escJob(salaryBase)}</div>
+                    <!-- 3 Highlights Ribbon (Phong cách 3: Công văn ngoại giao tinh giản) -->
+                    <div class="jo-a4-ribbon">
+                        <div class="jo-a4-ribbon-item">
+                            <span class="jo-a4-ribbon-lbl">💰 Lương Cơ Bản</span>
+                            <strong class="jo-a4-ribbon-val" style="color:#0284c7;">${escJob(salaryBase)}</strong>
+                            <span class="jo-a4-ribbon-sub">Theo Luật Lao Động</span>
                         </div>
-                        <div class="jo-a4-hero-card" style="border-top:3px solid #008080;">
-                            <div class="jo-a4-hero-lbl">Tăng Ca Dự Kiến</div>
-                            <div class="jo-a4-hero-val" style="color:#008080;">${escJob(otHoursObj.main)}</div>
+                        <div class="jo-a4-ribbon-divider"></div>
+                        <div class="jo-a4-ribbon-item">
+                            <span class="jo-a4-ribbon-lbl">⏱️ Tăng Ca Dự Kiến</span>
+                            <strong class="jo-a4-ribbon-val" style="color:#008080;">${escJob(otHoursObj.main)}</strong>
+                            <span class="jo-a4-ribbon-sub">Bình quân / tháng</span>
                         </div>
-                        <div class="jo-a4-hero-card" style="border-top:3px solid #7c3aed;">
-                            <div class="jo-a4-hero-lbl">Chỉ Tiêu Tuyển</div>
-                            <div class="jo-a4-hero-val" style="color:#7c3aed;">${quotaDisplay}</div>
-                        </div>
-                        <div class="jo-a4-hero-card" style="border-top:3px solid #d97706;">
-                            <div class="jo-a4-hero-lbl">Địa Điểm</div>
-                            <div class="jo-a4-hero-val" style="color:#d97706; font-size:10.5px;">${escJob(workLocation || 'Đài Loan')}</div>
+                        <div class="jo-a4-ribbon-divider"></div>
+                        <div class="jo-a4-ribbon-item">
+                            <span class="jo-a4-ribbon-lbl">📍 Địa Điểm Làm Việc</span>
+                            <strong class="jo-a4-ribbon-val" style="color:#d97706; font-size:11.5px;">${escJob(workLocation || 'Đài Loan')}</strong>
+                            <span class="jo-a4-ribbon-sub">Đài Loan (臺灣)</span>
                         </div>
                     </div>
 
