@@ -1281,9 +1281,9 @@
                     </div>
                     <div class="memo-ribbon-divider"></div>
                     <div class="memo-ribbon-item">
-                        <span class="ribbon-lbl">📍 Địa Điểm Làm Việc</span>
-                        <strong class="ribbon-val c-amber">{{ job.work_location or 'Đài Loan' }}</strong>
-                        <span class="ribbon-sub">Đài Loan (臺灣)</span>
+                        <span class="ribbon-lbl">📜 Thời Hạn Hợp Đồng</span>
+                        <strong class="ribbon-val c-amber">{{ criteria.get('contract_term', '03 Năm') }}</strong>
+                        <span class="ribbon-sub">Theo hợp đồng tuyển dụng</span>
                     </div>
                 </div>
 
@@ -1313,9 +1313,6 @@
                             <div class="data-label">Tên nhà máy (Công xưởng):</div>
                             <div class="data-value">
                                 <div class="factory-name-main">{{ job.factory_name or 'Chưa cập nhật' }}</div>
-                                {% if vn_factory_name and vn_factory_name != job.factory_name %}
-                                <div class="factory-name-vi">🏢 Tên tiếng Việt: {{ vn_factory_name }}</div>
-                                {% endif %}
                             </div>
                         </div>
 
@@ -1442,12 +1439,6 @@
                         <div class="crit-pill-item">
                             <span class="crit-pill-lbl">Hình thức tuyển:</span>
                             <span class="crit-pill-val" style="color:var(--teal-primary);">{{ criteria.get('interview_method') }}</span>
-                        </div>
-                        {% endif %}
-                        {% if criteria.get('contract_term') %}
-                        <div class="crit-pill-item">
-                            <span class="crit-pill-lbl">Thời hạn hợp đồng:</span>
-                            <span class="crit-pill-val">{{ criteria.get('contract_term') }}</span>
                         </div>
                         {% endif %}
                     </div>

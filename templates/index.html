@@ -8798,9 +8798,9 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                         </div>
                         <div class="jo-a4-ribbon-divider"></div>
                         <div class="jo-a4-ribbon-item">
-                            <span class="jo-a4-ribbon-lbl">📍 Địa Điểm Làm Việc</span>
-                            <strong class="jo-a4-ribbon-val" style="color:#d97706; font-size:11.5px;">${escJob(workLocation || 'Đài Loan')}</strong>
-                            <span class="jo-a4-ribbon-sub">Đài Loan (臺灣)</span>
+                            <span class="jo-a4-ribbon-lbl">📜 Thời Hạn Hợp Đồng</span>
+                            <strong class="jo-a4-ribbon-val" style="color:#d97706; font-size:11.5px;">${escJob(contractTerm || '03 Năm')}</strong>
+                            <span class="jo-a4-ribbon-sub">Theo Hợp Đồng Tuyển Dụng</span>
                         </div>
                     </div>
 
@@ -8815,7 +8815,6 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                                     <td class="jo-a4-lbl">Tên nhà máy (Công xưởng):</td>
                                     <td class="jo-a4-val" style="font-size:13px; font-weight:800;">
                                         ${escJob(factoryName || 'Chưa nhập tên công xưởng')}
-                                        ${vnFactory && vnFactory !== factoryName ? `<div style="font-size:11.5px; font-weight:700; color:#008080; margin-top:2px;">🏢 Tên tiếng Việt: ${escJob(vnFactory)}</div>` : ''}
                                     </td>
                                 </tr>
                                 ${workLocation ? `<tr><td class="jo-a4-lbl">Địa điểm làm việc:</td><td class="jo-a4-val" style="font-weight:750;">📍 ${escJob(workLocation)}, Đài Loan</td></tr>` : ''}
@@ -8844,7 +8843,6 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                                 <tr><td class="jo-a4-lbl">Học lực / Trình độ:</td><td class="jo-a4-val">${escJob(education || 'PTTH trở lên')}</td></tr>
                                 <tr><td class="jo-a4-lbl">Tình trạng hôn nhân:</td><td class="jo-a4-val">${escJob(marriage || 'Không yêu cầu')}</td></tr>
                                 ${interviewMethod ? `<tr><td class="jo-a4-lbl">Hình thức tuyển:</td><td class="jo-a4-val" style="color:#0d9488; font-weight:750;">${escJob(interviewMethod)}</td></tr>` : ''}
-                                ${contractTerm ? `<tr><td class="jo-a4-lbl">Thời hạn hợp đồng:</td><td class="jo-a4-val" style="font-weight:750;">${escJob(contractTerm)}</td></tr>` : ''}
                             </tbody>
                         </table>
                     </section>
