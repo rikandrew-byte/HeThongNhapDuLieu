@@ -8860,22 +8860,79 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             }, 100);
         });
 
+        function extractShortJobName(factoryName, jobCode) {
+            if (!factoryName || !factoryName.trim()) {
+                return (jobCode || '').trim();
+            }
+
+            let raw = factoryName.trim();
+            const hasChinese = /[\u4e00-\u9fa5]/.test(raw);
+            const hasLatin = /[a-zA-ZÀ-ỹ]/.test(raw);
+
+            let shortName = '';
+
+            // Nếu có chữ Latin / Tiếng Việt (ưu tiên lấy tên thương mại tiếng Việt ngắn gọn 2-3 chữ)
+            if (hasLatin) {
+                // Tách bỏ phần chữ Hán và dấu ngoặc
+                let vn = raw.replace(/[\u4e00-\u9fa5]+/g, ' ').replace(/[()（）]/g, ' ').trim();
+                // Loại bỏ các tiền tố pháp lý công ty phổ biến
+                vn = vn.replace(/^(công\s+ty|cty|doanh\s+nghiệp|dn|xí\s+nghiệp|nhà\s+máy|hợp\s+tác\s+xã)\s*(tnhh|cp|cổ\s+phần|trách\s+nhiệm\s+hữu\s+hạn)?\s*/i, '').trim();
+                vn = vn.replace(/^(tnhh|cp)\s*/i, '').trim();
+                vn = vn.replace(/\s+/g, ' ').trim();
+
+                if (vn) {
+                    const words = vn.split(' ');
+                    // Nếu tên tiếng Việt dài hơn 3 từ, lấy 2 hoặc 3 từ đầu
+                    if (words.length > 3) {
+                        shortName = words.slice(0, 3).join(' ');
+                    } else {
+                        shortName = vn;
+                    }
+                }
+            }
+
+            // Nếu chỉ có chữ Hán hoặc không tách được tên tiếng Việt
+            if (!shortName && hasChinese) {
+                let zh = raw.replace(/[^\u4e00-\u9fa5]/g, '').trim();
+                // Bỏ các hậu tố pháp lý công ty tiếng Trung (實業有限公司, 工業社...)
+                zh = zh.replace(/(實業|工業|科技|企業|國際)?(有限)?公司$|工業社$|企業社$|工廠$|廠$/, '').trim();
+                if (zh.length > 3) {
+                    shortName = zh.substring(0, 3);
+                } else if (zh.length > 0) {
+                    shortName = zh;
+                }
+            }
+
+            if (!shortName) {
+                shortName = raw.split(/\s+/).slice(0, 3).join(' ');
+            }
+
+            return shortName;
+        }
+
         function openJobAssignForOrder(factoryName, jobCode) {
             switchJobSubTab('jobAssign');
 
-            // Xác định tên đơn hàng trực quan (ưu tiên Tên công xưởng thay vì chỉ mã số)
-            let targetName = (factoryName || '').trim();
-            if (!targetName) targetName = (jobCode || '').trim();
+            // Rút gọn tên xưởng / tên đơn hàng thành 2-3 chữ gọn gàng (VD: Kỳ Sáng, Chí Uy, Phục Hưng, Hồng Thụ Lâm)
+            const shortName = extractShortJobName(factoryName, jobCode);
+            let targetName = shortName || (jobCode || '').trim();
 
-            // Nếu trong danh sách gợi ý đơn hàng (datalist) có tên trùng khớp thì chọn tên chuẩn đó
+            // Nếu trong danh sách gợi ý đơn hàng (datalist) có tên trùng khớp thì chọn tên chuẩn đang có
             const datalist = document.getElementById('quickJobNameOptions');
             if (datalist && targetName) {
                 const options = Array.from(datalist.options).map(o => o.value);
+                const sLower = shortName.toLowerCase();
+                const fLower = (factoryName || '').toLowerCase();
+                const cLower = (jobCode || '').toLowerCase();
+
                 const match = options.find(opt => {
                     const o = opt.toLowerCase();
-                    const t = targetName.toLowerCase();
-                    const c = (jobCode || '').toLowerCase();
-                    return o === t || (c && o === c) || o.includes(t) || t.includes(o);
+                    return o === sLower || 
+                           o === fLower || 
+                           (cLower && o === cLower) || 
+                           o.includes(sLower) || 
+                           sLower.includes(o) ||
+                           (fLower && (o.includes(fLower) || fLower.includes(o)));
                 });
                 if (match) {
                     targetName = match;
@@ -8894,13 +8951,12 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             }
 
             // Tự động tìm và cuộn tới dòng đơn hàng này trong bảng tổng hợp bên dưới (nếu đã có ứng viên)
-            highlightSummaryRow(targetName, jobCode);
+            highlightSummaryRow(targetName, shortName, jobCode);
         }
 
-        function highlightSummaryRow(jobName, jobCode) {
-            if (!jobName && !jobCode) return;
-            const jn = (jobName || '').toLowerCase().trim();
-            const jc = (jobCode || '').toLowerCase().trim();
+        function highlightSummaryRow(targetName, shortName, jobCode) {
+            const targets = [targetName, shortName, jobCode].filter(Boolean).map(s => s.toLowerCase().trim());
+            if (targets.length === 0) return;
 
             setTimeout(() => {
                 const rows = document.querySelectorAll('#jobSummaryTableBody tr.job-summary-row');
@@ -8909,8 +8965,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                     const colName = row.querySelector('.job-col-name');
                     if (colName) {
                         const text = colName.textContent.trim().toLowerCase();
-                        if ((jn && (text === jn || text.includes(jn) || jn.includes(text))) ||
-                            (jc && text.includes(jc))) {
+                        if (targets.some(t => text === t || text.includes(t) || t.includes(text))) {
                             foundRow = row;
                             break;
                         }
