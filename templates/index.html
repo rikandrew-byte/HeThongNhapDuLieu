@@ -8649,6 +8649,36 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             renderJobOrdersTable(filtered);
         }
 
+        function formatFactoryNameHtml(factoryName) {
+            if (!factoryName || !factoryName.trim()) {
+                return '<div style="font-weight:750; color:#0f172a; font-size:13px;">Chưa cập nhật tên xưởng</div>';
+            }
+
+            const raw = factoryName.trim();
+            const zhMatch = raw.match(/[\u4e00-\u9fa5]/);
+            const latinMatch = raw.match(/[a-zA-ZÀ-ỹ]/);
+
+            if (latinMatch && zhMatch) {
+                let firstPart = '', secondPart = '';
+                if (zhMatch.index < latinMatch.index) {
+                    firstPart = raw.slice(0, latinMatch.index).trim();
+                    secondPart = raw.slice(latinMatch.index).trim();
+                } else {
+                    firstPart = raw.slice(0, zhMatch.index).trim();
+                    secondPart = raw.slice(zhMatch.index).trim();
+                }
+
+                if (firstPart && secondPart) {
+                    return `
+                        <div style="font-weight:750; color:#0f172a; font-size:13px; line-height:1.35;">${escJob(firstPart)}</div>
+                        <div style="font-weight:650; color:#334155; font-size:12.5px; line-height:1.35; margin-top:2px;">${escJob(secondPart)}</div>
+                    `;
+                }
+            }
+
+            return `<div style="font-weight:750; color:#0f172a; font-size:13px; line-height:1.35;">${escJob(raw)}</div>`;
+        }
+
         function renderJobOrdersTable(list) {
             const tbody = document.getElementById('jobOrdersTableBody');
             if (!tbody) return;
@@ -8719,13 +8749,13 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 return `
                     <tr class="jo-card-row">
                         <td class="jo-td jo-td-factory" style="padding:10px 12px; vertical-align:top;" title="Mã đơn: ${escJob(j.code)}${j.title_note ? ' (' + escJob(j.title_note) + ')' : ''}">
-                            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:4px;">
+                            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:5px;">
                                 <select class="jo-inline-broker-select ${bInfo.code ? 'has-broker' : ''}" onchange="quickUpdateJobBroker('${jsId}', this.value)" title="Gán / đổi nhanh Công ty môi giới">
                                     ${buildInlineBrokerOptionsHtml(bInfo.code)}
                                 </select>
-                                <span style="font-weight:750; color:#0f172a; font-size:13px; line-height:1.35;">${escJob(j.factory_name || 'Chưa cập nhật tên xưởng')}</span>
                             </div>
-                            ${j.work_location ? `<div style="font-size:11.5px; color:#64748b; margin-top:2px;">📍 ${escJob(j.work_location)}</div>` : ''}
+                            ${formatFactoryNameHtml(j.factory_name)}
+                            ${j.work_location ? `<div style="font-size:11.5px; color:#64748b; margin-top:3px;">📍 ${escJob(j.work_location)}</div>` : ''}
                         </td>
                         <td class="jo-td jo-td-job" style="padding:10px 12px; vertical-align:top;">
                             <div style="font-weight:650; color:#1e293b; font-size:12.5px; margin-bottom:4px; line-height:1.35;">${escJob(j.product_job || j.job_type || 'Lao động phổ thông')}</div>
