@@ -511,20 +511,39 @@
             justify-content: center;
             width: 25px;
             height: 25px;
-            background: linear-gradient(135deg, var(--teal-primary) 0%, var(--teal-dark) 100%);
+            background: linear-gradient(135deg, #003838 0%, #005959 40%, #008080 80%, #004d4d 100%);
+            border: 1px solid #5eead4;
             color: #ffffff;
             border-radius: 6px;
             font-size: 11.5px;
             font-weight: 900;
-            box-shadow: 0 2px 5px rgba(0, 128, 128, 0.25);
+            box-shadow: 0 2px 6px rgba(0, 89, 89, 0.35);
+            flex-shrink: 0;
         }
 
+        /* Tiêu đề từng mục màu xanh cổ vịt ánh kim loại (Metallic Teal / Dark Mallard) */
         .exec-card-title-vi {
-            font-size: 14px;
+            font-size: 14.5px;
             font-weight: 900;
-            color: #000000;
             letter-spacing: 0.04em;
             text-transform: uppercase;
+            color: #005959;
+            background: linear-gradient(135deg, 
+                #003838 0%, 
+                #005a5a 20%, 
+                #008080 38%, 
+                #2dd4bf 48%, 
+                #99f6e4 52%, 
+                #2dd4bf 56%, 
+                #008080 72%, 
+                #005555 85%, 
+                #002b2b 100%
+            );
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: inline-block;
+            filter: drop-shadow(0 1px 1px rgba(0, 35, 35, 0.25));
         }
 
         /* Ma trận dữ liệu hàng ngang sắc nét (Executive Data Row) */
@@ -1041,7 +1060,8 @@
                 print-color-adjust: exact;
             }
 
-            .exec-main-title {
+            .exec-main-title,
+            .exec-card-title-vi {
                 color: #004d4d !important;
                 -webkit-text-fill-color: #004d4d !important;
                 background: none !important;
