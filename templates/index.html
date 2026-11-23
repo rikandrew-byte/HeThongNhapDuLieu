@@ -1618,9 +1618,8 @@
                         <table class="jo-list-table" style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;">
                             <thead>
                                 <tr style="background:#f8fafc; border-bottom:1.5px solid #e2e8f0; position:sticky; top:0; z-index:10;">
-                                    <th style="width:38%; padding:11px 12px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em;">Đơn hàng & Công xưởng</th>
-                                    <th style="width:40%; padding:11px 12px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em;">Công việc & Tuyển dụng</th>
-                                    <th style="width:10%; padding:11px 8px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em; text-align:center; white-space:nowrap;">Tăng ca</th>
+                                    <th style="width:42%; padding:11px 12px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em;">Đơn hàng & Công xưởng</th>
+                                    <th style="width:54%; padding:11px 12px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em;">Công việc & Tuyển dụng</th>
                                     <th style="width:1%; padding:11px 6px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em; text-align:center; white-space:nowrap;">Ứng viên</th>
                                     <th style="width:1%; padding:11px 6px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em; text-align:center; white-space:nowrap;">Trạng thái</th>
                                     <th style="width:1%; padding:11px 10px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em; text-align:center; white-space:nowrap;">Thao tác</th>
@@ -1628,7 +1627,7 @@
                             </thead>
                             <tbody id="jobOrdersTableBody">
                                 <tr>
-                                    <td colspan="6" style="padding:32px; text-align:center; color:#64748b; font-style:italic;">
+                                    <td colspan="5" style="padding:32px; text-align:center; color:#64748b; font-style:italic;">
                                         Đang tải dữ liệu Bảng công việc...
                                     </td>
                                 </tr>
@@ -8594,7 +8593,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 console.error("loadJobOrdersList error:", err);
                 const tbody = document.getElementById('jobOrdersTableBody');
                 if (tbody) {
-                    tbody.innerHTML = `<tr><td colspan="6" style="padding:24px; text-align:center; color:#dc2626; font-weight:600;">Lỗi khi tải bảng công việc: ${escJob(err.message)}</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="5" style="padding:24px; text-align:center; color:#dc2626; font-weight:600;">Lỗi khi tải bảng công việc: ${escJob(err.message)}</td></tr>`;
                 }
             }
         }
@@ -8664,7 +8663,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                     : 'Bấm nút <strong>"➕ Tạo Bảng công việc mới"</strong> ở trên để thêm đơn hàng chuẩn FCT, hoặc kiểm tra tab <strong>📦 Đã xong / Lưu kho mẫu</strong>.';
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="6" style="padding:44px 20px; text-align:center; color:#64748b;">
+                        <td colspan="5" style="padding:44px 20px; text-align:center; color:#64748b;">
                             <div style="font-size:32px; margin-bottom:8px;">${lifecycleView === 'archived' ? '📦' : '📋'}</div>
                             <div style="font-weight:750; font-size:14px; color:#334155;">${emptyTitle}</div>
                             <div style="font-size:12px; margin-top:4px;">${emptyDesc}</div>
@@ -8737,11 +8736,8 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                             <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                                 ${criteriaBadge}
                                 <span style="font-size:11px; color:#64748b;">• ${escJob(crit.age_range || '20+')}</span>
+                                ${otObj.main ? `<span style="display:inline-flex; align-items:center; gap:3px; background:#f0fdfa; color:#0f766e; border:1px solid #99f6e4; padding:1px 7px; border-radius:6px; font-weight:750; font-size:11px;" title="${escJob(otObj.sub ? otObj.main + ' - ' + otObj.sub : otObj.main)}">⏰ ${escJob(otObj.main)}${otObj.sub ? ` <span style="font-size:10px; font-weight:600; color:#14b8a6;">(${escJob(otObj.sub)})</span>` : ''}</span>` : ''}
                             </div>
-                        </td>
-                        <td class="jo-td jo-td-salary" style="padding:10px 8px; vertical-align:middle; text-align:center;">
-                            <div style="font-size:12px; color:#008080; font-weight:750; white-space:nowrap;">${escJob(otObj.main)}</div>
-                            ${otObj.sub ? `<div style="font-size:10.5px; color:#64748b; margin-top:2px; line-height:1.25;">${escJob(otObj.sub)}</div>` : ''}
                         </td>
                         <td class="jo-td jo-td-candidates" style="padding:10px 6px; text-align:center; vertical-align:middle; white-space:nowrap;">
                             <button type="button" onclick="openJobAssignForOrder('${jsFactory}', '${jsCode}')" title="Xem ứng viên đã ghép với đơn này"
@@ -8869,45 +8865,46 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             const hasChinese = /[\u4e00-\u9fa5]/.test(raw);
             const hasLatin = /[a-zA-ZÀ-ỹ]/.test(raw);
 
-            let shortName = '';
+            let vnShort = '';
+            let vnWordCount = 0;
 
-            // Nếu có chữ Latin / Tiếng Việt (ưu tiên lấy tên thương mại tiếng Việt ngắn gọn 2-3 chữ)
+            // 1. Tách và lấy tên tiếng Việt (loại bỏ tiền tố công ty, lấy 2-3 chữ)
             if (hasLatin) {
-                // Tách bỏ phần chữ Hán và dấu ngoặc
                 let vn = raw.replace(/[\u4e00-\u9fa5]+/g, ' ').replace(/[()（）]/g, ' ').trim();
-                // Loại bỏ các tiền tố pháp lý công ty phổ biến
                 vn = vn.replace(/^(công\s+ty|cty|doanh\s+nghiệp|dn|xí\s+nghiệp|nhà\s+máy|hợp\s+tác\s+xã)\s*(tnhh|cp|cổ\s+phần|trách\s+nhiệm\s+hữu\s+hạn)?\s*/i, '').trim();
                 vn = vn.replace(/^(tnhh|cp)\s*/i, '').trim();
                 vn = vn.replace(/\s+/g, ' ').trim();
 
                 if (vn) {
-                    const words = vn.split(' ');
-                    // Nếu tên tiếng Việt dài hơn 3 từ, lấy 2 hoặc 3 từ đầu
-                    if (words.length > 3) {
-                        shortName = words.slice(0, 3).join(' ');
-                    } else {
-                        shortName = vn;
-                    }
+                    const words = vn.split(' ').filter(Boolean);
+                    vnWordCount = words.length > 3 ? 3 : words.length;
+                    vnShort = words.slice(0, vnWordCount).join(' ');
                 }
             }
 
-            // Nếu chỉ có chữ Hán hoặc không tách được tên tiếng Việt
-            if (!shortName && hasChinese) {
-                let zh = raw.replace(/[^\u4e00-\u9fa5]/g, '').trim();
-                // Bỏ các hậu tố pháp lý công ty tiếng Trung (實業有限公司, 工業社...)
-                zh = zh.replace(/(實業|工業|科技|企業|國際)?(有限)?公司$|工業社$|企業社$|工廠$|廠$/, '').trim();
-                if (zh.length > 3) {
-                    shortName = zh.substring(0, 3);
-                } else if (zh.length > 0) {
-                    shortName = zh;
+            // 2. Tách và lấy chữ tiếng Trung (nếu tiếng Việt lấy bao nhiêu chữ thì tiếng Trung lấy bấy nhiêu chữ tương ứng)
+            let zhShort = '';
+            if (hasChinese) {
+                const zhChars = raw.match(/[\u4e00-\u9fa5]/g) || [];
+                if (zhChars.length > 0) {
+                    const count = vnWordCount > 0 ? vnWordCount : (zhChars.length > 3 ? 3 : zhChars.length);
+                    zhShort = zhChars.slice(0, count).join('');
                 }
             }
 
-            if (!shortName) {
-                shortName = raw.split(/\s+/).slice(0, 3).join(' ');
+            // 3. Ghép cả tiếng Việt và tiếng Trung (VD: KỲ SÁNG 祺創, Chí Uy 至崴, Phục Hưng 復興)
+            let result = '';
+            if (vnShort && zhShort) {
+                result = `${vnShort} ${zhShort}`;
+            } else if (vnShort) {
+                result = vnShort;
+            } else if (zhShort) {
+                result = zhShort;
+            } else {
+                result = raw.split(/\s+/).slice(0, 3).join(' ');
             }
 
-            return shortName;
+            return result;
         }
 
         function openJobAssignForOrder(factoryName, jobCode) {
