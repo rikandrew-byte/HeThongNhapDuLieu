@@ -1618,11 +1618,11 @@
                         <table class="jo-list-table" style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;">
                             <thead>
                                 <tr style="background:#f8fafc; border-bottom:1.5px solid #e2e8f0; position:sticky; top:0; z-index:10;">
-                                    <th style="width:34%; padding:11px 12px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em;">Đơn hàng & Công xưởng</th>
-                                    <th style="width:34%; padding:11px 12px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em;">Công việc & Tuyển dụng</th>
-                                    <th style="width:12%; padding:11px 10px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em; white-space:nowrap;">Lương & Tăng ca</th>
-                                    <th style="width:1%; padding:11px 8px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em; text-align:center; white-space:nowrap;">Ứng viên</th>
-                                    <th style="width:1%; padding:11px 8px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em; text-align:center; white-space:nowrap;">Trạng thái</th>
+                                    <th style="width:38%; padding:11px 12px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em;">Đơn hàng & Công xưởng</th>
+                                    <th style="width:40%; padding:11px 12px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em;">Công việc & Tuyển dụng</th>
+                                    <th style="width:10%; padding:11px 8px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em; text-align:center; white-space:nowrap;">Tăng ca</th>
+                                    <th style="width:1%; padding:11px 6px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em; text-align:center; white-space:nowrap;">Ứng viên</th>
+                                    <th style="width:1%; padding:11px 6px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em; text-align:center; white-space:nowrap;">Trạng thái</th>
                                     <th style="width:1%; padding:11px 10px; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px; letter-spacing:0.04em; text-align:center; white-space:nowrap;">Thao tác</th>
                                 </tr>
                             </thead>
@@ -2872,6 +2872,46 @@
             cursor: pointer;
             outline: none;
             transition: all 0.14s ease;
+        }
+        .jo-status-dot-wrap {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            cursor: pointer;
+            margin: 0 auto;
+            transition: background 0.15s ease;
+            vertical-align: middle;
+        }
+        .jo-status-dot-wrap:hover {
+            background: #f1f5f9;
+        }
+        .jo-status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .jo-status-dot-wrap:hover .jo-status-dot {
+            transform: scale(1.25);
+        }
+        .jo-status-dot-select {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+            z-index: 2;
+        }
+        .jo-status-label {
+            display: none;
         }
 
         .jo-primary-cta,
@@ -8652,14 +8692,19 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                     `;
                 }
 
+                let dotColor = '#10b981', dotShadow = 'rgba(16, 185, 129, 0.35)';
                 let statusBg = '#ecfdf5', statusColor = '#047857', statusBorder = '#a7f3d0';
                 if (j.status === 'Đã đủ form') {
+                    dotColor = '#f59e0b'; dotShadow = 'rgba(245, 158, 11, 0.35)';
                     statusBg = '#fef9c3'; statusColor = '#854d0e'; statusBorder = '#fde047';
                 } else if (j.status === 'Đã phỏng vấn') {
+                    dotColor = '#0284c7'; dotShadow = 'rgba(2, 132, 199, 0.35)';
                     statusBg = '#e0f2fe'; statusColor = '#0369a1'; statusBorder = '#bae6fd';
                 } else if (j.status === 'Đã hoàn thành') {
-                    statusBg = '#f1f5f9'; statusColor = '#475569'; statusBorder = '#cbd5e1';
+                    dotColor = '#ef4444'; dotShadow = 'rgba(239, 68, 68, 0.35)';
+                    statusBg = '#fee2e2'; statusColor = '#b91c1c'; statusBorder = '#fecaca';
                 } else if (j.status === 'Tạm dừng') {
+                    dotColor = '#ef4444'; dotShadow = 'rgba(239, 68, 68, 0.35)';
                     statusBg = '#fee2e2'; statusColor = '#b91c1c'; statusBorder = '#fecaca';
                 }
 
@@ -8693,23 +8738,25 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                                 <span style="font-size:11px; color:#64748b;">• ${escJob(crit.age_range || '20+')}</span>
                             </div>
                         </td>
-                        <td class="jo-td jo-td-salary" style="padding:10px; vertical-align:top;">
-                            <div style="font-weight:750; color:#0f172a; font-size:13px; white-space:nowrap;">${escJob(j.salary_base || '29,500NT$')}</div>
-                            <div style="font-size:11.5px; color:#008080; font-weight:650; margin-top:2px; white-space:nowrap;">${escJob(otObj.main)}</div>
-                            ${otObj.sub ? `<div style="font-size:10px; color:#64748b; margin-top:1px; line-height:1.25;">${escJob(otObj.sub)}</div>` : ''}
+                        <td class="jo-td jo-td-salary" style="padding:10px 8px; vertical-align:middle; text-align:center;">
+                            <div style="font-size:12px; color:#008080; font-weight:750; white-space:nowrap;">${escJob(otObj.main)}</div>
+                            ${otObj.sub ? `<div style="font-size:10.5px; color:#64748b; margin-top:2px; line-height:1.25;">${escJob(otObj.sub)}</div>` : ''}
                         </td>
-                        <td class="jo-td jo-td-candidates" style="padding:10px 8px; text-align:center; vertical-align:middle; white-space:nowrap;">
+                        <td class="jo-td jo-td-candidates" style="padding:10px 6px; text-align:center; vertical-align:middle; white-space:nowrap;">
                             <button type="button" onclick="filterJobAssignByCode('${jsCode}')" title="Xem ứng viên đã ghép với đơn này"
-                                style="background:#f8fafc; color:#0f172a; border:1px solid #cbd5e1; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.14s;"
+                                style="background:#f8fafc; color:#0f172a; border:1px solid #cbd5e1; padding:4px 8px; border-radius:999px; font-size:12px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.14s;"
                                 onmouseover="this.style.borderColor='#008080'; this.style.color='#008080';" onmouseout="this.style.borderColor='#cbd5e1'; this.style.color='#0f172a';">
                                 <span>👥</span> ${Number(j.candidate_count || 0)}
                             </button>
                         </td>
-                        <td class="jo-td jo-td-status" style="padding:10px 8px; text-align:center; vertical-align:middle; white-space:nowrap;">
-                            <select class="jo-inline-status-select" onchange="quickUpdateJobStatus('${jsId}', this.value)" title="Đổi nhanh trạng thái đơn hàng"
-                                style="background:${statusBg}; color:${statusColor}; border-color:${statusBorder};">
-                                ${statusSelectOpts}
-                            </select>
+                        <td class="jo-td jo-td-status" style="padding:10px 6px; text-align:center; vertical-align:middle; white-space:nowrap;">
+                            <div class="jo-status-dot-wrap" title="Trạng thái: ${escJob(currentStatus)} (Bấm để đổi)">
+                                <span class="jo-status-dot" style="background-color:${dotColor}; box-shadow:0 0 0 3px ${dotShadow};"></span>
+                                <span class="jo-status-label">${escJob(currentStatus)}</span>
+                                <select class="jo-status-dot-select" onchange="quickUpdateJobStatus('${jsId}', this.value)" title="Đổi trạng thái: ${escJob(currentStatus)}">
+                                    ${statusSelectOpts}
+                                </select>
+                            </div>
                         </td>
                         <td class="jo-td jo-td-actions" style="padding:10px 8px; text-align:center; vertical-align:middle; white-space:nowrap;">
                             <div class="jo-act-grid">
@@ -12615,8 +12662,8 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 gap: 6px !important;
             }
             .jo-list-container.is-card-view .jo-td-salary::before {
-                content: "💰 Lương & Tăng ca:";
-                font-size: 11px;
+                content: "⏰ Tăng ca:";
+                font-size: 11.5px;
                 font-weight: 750;
                 color: #475569;
             }
@@ -12645,9 +12692,21 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                 font-weight: 750;
                 color: #475569;
             }
-            .jo-list-container.is-card-view .jo-inline-status-select {
-                padding: 5px 10px !important;
-                font-size: 12px !important;
+            .jo-list-container.is-card-view .jo-status-dot-wrap {
+                width: auto !important;
+                height: auto !important;
+                padding: 4px 10px 4px 8px !important;
+                border-radius: 999px !important;
+                background: #f8fafc !important;
+                border: 1px solid #e2e8f0 !important;
+                gap: 6px !important;
+                display: inline-flex !important;
+            }
+            .jo-list-container.is-card-view .jo-status-label {
+                display: inline-block !important;
+                font-size: 11.5px !important;
+                font-weight: 750 !important;
+                color: #334155 !important;
             }
             .jo-list-container.is-card-view .jo-td-actions {
                 border-top: 1px dashed #e2e8f0 !important;
