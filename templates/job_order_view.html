@@ -1249,7 +1249,7 @@
                     </div>
                 </header>
 
-                <!-- 2. HERO METRICS PANEL (4 Thẻ Vàng Thông Số Tuyển Dụng) -->
+                <!-- 2. PHẦN CHẾ ĐỘ & TĂNG CA (Xử lý biến phục vụ Mục IV) -->
                 {% set ot_main = job.overtime_hours or '72hr/tháng' %}
                 {% set ot_sub = '' %}
                 {% if '(' in ot_main and ')' in ot_main %}
@@ -1265,27 +1265,6 @@
                     {% set ded_main = ded_parts[0].strip() %}
                     {% set ded_sub = '(' ~ ded_parts[1].strip() %}
                 {% endif %}
-
-                <!-- 2. EXECUTIVE HIGHLIGHTS RIBBON (Phong Cách 3 - Công Văn Ngoại Giao: 3 Cột Tinh Gọn) -->
-                <div class="memo-highlights-ribbon">
-                    <div class="memo-ribbon-item">
-                        <span class="ribbon-lbl">💰 Lương Cơ Bản</span>
-                        <strong class="ribbon-val c-azure">{{ job.salary_base or '29,500NT$' }}</strong>
-                        <span class="ribbon-sub">Theo Luật Lao Động Đài Loan</span>
-                    </div>
-                    <div class="memo-ribbon-divider"></div>
-                    <div class="memo-ribbon-item">
-                        <span class="ribbon-lbl">⏱️ Tăng Ca Dự Kiến</span>
-                        <strong class="ribbon-val c-teal">{{ ot_main }}</strong>
-                        <span class="ribbon-sub">{{ ot_sub if ot_sub else 'Bình quân / tháng' }}</span>
-                    </div>
-                    <div class="memo-ribbon-divider"></div>
-                    <div class="memo-ribbon-item">
-                        <span class="ribbon-lbl">📜 Thời Hạn Hợp Đồng</span>
-                        <strong class="ribbon-val c-amber">{{ criteria.get('contract_term', '03 Năm') }}</strong>
-                        <span class="ribbon-sub">Theo hợp đồng tuyển dụng</span>
-                    </div>
-                </div>
 
                 <!-- ============================================================
                      THỨ TỰ CÁC MỤC LOGIC CHUẨN XUẤT KHẨU LAO ĐỘNG ĐÀI LOAN:
@@ -1439,6 +1418,12 @@
                         <div class="crit-pill-item">
                             <span class="crit-pill-lbl">Hình thức tuyển:</span>
                             <span class="crit-pill-val" style="color:var(--teal-primary);">{{ criteria.get('interview_method') }}</span>
+                        </div>
+                        {% endif %}
+                        {% if criteria.get('contract_term') %}
+                        <div class="crit-pill-item">
+                            <span class="crit-pill-lbl">Thời hạn hợp đồng:</span>
+                            <span class="crit-pill-val">{{ criteria.get('contract_term') }}</span>
                         </div>
                         {% endif %}
                     </div>
