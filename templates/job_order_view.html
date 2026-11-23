@@ -21,7 +21,7 @@
 
     <style>
         :root {
-            /* Hệ màu Modern Executive: Teal #008080 chủ đạo, kết hợp Slate/Charcoal cao cấp */
+            /* Hệ màu High-Contrast Executive: Chữ đen tuyền & xám đậm sắc nét, Teal #008080 chủ đạo */
             --teal-primary: #008080;
             --teal-dark: #005959;
             --teal-deep: #004040;
@@ -30,13 +30,13 @@
             --teal-border: #99f6e4;
             --teal-glow: rgba(0, 128, 128, 0.12);
 
-            --slate-900: #0f172a;
-            --slate-800: #1e293b;
-            --slate-700: #334155;
-            --slate-600: #475569;
-            --slate-500: #64748b;
-            --slate-400: #94a3b8;
-            --slate-200: #e2e8f0;
+            --slate-900: #000000;
+            --slate-800: #0f172a;
+            --slate-700: #1e293b;
+            --slate-600: #1e293b;
+            --slate-500: #334155;
+            --slate-400: #475569;
+            --slate-200: #cbd5e1;
             --slate-100: #f1f5f9;
             --slate-50:  #f8fafc;
 
@@ -52,7 +52,7 @@
             --amber-50:  #fffbeb;
             --amber-200: #fde68a;
 
-            --page-bg: #eef2f6;
+            --page-bg: #e2e8f0;
             --paper-bg: #ffffff;
             --radius-xl: 18px;
             --radius-lg: 14px;
@@ -69,9 +69,12 @@
         body {
             font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--page-bg);
-            color: var(--slate-800);
+            color: #0f172a;
+            font-size: 13.5px;
             line-height: 1.55;
             -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
         }
 
         /* ============================================================
@@ -411,33 +414,33 @@
             box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
         }
 
-        .metric-card.m-salary { border-top: 3.5px solid var(--azure-600); }
-        .metric-card.m-ot     { border-top: 3.5px solid var(--teal-primary); }
-        .metric-card.m-quota  { border-top: 3.5px solid #8b5cf6; }
-        .metric-card.m-loc    { border-top: 3.5px solid var(--amber-600); }
+        .metric-card.m-salary { border-top: 4px solid var(--azure-600); }
+        .metric-card.m-ot     { border-top: 4px solid var(--teal-primary); }
+        .metric-card.m-quota  { border-top: 4px solid #7c3aed; }
+        .metric-card.m-loc    { border-top: 4px solid var(--amber-600); }
 
         .metric-icon-wrap {
             font-size: 16px;
             margin-bottom: 4px;
-            opacity: 0.9;
+            opacity: 0.95;
         }
 
         .metric-label-vi {
-            font-size: 10.5px;
-            font-weight: 800;
-            color: var(--slate-600);
+            font-size: 11.5px;
+            font-weight: 850;
+            color: #1e293b;
             text-transform: uppercase;
-            letter-spacing: 0.06em;
+            letter-spacing: 0.05em;
             line-height: 1.25;
             margin-bottom: 5px;
         }
 
         .metric-number {
-            font-size: 18px;
-            font-weight: 850;
+            font-size: 20px;
+            font-weight: 900;
             letter-spacing: -0.01em;
             line-height: 1.2;
-            color: var(--slate-900);
+            color: #000000;
         }
 
         .metric-card.m-salary .metric-number { color: var(--azure-600); }
@@ -446,28 +449,28 @@
         .metric-card.m-loc .metric-number    { color: var(--amber-600); }
 
         .metric-subnote {
-            font-size: 10.5px;
-            font-weight: 650;
-            color: var(--teal-dark);
+            font-size: 11px;
+            font-weight: 750;
+            color: #005959;
             margin-top: 3px;
             line-height: 1.2;
         }
 
         /* ============================================================
-           5. MODULAR EXECUTIVE CARDS (Hệ Thống Thẻ Bo Tròn Hiện Đại)
+           5. MODULAR EXECUTIVE CARDS (Hệ Thống Thẻ Bo Tròn Sắc Nét, Sáng Rõ)
            ============================================================ */
         .exec-card {
             background: #ffffff;
-            border: 1px solid var(--slate-200);
+            border: 1.5px solid #cbd5e1;
             border-radius: var(--radius-lg);
-            padding: 16px 20px;
+            padding: 18px 22px;
             margin-bottom: 16px;
-            box-shadow: 0 1px 4px rgba(15, 23, 42, 0.02);
+            box-shadow: 0 1px 4px rgba(15, 23, 42, 0.03);
             transition: box-shadow 0.15s ease;
         }
 
         .exec-card:hover {
-            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
         }
 
         .exec-card-head {
@@ -476,7 +479,7 @@
             justify-content: space-between;
             padding-bottom: 10px;
             margin-bottom: 12px;
-            border-bottom: 1px solid #f1f5f9;
+            border-bottom: 1.5px solid #e2e8f0;
         }
 
         .exec-card-title-group {
@@ -489,29 +492,29 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 24px;
-            height: 24px;
+            width: 25px;
+            height: 25px;
             background: linear-gradient(135deg, var(--teal-primary) 0%, var(--teal-dark) 100%);
             color: #ffffff;
             border-radius: 6px;
-            font-size: 11px;
-            font-weight: 850;
+            font-size: 11.5px;
+            font-weight: 900;
             box-shadow: 0 2px 5px rgba(0, 128, 128, 0.25);
         }
 
         .exec-card-title-vi {
-            font-size: 13.5px;
-            font-weight: 800;
-            color: var(--slate-900);
+            font-size: 14px;
+            font-weight: 900;
+            color: #000000;
             letter-spacing: 0.04em;
             text-transform: uppercase;
         }
 
-        /* Ma trận dữ liệu hàng ngang (Executive Data Row) */
+        /* Ma trận dữ liệu hàng ngang sắc nét (Executive Data Row) */
         .data-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 8px;
+            gap: 4px;
         }
 
         .data-row {
@@ -519,79 +522,85 @@
             grid-template-columns: 200px 1fr;
             align-items: baseline;
             gap: 12px;
-            padding: 6px 8px;
+            padding: 7px 10px;
             border-radius: var(--radius-sm);
+            border-bottom: 1px solid #f1f5f9;
             transition: background 0.12s ease;
         }
 
+        .data-row:last-child {
+            border-bottom: none;
+        }
+
         .data-row:nth-child(odd) {
-            background: var(--slate-50);
+            background: #f8fafc;
         }
 
         .data-label {
-            font-size: 11.5px;
-            font-weight: 750;
-            color: var(--slate-600);
+            font-size: 12px;
+            font-weight: 850;
+            color: #1e293b;
             text-transform: uppercase;
             letter-spacing: 0.03em;
         }
 
         .data-value {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--slate-900);
-            line-height: 1.5;
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #000000;
+            line-height: 1.55;
         }
 
         .factory-name-main {
-            font-size: 16px;
-            font-weight: 850;
-            color: var(--slate-900);
+            font-size: 17px;
+            font-weight: 900;
+            color: #000000;
             letter-spacing: 0.02em;
             line-height: 1.35;
         }
 
         .factory-name-vi {
-            font-size: 12.5px;
-            font-weight: 700;
-            color: var(--teal-dark);
-            margin-top: 2px;
+            font-size: 13px;
+            font-weight: 850;
+            color: #005959;
+            margin-top: 3px;
         }
 
         .web-link-btn {
             display: inline-flex;
             align-items: center;
             gap: 5px;
-            color: var(--teal-primary);
-            font-weight: 750;
+            color: #005959;
+            font-weight: 800;
             text-decoration: none;
-            padding: 3px 10px;
+            padding: 4px 12px;
             border-radius: 6px;
-            background: var(--teal-surface);
-            border: 1px solid var(--teal-border);
-            font-size: 12px;
+            background: #f0fdfa;
+            border: 1.5px solid #99f6e4;
+            font-size: 12.5px;
             transition: all 0.15s ease;
         }
 
         .web-link-btn:hover {
             background: #ccfbf1;
-            color: var(--teal-dark);
+            color: #004040;
         }
 
-        /* Thẻ sản phẩm nổi bật */
+        /* Thẻ sản phẩm nổi bật rõ ràng */
         .product-highlight-box {
-            background: #f8fafc;
-            border-left: 3.5px solid var(--teal-primary);
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
+            border-left: 4.5px solid var(--teal-primary);
             border-radius: 0 var(--radius-md) var(--radius-md) 0;
             padding: 10px 14px;
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--slate-900);
+            font-size: 13.5px;
+            font-weight: 750;
+            color: #000000;
             line-height: 1.55;
         }
 
         /* ============================================================
-           6. CRITERIA CARDS (Nam / Nữ Đối Xứng Hiện Đại)
+           6. CRITERIA CARDS (Nam / Nữ Đối Xứng Hiện Đại, Độ Tương Phản Cao)
            ============================================================ */
         .criteria-dual-grid {
             display: grid;
@@ -603,21 +612,21 @@
         .gender-card {
             border-radius: var(--radius-md);
             padding: 12px 14px;
-            border: 1px solid;
+            border: 1.5px solid;
             background: #ffffff;
-            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02);
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
         }
 
         .gender-card.male {
-            border-color: var(--azure-200);
-            border-left: 4px solid var(--azure-600);
-            background: linear-gradient(180deg, #ffffff 0%, var(--azure-50) 100%);
+            border-color: #7dd3fc;
+            border-left: 5px solid var(--azure-600);
+            background: #f0f9ff;
         }
 
         .gender-card.female {
-            border-color: var(--rose-200);
-            border-left: 4px solid var(--rose-600);
-            background: linear-gradient(180deg, #ffffff 0%, var(--rose-50) 100%);
+            border-color: #f472b6;
+            border-left: 5px solid var(--rose-600);
+            background: #fdf2f8;
         }
 
         .gender-card-head {
@@ -626,15 +635,15 @@
             justify-content: space-between;
             padding-bottom: 6px;
             margin-bottom: 6px;
-            border-bottom: 1px dashed rgba(0, 0, 0, 0.08);
+            border-bottom: 1.5px dashed rgba(0, 0, 0, 0.12);
         }
 
         .gender-card.male .gender-card-head { color: var(--azure-600); }
         .gender-card.female .gender-card-head { color: var(--rose-600); }
 
         .gender-title-vi {
-            font-size: 12px;
-            font-weight: 850;
+            font-size: 12.5px;
+            font-weight: 900;
             letter-spacing: 0.05em;
             text-transform: uppercase;
         }
@@ -644,16 +653,17 @@
             align-items: baseline;
             justify-content: space-between;
             padding: 4px 0;
-            font-size: 12.5px;
+            font-size: 13px;
         }
 
         .gender-row-label {
-            color: var(--slate-600);
-            font-weight: 650;
+            color: #1e293b;
+            font-weight: 800;
         }
 
         .gender-row-val {
-            font-weight: 800;
+            font-weight: 850;
+            font-size: 13.5px;
         }
 
         .gender-card.male .gender-row-val { color: var(--azure-600); }
@@ -668,8 +678,8 @@
         }
 
         .crit-pill-item {
-            background: var(--slate-50);
-            border: 1px solid var(--slate-200);
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
             border-radius: var(--radius-sm);
             padding: 8px 12px;
             display: flex;
@@ -679,29 +689,30 @@
         }
 
         .crit-pill-lbl {
-            font-size: 11px;
-            font-weight: 750;
-            color: var(--slate-600);
+            font-size: 11.5px;
+            font-weight: 850;
+            color: #1e293b;
             text-transform: uppercase;
         }
 
         .crit-pill-val {
-            font-size: 12.5px;
-            font-weight: 800;
-            color: var(--slate-900);
+            font-size: 13px;
+            font-weight: 850;
+            color: #000000;
             text-align: right;
         }
 
         /* Scope statement box */
         .scope-statement-box {
-            background: var(--slate-50);
-            border-left: 4px solid var(--teal-primary);
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
+            border-left: 4.5px solid var(--teal-primary);
             border-radius: 0 var(--radius-md) var(--radius-md) 0;
             padding: 14px 18px;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--slate-800);
-            line-height: 1.65;
+            font-size: 13.5px;
+            font-weight: 650;
+            color: #000000;
+            line-height: 1.7;
         }
 
         /* Financial Ledger Grid */
@@ -713,8 +724,8 @@
         }
 
         .finance-box {
-            background: var(--slate-50);
-            border: 1px solid var(--slate-200);
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
             border-radius: var(--radius-md);
             padding: 10px 8px;
             text-align: center;
@@ -724,25 +735,25 @@
             justify-content: center;
         }
 
-        .finance-box.b-base   { border-top: 3px solid var(--azure-600); }
-        .finance-box.b-otrate { border-top: 3px solid var(--teal-primary); }
-        .finance-box.b-othour { border-top: 3px solid #059669; }
-        .finance-box.b-deduct { border-top: 3px solid var(--amber-600); }
+        .finance-box.b-base   { border-top: 3.5px solid var(--azure-600); }
+        .finance-box.b-otrate { border-top: 3.5px solid var(--teal-primary); }
+        .finance-box.b-othour { border-top: 3.5px solid #059669; }
+        .finance-box.b-deduct { border-top: 3.5px solid var(--amber-600); }
 
         .finance-box-lbl {
-            font-size: 10px;
-            font-weight: 800;
-            color: var(--slate-500);
+            font-size: 11px;
+            font-weight: 850;
+            color: #1e293b;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             margin-bottom: 3px;
         }
 
         .finance-box-val {
-            font-size: 15px;
-            font-weight: 850;
+            font-size: 16px;
+            font-weight: 900;
             letter-spacing: -0.01em;
-            color: var(--slate-900);
+            color: #000000;
         }
 
         .finance-box.b-base .finance-box-val   { color: var(--azure-600); }
@@ -751,9 +762,9 @@
         .finance-box.b-deduct .finance-box-val { color: #b45309; }
 
         .finance-box-sub {
-            font-size: 10px;
-            font-weight: 700;
-            color: var(--slate-500);
+            font-size: 11px;
+            font-weight: 750;
+            color: #334155;
             margin-top: 2px;
             line-height: 1.2;
         }
@@ -769,20 +780,21 @@
             display: flex;
             align-items: flex-start;
             gap: 10px;
-            background: var(--slate-50);
-            border: 1px solid var(--slate-200);
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
             border-radius: var(--radius-sm);
-            padding: 8px 12px;
-            font-size: 12.5px;
-            line-height: 1.55;
-            color: var(--slate-800);
+            padding: 9px 12px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #000000;
+            font-weight: 650;
         }
 
         .clause-badge {
             background: var(--teal-primary);
             color: #ffffff;
-            font-size: 10px;
-            font-weight: 850;
+            font-size: 10.5px;
+            font-weight: 900;
             padding: 2px 7px;
             border-radius: 4px;
             flex-shrink: 0;
@@ -799,7 +811,7 @@
         }
 
         .gallery-card {
-            border: 1px solid var(--slate-200);
+            border: 1.5px solid #cbd5e1;
             background: #ffffff;
             border-radius: var(--radius-md);
             aspect-ratio: 4/3;
@@ -831,12 +843,12 @@
             position: absolute;
             bottom: 6px;
             right: 6px;
-            background: rgba(15, 23, 42, 0.75);
+            background: rgba(15, 23, 42, 0.85);
             color: #ffffff;
-            padding: 2px 7px;
+            padding: 3px 8px;
             border-radius: 4px;
-            font-size: 10px;
-            font-weight: 700;
+            font-size: 10.5px;
+            font-weight: 800;
             backdrop-filter: blur(4px);
         }
 
@@ -846,7 +858,7 @@
         .exec-auth-block {
             margin-top: 24px;
             padding-top: 20px;
-            border-top: 1.5px solid #e2e8f0;
+            border-top: 1.5px solid #cbd5e1;
             display: flex;
             justify-content: center;
             page-break-inside: avoid;
@@ -855,32 +867,32 @@
         .auth-col-single {
             width: 100%;
             max-width: 600px;
-            background: var(--slate-50);
-            border: 1px solid var(--slate-200);
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
             border-radius: var(--radius-md);
             padding: 18px 22px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             min-height: 150px;
-            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02);
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
         }
 
         .auth-col-title-vi {
-            font-size: 12.5px;
-            font-weight: 850;
-            color: var(--slate-900);
+            font-size: 13px;
+            font-weight: 900;
+            color: #000000;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             line-height: 1.3;
         }
 
         .auth-commitment {
-            font-size: 11.5px;
-            font-weight: 550;
-            color: var(--slate-600);
-            font-style: italic;
-            line-height: 1.5;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #1e293b;
+            font-style: normal;
+            line-height: 1.55;
             margin: 10px 0 16px 0;
         }
 
@@ -893,30 +905,30 @@
         }
 
         .sign-guide {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--slate-400);
+            font-size: 11.5px;
+            font-weight: 750;
+            color: #334155;
         }
 
         .sign-date-line {
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--slate-500);
+            font-size: 11.5px;
+            font-weight: 800;
+            color: #0f172a;
         }
 
         /* ============================================================
-           8. MINIMALIST FOOTER (Chỉ Giữ Mã Hồ Sơ Gọn Gàng)
+           8. MINIMALIST FOOTER (Chỉ Giữ Mã Hồ Sơ Gọn Gàng, Sắc Nét)
            ============================================================ */
         .exec-footer {
             margin-top: 22px;
             padding-top: 12px;
-            border-top: 1px dashed var(--slate-200);
+            border-top: 1.5px dashed #cbd5e1;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 10.5px;
-            font-weight: 700;
-            color: var(--slate-400);
+            font-size: 11.5px;
+            font-weight: 850;
+            color: #1e293b;
             letter-spacing: 0.06em;
             text-transform: uppercase;
         }
