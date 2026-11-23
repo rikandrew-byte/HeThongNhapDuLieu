@@ -8916,6 +8916,9 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                     ? `${escJob(femaleCount || '0')} Nữ`
                     : `${escJob(maleCount || '0')} Nam / ${escJob(femaleCount || '0')} Nữ`);
 
+            const brokerCodeVal = (document.getElementById('jobOrder_brokerSelect')?.value || '').trim().toUpperCase();
+            const brokerChipHtml = (brokerCodeVal && !code.startsWith(brokerCodeVal + '-')) ? `<span style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; padding:1px 6px; border-radius:4px; font-size:10px; font-weight:800;">🏢 ${escJob(brokerCodeVal)}</span>` : '';
+
             bodyEl.innerHTML = `
                 <div class="jo-a4-content">
                     <header>
@@ -8929,6 +8932,7 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
                             <div class="jo-a4-meta-row" style="margin-top:4px;">
                                 <span>MÃ ĐƠN: <strong style="color:#008080;">${escJob(code || '...')}</strong></span>
                                 ${titleNote ? `<strong style="color:#0d9488;">(${escJob(titleNote)})</strong>` : ''}
+                                ${brokerChipHtml}
                             </div>
                         </div>
                         <hr class="jo-a4-rule">

@@ -1204,6 +1204,18 @@
                                 {% if job.title_note %}
                                 <span class="exec-code-note">({{ job.title_note }})</span>
                                 {% endif %}
+                                {% set b_code = criteria.get('broker_code') %}
+                                {% if not b_code %}
+                                    {% if job.code.startswith('HV-') %}{% set b_code = 'HV' %}
+                                    {% elif job.code.startswith('DK-') %}{% set b_code = 'DK' %}
+                                    {% elif job.code.startswith('TD-') %}{% set b_code = 'TD' %}
+                                    {% elif job.code.startswith('CT-') %}{% set b_code = 'CT' %}
+                                    {% elif job.code.startswith('BMY-') %}{% set b_code = 'BMY' %}
+                                    {% endif %}
+                                {% endif %}
+                                {% if b_code and not job.code.startswith(b_code ~ '-') %}
+                                <span class="broker-chip">🏢 {{ b_code }}</span>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
