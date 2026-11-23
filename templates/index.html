@@ -8718,17 +8718,13 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
 
                 return `
                     <tr class="jo-card-row">
-                        <td class="jo-td jo-td-factory" style="padding:10px 12px; vertical-align:top;">
+                        <td class="jo-td jo-td-factory" style="padding:10px 12px; vertical-align:top;" title="Mã đơn: ${escJob(j.code)}${j.title_note ? ' (' + escJob(j.title_note) + ')' : ''}">
                             <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:4px;">
-                                <span style="font-family:ui-monospace, monospace; font-weight:800; font-size:12.5px; color:#008080; background:#f0fdfa; border:1px solid #99f6e4; padding:2px 8px; border-radius:6px;">
-                                    ${escJob(j.code)}
-                                </span>
-                                ${j.title_note ? `<span style="font-size:11px; font-weight:700; color:#475569; background:#f1f5f9; border:1px solid #e2e8f0; padding:1px 7px; border-radius:6px;">${escJob(j.title_note)}</span>` : ''}
-                                <select class="jo-inline-broker-select ${bInfo.code ? 'has-broker' : ''}" onchange="quickUpdateJobBroker('${jsId}', this.value)" title="Gán / đổi nhanh Công ty môi giới (tự động ghép mã đơn)">
+                                <select class="jo-inline-broker-select ${bInfo.code ? 'has-broker' : ''}" onchange="quickUpdateJobBroker('${jsId}', this.value)" title="Gán / đổi nhanh Công ty môi giới">
                                     ${buildInlineBrokerOptionsHtml(bInfo.code)}
                                 </select>
+                                <span style="font-weight:750; color:#0f172a; font-size:13px; line-height:1.35;">${escJob(j.factory_name || 'Chưa cập nhật tên xưởng')}</span>
                             </div>
-                            <div style="font-weight:750; color:#0f172a; font-size:13px; line-height:1.35;">${escJob(j.factory_name || 'Chưa cập nhật tên xưởng')}</div>
                             ${j.work_location ? `<div style="font-size:11.5px; color:#64748b; margin-top:2px;">📍 ${escJob(j.work_location)}</div>` : ''}
                         </td>
                         <td class="jo-td jo-td-job" style="padding:10px 12px; vertical-align:top;">
