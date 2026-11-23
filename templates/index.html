@@ -2126,7 +2126,10 @@
 
                         <div class="jo-grid-4 jo-mb-12">
                             <div>
-                                <label class="jo-label" for="jobOrder_brokerSelect">Công ty môi giới (Mã)</label>
+                                <div class="jo-label-row">
+                                    <label class="jo-label" for="jobOrder_brokerSelect" style="margin-bottom:0;">Công ty môi giới (Mã)</label>
+                                    <button type="button" onclick="openJobOrderAddBrokerModal()" class="jo-inline-today-btn" title="Thêm công ty môi giới mới vào hệ thống">➕ Thêm môi giới</button>
+                                </div>
                                 <select id="jobOrder_brokerSelect" class="jo-select" onchange="onJobBrokerSelectChange(this.value)">
                                     <option value="">-- Chọn môi giới (HV, DK, TD...) --</option>
                                 </select>
@@ -2391,6 +2394,50 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL THÊM MÔI GIỚI MỚI (TỪ STUDIO BẢNG CÔNG VIỆC) -->
+    <div id="joAddBrokerModal" class="jo-broker-modal-backdrop" style="display:none;" onclick="if(event.target===this) closeJobOrderAddBrokerModal();">
+        <div class="jo-broker-modal-card">
+            <div class="jo-broker-modal-head">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:20px;">🏢</span>
+                    <div>
+                        <h3 style="margin:0; font-size:15px; font-weight:800; color:#0f172a;">Thêm Đối Tác Môi Giới Mới</h3>
+                        <p style="margin:2px 0 0 0; font-size:11.5px; color:#64748b;">Khai báo đối tác môi giới Đài Loan (HV, DK, TD...)</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeJobOrderAddBrokerModal()" class="jo-btn-close-x" style="font-size:16px; padding:4px 8px;" title="Đóng (Esc)">✕</button>
+            </div>
+            
+            <form id="joAddBrokerForm" onsubmit="event.preventDefault(); submitJobOrderAddBroker();" style="padding:16px 20px;">
+                <div style="margin-bottom:12px;">
+                    <label style="display:block; font-size:12px; font-weight:750; color:#1e293b; margin-bottom:5px;">
+                        Tên Môi Giới (Tiếng Việt) <span style="color:#ef4444;">*</span>
+                    </label>
+                    <input type="text" id="joNewBrokerName" class="jo-input" required 
+                           placeholder="VD: Hoàn Vũ hoặc Đại Khánh" 
+                           oninput="onJoNewBrokerNameInput(this.value)">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-top:5px; font-size:11.5px; color:#64748b;">
+                        <span>Mã viết tắt nhận diện:</span>
+                        <strong id="joNewBrokerCodePreview" style="color:#008080; font-family:monospace; font-size:13px; font-weight:850; background:#f0fdfa; border:1px solid #99f6e4; padding:1px 6px; border-radius:4px;">---</strong>
+                    </div>
+                </div>
+
+                <div style="margin-bottom:16px;">
+                    <label style="display:block; font-size:12px; font-weight:750; color:#1e293b; margin-bottom:5px;">
+                        Tên Tiếng Trung (Tùy chọn)
+                    </label>
+                    <input type="text" id="joNewBrokerNameZh" class="jo-input" 
+                           placeholder="VD: 環宇國際仲介有限公司">
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; gap:8px; padding-top:12px; border-top:1px solid #e2e8f0;">
+                    <button type="button" onclick="closeJobOrderAddBrokerModal()" class="jo-btn-ghost" style="padding:7px 14px; font-size:12.5px;">Hủy bỏ</button>
+                    <button type="submit" id="joSaveBrokerBtn" class="jo-btn-save" style="padding:7px 16px; font-size:12.5px; background:#008080;">💾 Lưu &amp; Chọn Ngay</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -2682,6 +2729,38 @@
         }
         .jo-studio-backdrop.is-open {
             display: block;
+        }
+
+        /* ── Modal Thêm Môi Giới Mới từ Studio ── */
+        .jo-broker-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 100050;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .jo-broker-modal-card {
+            background: #ffffff;
+            border-radius: 14px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 20px 50px rgba(15, 23, 42, 0.35);
+            border: 1px solid #cbd5e1;
+            overflow: hidden;
+            animation: slideInUp 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .jo-broker-modal-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
         }
         .jo-studio-modal {
             display: none;
@@ -7983,6 +8062,107 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             }
         }
 
+        /* ── Thêm nhanh Đối Tác Môi Giới Mới từ Studio Bảng Công Việc ── */
+        function openJobOrderAddBrokerModal() {
+            const modal = document.getElementById('joAddBrokerModal');
+            if (!modal) return;
+            const nameEl = document.getElementById('joNewBrokerName');
+            const nameZhEl = document.getElementById('joNewBrokerNameZh');
+            const previewEl = document.getElementById('joNewBrokerCodePreview');
+            if (nameEl) nameEl.value = '';
+            if (nameZhEl) nameZhEl.value = '';
+            if (previewEl) previewEl.textContent = '---';
+            modal.style.display = 'flex';
+            setTimeout(() => nameEl?.focus(), 60);
+        }
+
+        function closeJobOrderAddBrokerModal() {
+            const modal = document.getElementById('joAddBrokerModal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function onJoNewBrokerNameInput(val) {
+            const previewEl = document.getElementById('joNewBrokerCodePreview');
+            if (!previewEl) return;
+            const code = computeBrokerShortCode(val);
+            previewEl.textContent = code ? `${code} (VD: ${code}-20261123)` : '---';
+        }
+
+        async function submitJobOrderAddBroker() {
+            const nameInput = document.getElementById('joNewBrokerName');
+            const nameZhInput = document.getElementById('joNewBrokerNameZh');
+            const name = (nameInput?.value || '').trim();
+            const nameZh = (nameZhInput?.value || '').trim();
+
+            if (!name) {
+                alert('Vui lòng nhập tên công ty môi giới!');
+                nameInput?.focus();
+                return;
+            }
+
+            const saveBtn = document.getElementById('joSaveBrokerBtn');
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.textContent = '⏳ Đang lưu...';
+            }
+
+            try {
+                const fullName = nameZh ? `${name} ${nameZh}` : name;
+                const res = await fetch('/api/brokers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: fullName, name_zh: nameZh }),
+                    credentials: 'same-origin'
+                });
+                const result = await res.json();
+
+                if (!res.ok || !result.success) {
+                    alert('Lỗi thêm môi giới: ' + (result.error || 'Không thể lưu'));
+                    return;
+                }
+
+                const newBroker = result.broker;
+
+                // Đồng bộ lại danh sách môi giới từ server
+                try {
+                    const freshRes = await fetch('/api/brokers', { credentials: 'same-origin' });
+                    if (freshRes.ok) {
+                        const freshBrokers = await freshRes.json();
+                        if (Array.isArray(freshBrokers)) {
+                            window.jobOrderBrokers = freshBrokers;
+                            if (typeof globalBrokers !== 'undefined') globalBrokers = freshBrokers;
+                        }
+                    }
+                } catch(e) {
+                    if (!Array.isArray(window.jobOrderBrokers)) window.jobOrderBrokers = [];
+                    window.jobOrderBrokers.push(newBroker);
+                    if (typeof globalBrokers !== 'undefined' && Array.isArray(globalBrokers)) {
+                        globalBrokers.push(newBroker);
+                    }
+                }
+
+                populateJobBrokerDropdowns();
+
+                const shortCode = computeBrokerShortCode(newBroker.name);
+                const brokerSelect = document.getElementById('jobOrder_brokerSelect');
+                if (brokerSelect) {
+                    brokerSelect.value = shortCode;
+                    onJobBrokerSelectChange(shortCode);
+                }
+
+                closeJobOrderAddBrokerModal();
+                showJobOrdersToast(`<span>🏢 Đã thêm và tự động chọn đối tác Môi giới: <strong>${escJob(shortCode)} — ${escJob(cleanBrokerVnName(newBroker.name) || newBroker.name)}</strong>.</span>`);
+            } catch(err) {
+                console.error('submitJobOrderAddBroker error:', err);
+                alert('Có lỗi xảy ra khi lưu đối tác môi giới: ' + err.message);
+            } finally {
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = '💾 Lưu & Chọn Ngay';
+                }
+            }
+        }
+
         function setJobLifecycleView(view) {
             window.currentJobLifecycleView = view || 'active';
             const statusFilter = document.getElementById('jobOrdersStatusFilter');
@@ -9146,6 +9326,11 @@ async function loadHistory(searchQuery = '', skipUIInit = false) {
             window._joEscListenerAttached = true;
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
+                    const brokerModal = document.getElementById('joAddBrokerModal');
+                    if (brokerModal && brokerModal.style.display !== 'none') {
+                        closeJobOrderAddBrokerModal();
+                        return;
+                    }
                     const modal = document.getElementById('jobOrderModal');
                     if (modal && modal.classList.contains('is-open')) {
                         closeJobOrderModal();
