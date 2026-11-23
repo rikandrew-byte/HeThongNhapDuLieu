@@ -320,15 +320,32 @@
             padding: 4px 0 2px 0;
         }
 
+        /* Tiêu đề màu xanh cổ vịt ánh kim loại (Metallic Teal / Dark Mallard) */
         .exec-main-title {
             font-family: 'Playfair Display', Georgia, serif;
             font-size: 32px;
             font-weight: 900;
-            letter-spacing: 0.04em;
-            color: var(--teal-primary);
+            letter-spacing: 0.05em;
             text-transform: uppercase;
             line-height: 1.22;
             margin-bottom: 10px;
+            display: inline-block;
+            color: #005555;
+            background: linear-gradient(135deg, 
+                #003838 0%, 
+                #005a5a 18%, 
+                #008080 32%, 
+                #2dd4bf 46%, 
+                #99f6e4 50%, 
+                #2dd4bf 54%, 
+                #008080 68%, 
+                #005555 82%, 
+                #002b2b 100%
+            );
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 1px 1px rgba(0, 35, 35, 0.35)) drop-shadow(0 2px 5px rgba(0, 128, 128, 0.22));
         }
 
         /* Mã đơn canh giữa nằm ngay dưới Bảng thông tin công việc */
@@ -1022,6 +1039,13 @@
                 opacity: 0.035 !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+            }
+
+            .exec-main-title {
+                color: #004d4d !important;
+                -webkit-text-fill-color: #004d4d !important;
+                background: none !important;
+                filter: none !important;
             }
 
             .exec-card {

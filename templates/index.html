@@ -3386,15 +3386,32 @@
             padding: 2px 8px;
             border-radius: 4px;
         }
+        /* Tiêu đề màu xanh cổ vịt ánh kim loại */
         .jo-a4-main-title {
             font-family: 'Playfair Display', Georgia, serif;
             font-size: 20px;
             font-weight: 900;
-            color: #008080;
             letter-spacing: 0.05em;
-            margin: 0 0 2px 0;
+            margin: 0 auto 4px auto;
             line-height: 1.2;
             text-transform: uppercase;
+            display: inline-block;
+            color: #005555;
+            background: linear-gradient(135deg, 
+                #003838 0%, 
+                #005a5a 18%, 
+                #008080 32%, 
+                #2dd4bf 46%, 
+                #99f6e4 50%, 
+                #2dd4bf 54%, 
+                #008080 68%, 
+                #005555 82%, 
+                #002b2b 100%
+            );
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 1px 1px rgba(0, 35, 35, 0.3)) drop-shadow(0 2px 4px rgba(0, 128, 128, 0.18));
         }
         .jo-a4-zh-sub {
             font-size: 9.5px;
