@@ -20,17 +20,6 @@ if exist "%LOCALAPPDATA%\Python\pythoncore-3.14-64\python.exe" (
     set "PY_DIR=%LOCALAPPDATA%\Python\pythoncore-3.14-64"
     goto :found_python
 )
-if exist "C:\Users\rik_7\AppData\Local\Python\bin\python.exe" (
-    set "PY_PATH=C:\Users\rik_7\AppData\Local\Python\bin\python.exe"
-    set "PY_DIR=C:\Users\rik_7\AppData\Local\Python\bin"
-    goto :found_python
-)
-if exist "C:\Users\rik_7\AppData\Local\Python\pythoncore-3.14-64\python.exe" (
-    set "PY_PATH=C:\Users\rik_7\AppData\Local\Python\pythoncore-3.14-64\python.exe"
-    set "PY_DIR=C:\Users\rik_7\AppData\Local\Python\pythoncore-3.14-64"
-    goto :found_python
-)
-
 set "PY_PATH=python"
 
 :found_python

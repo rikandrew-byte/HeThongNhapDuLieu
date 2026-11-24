@@ -51,6 +51,7 @@ groq_client = Groq(api_key=groq_api_key) if (Groq and groq_api_key) else None
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 app.debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
+app.secret_key = os.environ.get('SECRET_KEY', 'fct-hr-secret-key-2026-production-token')
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.jinja_env.auto_reload = True
 CORS(app, resources={r"/*": {"origins": ["https://cv.fct.vn", "http://127.0.0.1:5000", "http://localhost:5000"]}})
@@ -81,12 +82,6 @@ def auth_required(f):
         return basic_auth.required(f)
     return f
 
-def is_admin_request():
-    try:
-        return basic_auth.authenticate()
-    except Exception:
-        return False
-
 def get_client_ip():
     cf_ip = request.headers.get('CF-Connecting-IP')
     if cf_ip:
@@ -97,11 +92,12 @@ def get_client_ip():
     return request.remote_addr or 'unknown'
 
 class SimpleRateLimiter:
-    """Rate limiter in-memory đơn giản, nhẹ, an toàn đa luồng."""
+    """Rate limiter in-memory đơn giản, nhẹ, an toàn đa luồng kèm cơ chế TTL tự dọn dẹp chống rò rỉ RAM."""
     def __init__(self):
         self.lock = Lock()
         self.requests = defaultdict(list)
         self.last_request = {}
+        self._last_cleanup = time.time()
 
     def is_allowed(self, key, max_requests, window_seconds, min_interval_seconds=0):
         with self.lock:
@@ -124,10 +120,16 @@ class SimpleRateLimiter:
             self.requests[key].append(now)
             self.last_request[key] = now
 
-            if len(self.requests) > 3000:
-                expired_keys = [k for k, ts in self.requests.items() if not ts or ts[-1] <= cutoff]
+            # Dọn dẹp định kỳ (mỗi 10 phút hoặc khi vượt quá 1000 IP)
+            if now - self._last_cleanup > 600 or len(self.requests) > 1000:
+                self._last_cleanup = now
+                stale_cutoff = now - max(window_seconds * 2, 3600)
+                expired_keys = [k for k, ts in list(self.requests.items()) if not ts or ts[-1] <= stale_cutoff]
                 for k in expired_keys:
                     self.requests.pop(k, None)
+                    self.last_request.pop(k, None)
+                expired_last = [k for k, t in list(self.last_request.items()) if t <= stale_cutoff]
+                for k in expired_last:
                     self.last_request.pop(k, None)
 
             return True, None
@@ -386,16 +388,10 @@ with app.app_context():
                     db.session.execute(text('ALTER TABLE form_history ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE'))
                 db.session.commit()
             if 'don_hang' not in columns:
-                if 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI']:
-                    db.session.execute(text("ALTER TABLE form_history ADD COLUMN don_hang VARCHAR(255) DEFAULT ''"))
-                else:
-                    db.session.execute(text("ALTER TABLE form_history ADD COLUMN don_hang VARCHAR(255) DEFAULT ''"))
+                db.session.execute(text("ALTER TABLE form_history ADD COLUMN don_hang VARCHAR(255) DEFAULT ''"))
                 db.session.commit()
             if 'nguoi_phu_trach' not in columns:
-                if 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI']:
-                    db.session.execute(text("ALTER TABLE form_history ADD COLUMN nguoi_phu_trach VARCHAR(100) DEFAULT ''"))
-                else:
-                    db.session.execute(text("ALTER TABLE form_history ADD COLUMN nguoi_phu_trach VARCHAR(100) DEFAULT ''"))
+                db.session.execute(text("ALTER TABLE form_history ADD COLUMN nguoi_phu_trach VARCHAR(100) DEFAULT ''"))
                 db.session.commit()
                 print("Added nguoi_phu_trach column. Running data migration for NPT...")
                 try:
@@ -425,41 +421,37 @@ with app.app_context():
                     print(f"Error during NPT data migration: {mig_ex}")
                     db.session.rollback()
             if 'selected_job' not in columns:
-                if 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI']:
-                    db.session.execute(text("ALTER TABLE form_history ADD COLUMN selected_job VARCHAR(255) DEFAULT ''"))
-                else:
-                    db.session.execute(text("ALTER TABLE form_history ADD COLUMN selected_job VARCHAR(255) DEFAULT ''"))
+                db.session.execute(text("ALTER TABLE form_history ADD COLUMN selected_job VARCHAR(255) DEFAULT ''"))
                 db.session.commit()
-            
-            # Data migration for selected_job (chỉ chạy khi thực sự có bản ghi đơn lẻ chưa migrate)
-            try:
-                import re as _re
-                unmigrated = FormHistory.query.filter(
-                    FormHistory.is_selected == True,
-                    (FormHistory.selected_job == None) | (FormHistory.selected_job == ''),
-                    FormHistory.don_hang != '',
-                    FormHistory.don_hang != None,
-                    ~FormHistory.don_hang.like('%,%'),
-                    ~FormHistory.don_hang.like('%;%')
-                ).all()
-                if unmigrated:
-                    for r in unmigrated:
-                        r.selected_job = r.don_hang.strip()
-                    db.session.commit()
-                    print(f"Migrated {len(unmigrated)} single-job records to selected_job.")
+                # Data migration for selected_job (chạy một lần duy nhất khi thêm cột)
+                try:
+                    import re as _re
+                    unmigrated = FormHistory.query.filter(
+                        FormHistory.is_selected == True,
+                        (FormHistory.selected_job == None) | (FormHistory.selected_job == ''),
+                        FormHistory.don_hang != '',
+                        FormHistory.don_hang != None,
+                        ~FormHistory.don_hang.like('%,%'),
+                        ~FormHistory.don_hang.like('%;%')
+                    ).all()
+                    if unmigrated:
+                        for r in unmigrated:
+                            r.selected_job = r.don_hang.strip()
+                        db.session.commit()
+                        print(f"Migrated {len(unmigrated)} single-job records to selected_job.")
 
-                # Fix dữ liệu xấu: selected_job chứa nhiều đơn (chuỗi có dấu phẩy) → chỉ giữ đơn đầu tiên
-                multi_job_sel = FormHistory.query.filter(
-                    FormHistory.is_selected == True,
-                    FormHistory.selected_job.like('%,%')
-                ).all()
-                if multi_job_sel:
-                    for r in multi_job_sel:
-                        first_job = _re.split(r'[,;]+', r.selected_job)[0].strip()
-                        r.selected_job = first_job
-                    db.session.commit()
-            except Exception as db_ex:
-                db.session.rollback()
+                    # Fix dữ liệu xấu: selected_job chứa nhiều đơn (chuỗi có dấu phẩy) → chỉ giữ đơn đầu tiên
+                    multi_job_sel = FormHistory.query.filter(
+                        FormHistory.is_selected == True,
+                        FormHistory.selected_job.like('%,%')
+                    ).all()
+                    if multi_job_sel:
+                        for r in multi_job_sel:
+                            first_job = _re.split(r'[,;]+', r.selected_job)[0].strip()
+                            r.selected_job = first_job
+                        db.session.commit()
+                except Exception as db_ex:
+                    db.session.rollback()
 
             # Tối ưu hóa Database: Tạo Index tự động để tăng tốc độ truy vấn x10
             try:
@@ -483,7 +475,7 @@ with app.app_context():
                 else:
                     db.session.execute(text('ALTER TABLE form_history ADD COLUMN selected_at TIMESTAMP DEFAULT NULL'))
                 db.session.commit()
-                print("Added deleted_at column.")
+                print("Added selected_at column.")
         except Exception as ex:
             print(f"⚠️ Column migration skipped or failed: {ex}")
             db.session.rollback()
